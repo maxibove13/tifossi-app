@@ -1,32 +1,83 @@
-# Welcome to your Expo app 👋
+# Tifossi - Mobile E-commerce App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Tifossi is a mobile-first iOS e-commerce application built with React Native and Expo. The app provides a seamless shopping experience with a focus on fashion products.
 
-## Get started
+![App Screenshot](./figma-images/product-screen.png)
 
-1. Install dependencies
+## Features
+
+- **Product Browsing**: Browse products by category with intuitive navigation
+- **Product Details**: View detailed product information with swipeable interfaces
+- **Shopping Cart**: Add and manage products in your shopping cart
+- **User Profile**: Manage user account and preferences
+- **Favorites**: Save and manage favorite products
+
+## Technologies
+
+- **React Native**: Core framework for cross-platform mobile development
+- **Expo**: Development platform for building React Native apps
+- **TypeScript**: Type-safe JavaScript for improved development experience
+- **Reanimated**: Advanced animations for smooth user interactions
+- **Expo Router**: File-based routing for seamless navigation
+
+## Getting Started
+
+1. **Install dependencies**
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. **Start the development server**
 
    ```bash
-    npx expo start
+   npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. **Run on iOS (primary platform)**
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   npm run ios
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+4. **Run on other platforms**
 
-## tifossi progress
+   ```bash
+   npm run android
+   npm run web
+   ```
 
-- State Management
-- Build each screen by combining components
-- React navigation to set up screen transitions (stack, bottom tabs, etc.)
+## Development
+
+- **Linting**: `npm run lint`
+- **Type checking**: `npm run typecheck`
+- **Testing**: `npm test`
+- **Reset project**: `npm run reset-project`
+
+## Project Structure
+
+The app follows a structured organization pattern. Refer to [app_structure.md](./docs/app_structure.md) for detailed information about the codebase organization.
+
+## Documentation
+
+- [App Structure](./docs/app_structure.md) - Overview of the application structure
+- [Components](./docs/components.md) - Component specifications and usage
+- [Product Cards](./docs/product_card.md) - Product card implementation details
+
+## Design Reference
+
+The implementation is based on Figma designs created by a professional designer. Component references are available in the `/raw-components` directory, including:
+- JSX implementations for reference
+- Screenshot images for visual verification
+
+## Development Principles
+
+- **Mobile-First iOS**: Designed primarily for iOS with native-feeling interactions
+- **Design Fidelity**: Follow Figma designs closely for visual consistency
+- **Component Architecture**: Modular components with clear responsibilities
+- **Type Safety**: Comprehensive TypeScript type system
+- **Simplicity Over Complexity**: Prioritize clean, maintainable code
+
+## License
+
+Proprietary - All rights reserved

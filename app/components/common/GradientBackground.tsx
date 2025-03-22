@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { colors } from '../../styles/colors';
 
 type GradientBackgroundProps = {
   children: React.ReactNode;
@@ -8,7 +9,7 @@ type GradientBackgroundProps = {
 export default function GradientBackground({ children }: GradientBackgroundProps) {
   return (
     <LinearGradient
-      colors={['rgba(12, 12, 12, 0)', '#0c0c0c']}
+      colors={[`${colors.background.dark}00`, colors.background.dark]}
       style={styles.gradient}
       locations={[0, 1]}
     >

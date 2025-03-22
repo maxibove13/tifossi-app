@@ -36,3 +36,25 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+raw-components/
+
+# Large binary files
+*.mov
+*.mp4
+*.avi
+*.webm
+
+# Editor directories and files
+.idea/
+.vscode/
+*.code-workspace
+.cursor/
+
+# Build files
+build/
+dist/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.*

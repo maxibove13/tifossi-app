@@ -1,9 +1,13 @@
 import { StyleSheet, View, Text } from 'react-native';
+import { spacing } from '../styles/spacing';
+import { colors } from '../styles/colors';
+import { fonts, fontSizes, lineHeights } from '../styles/typography';
+import { layout } from '../styles/spacing';
 
 export default function CartScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Carrito</Text>
+      <Text style={styles.title}>Cart</Text>
     </View>
   );
 }
@@ -11,13 +15,14 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: colors.background.light,
+    paddingTop: layout.headerTopPadding,
+    paddingHorizontal: spacing.lg,
   },
-  text: {
-    fontSize: 24,
-    color: '#0C0C0C',
-    fontFamily: 'Roboto',
+  title: {
+    fontFamily: fonts.primary,
+    fontSize: fontSizes.xl,
+    lineHeight: lineHeights.xl,
+    color: colors.primary,
   },
 }); 

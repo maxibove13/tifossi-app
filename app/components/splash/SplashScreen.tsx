@@ -1,5 +1,7 @@
 import { StyleSheet, View, Animated } from 'react-native';
 import { useEffect, useRef } from 'react';
+import { colors } from '../../styles/colors';
+import { spacing } from '../../styles/spacing';
 
 export default function SplashScreen() {
   const progress = useRef(new Animated.Value(0)).current;
@@ -10,7 +12,7 @@ export default function SplashScreen() {
       duration: 2000,
       useNativeDriver: false,
     }).start();
-  }, []);
+  }, [progress]);
 
   return (
     <View style={styles.container}>
@@ -49,18 +51,18 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0C0C0C',
+    backgroundColor: colors.background.dark,
   },
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    padding: spacing.lg,
   },
   logoWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xl,
     width: 50.7,
     height: 48,
   },
@@ -77,13 +79,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    backgroundColor: '#707070',
+    backgroundColor: colors.secondary,
     borderRadius: 32,
   },
   progressBarFill: {
     position: 'absolute',
     height: '100%',
-    backgroundColor: '#FBFBFB',
+    backgroundColor: colors.primary,
     borderRadius: 32,
   },
 }); 

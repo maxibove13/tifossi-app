@@ -1,57 +1,127 @@
-import { StyleSheet, View } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
-import { useEffect, useRef } from 'react';
+import { View, StyleSheet, Image, useWindowDimensions } from 'react-native'
+import { useVideoPlayer, VideoView } from 'expo-video'
+import { useState, useEffect, useRef } from 'react'
+import { LinearGradient } from 'expo-linear-gradient'
 
-type VideoBackgroundProps = {
-  children: React.ReactNode;
-};
+interface VideoBackgroundProps {
+  source: string
+  fallbackImage?: string
+  children?: React.ReactNode
+  overlayOpacity?: number
+  style?: any
+  shouldLoop?: boolean
+  shouldMute?: boolean
+  shouldAutoPlay?: boolean
+}
 
-export default function VideoBackground({ children }: VideoBackgroundProps) {
-  const video = useRef(null);
+export const VideoBackground = ({
+  source,
+  fallbackImage,
+  children,
+  overlayOpacity = 0.4,
+  style,
+  shouldLoop = true,
+  shouldMute = true,
+  shouldAutoPlay = true,
+}: VideoBackgroundProps) => {
+  const [isError, setIsError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const { width, height } = useWindowDimensions()
+  const videoRef = useRef(null)
+
+  const player = useVideoPlayer(source, player => {
+    if (!player) return
+    player.loop = shouldLoop
+    player.muted = shouldMute
+    player.staysActiveInBackground = false
+  })
 
   useEffect(() => {
-    if (video.current) {
-      (async () => {
-        await video.current.playAsync();
-        // Ensure video loops
-        await video.current.setIsLoopingAsync(true);
-        // Mute the video
-        await video.current.setIsMutedAsync(true);
-      })();
+    if (!player) return
+
+    const statusSubscription = player.addListener('statusChange', (status) => {
+      if (status.error) {
+        setIsError(true)
+        setIsLoading(false)
+      }
+      if (status.status === 'readyToPlay') {
+        setIsLoading(false)
+        if (shouldAutoPlay) {
+          player.play()
+        }
+      }
+    })
+
+    return () => {
+      statusSubscription?.remove()
     }
-  }, []);
+  }, [player, shouldAutoPlay])
 
   return (
-    <View style={styles.container}>
-      <Video
-        ref={video}
-        style={styles.video}
-        source={require('../../../assets/videos/splash-screen-background.mov')}
-        resizeMode={ResizeMode.COVER}
-        shouldPlay
-        isLooping
-        isMuted
+    <View style={[styles.container, style, { width, height }]}>
+      {isError && fallbackImage ? (
+        <Image
+          source={{ uri: fallbackImage }}
+          style={styles.fallback}
+          resizeMode="cover"
+        />
+      ) : (
+        <VideoView 
+          ref={videoRef}
+          player={player}
+          style={[styles.video, { width, height }]}
+          contentFit="cover"
+          nativeControls={false}
+          requiresLinearPlayback
+        />
+      )}
+
+      <LinearGradient
+        colors={['rgba(12, 12, 12, 0)', `rgba(12, 12, 12, ${overlayOpacity})`]}
+        style={styles.overlay}
       />
-      <View style={styles.content}>
-        {children}
-      </View>
+
+      {isLoading && fallbackImage && (
+        <Image
+          source={{ uri: fallbackImage }}
+          style={[styles.fallback, styles.loadingFallback]}
+          resizeMode="cover"
+        />
+      )}
+
+      <View style={styles.content}>{children}</View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    overflow: 'hidden',
   },
   video: {
     position: 'absolute',
     top: 0,
     left: 0,
-    bottom: 0,
-    right: 0,
+  },
+  fallback: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  loadingFallback: {
+    zIndex: 1,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 2,
   },
   content: {
-    flex: 1,
-    backgroundColor: 'rgba(12, 12, 12, 0.5)', // Add a slight overlay to ensure content visibility
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 3,
   },
-}); 
+})
+
+export default VideoBackground
