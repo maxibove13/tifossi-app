@@ -58,6 +58,49 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 
 The app follows a structured organization pattern. Refer to [app_structure.md](./docs/app_structure.md) for detailed information about the codebase organization.
 
+```
+tifossi/
+├── app/                   # Main application code
+│   ├── (home)/            # Home routes
+│   ├── (tabs)/            # Tab navigation routes
+│   ├── components/        # React components
+│   │   ├── common/        # Shared components
+│   │   ├── home/          # Home screen components
+│   │   ├── navigation/    # Navigation components
+│   │   ├── skeletons/     # Loading skeletons
+│   │   ├── splash/        # Splash screen
+│   │   ├── store/         # Store components
+│   │   │   ├── layout/    # Store layout components
+│   │   │   ├── product/   # Product components
+│   │   │   │   ├── cart/  # Cart related components
+│   │   │   │   ├── color/ # Color selection
+│   │   │   │   ├── swipeable/ # Swipeable product details
+│   │   │   │   └── ...    # Other product components
+│   │   │   └── review/    # Product reviews
+│   │   └── ui/            # UI components
+│   │       ├── buttons/   # Button components
+│   │       ├── cards/     # Card components
+│   │       ├── form/      # Form components
+│   │       └── ...        # Other UI components
+│   ├── data/              # Data sources
+│   ├── styles/            # Style definitions
+│   ├── types/             # TypeScript type definitions
+│   └── _utils/            # Utility functions
+├── assets/                # Static assets
+│   ├── fonts/             # Custom fonts
+│   ├── icons/             # App icons
+│   ├── images/            # Image assets
+│   └── videos/            # Video assets
+├── docs/                  # Documentation
+├── figma-images/          # Screenshots from Figma
+├── hooks/                 # Custom React hooks
+├── raw-components/        # Reference components
+├── android/               # Android specific code
+├── ios/                   # iOS specific code
+├── scripts/               # Utility scripts
+└── types/                 # Global type definitions
+```
+
 ## Documentation
 
 - [App Structure](./docs/app_structure.md) - Overview of the application structure

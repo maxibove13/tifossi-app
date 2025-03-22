@@ -50,7 +50,7 @@ interface SwipeableEdgeProps {
   /**
    * Product data
    */
-  product?: {
+  product: {
     name: string;
     isCustomizable?: boolean;
     isDiscounted?: boolean;
@@ -92,15 +92,7 @@ interface SwipeableEdgeProps {
  * Provides a swipeable panel that can be expanded/collapsed with gestures
  */
 const SwipeableEdge = ({ 
-  product = {
-    name: 'Neceser Globo',
-    isCustomizable: true,
-    isDiscounted: true,
-    currentPrice: '$390',
-    originalPrice: '$590',
-    description: 'Tiffosi le ofrece un producto altamente confeccionado. Un diseño a medida para el deportista. Productos personalizados.',
-    sku: 'neceserr'
-  },
+  product,
   minHeight = 250,
   headerHeight = 120,
   onExpandedChange,

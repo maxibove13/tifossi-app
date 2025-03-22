@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleSheet, View, Text } from 'react-native'
 import ExpandableSection from './ExpandableSection'
-import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography'
+import { fonts, fontSizes, lineHeights} from '../../../../styles/typography'
 import { spacing } from '../../../../styles/spacing'
 import { colors } from '../../../../styles/colors'
 import { Product } from '../../../../types/product'
