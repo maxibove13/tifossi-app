@@ -6,12 +6,12 @@ import {
   TouchableOpacity, 
   Dimensions, 
   ImageSourcePropType,
-  ScrollView,
-  Pressable
+  ScrollView
 } from 'react-native';
 import { colors } from '../../../../styles/colors';
 import { Product } from '../../../../types/product';
 import { spacing } from '../../../../styles/spacing';
+import ProductViewGallery from './views/ProductViewGallery';
 
 interface EnhancedProductGalleryProps {
   product: Product;
@@ -59,32 +59,8 @@ function EnhancedProductGallery({
   // If we don't have any images for the active color, use all images
   const imagesToDisplay = activeColorImages.length > 0 ? activeColorImages : productImages;
   
-  // Create different views of the product - in a real implementation
-  // these would be different angles of the same color product
-  // For demo, we'll use the selected color image as the main view
-  // and add some variations from other color options if available
+  // Get the main product image for the selected color
   const mainProductImage = imagesToDisplay[0];
-  
-  // Try to find a few other product views (using different color images for demo purposes)
-  const productViews = [mainProductImage];
-  
-  // Add up to 2 more product images if available
-  if (product.colors && product.colors.length > 1) {
-    // Use different color images as alternative views (just for demo)
-    product.colors.slice(0, 3).forEach(colorObj => {
-      if (colorObj.color !== activeColor && colorObj.image) {
-        productViews.push({
-          source: colorObj.image as ImageSourcePropType,
-          color: activeColor // We pretend this is the same color, just different angle
-        });
-      }
-    });
-  }
-  
-  // Ensure we have at least 3 images by duplicating if needed
-  while (productViews.length < 3) {
-    productViews.push(mainProductImage);
-  }
   
   const handleColorChange = (color: string) => {
     setActiveColor(color);
@@ -126,26 +102,11 @@ function EnhancedProductGallery({
         </View>
       )}
       
-      {/* Vertical scrollable product images */}
-      <ScrollView
-        style={styles.productImagesContainer}
-        contentContainerStyle={styles.productImagesContent}
-        showsVerticalScrollIndicator={true}
-      >
-        {/* Stack the product images vertically */}
-        {productViews.map((item, index) => (
-          <Pressable 
-            key={`product-view-${index}`}
-            style={styles.productImageWrapper}
-          >
-            <Image
-              source={item.source}
-              style={styles.productImage}
-              resizeMode="cover"
-            />
-          </Pressable>
-        ))}
-      </ScrollView>
+      {/* Use the ProductViewGallery component to display different views of the same image */}
+      <ProductViewGallery 
+        imageSource={mainProductImage.source}
+        onImagePress={() => console.log('Image pressed')}
+      />
     </View>
   );
 }
@@ -185,21 +146,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   
-  // Product images section
-  productImagesContainer: {
-    flex: 1,
-  },
-  productImagesContent: {
-    flexDirection: 'column',
-  },
-  productImageWrapper: {
-    width: ITEM_WIDTH,
-    height: IMAGE_HEIGHT,
-  },
-  productImage: {
-    width: '100%',
-    height: '100%',
-  },
+  // Product images section handled by ProductViewGallery component
 });
 
 // Add explicit default export
