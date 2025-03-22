@@ -22,23 +22,29 @@ export default function ProductInfoHeader({
 }: ProductInfoHeaderProps) {
   return (
     <View style={styles.container}>
-      {/* Product Title Area */}
-      <View style={styles.productTitleContainer}>
-        {isDiscounted && (
-          <Text style={styles.discountLabel}>Descuento</Text>
-        )}
-        <Text style={styles.productName}>{productName}</Text>
-        {isCustomizable && (
-          <Text style={styles.featureLabel}>Personalizable</Text>
-        )}
-      </View>
+      {/* Discount Label - Top Row */}
+      {isDiscounted && (
+        <Text style={styles.discountLabel}>Descuento</Text>
+      )}
 
-      {/* Price Area */}
-      <View style={styles.priceContainer}>
+      {/* Product Name and Current Price - Middle Row */}
+      <View style={styles.titleRow}>
+        <Text style={styles.productName}>{productName}</Text>
         <Text style={styles.currentPrice}>{currentPrice}</Text>
-        {originalPrice && (
-          <Text style={styles.originalPrice}>{originalPrice}</Text>
-        )}
+      </View>
+      
+      {/* Personalizable and Original Price - Bottom Row */}
+      <View style={styles.detailsRow}>
+        <View style={styles.leftColumn}>
+          {isCustomizable && (
+            <Text style={styles.featureLabel}>Personalizable</Text>
+          )}
+        </View>
+        <View style={styles.rightColumn}>
+          {originalPrice && (
+            <Text style={styles.originalPrice}>{originalPrice}</Text>
+          )}
+        </View>
       </View>
 
       {/* Add to Cart Button */}
@@ -60,11 +66,13 @@ export default function ProductInfoHeader({
 
 type Styles = {
   container: ViewStyle;
-  productTitleContainer: ViewStyle;
   discountLabel: TextStyle;
+  titleRow: ViewStyle;
+  detailsRow: ViewStyle;
+  leftColumn: ViewStyle;
+  rightColumn: ViewStyle;
   productName: TextStyle;
   featureLabel: TextStyle;
-  priceContainer: ViewStyle;
   currentPrice: TextStyle;
   originalPrice: TextStyle;
   addToCartButtonContainer: ViewStyle;
@@ -76,10 +84,7 @@ const styles = StyleSheet.create<Styles>({
   container: {
     paddingHorizontal: spacing.lg,
     marginTop: spacing.md,
-    gap: spacing.lg,
-  },
-  productTitleContainer: {
-    alignItems: 'flex-start',
+    gap: spacing.sm,
   },
   discountLabel: {
     fontFamily: typography.body.fontFamily,
@@ -88,21 +93,38 @@ const styles = StyleSheet.create<Styles>({
     color: colors.accent.discount,
     marginBottom: spacing.xs,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: spacing.xs,
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  leftColumn: {
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
+  rightColumn: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
   productName: {
     fontFamily: typography.productTitle.fontFamily,
     fontWeight: '500',
     fontSize: typography.productTitle.fontSize,
     color: colors.primary.text,
-    marginBottom: spacing.xs,
   },
   featureLabel: {
     fontFamily: typography.body.fontFamily,
     fontWeight: '400',
     fontSize: typography.body.fontSize,
     color: colors.secondary.textDisabled,
-  },
-  priceContainer: {
-    alignItems: 'flex-end',
   },
   currentPrice: {
     fontFamily: typography.productTitle.fontFamily,
@@ -124,7 +146,7 @@ const styles = StyleSheet.create<Styles>({
     height: 48,
     borderRadius: radius.xxl,
     overflow: 'hidden',
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
   },
   addToCartButton: {
     width: '100%',

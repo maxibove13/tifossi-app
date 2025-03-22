@@ -96,10 +96,10 @@ const SwipeableEdge = ({
     name: 'Neceser Globo',
     isCustomizable: true,
     isDiscounted: true,
-    currentPrice: '$390.00',
-    originalPrice: '$590.00',
+    currentPrice: '$390',
+    originalPrice: '$590',
     description: 'Tiffosi le ofrece un producto altamente confeccionado. Un diseño a medida para el deportista. Productos personalizados.',
-    sku: '2001202104'
+    sku: 'neceserr'
   },
   minHeight = 250,
   headerHeight = 120,

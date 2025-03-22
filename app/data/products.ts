@@ -134,8 +134,9 @@ export const products: Product[] = [
     id: 'neceserr',
     image: require('../../assets/images/products/product_bag_5.png'),
     title: 'Neceser Globo',
-    price: 1490,
-    label: ProductLabel.NEW,
+    price: 590,
+    discountedPrice: 390,
+    label: ProductLabel.SALE,
     isCustomizable: true,
     description: [
       'Diseño compacto y funcional',

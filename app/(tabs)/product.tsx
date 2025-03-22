@@ -90,8 +90,8 @@ export default function ProductScreen() {
             name: product.title,
             isCustomizable: product.isCustomizable,
             isDiscounted: !!product.discountedPrice,
-            currentPrice: `$${product.price}`,
-            originalPrice: product.discountedPrice ? `$${product.discountedPrice}` : undefined,
+            currentPrice: `$${product.discountedPrice || product.price}`,
+            originalPrice: product.discountedPrice ? `$${product.price}` : undefined,
             description: description,
             sku: product.id
           }}
