@@ -41,3 +41,11 @@ export interface InputProps extends FormControlProps {
 }
 
 export type Orientation = 'horizontal' | 'vertical';
+
+// Add default export to fix router warnings
+const uiTypes = {
+  name: 'UITypes',
+  version: '1.0.0'
+};
+
+export default uiTypes;

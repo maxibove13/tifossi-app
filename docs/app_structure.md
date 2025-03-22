@@ -119,7 +119,7 @@ types/
 ├── product.ts         # Product interface and related types
 ├── product-status.ts  # Product status and label enums
 ├── product-card.ts    # Product card type system
-├── svg.d.ts           # SVG type definitions
+├── _utils/types/declarations/svg.d.ts  # SVG type definitions (excluded from routing)
 └── README.md          # Type system documentation
 ```
 

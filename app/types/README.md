@@ -10,7 +10,7 @@ This directory contains all TypeScript type definitions used throughout the appl
 - `product-status.ts`: Product status and label enums and utilities
 - `navigation.ts`: Navigation route and parameter types
 - `ui.ts`: Base UI component prop types and interfaces
-- `svg.d.ts`: TypeScript declaration for SVG imports
+- `_utils/types/declarations/svg.d.ts`: TypeScript declaration for SVG imports (excluded from routing)
 
 ## Usage Guidelines
 

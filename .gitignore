@@ -58,3 +58,28 @@ dist/
 # Environment variables
 .env
 .env.*
+figma-images/
+
+# Android
+android/
+*.aab
+*.apk
+*.hprof
+.gradle/
+local.properties
+
+# iOS/Xcode specific
+ios/build/
+*.xcuserstate
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+DerivedData/
+*.hmap
+*.ipa

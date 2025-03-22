@@ -29,3 +29,11 @@ export {
   isValidSize,
   isValidCardSize
 };
+
+// Add default export to fix router warnings
+const typesExport = {
+  name: 'TifossiTypes',
+  version: '1.0.0'
+};
+
+export default typesExport;

@@ -36,3 +36,11 @@ export interface CategoryNavigationItem {
   isActive?: boolean;
   onPress: () => void;
 }
+
+// Add default export to fix router warnings
+const navigationTypes = {
+  name: 'NavigationTypes',
+  version: '1.0.0'
+};
+
+export default navigationTypes;

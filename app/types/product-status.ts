@@ -40,4 +40,14 @@ export function isValidStatus(status: unknown): status is ProductStatus {
 
 export function isValidLabel(label: unknown): label is ProductLabel {
   return typeof label === 'string' && Object.values(ProductLabel).includes(label as ProductLabel)
-} 
+}
+
+// Add default export to fix router warnings
+const productStatusModule = {
+  name: 'ProductStatusTypes',
+  version: '1.0.0',
+  statuses: ProductStatus,
+  labels: ProductLabel
+};
+
+export default productStatusModule; 

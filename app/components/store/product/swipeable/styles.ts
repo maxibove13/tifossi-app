@@ -9,16 +9,20 @@ export const colors = {
     textDisabled: '#B1B1B1',
     gradientStart: '#E1E1E1',
     gradientEnd: '#A1A1A1',
+    gradient: ['#E1E1E1', '#A1A1A1'] as const,
   },
   accent: {
     discount: '#F6695E',
     new: '#70BF73',
+    lightGray: '#DCDCDC',
+    mediumGray: '#707070',
   },
   border: '#DCDCDC',
   background: {
     light: '#FFFFFF',
     dark: '#0C0C0C',
     overlay: 'rgba(251, 251, 251, 0.25)',
+    gradient: ['rgba(12, 12, 12, 0.95)', 'rgba(12, 12, 12, 1)'] as const
   },
 };
 
@@ -69,3 +73,14 @@ export const typography = {
     fontSize: 16,
   },
 };
+
+// Add default export to avoid Expo Router warnings
+// This isn't a component, so we export a non-component object
+const stylesExport = {
+  colors,
+  spacing,
+  radius,
+  typography
+};
+
+export default stylesExport;

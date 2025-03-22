@@ -46,11 +46,6 @@ const { height } = Dimensions.get('window');
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
-interface ScrollViewProps extends React.ComponentProps<typeof ScrollView> {
-  scrollEventThrottle?: number;
-  onScroll?: any;
-}
-
 interface SwipeableEdgeProps {
   /**
    * Product data

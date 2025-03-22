@@ -37,3 +37,12 @@ export type PromotionProductCardProps = {
 
 export type FeaturedProductCardProps = FeaturedCardProps;
 export type HorizontalProductCardProps = HorizontalCardProps; 
+
+// Add default export to prevent Expo Router warnings
+const typesExport = {
+  // type metadata
+  version: '1.0.0',
+  namespace: 'product',
+};
+
+export default typesExport;

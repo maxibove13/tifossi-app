@@ -102,3 +102,12 @@ export function isValidCardSize<T extends CardVariant>(
 ): size is CardSizeByVariant<T> {
   return isValidSize(size) && size in CARD_DIMENSIONS[variant]
 } 
+
+// Add default export to fix router warnings
+const productCardTypes = {
+  name: 'ProductCardTypes',
+  version: '1.0.0',
+  dimensions: CARD_DIMENSIONS
+};
+
+export default productCardTypes;
