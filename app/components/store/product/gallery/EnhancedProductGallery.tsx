@@ -45,7 +45,8 @@ function EnhancedProductGallery({
   // Create product images array with proper handling of both string and required image sources
   const productImages: ProductImage[] = product.colors ? 
     product.colors.map(colorObj => ({
-      source: product.image as ImageSourcePropType,
+      // Use color-specific image if available, otherwise use the default product image
+      source: colorObj.image ? (colorObj.image as ImageSourcePropType) : (product.image as ImageSourcePropType),
       color: colorObj.color
     })) : 
     [{ source: product.image as ImageSourcePropType }];
@@ -58,9 +59,32 @@ function EnhancedProductGallery({
   // If we don't have any images for the active color, use all images
   const imagesToDisplay = activeColorImages.length > 0 ? activeColorImages : productImages;
   
-  // We'll display the same image multiple times for the vertical scroll demo
-  // In a real implementation, you'd have different angles/views of the product
-  const productViews = Array(3).fill(imagesToDisplay[0]);
+  // Create different views of the product - in a real implementation
+  // these would be different angles of the same color product
+  // For demo, we'll use the selected color image as the main view
+  // and add some variations from other color options if available
+  const mainProductImage = imagesToDisplay[0];
+  
+  // Try to find a few other product views (using different color images for demo purposes)
+  const productViews = [mainProductImage];
+  
+  // Add up to 2 more product images if available
+  if (product.colors && product.colors.length > 1) {
+    // Use different color images as alternative views (just for demo)
+    product.colors.slice(0, 3).forEach(colorObj => {
+      if (colorObj.color !== activeColor && colorObj.image) {
+        productViews.push({
+          source: colorObj.image as ImageSourcePropType,
+          color: activeColor // We pretend this is the same color, just different angle
+        });
+      }
+    });
+  }
+  
+  // Ensure we have at least 3 images by duplicating if needed
+  while (productViews.length < 3) {
+    productViews.push(mainProductImage);
+  }
   
   const handleColorChange = (color: string) => {
     setActiveColor(color);
@@ -92,7 +116,7 @@ function EnhancedProductGallery({
                 activeOpacity={0.7}
               >
                 <Image 
-                  source={product.image as ImageSourcePropType}
+                  source={colorObj.image ? (colorObj.image as ImageSourcePropType) : (product.image as ImageSourcePropType)}
                   style={styles.colorThumbnail}
                   resizeMode="cover"
                 />

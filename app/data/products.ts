@@ -11,9 +11,34 @@ export const products: Product[] = [
     description: [
       'Tecnología de secado rápido.',
       'Tejido suelto que brinda mayor confortabilidad.',
+      'Disponible en múltiples colores.',
     ],
     colors: [
-      { color: '#0C0C0C', quantity: 10 },
+      { 
+        color: '#FFFFFF', 
+        quantity: 10,
+        image: require('../../assets/images/products/color-option-1.png')
+      },
+      { 
+        color: '#0C0C0C', 
+        quantity: 8,
+        image: require('../../assets/images/products/color-option-2.png')
+      },
+      { 
+        color: '#FFBA54', 
+        quantity: 5,
+        image: require('../../assets/images/products/color-option-3.png')
+      },
+      { 
+        color: '#4CAF50', 
+        quantity: 12,
+        image: require('../../assets/images/products/color-option-5.png')
+      },
+      { 
+        color: '#FFF27C', 
+        quantity: 7,
+        image: require('../../assets/images/products/color-option-4.png')
+      },
     ],
   },
   {
@@ -52,11 +77,37 @@ export const products: Product[] = [
     title: 'Regular Black',
     price: 990,
     label: ProductLabel.FEATURED,
+    description: [
+      'Diseño moderno y versátil.',
+      'Múltiples opciones de color.',
+      'Material resistente al uso diario.',
+    ],
     colors: [
-      { color: '#FAFAFA', quantity: 10 },
-      { color: '#0C0C0C', quantity: 10 },
-      { color: '#FFBA54', quantity: 10 },
-      { color: '#FFF27C', quantity: 10 },
+      { 
+        color: '#FAFAFA', 
+        quantity: 10,
+        image: require('../../assets/images/products/color-option-1.png') 
+      },
+      { 
+        color: '#0C0C0C', 
+        quantity: 10,
+        image: require('../../assets/images/products/color-option-2.png') 
+      },
+      { 
+        color: '#FFBA54', 
+        quantity: 10,
+        image: require('../../assets/images/products/color-option-3.png') 
+      },
+      { 
+        color: '#FFF27C', 
+        quantity: 10,
+        image: require('../../assets/images/products/color-option-4.png') 
+      },
+      { 
+        color: '#4CAF50', 
+        quantity: 10,
+        image: require('../../assets/images/products/color-option-5.png') 
+      },
     ],
   },
   {
