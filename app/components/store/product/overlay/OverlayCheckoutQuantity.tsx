@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -13,7 +14,9 @@ import {
   Platform
 } from 'react-native';
 // SVG components for quantity control
+// @ts-ignore - Import SVG components 
 import MinusIcon from '../../../../../assets/icons/quantity/minus.svg';
+// @ts-ignore - Import SVG components
 import PlusIcon from '../../../../../assets/icons/quantity/plus.svg';
 
 // Import style tokens
