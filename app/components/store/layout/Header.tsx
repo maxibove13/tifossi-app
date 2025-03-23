@@ -1,7 +1,9 @@
 import { StyleSheet, View, Text, Pressable } from 'react-native';
-import SearchIcon from '../../../../assets/icons/search_glass.svg';
-import ToggleSport from '../../ui/toggle/ToggleSport';
 import { useState } from 'react';
+import ToggleSport from '../../ui/toggle/ToggleSport';
+
+// Import SVG icon
+import SearchIcon from '../../../../assets/icons/search_glass.svg';
 
 export default function StoreHeader() {
   const [mode, setMode] = useState<'sport' | 'tiffosi'>('tiffosi');

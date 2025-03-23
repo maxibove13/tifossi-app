@@ -67,9 +67,9 @@ export default function ProductInfo({ product, darkMode = false }: ProductInfoPr
       </View>
       
       {/* Display short description */}
-      {product.shortDescription && (
-        <View style={styles.shortDescription}>
-          {typeof product.shortDescription === 'string' ? (
+      <View style={styles.shortDescription}>
+        {product.shortDescription ? (
+          typeof product.shortDescription === 'string' ? (
             <Text style={[styles.descriptionText, darkMode && styles.descriptionTextDark]}>
               {product.shortDescription}
             </Text>
@@ -83,18 +83,16 @@ export default function ProductInfo({ product, darkMode = false }: ProductInfoPr
                 {product.shortDescription.line2}
               </Text>
             </>
-          )}
-        </View>
-      )}
-      
-      {/* Fallback to deprecated description field if no shortDescription */}
-      {!product.shortDescription && Array.isArray(product.description) && product.description.length > 0 && (
-        <View style={styles.shortDescription}>
+          )
+        ) : (
+          // Default empty description if none is provided
           <Text style={[styles.descriptionText, darkMode && styles.descriptionTextDark]}>
-            {product.description[0]}
+            {product.longDescription ? 
+              (Array.isArray(product.longDescription) ? product.longDescription[0] : product.longDescription) : 
+              'Sin descripción disponible'}
           </Text>
-        </View>
-      )}
+        )}
+      </View>
     </View>
   )
 }

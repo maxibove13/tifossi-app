@@ -107,7 +107,12 @@ export function mapProductToCardData(product: Product): ProductCardData {
     price: product.discountedPrice || product.price,
     image: product.image,
     isNew: product.label === ProductLabel.NEW,
-    description: product.shortDescription || { line1: '', line2: '' },
+    description: product.shortDescription || 
+                (product.longDescription ? 
+                  (typeof product.longDescription === 'string' ? 
+                    product.longDescription : 
+                    { line1: product.longDescription[0] || '', line2: product.longDescription[1] || '' }) : 
+                  { line1: '', line2: '' }),
     originalPrice: product.discountedPrice ? product.price : undefined,
     discountPercentage: product.discountedPrice 
       ? Math.round(((product.price - product.discountedPrice) / product.price) * 100)

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Animated, TouchableOpacity } from 'react-native';
 import { colors } from '../../../../styles/colors';
 import { spacing, radius } from '../../../../styles/spacing';
-import { fonts, fontSizes, fontWeights, lineHeights } from '../../../../styles/typography';
+import { fonts, fontSizes, fontWeights } from '../../../../styles/typography';
 import { Ionicons } from '@expo/vector-icons';
 
 interface AddToCartButtonProps {

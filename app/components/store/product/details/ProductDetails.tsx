@@ -39,15 +39,7 @@ export default function ProductDetails({ product, sections = [], darkMode = fals
       return shortDescription
     }
     
-    // Last resort fallback to deprecated description
-    // Just for backward compatibility
-    if (product.description) {
-      if (Array.isArray(product.description)) {
-        return product.description.join('\n\n')
-      }
-      return product.description
-    }
-    
+    // Default description if none provided
     return 'Sin descripción disponible'
   }
   

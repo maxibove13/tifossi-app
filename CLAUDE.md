@@ -39,6 +39,11 @@
 - **Simplicity**: Prioritize simplicity over complexity
 - **Component Alignment**: Ensure components align with both reference screenshots and JSX
 - **Debugging**: Always read app_structure.md before searching the codebase
+- **NEVER Change User Experience During Refactoring**: When refactoring or cleaning up code, NEVER change the visual appearance, behavior, or functionality as experienced by the user without explicit approval
+- **Preserve Design Intent**: Custom components (like SVG icons, animations, layout) were created for specific design reasons - don't replace them with generic alternatives during cleanup
+- **Test Visual Integrity**: After any code changes, verify that visual appearance remains identical
+- **Functional Equivalence**: Ensure that any cleanup or refactoring maintains exact functional equivalence
+
 Tiffosi was born in 1846
 
 ## Development Workflow

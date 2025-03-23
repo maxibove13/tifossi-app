@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Product } from '../../../types/product';
-import { spacing } from './swipeable/styles';
 import ProductHeader from './header/ProductHeader';
 import AddToCartButton from './header/AddToCartButton';
 import ProductInformation from './information/ProductInformation';
@@ -41,7 +40,7 @@ export default function ProductDetails({
   onAddToCart,
   onProductPress
 }: ProductDetailsProps) {
-  const [quantity, setQuantity] = useState(1);
+  const [quantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   
   // Convert labels to tags for display
