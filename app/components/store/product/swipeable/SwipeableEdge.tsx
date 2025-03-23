@@ -145,6 +145,7 @@ const SwipeableEdge = ({
   // Component state
   const [expanded, setExpanded] = useState(false);
   const [isShippingOverlayVisible, setIsShippingOverlayVisible] = useState(false);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
   
   // React refs for DOM access
   const scrollViewRef = useRef(null);
@@ -335,17 +336,15 @@ const SwipeableEdge = ({
   // Handle selection actions
   const handleSelectSize = useCallback(() => {
     // Handle size selection action
-    setIsShippingOverlayVisible(false);
-    // Call the original onAddToCart after selections are made
-    onAddToCart();
-  }, [onAddToCart]);
+    // Do not close the shipping overlay here, let the user complete all selections
+  }, []);
   
-  const handleSelectQuantity = useCallback(() => {
+  const handleSelectQuantity = useCallback((quantity: number) => {
     // Handle quantity selection action
-    setIsShippingOverlayVisible(false);
-    // Call the original onAddToCart after selections are made
-    onAddToCart();
-  }, [onAddToCart]);
+    setSelectedQuantity(quantity);
+    // We DON'T close the shipping overlay here, let the shipping overlay handle this
+    // onAddToCart will be called when user completes all selections
+  }, []);
 
   return (
     <>
@@ -478,6 +477,7 @@ const SwipeableEdge = ({
         onClose={() => setIsShippingOverlayVisible(false)}
         onSelectSize={handleSelectSize}
         onSelectQuantity={handleSelectQuantity}
+        initialQuantity={selectedQuantity}
       />
     </>
   );

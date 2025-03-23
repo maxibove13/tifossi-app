@@ -239,6 +239,14 @@ Components that support swipe gestures for interactive product displays.
 2. **ProductInfoHeader** (`/product/swipeable/ProductInfoHeader.tsx`): Product header
 3. **SectionHeader** (`/product/swipeable/SectionHeader.tsx`): Section header
 4. **SupportOption** (`/product/swipeable/SupportOption.tsx`): Support options
+5. **SwipeableEdge** (`/product/swipeable/SwipeableEdge.tsx`): Main swipeable panel component for product details
+
+#### Overlay Components (`/store/product/overlay/`)
+
+Modal overlay components for the checkout process.
+
+1. **OverlayCheckoutShipping** (`/product/overlay/OverlayCheckoutShipping.tsx`): Shipping information overlay
+2. **OverlayCheckoutQuantity** (`/product/overlay/OverlayCheckoutQuantity.tsx`): Product quantity selection overlay
 
 #### Layout Components (`/store/layout/`)
 
@@ -485,6 +493,7 @@ const styles = StyleSheet.create<Styles>({
 | **Store** | ProductDetails | ✅ | Fully implemented |
 | **Store** | ColorSlider | ✅ | Fully implemented |
 | **Store** | Swipeable components | ✅ | All variants implemented |
+| **Store** | Overlay checkout components | ✅ | Shipping and quantity selection implemented |
 | **Store** | Categories | ✅ | Fully implemented |
 | **Store** | Header | ✅ | Fully implemented |
 | **Store** | Footer | ✅ | Fully implemented |

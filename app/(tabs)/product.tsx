@@ -19,10 +19,11 @@ export default function ProductScreen() {
   const router = useRouter()
   const product = ProductData.getProductById(id as string)
 
-  // State for selected color
+  // State for selected color and quantity
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product?.colors && product.colors.length > 0 ? product.colors[0].color : undefined
   )
+  const [selectedQuantity, setSelectedQuantity] = useState(1)
 
   // Get related products data
   const relatedProducts = productUtils.getRelatedProducts(id as string);
@@ -33,8 +34,8 @@ export default function ProductScreen() {
   // Get trending products data
   const trendingProducts = productUtils.getTrendingProducts(id as string);
 
-  const handleAddToCart = async (product: Product, quantity: number) => {
-    // Add to cart logic
+  const handleAddToCart = async (product: Product, quantity: number = selectedQuantity) => {
+    // Add to cart logic with quantity
     console.log('Added to cart', {
       product: product.id,
       quantity,
@@ -102,7 +103,7 @@ export default function ProductScreen() {
           relatedProducts={relatedProducts}
           recommendedProducts={recommendedProducts}
           trendingProducts={trendingProducts}
-          onAddToCart={() => handleAddToCart(product, 1)}
+          onAddToCart={() => handleAddToCart(product, selectedQuantity)}
           onViewMore={handleViewMore}
           onSupportAction={handleSupportAction}
           onProductPress={handleProductPress}

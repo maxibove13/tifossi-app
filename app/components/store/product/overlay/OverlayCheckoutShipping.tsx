@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import CloseIcon from '../../../../../assets/icons/close.svg';
 import ChevronRight from '../../../../../assets/icons/chevron_right.svg';
+import OverlayCheckoutQuantity from './OverlayCheckoutQuantity';
 
 // Import style tokens
 import { colors } from '../../../../styles/colors';
@@ -28,18 +29,22 @@ interface OverlayCheckoutShippingProps {
   isVisible: boolean;
   onClose: () => void;
   onSelectSize: () => void;
-  onSelectQuantity: () => void;
+  onSelectQuantity: (quantity: number) => void;
+  initialQuantity?: number;
 }
 
 export default function OverlayCheckoutShipping({
   isVisible,
   onClose,
   onSelectSize,
-  onSelectQuantity
+  onSelectQuantity,
+  initialQuantity = 1
 }: OverlayCheckoutShippingProps) {
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(height));
+  const [isQuantityOverlayVisible, setIsQuantityOverlayVisible] = useState(false);
+  const [selectedQuantity, setSelectedQuantity] = useState(initialQuantity);
 
   useEffect(() => {
     if (isVisible) {
@@ -63,74 +68,110 @@ export default function OverlayCheckoutShipping({
     }
   }, [isVisible, fadeAnim, slideAnim]);
 
+  const handleSelectQuantity = () => {
+    // Show the quantity overlay
+    setIsQuantityOverlayVisible(true);
+  };
+
+  const handleQuantitySave = (quantity: number) => {
+    setSelectedQuantity(quantity);
+    // Just update the quantity state without calling onSelectQuantity yet
+    // User will return to this overlay after selecting a quantity
+  };
+
   return (
-    <Modal
-      transparent
-      visible={isVisible}
-      onRequestClose={onClose}
-      animationType="none"
-    >
-      <View style={styles.modalContainer}>
-        {/* Animated overlay background that can be tapped to close */}
-        <TouchableWithoutFeedback onPress={onClose}>
+    <>
+      <Modal
+        transparent
+        visible={isVisible && !isQuantityOverlayVisible}
+        onRequestClose={onClose}
+        animationType="none"
+      >
+        <View style={styles.modalContainer}>
+          {/* Animated overlay background that can be tapped to close */}
+          <TouchableWithoutFeedback onPress={onClose}>
+            <Animated.View 
+              style={[
+                styles.overlay, 
+                { opacity: fadeAnim }
+              ]} 
+            />
+          </TouchableWithoutFeedback>
+
+          {/* Animated container that slides up */}
           <Animated.View 
             style={[
-              styles.overlay, 
-              { opacity: fadeAnim }
-            ]} 
-          />
-        </TouchableWithoutFeedback>
+              styles.container, 
+              { transform: [{ translateY: slideAnim }] }
+            ]}
+          >
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.title}>Agregar al carrito</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={onClose}
+                activeOpacity={0.7}
+              >
+                <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
+              </TouchableOpacity>
+            </View>
 
-        {/* Animated container that slides up */}
-        <Animated.View 
-          style={[
-            styles.container, 
-            { transform: [{ translateY: slideAnim }] }
-          ]}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Agregar al carrito</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-              activeOpacity={0.7}
-            >
-              <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-            </TouchableOpacity>
-          </View>
+            {/* Content */}
+            <View style={styles.content}>
+              {/* Size Selection Row */}
+              <TouchableOpacity
+                style={styles.selectionRow}
+                onPress={() => {
+                  onSelectSize();
+                  onClose();
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.selectionTitle}>Talle</Text>
+                <View style={styles.actionButton}>
+                  <Text style={styles.actionText}>Seleccionar</Text>
+                  <ChevronRight width={8} height={14} stroke="#AD3026" strokeWidth={1.2} />
+                </View>
+              </TouchableOpacity>
 
-          {/* Content */}
-          <View style={styles.content}>
-            {/* Size Selection Row */}
-            <TouchableOpacity
-              style={styles.selectionRow}
-              onPress={onSelectSize}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.selectionTitle}>Talle</Text>
-              <View style={styles.actionButton}>
-                <Text style={styles.actionText}>Seleccionar</Text>
-                <ChevronRight width={8} height={14} stroke="#AD3026" strokeWidth={1.2} />
-              </View>
-            </TouchableOpacity>
-
-            {/* Quantity Selection Row */}
-            <TouchableOpacity
-              style={styles.selectionRow}
-              onPress={onSelectQuantity}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.selectionTitle}>Cantidad</Text>
-              <View style={styles.actionButton}>
-                <Text style={styles.actionText}>Seleccionar</Text>
-                <ChevronRight width={8} height={14} stroke="#AD3026" strokeWidth={1.2} />
-              </View>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </View>
-    </Modal>
+              {/* Quantity Selection Row */}
+              <TouchableOpacity
+                style={styles.selectionRow}
+                onPress={handleSelectQuantity}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.selectionTitle}>Cantidad</Text>
+                <View style={styles.actionButton}>
+                  {selectedQuantity > 0 ? (
+                    <>
+                      <Text style={[styles.actionText, styles.doneText]}>
+                        Listo
+                      </Text>
+                      <ChevronRight width={8} height={14} stroke="#367C39" strokeWidth={1.2} />
+                    </>
+                  ) : (
+                    <>
+                      <Text style={styles.actionText}>Seleccionar</Text>
+                      <ChevronRight width={8} height={14} stroke="#AD3026" strokeWidth={1.2} />
+                    </>
+                  )}
+                </View>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+      
+      {/* Quantity Overlay */}
+      <OverlayCheckoutQuantity 
+        isVisible={isQuantityOverlayVisible}
+        onClose={onClose}
+        onGoBack={() => setIsQuantityOverlayVisible(false)}
+        onSave={handleQuantitySave}
+        initialQuantity={selectedQuantity}
+      />
+    </>
   );
 }
 
@@ -146,6 +187,7 @@ type Styles = {
   selectionTitle: TextStyle;
   actionButton: ViewStyle;
   actionText: TextStyle;
+  doneText: TextStyle;
 };
 
 const styles = StyleSheet.create<Styles>({
@@ -221,5 +263,8 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.lg,
     color: colors.error,
+  },
+  doneText: {
+    color: '#367C39',
   },
 }); 

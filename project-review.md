@@ -47,13 +47,20 @@ This document contains a comprehensive review of the Tifossi Expo React Native p
   };
   ```
 
-### 2. Performance Optimization
+### 2. Image and Video Performance Optimization
 
-**Issue: Image Optimization and Rendering**
+**Issue: Image and Video Rendering Performance**
 - Inconsistent usage of `expo-image` - some components use it (ProductImage) while others use standard RN Image
 - Fixed dimensions in style objects causing potential layout issues on different screens
 - Duplicate image loading when navigating between screens (observed in recent git commit fixes)
 - No consistent placeholder strategy
+- VideoBackground uses full-screen dimensions without resolution optimization
+- Multiple image layers (fallback + overlay) can impact performance in VideoBackground
+- ProductImage component uses 130% size wrapper, rendering more pixels than needed
+- No lazy loading for offscreen images in scrollable lists
+- Multiple ScrollViews with images all loading at once
+- No image size optimization based on device screen density
+- No visible image prefetching API usage for anticipated images
 
 **Recommendation:**
 - Standardize on `expo-image` with blurhash placeholders throughout the app
@@ -74,6 +81,14 @@ This document contains a comprehensive review of the Tifossi Expo React Native p
   const imageSize = width * 0.48; // Responsive width
   ```
 - Add a centralized image component with standardized caching and placeholder handling
+- Implement adaptive video quality based on network conditions
+- Add preloading for video content when appropriate
+- Consider static image placeholders instead of videos for low-power mode
+- Implement image prefetching for anticipated user paths
+- Add proper memory management for large image collections
+- Consider implementing a custom image cache manager
+- Provide explicit dimensions to all image sources
+- Remove 130% image wrapper size in ProductImage component
 
 ### 3. List Performance
 
@@ -81,6 +96,12 @@ This document contains a comprehensive review of the Tifossi Expo React Native p
 - Only found sporadic usage of `FlatList` in the codebase (e.g., HorizontalProductList)
 - Many component lists use standard mapping functions to render items
 - The ProductSections component renders multiple non-virtualized lists
+- EnhancedProductGallery and ProductViewGallery use ScrollView instead of FlatList
+- ProductSections component uses multiple ScrollView instances with no virtualization
+- No lazy loading for offscreen images in scrollable lists
+- All product images load simultaneously within horizontal scrolls
+- Multiple nested scrollable content without deferred loading
+- No priority loading for critical above-the-fold images
 - This will cause performance issues with larger product catalogs
 
 **Recommendation:**
@@ -105,10 +126,18 @@ This document contains a comprehensive review of the Tifossi Expo React Native p
       offset: ITEM_WIDTH * index,
       index,
     })}
+    initialNumToRender={3}
+    maxToRenderPerBatch={5}
+    windowSize={3}
   />
   ```
 - Implement proper `getItemLayout` functions for all lists to maximize performance
 - Add windowing techniques (e.g., with `FlashList` from Shopify) for very long product lists
+- Implement progressive loading for gallery images
+- Defer loading images that are not immediately visible
+- Prioritize loading of critical above-the-fold images 
+- Configure proper `initialNumToRender` and `windowSize` values for virtualized lists
+- Implement staggered loading for product sections
 
 ### 4. Navigation Structure
 
