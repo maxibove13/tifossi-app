@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -34,10 +34,25 @@ function EnhancedProductGallery({
     selectedColor || (product.colors && product.colors.length > 0 ? product.colors[0].color : '')
   );
   
+  // Reset activeColor when product or selectedColor changes
+  useEffect(() => {
+    setActiveColor(
+      selectedColor || (product.colors && product.colors.length > 0 ? product.colors[0].color : '')
+    );
+  }, [product.id, selectedColor, product.colors]);
+  
   const colorSliderRef = useRef<ScrollView>(null);
   
   // Get the color object for the selected color
   const selectedColorObject = product.colors?.find(c => c.color === activeColor);
+  
+  // If no matching color object is found, use the first available color from this product
+  useEffect(() => {
+    const colors = product.colors;
+    if (colors && colors.length > 0 && !selectedColorObject) {
+      setActiveColor(colors[0].color);
+    }
+  }, [product.id, selectedColorObject, product.colors]);
   
   // Get all available images for the selected color (main + additional)
   // Only include images that actually exist (don't add placeholders)
@@ -70,7 +85,6 @@ function EnhancedProductGallery({
   
   return (
     <View style={styles.container}>
-      {/* Color Slider at the top - following the product_screen_1.json specification */}
       {product.colors && product.colors.length > 1 && (
         <View style={styles.colorSliderContainer}>
           <ScrollView
@@ -100,8 +114,8 @@ function EnhancedProductGallery({
         </View>
       )}
       
-      {/* Use the ProductViewGallery component to display all images for the selected color */}
       <ProductViewGallery 
+        key={`product-gallery-${product.id}`}
         images={productImages}
         onImagePress={(index) => console.log(`Image ${index} pressed`)}
       />
