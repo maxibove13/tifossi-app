@@ -84,21 +84,21 @@ const styles = StyleSheet.create<Styles>({
   container: {
     paddingHorizontal: spacing.lg,
     marginTop: spacing.md,
-    gap: spacing.sm,
+    gap: 0,
   },
   discountLabel: {
     fontFamily: typography.body.fontFamily,
     fontWeight: '400',
     fontSize: typography.body.fontSize,
     color: colors.accent.discount,
-    marginBottom: spacing.xs,
+    marginBottom: 0,
   },
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    marginBottom: spacing.xs,
+    marginBottom: 0,
   },
   detailsRow: {
     flexDirection: 'row',

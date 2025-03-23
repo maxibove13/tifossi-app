@@ -434,13 +434,13 @@ const SwipeableEdge = ({
               <SupportOption
                 title="Iniciar chat"
                 description="Conversa con uno de nuestros agentes."
-                iconName="chatbubble-outline"
+                iconType="chat"
                 onPress={() => onSupportAction('chat')}
               />
               <SupportOption
                 title="Soporte | FAQ"
                 description="Ve a la sección de ayuda."
-                iconName="help-circle-outline"
+                iconType="help"
                 onPress={() => onSupportAction('faq')}
               />
             </View>
@@ -563,6 +563,7 @@ const styles = StyleSheet.create<StylesType>({
     fontWeight: typography.body.fontWeight as any,
     fontSize: typography.body.fontSize,
     color: colors.secondary.textDisabled,
+    textDecorationLine: 'underline',
   },
   supportOptions: {
     gap: spacing.md,

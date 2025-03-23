@@ -1,19 +1,35 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, TextStyle, ViewStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius } from './styles';
+import ChatBubble from '../../../../../assets/icons/chat-bubble.svg';
+import HelpCircle from '../../../../../assets/icons/help-circle.svg';
 
 interface SupportOptionProps {
   title: string;
   description: string;
-  iconName: keyof typeof Ionicons.glyphMap;
+  iconType: 'chat' | 'help';
   onPress: () => void;
 }
+
+const SupportIcon = ({ type, color }: { type: 'chat' | 'help', color: string }) => {
+  const iconProps = {
+    width: 24,
+    height: 24,
+    stroke: color,
+    strokeWidth: 1.6
+  };
+
+  if (type === 'chat') {
+    return <ChatBubble {...iconProps} />;
+  } else {
+    return <HelpCircle {...iconProps} />;
+  }
+};
 
 export default function SupportOption({
   title,
   description,
-  iconName,
+  iconType,
   onPress
 }: SupportOptionProps) {
   return (
@@ -26,7 +42,7 @@ export default function SupportOption({
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.description}>{description}</Text>
       </View>
-      <Ionicons name={iconName} size={24} color={colors.primary.text} />
+      <SupportIcon type={iconType} color={colors.primary.text} />
     </TouchableOpacity>
   );
 }
@@ -55,14 +71,14 @@ const styles = StyleSheet.create<Styles>({
   },
   title: {
     fontFamily: typography.heading.fontFamily,
-    fontWeight: '400', // Explicit value matching typography.heading.fontWeight
+    fontWeight: '400',
     fontSize: typography.heading.fontSize,
     color: colors.primary.text,
     marginBottom: spacing.xs,
   },
   description: {
     fontFamily: typography.body.fontFamily,
-    fontWeight: '400', // Explicit value matching typography.body.fontWeight
+    fontWeight: '400',
     fontSize: typography.body.fontSize,
     color: colors.primary.text,
   },
