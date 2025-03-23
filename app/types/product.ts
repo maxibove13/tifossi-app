@@ -1,6 +1,17 @@
 import { ImageSourcePropType } from 'react-native';
 import { ProductStatus, ProductLabel, isValidStatus, isValidLabel } from './product-status';
 
+export interface ProductColorImages {
+  main: string | ImageSourcePropType;
+  additional?: Array<string | ImageSourcePropType>;
+}
+
+export interface ProductColor {
+  color: string;
+  quantity: number;
+  images: ProductColorImages;
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -8,15 +19,25 @@ export interface Product {
   image: string | ImageSourcePropType;
   label?: ProductLabel;
   status?: ProductStatus;
+  /** @deprecated Use shortDescription or longDescription instead */
   description?: string | string[];
+  shortDescription?: {
+    line1: string;
+    line2: string;
+  };
+  longDescription?: string | string[];
   discountedPrice?: number;
   isCustomizable?: boolean;
-  colors?: {
-    color: string;
-    quantity: number;
-  }[];
+  colors?: ProductColor[];
   size?: string;
   sizes?: ProductSize[];
+  warranty?: string;
+  returnPolicy?: string;
+  dimensions?: {
+    height?: string;
+    depth?: string;
+    width?: string;
+  };
 }
 
 export interface ProductCardData {
@@ -25,7 +46,10 @@ export interface ProductCardData {
   price: number;
   image: string | ImageSourcePropType;
   isNew?: boolean;
-  description?: string | string[];
+  description?: string | string[] | {
+    line1: string;
+    line2: string;
+  };
   discountPercentage?: number;
   originalPrice?: number;
   quantity?: number;
@@ -83,7 +107,7 @@ export function mapProductToCardData(product: Product): ProductCardData {
     price: product.discountedPrice || product.price,
     image: product.image,
     isNew: product.label === ProductLabel.NEW,
-    description: product.description,
+    description: product.shortDescription || { line1: '', line2: '' },
     originalPrice: product.discountedPrice ? product.price : undefined,
     discountPercentage: product.discountedPrice 
       ? Math.round(((product.price - product.discountedPrice) / product.price) * 100)

@@ -1,5 +1,11 @@
 # Tifossi Expo Project Guidelines
 
+## IMPORTANT GUIDELINES
+- NEVER commit changes to git without being expressly asked to do so
+- Always run linters and type checkers before submitting changes
+- NEVER test the application by running it directly; only make code changes
+- Follow the code style guidelines below
+
 ## Build Commands
 - `npm install` - Install dependencies
 - `npx expo start` - Start development server
@@ -18,6 +24,7 @@
 - **Imports**: Group imports - React/RN, third-party, local components, types, styles
 - **Naming**: PascalCase for components, camelCase for variables/functions
 - **Products**: Use typed interfaces (see product.ts, product-card.ts, product-status.ts)
+- **Product Descriptions**: Use shortDescription (with line1 and line2) and longDescription instead of the deprecated description field
 - **Styling**: Use StyleSheet.create and design tokens from styles/ directory
 - **Colors**: Use color palette from styles/colors.ts
 - **Typography**: Follow type scale in styles/typography.ts (font family, size, weight)
@@ -32,6 +39,7 @@
 - **Simplicity**: Prioritize simplicity over complexity
 - **Component Alignment**: Ensure components align with both reference screenshots and JSX
 - **Debugging**: Always read app_structure.md before searching the codebase
+Tiffosi was born in 1846
 
 ## Development Workflow
 - Check for inconsistencies or potential issues in each module

@@ -4,7 +4,6 @@ import {
   View, 
   Image, 
   TouchableOpacity, 
-  Dimensions, 
   ImageSourcePropType,
   ScrollView
 } from 'react-native';
@@ -19,16 +18,11 @@ interface EnhancedProductGalleryProps {
   onColorChange?: (color: string) => void;
 }
 
-// Define a type for the product images we'll use
-interface ProductImage {
-  source: ImageSourcePropType;
-  color?: string;
-}
+// Define placeholder for backward compatibility
+// This will be removed when all products are migrated to the new format
 
-const { width } = Dimensions.get('window');
+// Size constants
 const COLOR_OPTION_SIZE = 96;
-const ITEM_WIDTH = width;
-const IMAGE_HEIGHT = ITEM_WIDTH;
 
 function EnhancedProductGallery({ 
   product, 
@@ -42,25 +36,29 @@ function EnhancedProductGallery({
   
   const colorSliderRef = useRef<ScrollView>(null);
   
-  // Create product images array with proper handling of both string and required image sources
-  const productImages: ProductImage[] = product.colors ? 
-    product.colors.map(colorObj => ({
-      // Use color-specific image if available, otherwise use the default product image
-      source: colorObj.image ? (colorObj.image as ImageSourcePropType) : (product.image as ImageSourcePropType),
-      color: colorObj.color
-    })) : 
-    [{ source: product.image as ImageSourcePropType }];
+  // Get the color object for the selected color
+  const selectedColorObject = product.colors?.find(c => c.color === activeColor);
   
-  // Get images for the selected color
-  const activeColorImages = productImages.filter(
-    img => !img.color || img.color === activeColor
-  );
+  // Get all available images for the selected color (main + additional)
+  // Only include images that actually exist (don't add placeholders)
+  const productImages: ImageSourcePropType[] = [];
   
-  // If we don't have any images for the active color, use all images
-  const imagesToDisplay = activeColorImages.length > 0 ? activeColorImages : productImages;
-  
-  // Get the main product image for the selected color
-  const mainProductImage = imagesToDisplay[0];
+  if (selectedColorObject?.images) {
+    // Add the main image
+    productImages.push(selectedColorObject.images.main as ImageSourcePropType);
+    
+    // Add additional images if available
+    if (selectedColorObject.images.additional && selectedColorObject.images.additional.length > 0) {
+      selectedColorObject.images.additional.forEach(img => {
+        if (img) {
+          productImages.push(img as ImageSourcePropType);
+        }
+      });
+    }
+  } else {
+    // Fallback to product main image if no color-specific images
+    productImages.push(product.image as ImageSourcePropType);
+  }
   
   const handleColorChange = (color: string) => {
     setActiveColor(color);
@@ -73,7 +71,7 @@ function EnhancedProductGallery({
   return (
     <View style={styles.container}>
       {/* Color Slider at the top - following the product_screen_1.json specification */}
-      {product.colors && product.colors.length > 0 && (
+      {product.colors && product.colors.length > 1 && (
         <View style={styles.colorSliderContainer}>
           <ScrollView
             ref={colorSliderRef}
@@ -92,7 +90,7 @@ function EnhancedProductGallery({
                 activeOpacity={0.7}
               >
                 <Image 
-                  source={colorObj.image ? (colorObj.image as ImageSourcePropType) : (product.image as ImageSourcePropType)}
+                  source={colorObj.images?.main ? (colorObj.images.main as ImageSourcePropType) : (product.image as ImageSourcePropType)}
                   style={styles.colorThumbnail}
                   resizeMode="cover"
                 />
@@ -102,10 +100,10 @@ function EnhancedProductGallery({
         </View>
       )}
       
-      {/* Use the ProductViewGallery component to display different views of the same image */}
+      {/* Use the ProductViewGallery component to display all images for the selected color */}
       <ProductViewGallery 
-        imageSource={mainProductImage.source}
-        onImagePress={() => console.log('Image pressed')}
+        images={productImages}
+        onImagePress={(index) => console.log(`Image ${index} pressed`)}
       />
     </View>
   );

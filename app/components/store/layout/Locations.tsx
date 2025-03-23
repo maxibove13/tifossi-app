@@ -19,11 +19,11 @@ function LocationCard({ image, location }: LocationCardProps) {
 export default function StoreLocations() {
   const locations = [
     {
-      image: require('../../../../assets/images/products/product_socks_0.png'),
+      image: require('../../../../assets/images/locations/montevideo.png'),
       location: 'Montevideo',
     },
     {
-      image: require('../../../../assets/images/products/product_socks_0.png'),
+      image: require('../../../../assets/images/locations/punta_del_este.png'),
       location: 'Punta del Este',
     },
   ];

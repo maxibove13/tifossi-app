@@ -72,9 +72,10 @@ interface SizeableProductCardProps<T extends CardVariant> extends BaseProductCar
 **Props**: `HorizontalCardProps extends BaseProductCardProps`  
 **Features**:
 - Horizontal layout
-- Fixed image width (119px)
+- Fixed image width (119px)  
 - Product details on right
-- Description with dividers
+- Structured description with two text elements separated by divider
+- Support for shortDescription with line1 and line2 properties
 - Status label with color variants
 
 #### 4. Minicard

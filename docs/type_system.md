@@ -31,15 +31,37 @@ interface Product {
   image: string | ImageSourcePropType;
   label?: ProductLabel;
   status?: ProductStatus;
+  /** @deprecated Use shortDescription or longDescription instead */
   description?: string | string[];
+  shortDescription?: {
+    line1: string;
+    line2: string;
+  };
+  longDescription?: string | string[];
   discountedPrice?: number;
   isCustomizable?: boolean;
-  colors?: {
-    color: string;
-    quantity: number;
-  }[];
+  colors?: ProductColor[];
   size?: string;
   sizes?: ProductSize[];
+  warranty?: string;
+  returnPolicy?: string;
+  dimensions?: {
+    height?: string;
+    depth?: string;
+    width?: string;
+  };
+}
+
+// Product color with images
+interface ProductColor {
+  color: string;
+  quantity: number;
+  images: ProductColorImages;
+}
+
+interface ProductColorImages {
+  main: string | ImageSourcePropType;
+  additional?: Array<string | ImageSourcePropType>;
 }
 
 // Product card data model (for display)
@@ -49,6 +71,15 @@ interface ProductCardData {
   price: number;
   image: string | ImageSourcePropType;
   isNew?: boolean;
+  description?: string | string[] | {
+    line1: string;
+    line2: string;
+  };
+  discountPercentage?: number;
+  originalPrice?: number;
+  quantity?: number;
+  color?: string;
+  size?: string;
   // ...other properties
 }
 ```

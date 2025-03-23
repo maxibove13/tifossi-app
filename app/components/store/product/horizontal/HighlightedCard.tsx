@@ -10,19 +10,23 @@ type HighlightedCardProps = {
 };
 
 export default function HighlightedCard({ product, onPress }: HighlightedCardProps) {
-  const { label, description, image, title } = product;
+  const { label, shortDescription, image, title } = product;
+  
+  // Only use shortDescription
+  const displayDescription = shortDescription;
 
   const renderDescription = () => {
-    if (!description || typeof description === 'string') return null;
-
+    if (!displayDescription) return null;
+    
     return (
       <View style={styles.descriptionContainer}>
-        {description.map((text, index) => (
-          <View key={`description-${index}`} style={styles.descriptionItem}>
-            <Text style={styles.descriptionText}>{text}</Text>
-            {index < description.length - 1 && <View style={styles.separator} />}
-          </View>
-        ))}
+        <View style={styles.descriptionItem}>
+          <Text style={styles.descriptionText}>{displayDescription.line1}</Text>
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.descriptionItem}>
+          <Text style={styles.descriptionText}>{displayDescription.line2}</Text>
+        </View>
       </View>
     );
   };

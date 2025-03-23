@@ -19,21 +19,43 @@ interface ProductDetailsProps {
 
 export default function ProductDetails({ product, sections = [], darkMode = false }: ProductDetailsProps) {
   // Format the product description
-  const formatDescription = (description: string | string[] | undefined): string => {
-    if (!description) return 'Sin descripción disponible'
-    
-    if (Array.isArray(description)) {
-      return description.join('\n\n')
+  const formatDescription = (
+    longDescription?: string | string[], 
+    shortDescription?: string | { line1: string; line2: string }
+  ): string => {
+    // First try to use longDescription
+    if (longDescription) {
+      if (Array.isArray(longDescription)) {
+        return longDescription.join('\n\n')
+      }
+      return longDescription
     }
     
-    return description
+    // Fall back to shortDescription
+    if (shortDescription) {
+      if (typeof shortDescription === 'object') {
+        return `${shortDescription.line1}\n\n${shortDescription.line2}`
+      }
+      return shortDescription
+    }
+    
+    // Last resort fallback to deprecated description
+    // Just for backward compatibility
+    if (product.description) {
+      if (Array.isArray(product.description)) {
+        return product.description.join('\n\n')
+      }
+      return product.description
+    }
+    
+    return 'Sin descripción disponible'
   }
   
   // Default sections if none provided
   const defaultSections = [
     {
       title: 'INFORMACIÓN DEL PRODUCTO',
-      content: formatDescription(product.description)
+      content: formatDescription(product.longDescription, product.shortDescription)
     },
     {
       title: 'POLÍTICA DE DEVOLUCIÓN Y REEMBOLSO',

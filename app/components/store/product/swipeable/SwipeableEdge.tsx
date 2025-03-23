@@ -56,8 +56,19 @@ interface SwipeableEdgeProps {
     isDiscounted?: boolean;
     currentPrice: string;
     originalPrice?: string;
-    description?: string;
+    shortDescription?: string | {
+      line1: string;
+      line2: string;
+    };
+    longDescription?: string | string[];
     sku?: string;
+    warranty?: string;
+    returnPolicy?: string;
+    dimensions?: {
+      height?: string;
+      depth?: string;
+      width?: string;
+    };
   };
   /**
    * Minimum visible height when collapsed
@@ -334,8 +345,12 @@ const SwipeableEdge = ({
         <Animated.View style={detailsOpacity}>
           <ProductDetails
             isCustomizable={product.isCustomizable}
-            description={product.description}
+            shortDescription={product.shortDescription}
+            longDescription={product.longDescription}
             sku={product.sku}
+            warranty={product.warranty}
+            returnPolicy={product.returnPolicy}
+            dimensions={product.dimensions}
           />
           
           {/* Related Products Section */}

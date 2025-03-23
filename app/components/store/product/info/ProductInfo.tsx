@@ -66,7 +66,29 @@ export default function ProductInfo({ product, darkMode = false }: ProductInfoPr
         )}
       </View>
       
-      {Array.isArray(product.description) && product.description.length > 0 && (
+      {/* Display short description */}
+      {product.shortDescription && (
+        <View style={styles.shortDescription}>
+          {typeof product.shortDescription === 'string' ? (
+            <Text style={[styles.descriptionText, darkMode && styles.descriptionTextDark]}>
+              {product.shortDescription}
+            </Text>
+          ) : (
+            <>
+              <Text style={[styles.descriptionText, darkMode && styles.descriptionTextDark]}>
+                {product.shortDescription.line1}
+              </Text>
+              <View style={styles.separator} />
+              <Text style={[styles.descriptionText, darkMode && styles.descriptionTextDark]}>
+                {product.shortDescription.line2}
+              </Text>
+            </>
+          )}
+        </View>
+      )}
+      
+      {/* Fallback to deprecated description field if no shortDescription */}
+      {!product.shortDescription && Array.isArray(product.description) && product.description.length > 0 && (
         <View style={styles.shortDescription}>
           <Text style={[styles.descriptionText, darkMode && styles.descriptionTextDark]}>
             {product.description[0]}
@@ -184,5 +206,10 @@ const styles = StyleSheet.create({
   },
   descriptionTextDark: {
     color: '#B1B1B1', // Light gray as per Figma design
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#DCDCDC',
+    marginVertical: spacing.xs,
   },
 }) 

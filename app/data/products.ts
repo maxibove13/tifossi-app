@@ -8,36 +8,70 @@ export const products: Product[] = [
     title: 'Tiffosi Fast',
     price: 590,
     label: ProductLabel.NEW,
-    description: [
-      'Tecnología de secado rápido.',
-      'Tejido suelto que brinda mayor confortabilidad.',
-      'Disponible en múltiples colores.',
+    shortDescription: {
+      line1: 'Tecnología de secado rápido.',
+      line2: 'Tejido suelto de alta confortabilidad.',
+    },
+    longDescription: [
+      'Tiffosi Fast es un producto diseñado para el deportista moderno.',
+      'Tecnología de secado rápido que mantiene tus pies frescos durante toda la actividad.',
+      'Disponible en múltiples colores para combinar con tu estilo personal.',
+      'Diseño ergonómico que se adapta perfectamente al pie proporcionando mayor comodidad.',
+      'Material de alta durabilidad resistente al desgaste por uso frecuente.',
     ],
+    warranty: '6 meses',
+    returnPolicy: 'Si no estás satisfecho con tu compra, puedes devolver el producto sin usar dentro de los 30 días posteriores a la compra con el ticket original y el embalaje intacto.',
+    dimensions: {
+      height: '12cm',
+      width: '8cm',
+    },
     colors: [
       { 
         color: '#FFFFFF', 
         quantity: 10,
-        image: require('../../assets/images/products/color-option-1.png')
+        images: {
+          main: require('../../assets/images/products/white-sock-1.png'),
+          additional: [
+            require('../../assets/images/products/white-sock-2.png'),
+            require('../../assets/images/products/white-sock-3.png')
+          ]
+        }
       },
       { 
         color: '#0C0C0C', 
         quantity: 8,
-        image: require('../../assets/images/products/color-option-2.png')
+        images: {
+          main: require('../../assets/images/products/sock-color-2.png'),
+          additional: [
+          ]
+        }
       },
       { 
         color: '#FFBA54', 
         quantity: 5,
-        image: require('../../assets/images/products/color-option-3.png')
+        images: {
+          main: require('../../assets/images/products/sock-color-3.png'),
+          additional: [
+          ]
+        }
       },
       { 
         color: '#4CAF50', 
         quantity: 12,
-        image: require('../../assets/images/products/color-option-5.png')
+        images: {
+          main: require('../../assets/images/products/sock-color-5.png'),
+          additional: [
+          ]
+        }
       },
       { 
         color: '#FFF27C', 
         quantity: 7,
-        image: require('../../assets/images/products/color-option-4.png')
+        images: {
+          main: require('../../assets/images/products/sock-color-4.png'),
+          additional: [
+          ]
+        }
       },
     ],
   },
@@ -47,12 +81,23 @@ export const products: Product[] = [
     title: 'Classic Socks',
     price: 590,
     label: ProductLabel.FEATURED,
-    description: [
-      'Tecnología de secado rápido.',
-      'Tejido suelto que brinda mayor confortabilidad.',
+    shortDescription: {
+      line1: 'Tecnología de secado rápido.',
+      line2: 'Máxima comodidad y durabilidad.',
+    },
+    longDescription: [
+      'Classic Socks ofrece máxima comodidad y durabilidad.',
+      'Tecnología de secado rápido que mantiene tus pies secos durante todo el día.',
+      'Tejido suelto que brinda mayor confortabilidad y reduce la presión sobre los pies.',
     ],
     colors: [
-      { color: '#4CAF50', quantity: 10 },
+      { 
+        color: '#4CAF50', 
+        quantity: 10,
+        images: {
+          main: require('../../assets/images/products/product_socks_2.png')
+        }
+      },
     ],
   },
   {
@@ -62,13 +107,31 @@ export const products: Product[] = [
     price: 590,
     label: ProductLabel.NEW,
     isCustomizable: true,
-    description: [
-      'Tecnología de secado rápido.',
-      'Tejido suelto que brinda mayor confortabilidad.',
+    shortDescription: {
+      line1: 'Calcetines versátiles y personalizables.',
+      line2: 'Diseñados para máximo rendimiento deportivo.',
+    },
+    longDescription: [
+      'Socks V2 representa nuestra línea más avanzada de calcetines deportivos.',
+      'Tecnología de secado rápido para máximo confort durante actividades intensas.',
+      'Tejido suelto que brinda mayor confortabilidad sin sacrificar sujeción.',
+      'Completamente personalizables con tus colores y diseños preferidos.',
     ],
     colors: [
-      { color: '#FAFAFA', quantity: 10 },
-      { color: '#0C0C0C', quantity: 10 },
+      { 
+        color: '#FAFAFA', 
+        quantity: 10,
+        images: {
+          main: require('../../assets/images/products/product_socks_0.png')
+        }
+      },
+      { 
+        color: '#0C0C0C', 
+        quantity: 10,
+        images: {
+          main: require('../../assets/images/products/product_socks_0.png')
+        }
+      },
     ],
   },
   {
@@ -77,36 +140,62 @@ export const products: Product[] = [
     title: 'Regular Black',
     price: 990,
     label: ProductLabel.FEATURED,
-    description: [
-      'Diseño moderno y versátil.',
-      'Múltiples opciones de color.',
-      'Material resistente al uso diario.',
+    shortDescription: {
+      line1: 'Diseño moderno y versátil.',
+      line2: 'Material resistente al uso diario.',
+    },
+    longDescription: [
+      'Regular Black ofrece el equilibrio perfecto entre estilo y funcionalidad.',
+      'Diseño moderno y versátil que se adapta a cualquier ocasión.',
+      'Disponible en múltiples opciones de color para complementar tu estilo personal.',
+      'Fabricado con materiales premium resistentes al uso diario intensivo.',
+      'Interior espacioso con compartimentos organizados para todos tus objetos esenciales.',
     ],
     colors: [
       { 
         color: '#FAFAFA', 
         quantity: 10,
-        image: require('../../assets/images/products/color-option-1.png') 
+        images: {
+          main: require('../../assets/images/products/sock-color-1.png')
+        }
       },
       { 
         color: '#0C0C0C', 
         quantity: 10,
-        image: require('../../assets/images/products/color-option-2.png') 
+        images: {
+          main: require('../../assets/images/products/sock-color-2.png'),
+          additional: [
+            require('../../assets/images/products/white-sock-2.png'),
+          ]
+        }
       },
       { 
         color: '#FFBA54', 
         quantity: 10,
-        image: require('../../assets/images/products/color-option-3.png') 
+        images: {
+          main: require('../../assets/images/products/sock-color-3.png'),
+          additional: [
+            require('../../assets/images/products/white-sock-2.png'),
+            require('../../assets/images/products/white-sock-3.png')
+          ]
+        }
       },
       { 
         color: '#FFF27C', 
         quantity: 10,
-        image: require('../../assets/images/products/color-option-4.png') 
+        images: {
+          main: require('../../assets/images/products/sock-color-4.png')
+        }
       },
       { 
         color: '#4CAF50', 
         quantity: 10,
-        image: require('../../assets/images/products/color-option-5.png') 
+        images: {
+          main: require('../../assets/images/products/sock-color-5.png'),
+          additional: [
+            require('../../assets/images/products/white-sock-3.png')
+          ]
+        }
       },
     ],
   },
@@ -118,6 +207,16 @@ export const products: Product[] = [
     discountedPrice: 890,
     label: ProductLabel.OPPORTUNITY,
     isCustomizable: true,
+    shortDescription: {
+      line1: 'Mochila espaciosa y personalizable.',
+      line2: 'Máxima versatilidad para tu día a día.',
+    },
+    longDescription: [
+      'Mochila SQ ofrece la máxima versatilidad para tu día a día.',
+      'Amplio espacio interior con múltiples compartimentos para una organización óptima.',
+      'Diseño resistente a las inclemencias del tiempo para proteger tus pertenencias.',
+      'Completamente personalizable con tus colores, parches o iniciales favoritas.',
+    ],
   },
   {
     id: 'buzo-oversize',
@@ -126,9 +225,31 @@ export const products: Product[] = [
     price: 1590,
     discountedPrice: 1190,
     isCustomizable: true,
+    shortDescription: {
+      line1: 'Sudadera estilo oversize con máxima comodidad.',
+      line2: 'Diseño amplio que proporciona libertad de movimiento.',
+    },
+    longDescription: [
+      'Buzo Oversize combina estilo urbano con funcionalidad deportiva.',
+      'Diseño amplio que proporciona total libertad de movimiento y un look desenfadado.',
+      'Tejido de alta calidad con interior suave para máximo confort durante todo el día.',
+      'Disponible en varios colores y completamente personalizable.',
+    ],
     colors: [
-      { color: '#FAFAFA', quantity: 10 },
-      { color: '#0C0C0C', quantity: 10 },
+      { 
+        color: '#FAFAFA', 
+        quantity: 10,
+        images: {
+          main: require('../../assets/images/products/product_sweater.png')
+        }
+      },
+      { 
+        color: '#0C0C0C', 
+        quantity: 10,
+        images: {
+          main: require('../../assets/images/products/product_sweater.png')
+        }
+      },
     ],
   },
   {
@@ -138,48 +259,129 @@ export const products: Product[] = [
     price: 590,
     discountedPrice: 390,
     label: ProductLabel.SALE,
+    shortDescription: {
+      line1: 'Neceser redondo compacto en oferta.',
+      line2: 'Pequeño por fuera, espacioso por dentro.',
+    },
+    longDescription: [
+      'Neceser Ball es la solución perfecta para tus artículos de cuidado personal.',
+      'Su forma redonda ofrece un diseño innovador y cómodo de transportar.',
+      'Pequeño por fuera pero espacioso por dentro para todos tus esenciales.',
+      'Fabricado con material de alta resistencia al agua y rasgaduras.',
+    ],
   },
   {
     id: 'mochila-classic',
     image: require('../../assets/images/products/product_bag_3.png'),
     title: 'Mochila Classic',
     price: 590,
+    shortDescription: {
+      line1: 'Mochila clásica de diseño atemporal.',
+      line2: 'Fabricada con materiales resistentes y duraderos.',
+    },
+    longDescription: [
+      'Mochila Classic combina la esencia del diseño tradicional con toques modernos.',
+      'Proporciona espacio suficiente para tus objetos cotidianos con un estilo sobrio.',
+      'Su diseño atemporal garantiza que nunca pase de moda, convirtiéndola en una inversión duradera.',
+      'Fabricada con materiales resistentes para acompañarte en todas tus aventuras.',
+    ],
   },
   {
     id: 'cap-v3',
     image: require('../../assets/images/products/product_cap_black.png'),
     title: 'Cap V3',
     price: 590,
+    shortDescription: {
+      line1: 'Gorra urbana de estilo contemporáneo.',
+      line2: 'Material transpirable para máxima comodidad.',
+    },
+    longDescription: [
+      'Cap V3 representa la tercera generación de nuestras populares gorras urbanas.',
+      'Diseño contemporáneo con un ajuste cómodo para todos los tamaños de cabeza.',
+      'El material transpirable garantiza comodidad incluso en los días más calurosos.',
+      'Un accesorio versátil que complementa cualquier conjunto casual o deportivo.',
+    ],
   },
   {
     id: 'relaxed-classic',
     image: require('../../assets/images/products/product_shirt_black_relaxed.png'),
     title: 'Relaxed Classic',
     price: 590,
+    shortDescription: {
+      line1: 'Camisa de corte relajado para máximo confort.',
+      line2: 'Tejido de alta calidad que mantiene su forma.',
+    },
+    longDescription: [
+      'Relaxed Classic es nuestra camisa insignia de corte holgado y casual.',
+      'Diseñada para proporcionar la máxima comodidad sin sacrificar el estilo.',
+      'Tejido de alta calidad que mantiene su forma incluso después de múltiples lavados.',
+      'Perfecta para ocasiones informales o para un look elegante pero relajado en la oficina.',
+    ],
   },
   {
     id: 'regular-shirt',
     image: require('../../assets/images/products/product_shirt_black_regular.png'),
     title: 'Regular Shirt',
     price: 790,
+    shortDescription: {
+      line1: 'Camisa de corte regular para uso diario.',
+      line2: 'Un básico imprescindible en cualquier armario.',
+    },
+    longDescription: [
+      'Regular Shirt ofrece el equilibrio perfecto entre comodidad y elegancia.',
+      'Su corte clásico se adapta a cualquier tipo de cuerpo y ocasión.',
+      'Fabricada con algodón de primera calidad que garantiza durabilidad y transpirabilidad.',
+      'Un básico imprescindible en cualquier armario que combina con todo tipo de prendas.',
+    ],
   },
   {
     id: 'white-shirt',
     image: require('../../assets/images/products/product_shirt_white.png'),
     title: 'White Shirt',
     price: 790,
+    shortDescription: {
+      line1: 'Camisa blanca elegante y versátil.',
+      line2: 'Perfecta para ocasiones formales e informales.',
+    },
+    longDescription: [
+      'White Shirt es la pieza elegante y atemporal que todo guardarropa necesita.',
+      'Confeccionada con tejido premium que garantiza un acabado impecable y duradero.',
+      'Su diseño versátil la hace perfecta tanto para ocasiones formales como informales.',
+      'El corte estudiado proporciona un ajuste cómodo y favorecedor para cualquier silueta.',
+    ],
   },
   {
     id: 't-shirt-black',
     image: require('../../assets/images/products/product_t_shirt_black.png'),
     title: 'T-Shirt Black',
     price: 690,
+    shortDescription: {
+      line1: 'Camiseta negra esencial para todo guardarropa.',
+      line2: 'Confeccionada con algodón orgánico de alta densidad.',
+    },
+    longDescription: [
+      'T-Shirt Black es la camiseta básica que nunca pasa de moda.',
+      'Confeccionada con algodón orgánico de alta densidad para mayor durabilidad.',
+      'Su color negro profundo mantiene su intensidad lavado tras lavado.',
+      'Versátil y combinable con cualquier prenda para un look casual o deportivo.',
+    ],
   },
   {
     id: 'backpack-pro',
     image: require('../../assets/images/products/product_bag_4.png'),
     title: 'Backpack Pro',
     price: 1290,
+    shortDescription: {
+      line1: 'Mochila premium con características profesionales.',
+      line2: 'Compartimentos especiales para dispositivos electrónicos.',
+    },
+    longDescription: [
+      'Backpack Pro está diseñada para profesionales y viajeros exigentes.',
+      'Cuenta con compartimentos especiales para dispositivos electrónicos y documentos importantes.',
+      'Fabricada con materiales resistentes al agua y al desgaste para una durabilidad excepcional.',
+      'Sistema ergonómico de correas que distribuye el peso de forma óptima para mayor comodidad.',
+      'Ideal para el uso diario en entornos profesionales o viajes de negocios.',
+    ],
   },
   {
     id: 'neceserr',
@@ -189,17 +391,55 @@ export const products: Product[] = [
     discountedPrice: 390,
     label: ProductLabel.SALE,
     isCustomizable: true,
-    description: [
-      'Diseño compacto y funcional',
-      'Material resistente y duradero',
-      'Compartimentos organizados',
+    shortDescription: {
+      line1: 'Neceser compacto y funcional para todos tus viajes.',
+      line2: 'Diseño práctico y organizado para tus artículos personales.',
+    },
+    longDescription: [
+      'El Neceser Globo ha sido diseñado para viajeros exigentes que necesitan organización y practicidad.',
+      'Su diseño compacto permite guardarlo fácilmente en maletas o mochilas sin ocupar demasiado espacio.',
+      'Fabricado con materiales de alta resistencia que garantizan durabilidad y protección de tus artículos personales.',
+      'Cuenta con múltiples compartimentos organizados para mantener todos tus productos de higiene y belleza en perfecto orden.',
+      'Ideal tanto para viajes cortos como para largas estancias, adaptándose a todas tus necesidades.',
+      'El cierre resistente al agua protege el contenido de salpicaduras y pequeños derrames.',
     ],
+    warranty: '3 meses',
+    returnPolicy: 'Este producto tiene una política de devolución de 15 días siempre que se mantenga sin uso y con todas las etiquetas originales.',
+    dimensions: {
+      height: '25cm',
+      width: '18cm',
+      depth: '10cm',
+    },
+    colors: [
+      {
+        color: '#0C0C0C',
+        quantity: 15,
+        images: {
+          main: require('../../assets/images/products/neceser9-1.png'),
+          additional: [
+            require('../../assets/images/products/neceser9-3.png'),
+            require('../../assets/images/products/neceser9-4.png')
+          ]
+        }
+      }
+    ]
   },
   {
     id: 'backpack-travel',
     image: require('../../assets/images/products/product_bag_6.png'),
     title: 'Backpack Travel',
     price: 1490,
+    shortDescription: {
+      line1: 'Mochila espaciosa diseñada para viajes largos.',
+      line2: 'Sistema ergonómico para máxima comodidad en travesías.',
+    },
+    longDescription: [
+      'Backpack Travel es tu compañera ideal para aventuras y viajes extensos.',
+      'Diseño de gran capacidad con múltiples bolsillos y compartimentos para una organización perfecta.',
+      'Sistema de compresión que permite ajustar el volumen según tus necesidades.',
+      'Materiales impermeables y costuras reforzadas que protegen tus pertenencias en cualquier clima.',
+      'Correas acolchadas y soporte lumbar para distribuir el peso de forma óptima en largas caminatas.',
+    ],
   },
 ];
 

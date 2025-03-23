@@ -11,26 +11,27 @@ interface ProductDetailsProps {
     width?: string;
   };
   sku?: string;
-  description?: string;
+  shortDescription?: string | {
+    line1: string;
+    line2: string;
+  };
+  longDescription?: string | string[];
   returnPolicy?: string;
 }
 
 export default function ProductDetails({
-  isCustomizable = false,
-  warranty = '2 meses',
-  dimensions = {
-    height: '12cm alto',
-    depth: '12cm profundidad',
-    width: '24cm ancho',
-  },
-  sku = '2001202104',
-  description = 'Tiffosi le ofrece un producto altamente confeccionado. Un diseño a medida para el deportista. Productos personalizados.',
-  returnPolicy = 'Si no está satisfecho con su compra, por favor póngase en contacto con nosotros para solicitar una devolución del producto en un plazo de 60 días luego de haberlo recibido. Los productos deben ser devueltos en el embalaje original en el que fueron entregados.'
+  isCustomizable,
+  warranty,
+  dimensions,
+  sku,
+  shortDescription,
+  longDescription,
+  returnPolicy
 }: ProductDetailsProps) {
-  // Combine dimensions into a formatted string
-  const dimensionsText = Object.values(dimensions)
-    .filter(Boolean)
-    .join(' | ');
+  // Only combine dimensions if they exist
+  const dimensionsText = dimensions 
+    ? Object.values(dimensions).filter(Boolean).join(' | ') 
+    : '';
 
   return (
     <View style={styles.container}>
@@ -47,14 +48,25 @@ export default function ProductDetails({
       {/* Product Information */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>INFORMACIÓN DEL PRODUCTO</Text>
-        <Text style={styles.sectionText}>{description}</Text>
+        <Text style={styles.sectionText}>
+          {longDescription ? 
+            (typeof longDescription === 'string' ? 
+              longDescription : 
+              longDescription.join('\n\n')) : 
+            (typeof shortDescription === 'string' ? 
+              shortDescription : 
+              shortDescription ? `${shortDescription.line1}\n\n${shortDescription.line2}` : '')
+          }
+        </Text>
       </View>
 
-      {/* Return Policy */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>POLÍTICA DE DEVOLUCIÓN Y REEMBOLSO</Text>
-        <Text style={styles.sectionText}>{returnPolicy}</Text>
-      </View>
+      {/* Return Policy - only show if provided */}
+      {returnPolicy && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>POLÍTICA DE DEVOLUCIÓN Y REEMBOLSO</Text>
+          <Text style={styles.sectionText}>{returnPolicy}</Text>
+        </View>
+      )}
     </View>
   );
 }

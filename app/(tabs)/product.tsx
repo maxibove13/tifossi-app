@@ -73,10 +73,11 @@ export default function ProductScreen() {
     )
   }
 
-  // Format description - check if it's an array before joining
-  const description = Array.isArray(product.description) 
-    ? product.description.join(' ') 
-    : product.description;
+  // Use shortDescription directly, no fallback to description
+  const shortDescription = product.shortDescription;
+    
+  // Use longDescription directly, no fallback to description
+  const longDescription = product.longDescription;
 
   return (
     <View style={styles.container}>
@@ -97,8 +98,12 @@ export default function ProductScreen() {
             isDiscounted: !!product.discountedPrice,
             currentPrice: `$${product.discountedPrice || product.price}`,
             originalPrice: product.discountedPrice ? `$${product.price}` : undefined,
-            description: description,
-            sku: product.id
+            shortDescription: shortDescription,
+            longDescription: longDescription,
+            sku: product.id,
+            warranty: product.warranty,
+            returnPolicy: product.returnPolicy,
+            dimensions: product.dimensions
           }}
           onAddToCart={() => handleAddToCart(product, 1)}
           onViewMore={handleViewMore}
