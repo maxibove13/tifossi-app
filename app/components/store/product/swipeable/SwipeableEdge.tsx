@@ -35,6 +35,7 @@ import { Product } from '../../../../types/product';
 import PromotionCard from '../promotion/PromotionCard';
 import MinicardLarge from '../minicard/large';
 import ProductSections from '../sections/ProductSections';
+import OverlayCheckoutShipping from '../overlay/OverlayCheckoutShipping';
 
 // Helper function for cross-platform haptic feedback
 const triggerHaptic = () => {
@@ -143,6 +144,7 @@ const SwipeableEdge = ({
   
   // Component state
   const [expanded, setExpanded] = useState(false);
+  const [isShippingOverlayVisible, setIsShippingOverlayVisible] = useState(false);
   
   // React refs for DOM access
   const scrollViewRef = useRef(null);
@@ -325,129 +327,159 @@ const SwipeableEdge = ({
     };
   });
 
+  // Handle add to cart action
+  const handleAddToCart = useCallback(() => {
+    setIsShippingOverlayVisible(true);
+  }, []);
+  
+  // Handle selection actions
+  const handleSelectSize = useCallback(() => {
+    // Handle size selection action
+    setIsShippingOverlayVisible(false);
+    // Call the original onAddToCart after selections are made
+    onAddToCart();
+  }, [onAddToCart]);
+  
+  const handleSelectQuantity = useCallback(() => {
+    // Handle quantity selection action
+    setIsShippingOverlayVisible(false);
+    // Call the original onAddToCart after selections are made
+    onAddToCart();
+  }, [onAddToCart]);
+
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        panelStyle
-      ]}
-      testID="swipeable-edge-container"
-    >
-      {/* Header with gradient background */}
-      <LinearGradient
-        colors={['rgba(12, 12, 12, 0.9)', 'rgba(12, 12, 12, 1)']}
-        style={StyleSheet.absoluteFill}
-      />
-      
-      {/* Make the entire top edge draggable */}
-      <PanGestureHandler
-        onGestureEvent={panGestureHandler}
-        enabled={true}
-        shouldCancelWhenOutside={false}
+    <>
+      <Animated.View
+        style={[
+          styles.container,
+          panelStyle
+        ]}
+        testID="swipeable-edge-container"
       >
-        <Animated.View style={styles.dragHandleContainer}>
-          {/* Clickable area for direct toggle */}
-          <TouchableOpacity
-            onPress={toggleExpanded}
-            style={styles.toggleArea}
-            activeOpacity={0.7}
-            testID="swipeable-edge-handle"
-          >
-            <View style={styles.invisibleTouchTarget} />
-          </TouchableOpacity>
-          
-          {/* Chevron indicator */}
-          <Animated.View style={[styles.dragHandle, chevronStyle]}>
-            <Ionicons 
-              name="chevron-up" 
-              size={24} 
-              color={colors.border} 
-            />
-          </Animated.View>
-        </Animated.View>
-      </PanGestureHandler>
-      
-      {/* Scrollable content */}
-      <AnimatedScrollView
-        ref={scrollViewRef}
-        scrollEnabled={expanded}
-        showsVerticalScrollIndicator={true}
-        contentContainerStyle={styles.contentContainer}
-        onScroll={scrollHandler}
-        scrollEventThrottle={16}
-        bounces={false}
-      >
-        {/* Product Info Header Section */}
-        <View style={styles.innerContent}>
-          <Animated.View style={headerOpacity}>
-            <ProductInfoHeader
-              productName={product.name}
-              isCustomizable={product.isCustomizable}
-              isDiscounted={product.isDiscounted}
-              currentPrice={product.currentPrice}
-              originalPrice={product.originalPrice}
-              onAddToCart={onAddToCart}
-            />
-          </Animated.View>
-          
-          {/* Product Details Section - only visible when expanded */}
-          <Animated.View style={detailsOpacity}>
-            <ProductDetails
-              isCustomizable={product.isCustomizable}
-              shortDescription={product.shortDescription}
-              longDescription={product.longDescription}
-              sku={product.sku}
-              warranty={product.warranty}
-              returnPolicy={product.returnPolicy}
-              dimensions={product.dimensions}
-            />
-          </Animated.View>
-        </View>
+        {/* Header with gradient background */}
+        <LinearGradient
+          colors={['rgba(12, 12, 12, 0.9)', 'rgba(12, 12, 12, 1)']}
+          style={StyleSheet.absoluteFill}
+        />
         
-        {/* Product Sections - add consistent padding */}
-        <View style={styles.sectionsContainer}>
-          <ProductSections
-            relatedProducts={relatedProducts}
-            recommendedProducts={recommendedProducts}
-            trendingProducts={trendingProducts}
-            onProductPress={onProductPress}
-            onViewMore={onViewMore}
-            invertTextColors={true}
-            useSwipeableStyle={true}
-          />
-        </View>
-        
-        {/* Support Section */}
-        <View style={styles.innerContent}>
-          <View style={styles.supportSection}>
-            <View style={styles.supportHeader}>
-              <Text style={styles.supportTitle}>¿Tienes alguna duda?</Text>
-              <TouchableOpacity 
-                onPress={() => onSupportAction('call')}
-                style={styles.callButton}
-              >
-                <Text style={styles.callButtonText}>Llamar</Text>
-              </TouchableOpacity>
-            </View>
+        {/* Make the entire top edge draggable */}
+        <PanGestureHandler
+          onGestureEvent={panGestureHandler}
+          enabled={true}
+          shouldCancelWhenOutside={false}
+        >
+          <Animated.View style={styles.dragHandleContainer}>
+            {/* Clickable area for direct toggle */}
+            <TouchableOpacity
+              onPress={toggleExpanded}
+              style={styles.toggleArea}
+              activeOpacity={0.7}
+              testID="swipeable-edge-handle"
+            >
+              <View style={styles.invisibleTouchTarget} />
+            </TouchableOpacity>
             
-            <View style={styles.supportOptions}>
-              <SupportOption
-                title="Iniciar chat"
-                description="Conversa con uno de nuestros agentes."
-                iconType="chat"
-                onPress={() => onSupportAction('chat')}
+            {/* Chevron indicator */}
+            <Animated.View style={[styles.dragHandle, chevronStyle]}>
+              <Ionicons 
+                name="chevron-up" 
+                size={24} 
+                color={colors.border} 
               />
-              <SupportOption
-                title="Soporte | FAQ"
-                description="Ve a la sección de ayuda."
-                iconType="help"
-                onPress={() => onSupportAction('faq')}
+            </Animated.View>
+          </Animated.View>
+        </PanGestureHandler>
+        
+        {/* Scrollable content */}
+        <AnimatedScrollView
+          ref={scrollViewRef}
+          scrollEnabled={expanded}
+          showsVerticalScrollIndicator={true}
+          contentContainerStyle={styles.contentContainer}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          bounces={false}
+        >
+          {/* Product Info Header Section */}
+          <View style={styles.innerContent}>
+            <Animated.View style={headerOpacity}>
+              <ProductInfoHeader
+                productName={product.name}
+                isCustomizable={product.isCustomizable}
+                isDiscounted={product.isDiscounted}
+                currentPrice={product.currentPrice}
+                originalPrice={product.originalPrice}
+                onAddToCart={handleAddToCart}
               />
+            </Animated.View>
+            
+            {/* Product Details Section - only visible when expanded */}
+            <Animated.View style={detailsOpacity}>
+              <ProductDetails
+                isCustomizable={product.isCustomizable}
+                shortDescription={product.shortDescription}
+                longDescription={product.longDescription}
+                sku={product.sku}
+                warranty={product.warranty}
+                returnPolicy={product.returnPolicy}
+                dimensions={product.dimensions}
+              />
+            </Animated.View>
+          </View>
+          
+          {/* Product Sections - add consistent padding */}
+          <View style={styles.sectionsContainer}>
+            <ProductSections
+              relatedProducts={relatedProducts}
+              recommendedProducts={recommendedProducts}
+              trendingProducts={trendingProducts}
+              onProductPress={onProductPress}
+              onViewMore={onViewMore}
+              invertTextColors={true}
+              useSwipeableStyle={true}
+            />
+          </View>
+          
+          {/* Support Section */}
+          <View style={styles.innerContent}>
+            <View style={styles.supportSection}>
+              <View style={styles.supportHeader}>
+                <Text style={styles.supportTitle}>¿Tienes alguna duda?</Text>
+                <TouchableOpacity 
+                  onPress={() => onSupportAction('call')}
+                  style={styles.callButton}
+                >
+                  <Text style={styles.callButtonText}>Llamar</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.supportOptions}>
+                <SupportOption
+                  title="Iniciar chat"
+                  description="Conversa con uno de nuestros agentes."
+                  iconType="chat"
+                  onPress={() => onSupportAction('chat')}
+                />
+                <SupportOption
+                  title="Soporte | FAQ"
+                  description="Ve a la sección de ayuda."
+                  iconType="help"
+                  onPress={() => onSupportAction('faq')}
+                />
+              </View>
             </View>
           </View>
-        </View>
-      </AnimatedScrollView>
-    </Animated.View>
+        </AnimatedScrollView>
+      </Animated.View>
+      
+      {/* Shipping Overlay */}
+      <OverlayCheckoutShipping
+        isVisible={isShippingOverlayVisible}
+        onClose={() => setIsShippingOverlayVisible(false)}
+        onSelectSize={handleSelectSize}
+        onSelectQuantity={handleSelectQuantity}
+      />
+    </>
   );
 };
 
