@@ -1,25 +1,28 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native'
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, Image, ViewStyle, Pressable } from 'react-native';
+import { colors } from '../../../../styles/colors';
+import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography';
+import { Product } from '../../../../types/product';
 import { Ionicons } from '@expo/vector-icons'
-import type { Product } from '../../../../types/product'
-import { colors } from '../../../../styles/colors'
-import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography'
 import ProductImage from '../image/ProductImage'
 
-type ProductCardSize = 's' | 'l'
+type ProductCardSize = 's' | 'm' | 'l'
 
 type PromotionCardProps = {
   product: Product
   size?: ProductCardSize
   onPress?: () => void
   darkMode?: boolean
+  invertTextColor?: boolean
 }
 
-export default function PromotionCard({ 
+const PromotionCard = ({ 
   product, 
   size = 's', 
   onPress,
-  darkMode = false
-}: PromotionCardProps) {
+  darkMode = false,
+  invertTextColor = false
+}: PromotionCardProps) => {
   const isSmall = size === 's'
   const { title, price, discountedPrice, image } = product
 
@@ -34,10 +37,18 @@ export default function PromotionCard({
           <Ionicons name="heart-outline" size={14} color={darkMode ? colors.background.light : "#DCDCDC"} />
         </Pressable>
       </View>
-      
       <View style={styles.content}>
         <Text style={styles.label}>Nuevo</Text>
-        <Text style={[styles.title, darkMode && styles.titleDark]} numberOfLines={1}>{title}</Text>
+        <Text 
+          style={[
+            styles.title, 
+            darkMode && styles.titleDark,
+            invertTextColor && styles.invertedTitle
+          ]} 
+          numberOfLines={1}
+        >
+          {title}
+        </Text>
         <View style={styles.priceContainer}>
           <Text style={[styles.originalPrice, darkMode && styles.originalPriceDark]}>${price.toFixed(2)}</Text>
           <Text style={styles.salePrice}>${discountedPrice?.toFixed(2)}</Text>
@@ -58,13 +69,14 @@ const styles = StyleSheet.create({
   },
   wishlistButton: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 28,
-    height: 28,
-    padding: 3.5,
-    justifyContent: 'center',
+    top: 6,
+    right: 6,
+    backgroundColor: 'rgba(220, 220, 220, 0.1)',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     paddingHorizontal: 4,
@@ -82,6 +94,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.md,
+  },
+  invertedTitle: {
+    color: colors.background.light,
   },
   titleDark: {
     color: colors.background.light,
@@ -109,4 +124,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.regular,
     lineHeight: lineHeights.sm,
   },
-}) 
+})
+
+export default PromotionCard; 

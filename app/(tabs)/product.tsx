@@ -1,5 +1,5 @@
-import { StyleSheet, View } from 'react-native'
-import { useLocalSearchParams } from 'expo-router'
+import { StyleSheet, View, ScrollView } from 'react-native'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import ProductHeader from '../components/store/layout/ProductHeader'
 import EnhancedProductGallery from '../components/store/product/gallery/EnhancedProductGallery'
 import SwipeableEdge from '../components/store/product/swipeable/SwipeableEdge'
@@ -8,10 +8,15 @@ import { colors } from '../styles/colors'
 import { isProduct, Product } from '../types/product'
 import { useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
+import { spacing } from '../styles/spacing'
+import Subheader from '../components/common/Subheader'
+import PromotionCard from '../components/store/product/promotion/PromotionCard'
+import MinicardLarge from '../components/store/product/minicard/large'
+import productUtils from '../utils/product-utils'
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams()
-  // const router = useRouter() - Will use when we implement navigation to related products
+  const router = useRouter()
   const product = ProductData.getProductById(id as string)
 
   // State for selected color
@@ -19,24 +24,14 @@ export default function ProductScreen() {
     product?.colors && product.colors.length > 0 ? product.colors[0].color : undefined
   )
 
-  // This data will be used in future implementations
-  // Keeping these as comments for future reference
-  /*
   // Get related products data
-  const relatedProducts = ProductData.getRecommendedProducts()
-    .filter(p => p.id !== product?.id)
-    .slice(0, 5)
+  const relatedProducts = productUtils.getRelatedProducts(id as string);
     
   // Get recommended products data
-  const recommendedProducts = ProductData.getHighlightedProducts()
-    .filter(p => p.id !== product?.id)
-    .slice(0, 5)
+  const recommendedProducts = productUtils.getRecommendedProducts(id as string);
     
   // Get trending products data
-  const trendingProducts = ProductData.getTrendingProducts()
-    .filter(p => p.id !== product?.id)
-    .slice(0, 5)
-  */
+  const trendingProducts = productUtils.getTrendingProducts(id as string);
 
   const handleAddToCart = async (product: Product, quantity: number) => {
     // Add to cart logic
@@ -48,12 +43,9 @@ export default function ProductScreen() {
     return Promise.resolve() // Return a resolved promise for the async function
   }
   
-  // Will be used when product recommendations are implemented
-  /* 
   const handleProductPress = (productId: string) => {
     router.push(`/(tabs)/product?id=${productId}`)
   }
-  */
 
   const handleSupportAction = (action: 'chat' | 'faq' | 'call') => {
     console.log('Support action:', action)
@@ -92,7 +84,9 @@ export default function ProductScreen() {
         />
         
         <SwipeableEdge
+          key={`product-edge-${product.id}`}
           product={{
+            id: product.id,
             name: product.title,
             isCustomizable: product.isCustomizable,
             isDiscounted: !!product.discountedPrice,
@@ -105,9 +99,13 @@ export default function ProductScreen() {
             returnPolicy: product.returnPolicy,
             dimensions: product.dimensions
           }}
+          relatedProducts={relatedProducts}
+          recommendedProducts={recommendedProducts}
+          trendingProducts={trendingProducts}
           onAddToCart={() => handleAddToCart(product, 1)}
           onViewMore={handleViewMore}
           onSupportAction={handleSupportAction}
+          onProductPress={handleProductPress}
           onExpandedChange={(expanded) => console.log('Panel expanded:', expanded)}
         />
       </View>

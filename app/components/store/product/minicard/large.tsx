@@ -8,10 +8,15 @@ import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/t
 import { spacing, radius } from '../../../../styles/spacing'
 import { colors } from '../../../../styles/colors'
 
+type MinicardLargeProps = MinicardProps & {
+  invertTextColor?: boolean
+}
+
 function MinicardLarge({
   product,
   onPress,
-}: MinicardProps) {
+  invertTextColor = false
+}: MinicardLargeProps) {
   const cardData = mapProductToCardData(product)
   const dimensions = getCardDimensions('minicard', 'large')
   
@@ -31,7 +36,15 @@ function MinicardLarge({
       </View>
       
       <View style={styles.content}>
-        <Text style={styles.name} numberOfLines={1}>{cardData.name}</Text>
+        <Text 
+          style={[
+            styles.name, 
+            invertTextColor && styles.invertedTitle
+          ]} 
+          numberOfLines={1}
+        >
+          {cardData.name}
+        </Text>
         <Text style={styles.price}>${cardData.price.toFixed(2)}</Text>
       </View>
     </Pressable>
@@ -59,6 +72,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.md,
+  },
+  invertedTitle: {
+    color: colors.background.light,
   },
   price: {
     color: colors.secondary,

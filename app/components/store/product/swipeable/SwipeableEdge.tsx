@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, forwardRef } from 'react';
+import React, { useState, useCallback, useRef, forwardRef, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -31,6 +31,10 @@ import ProductInfoHeader from './ProductInfoHeader';
 import ProductDetails from './ProductDetails';
 import SectionHeader from './SectionHeader';
 import SupportOption from './SupportOption';
+import { Product } from '../../../../types/product';
+import PromotionCard from '../promotion/PromotionCard';
+import MinicardLarge from '../minicard/large';
+import ProductSections from '../sections/ProductSections';
 
 // Helper function for cross-platform haptic feedback
 const triggerHaptic = () => {
@@ -51,6 +55,7 @@ interface SwipeableEdgeProps {
    * Product data
    */
   product: {
+    id: string;
     name: string;
     isCustomizable?: boolean;
     isDiscounted?: boolean;
@@ -70,6 +75,18 @@ interface SwipeableEdgeProps {
       width?: string;
     };
   };
+  /**
+   * Related products data
+   */
+  relatedProducts?: Product[];
+  /**
+   * Recommended products data
+   */
+  recommendedProducts?: Product[];
+  /**
+   * Trending products data
+   */
+  trendingProducts?: Product[];
   /**
    * Minimum visible height when collapsed
    * @default 250
@@ -93,6 +110,10 @@ interface SwipeableEdgeProps {
    */
   onViewMore?: (section: string) => void;
   /**
+   * Optional callback for product press action
+   */
+  onProductPress?: (productId: string) => void;
+  /**
    * Optional callback for support options
    */
   onSupportAction?: (action: 'chat' | 'faq' | 'call') => void;
@@ -104,11 +125,15 @@ interface SwipeableEdgeProps {
  */
 const SwipeableEdge = ({ 
   product,
+  relatedProducts = [],
+  recommendedProducts = [],
+  trendingProducts = [],
   minHeight = 250,
   headerHeight = 120,
   onExpandedChange,
   onAddToCart = () => {},
   onViewMore = () => {},
+  onProductPress = () => {},
   onSupportAction = () => {}
 }: SwipeableEdgeProps) => {
   // Calculate panel dimensions
@@ -127,14 +152,8 @@ const SwipeableEdge = ({
   const scrollY = useSharedValue(0);
   const isDragging = useSharedValue(false);
   
-  // Handle state change
-  const updateExpandedState = useCallback((isExpanded: boolean) => {
-    if (expanded !== isExpanded) {
-      setExpanded(isExpanded);
-      onExpandedChange?.(isExpanded);
-      triggerHaptic();
-    }
-  }, [expanded, onExpandedChange]);
+  // Store the current product ID for change detection
+  const productIdRef = useRef(product?.id);
   
   // Reset scroll position
   const resetScroll = useCallback(() => {
@@ -144,6 +163,35 @@ const SwipeableEdge = ({
       scrollY.value = 0;
     }
   }, [scrollY]);
+  
+  // Reset when product changes
+  useEffect(() => {
+    // Check if product ID has changed
+    if (product?.id !== productIdRef.current) {
+      // Update ref
+      productIdRef.current = product?.id;
+      
+      // Reset to collapsed state
+      if (expanded) {
+        setExpanded(false);
+        translateY.value = withSpring(PANEL_RANGE, {
+          damping: 20,
+          stiffness: 200,
+          mass: 1,
+        });
+        resetScroll();
+      }
+    }
+  }, [product?.id, expanded, resetScroll, PANEL_RANGE, translateY]);
+  
+  // Handle state change
+  const updateExpandedState = useCallback((isExpanded: boolean) => {
+    if (expanded !== isExpanded) {
+      setExpanded(isExpanded);
+      onExpandedChange?.(isExpanded);
+      triggerHaptic();
+    }
+  }, [expanded, onExpandedChange]);
   
   // Toggle expanded state with animation
   const toggleExpanded = useCallback(() => {
@@ -330,66 +378,47 @@ const SwipeableEdge = ({
         bounces={false}
       >
         {/* Product Info Header Section */}
-        <Animated.View style={headerOpacity}>
-          <ProductInfoHeader
-            productName={product.name}
-            isCustomizable={product.isCustomizable}
-            isDiscounted={product.isDiscounted}
-            currentPrice={product.currentPrice}
-            originalPrice={product.originalPrice}
-            onAddToCart={onAddToCart}
-          />
-        </Animated.View>
+        <View style={styles.innerContent}>
+          <Animated.View style={headerOpacity}>
+            <ProductInfoHeader
+              productName={product.name}
+              isCustomizable={product.isCustomizable}
+              isDiscounted={product.isDiscounted}
+              currentPrice={product.currentPrice}
+              originalPrice={product.originalPrice}
+              onAddToCart={onAddToCart}
+            />
+          </Animated.View>
+          
+          {/* Product Details Section - only visible when expanded */}
+          <Animated.View style={detailsOpacity}>
+            <ProductDetails
+              isCustomizable={product.isCustomizable}
+              shortDescription={product.shortDescription}
+              longDescription={product.longDescription}
+              sku={product.sku}
+              warranty={product.warranty}
+              returnPolicy={product.returnPolicy}
+              dimensions={product.dimensions}
+            />
+          </Animated.View>
+        </View>
         
-        {/* Product Details Section - only visible when expanded */}
-        <Animated.View style={detailsOpacity}>
-          <ProductDetails
-            isCustomizable={product.isCustomizable}
-            shortDescription={product.shortDescription}
-            longDescription={product.longDescription}
-            sku={product.sku}
-            warranty={product.warranty}
-            returnPolicy={product.returnPolicy}
-            dimensions={product.dimensions}
+        {/* Product Sections - add consistent padding */}
+        <View style={styles.sectionsContainer}>
+          <ProductSections
+            relatedProducts={relatedProducts}
+            recommendedProducts={recommendedProducts}
+            trendingProducts={trendingProducts}
+            onProductPress={onProductPress}
+            onViewMore={onViewMore}
+            invertTextColors={true}
+            useSwipeableStyle={true}
           />
-          
-          {/* Related Products Section */}
-          <View style={styles.productsSection}>
-            <SectionHeader 
-              title="Productos relacionados" 
-              actionText="Ver Más"
-              onActionPress={() => onViewMore('related')}
-            />
-            <View style={styles.placeholderProducts}>
-              <Text style={styles.placeholderText}>Productos relacionados aquí</Text>
-            </View>
-          </View>
-          
-          {/* Recommended Products Section */}
-          <View style={styles.productsSection}>
-            <SectionHeader 
-              title="Recomendados para ti" 
-              actionText="Ver Más"
-              onActionPress={() => onViewMore('recommended')}
-            />
-            <View style={styles.placeholderProducts}>
-              <Text style={styles.placeholderText}>Productos recomendados aquí</Text>
-            </View>
-          </View>
-          
-          {/* Trends Section */}
-          <View style={styles.productsSection}>
-            <SectionHeader 
-              title="Tendencias" 
-              actionText="Ver Todo"
-              onActionPress={() => onViewMore('trends')}
-            />
-            <View style={styles.placeholderProducts}>
-              <Text style={styles.placeholderText}>Productos tendencia aquí</Text>
-            </View>
-          </View>
-          
-          {/* Support Section */}
+        </View>
+        
+        {/* Support Section */}
+        <View style={styles.innerContent}>
           <View style={styles.supportSection}>
             <View style={styles.supportHeader}>
               <Text style={styles.supportTitle}>¿Tienes alguna duda?</Text>
@@ -416,7 +445,7 @@ const SwipeableEdge = ({
               />
             </View>
           </View>
-        </Animated.View>
+        </View>
       </AnimatedScrollView>
     </Animated.View>
   );
@@ -430,6 +459,8 @@ type StylesType = {
   invisibleTouchTarget: ViewStyle;
   dragHandle: ViewStyle;
   contentContainer: ViewStyle;
+  innerContent: ViewStyle;
+  sectionsContainer: ViewStyle;
   productsSection: ViewStyle;
   placeholderProducts: ViewStyle;
   placeholderText: TextStyle;
@@ -439,6 +470,7 @@ type StylesType = {
   callButton: ViewStyle;
   callButtonText: TextStyle;
   supportOptions: ViewStyle;
+  horizontalScrollContent: ViewStyle;
 };
 
 const styles = StyleSheet.create<StylesType>({
@@ -484,8 +516,13 @@ const styles = StyleSheet.create<StylesType>({
     paddingBottom: spacing.xxxl,
     paddingTop: 0,
   },
-  productsSection: {
+  innerContent: {
     paddingHorizontal: spacing.lg,
+  },
+  sectionsContainer: {
+    paddingHorizontal: spacing.lg,
+  },
+  productsSection: {
     marginTop: spacing.xl,
   },
   placeholderProducts: {
@@ -501,7 +538,6 @@ const styles = StyleSheet.create<StylesType>({
     color: colors.primary.text,
   },
   supportSection: {
-    paddingHorizontal: spacing.lg,
     marginTop: spacing.xxl,
     paddingBottom: spacing.xxl,
   },
@@ -529,6 +565,10 @@ const styles = StyleSheet.create<StylesType>({
     color: colors.secondary.textDisabled,
   },
   supportOptions: {
+    gap: spacing.md,
+  },
+  horizontalScrollContent: {
+    paddingVertical: spacing.md,
     gap: spacing.md,
   },
 });

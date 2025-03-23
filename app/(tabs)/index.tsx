@@ -4,23 +4,22 @@ import { colors } from '../styles/colors';
 import { spacing } from '../styles/spacing';
 import { StoreHeader, CategoryShowcase } from '../components/store/layout';
 import HighlightedCard from '../components/store/product/horizontal/HighlightedCard';
-import PromotionCard from '../components/store/product/promotion/PromotionCard';
 import FeaturedCard from '../components/store/product/featured/FeaturedCard';
-import DefaultLargeCard from '../components/store/product/default/large';
-import MinicardLarge from '../components/store/product/minicard/large';
 import Button from '../components/ui/buttons/Button';
 import StoreLocations from '../components/store/layout/Locations';
 import ProductData from '../data/products';
-import Subheader from '../components/common/Subheader';
-import Footer from '../components/store/layout/Footer'
+import Footer from '../components/store/layout/Footer';
 import { Product } from '../types/product';
 import HomeScreenSkeleton from '../components/skeletons/HomeScreenSkeleton';
+import ProductSections from '../components/store/product/sections/ProductSections';
 import { useState, useEffect } from 'react';
+import productUtils from '../utils/product-utils';
 
 interface HomeScreenData {
   highlightedProducts: Product[];
   featuredProduct: Product | null;
   recommendedProducts: Product[];
+  relatedProducts: Product[];
   trendingProducts: Product[];
   newReleases: Product[];
 }
@@ -32,12 +31,18 @@ export default function HomeScreen() {
     highlightedProducts: [],
     featuredProduct: null,
     recommendedProducts: [],
+    relatedProducts: [],
     trendingProducts: [],
     newReleases: [],
   });
 
   const handleProductPress = (productId: string) => {
     router.push(`/(tabs)/product?id=${productId}`);
+  };
+  
+  const handleViewMore = (section: string) => {
+    console.log('View more:', section);
+    // Handle view more action
   };
 
   useEffect(() => {
@@ -48,14 +53,16 @@ export default function HomeScreen() {
 
         const highlightedProducts = ProductData.getHighlightedProducts();
         const featuredProduct = ProductData.getFeaturedProduct();
-        const recommendedProducts = ProductData.getRecommendedProducts();
-        const trendingProducts = ProductData.getTrendingProducts();
+        const recommendedProducts = productUtils.getRecommendedProducts();
+        const relatedProducts = productUtils.getRelatedProducts();
+        const trendingProducts = productUtils.getTrendingProducts();
         const newReleases = ProductData.getNewReleases();
 
         setData({
           highlightedProducts,
           featuredProduct,
           recommendedProducts,
+          relatedProducts,
           trendingProducts,
           newReleases,
         });
@@ -96,28 +103,14 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        {/* Subheader + Promotion Products */}
-        <View style={styles.section}>
-          <Subheader 
-            title="Recomendados para ti"
-            buttonText="Ver Todo"
-            onButtonPress={() => {}}
-          />
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollContent}
-          >
-            {data.recommendedProducts.map((product) => (
-              <PromotionCard 
-                key={product.id}
-                product={product}
-                size="s"
-                onPress={() => handleProductPress(product.id)}
-              />
-            ))}
-          </ScrollView>
-        </View>
+        {/* Product Sections */}
+        <ProductSections
+          relatedProducts={data.relatedProducts}
+          recommendedProducts={data.recommendedProducts}
+          trendingProducts={data.trendingProducts}
+          onProductPress={handleProductPress}
+          onViewMore={handleViewMore}
+        />
 
         {/* Triple Vertical Layout */}
         <View style={[styles.section, styles.showcaseSection]}>
@@ -126,35 +119,9 @@ export default function HomeScreen() {
           <CategoryShowcase title="ver todo" onPress={() => {}} />
         </View>
 
-        {/* Horizontal Product Cards */}
-        <View style={styles.section}>
-          <Subheader 
-            title="Tendencias"
-            buttonText="Ver Todo"
-            onButtonPress={() => {}}
-          />
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollContent}
-          >
-            {data.trendingProducts.map((product) => (
-              <MinicardLarge
-                key={product.id}
-                product={product}
-                onPress={() => handleProductPress(product.id)}
-              />
-            ))}
-          </ScrollView>
-        </View>
-
         {/* Featured Product */}
         {data.featuredProduct && (
           <View style={styles.section}>
-            <Subheader 
-              title="Destacados"
-              buttonText="Ver Todo"
-            />
             <View style={styles.featuredCardContainer}>
               <FeaturedCard 
                 product={data.featuredProduct}
@@ -164,22 +131,6 @@ export default function HomeScreen() {
             </View>
           </View>
         )}
-
-        {/* Product Grid */}
-        <View style={styles.section}>
-          <Subheader 
-            title="Productos"
-          />
-          <View style={styles.productGrid}>
-            {data.newReleases.map((product) => (
-              <DefaultLargeCard
-                key={product.id}
-                product={product}
-                onPress={() => handleProductPress(product.id)}
-              />
-            ))}
-          </View>
-        </View>
 
         {/* CTA Button */}
         <View style={styles.buttonContainer}>
@@ -229,13 +180,6 @@ const styles = StyleSheet.create({
   horizontalScrollContent: {
     paddingHorizontal: spacing.lg,
     gap: spacing.md,
-  },
-  productGrid: {
-    paddingHorizontal: spacing.lg,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-    justifyContent: 'space-between',
   },
   buttonContainer: {
     paddingHorizontal: spacing.lg,

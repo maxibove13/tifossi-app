@@ -6,15 +6,17 @@ interface SectionHeaderProps {
   title: string;
   actionText?: string;
   onActionPress?: () => void;
+  style?: ViewStyle;
 }
 
 export default function SectionHeader({
   title,
   actionText,
-  onActionPress
+  onActionPress,
+  style,
 }: SectionHeaderProps) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <Text style={styles.title}>{title}</Text>
       {actionText && onActionPress && (
         <TouchableOpacity onPress={onActionPress} style={styles.actionButton}>
@@ -55,5 +57,6 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: '400',
     fontSize: typography.body.fontSize,
     color: colors.secondary.text,
+    textDecorationLine: 'underline',
   },
 });
