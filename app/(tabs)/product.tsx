@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import ProductHeader from '../components/store/layout/ProductHeader'
 import EnhancedProductGallery from '../components/store/product/gallery/EnhancedProductGallery'
@@ -8,10 +8,6 @@ import { colors } from '../styles/colors'
 import { isProduct, Product } from '../types/product'
 import { useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
-import { spacing } from '../styles/spacing'
-import Subheader from '../components/common/Subheader'
-import PromotionCard from '../components/store/product/promotion/PromotionCard'
-import MinicardLarge from '../components/store/product/minicard/large'
 import productUtils from '../utils/product-utils'
 
 export default function ProductScreen() {

@@ -9,10 +9,8 @@ import {
   TextStyle,
   Dimensions,
   Animated,
-  TouchableWithoutFeedback,
-  Platform
+  TouchableWithoutFeedback
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import CloseIcon from '../../../../../assets/icons/close.svg';
 import ChevronRight from '../../../../../assets/icons/chevron_right.svg';
 import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.svg';

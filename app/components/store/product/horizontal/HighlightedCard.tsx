@@ -2,7 +2,6 @@ import { StyleSheet, View, Text, Pressable } from 'react-native';
 import type { Product } from '../../../../types/product';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography';
 import ProductImage from '../image/ProductImage';
-import type { BaseProductCardProps } from '../types';
 
 type HighlightedCardProps = {
   product: Product;

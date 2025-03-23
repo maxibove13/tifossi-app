@@ -10,8 +10,7 @@ import {
   TextStyle,
   Dimensions,
   Animated,
-  TouchableWithoutFeedback,
-  Platform
+  TouchableWithoutFeedback
 } from 'react-native';
 // SVG components for quantity control
 // @ts-ignore - Import SVG components 
@@ -22,7 +21,7 @@ import PlusIcon from '../../../../../assets/icons/quantity/plus.svg';
 // Import style tokens
 import { colors } from '../../../../styles/colors';
 import { spacing, radius } from '../../../../styles/spacing';
-import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography';
+import { fontSizes, lineHeights } from '../../../../styles/typography';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');

@@ -1,7 +1,4 @@
 import { StyleSheet, View, Text, Image, ViewStyle } from 'react-native';
-import { spacing } from '../../../styles/spacing';
-import { colors } from '../../../styles/colors';
-import { fonts } from '../../../styles/typography';
 
 type FooterProps = {
   style?: ViewStyle

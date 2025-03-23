@@ -5,7 +5,7 @@ import ProductImage from '../image/ProductImage';
 import { getCardDimensions } from '../../../../types/product-card';
 import { mapProductToCardData } from '../../../../types/product';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography';
-import { spacing, radius, layout } from '../../../../styles/spacing';
+import { spacing, radius } from '../../../../styles/spacing';
 import { colors } from '../../../../styles/colors';
 
 export default function FeaturedCard({ 

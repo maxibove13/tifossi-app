@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, forwardRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -29,11 +29,8 @@ import Animated, {
 // Import our custom components
 import ProductInfoHeader from './ProductInfoHeader';
 import ProductDetails from './ProductDetails';
-import SectionHeader from './SectionHeader';
 import SupportOption from './SupportOption';
 import { Product } from '../../../../types/product';
-import PromotionCard from '../promotion/PromotionCard';
-import MinicardLarge from '../minicard/large';
 import ProductSections from '../sections/ProductSections';
 import OverlayCheckoutShipping from '../overlay/OverlayCheckoutShipping';
 

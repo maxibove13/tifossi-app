@@ -2,7 +2,6 @@ import { memo } from 'react'
 import type { DefaultCardProps } from '../types'
 import DefaultSmallCard from './small'
 import DefaultLargeCard from './large'
-import { getCardDimensions } from '../../../../types/product-card'
 
 function DefaultCard({ size = 'small', ...props }: DefaultCardProps) {
   if (size === 'large') {

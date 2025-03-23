@@ -3,7 +3,7 @@ import { ProductStatus, ProductLabel, isValidStatus, isValidLabel } from './prod
 
 export interface ProductColorImages {
   main: string | ImageSourcePropType;
-  additional?: Array<string | ImageSourcePropType>;
+  additional?: (string | ImageSourcePropType)[];
 }
 
 export interface ProductColor {

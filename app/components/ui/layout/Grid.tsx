@@ -1,5 +1,5 @@
 import { StyleSheet, View, ViewStyle } from 'react-native';
-import { spacing, layout } from '../../../styles/spacing';
+import { layout } from '../../../styles/spacing';
 
 type GridProps = {
   children: React.ReactNode;

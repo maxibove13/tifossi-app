@@ -3,7 +3,6 @@ import { useFonts, Roboto_500Medium } from '@expo-google-fonts/roboto';
 import { Inter_500Medium } from '@expo-google-fonts/inter';
 import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
-import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import SplashScreenComponent from './components/splash/SplashScreen';
 
