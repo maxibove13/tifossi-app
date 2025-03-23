@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import CloseIcon from '../../../../../assets/icons/close.svg';
 import ChevronRight from '../../../../../assets/icons/chevron_right.svg';
+import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.svg';
 import OverlayCheckoutQuantity from './OverlayCheckoutQuantity';
 
 // Import style tokens
@@ -131,7 +132,7 @@ export default function OverlayCheckoutShipping({
                 <Text style={styles.selectionTitle}>Talle</Text>
                 <View style={styles.actionButton}>
                   <Text style={styles.actionText}>Seleccionar</Text>
-                  <ChevronRight width={8} height={14} stroke="#AD3026" strokeWidth={1.2} />
+                  <ChevronRight width={8} height={14} />
                 </View>
               </TouchableOpacity>
 
@@ -148,12 +149,12 @@ export default function OverlayCheckoutShipping({
                       <Text style={[styles.actionText, styles.doneText]}>
                         Listo
                       </Text>
-                      <ChevronRight width={8} height={14} stroke="#367C39" strokeWidth={1.2} />
+                      <ChevronRightGreen width={8} height={14} />
                     </>
                   ) : (
                     <>
                       <Text style={styles.actionText}>Seleccionar</Text>
-                      <ChevronRight width={8} height={14} stroke="#AD3026" strokeWidth={1.2} />
+                      <ChevronRight width={8} height={14} />
                     </>
                   )}
                 </View>
