@@ -41,7 +41,7 @@ export default function ProductScreen() {
   }
   
   const handleProductPress = (productId: string) => {
-    router.push(`/(tabs)/product?id=${productId}`)
+    router.push(`/products/product?id=${productId}`)
   }
 
   const handleSupportAction = (action: 'chat' | 'faq' | 'call') => {

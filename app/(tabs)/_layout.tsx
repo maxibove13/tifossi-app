@@ -73,12 +73,6 @@ export default function TabLayout() {
             href: '/profile',
           }}
         />
-        <Tabs.Screen 
-          name="product" 
-          options={{
-            tabBarButton: () => null, // Hide from tab bar
-          }}
-        />
       </Tabs>
     </View>
   );

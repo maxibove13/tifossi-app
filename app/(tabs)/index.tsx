@@ -37,7 +37,7 @@ export default function HomeScreen() {
   });
 
   const handleProductPress = (productId: string) => {
-    router.push(`/(tabs)/product?id=${productId}`);
+    router.push(`/products/product?id=${productId}`);
   };
   
   const handleViewMore = (section: string) => {

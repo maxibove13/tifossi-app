@@ -307,7 +307,7 @@ export default function ProductScreen() {
 
 The app supports deep linking to specific screens:
 
-- Product details: `app://product?id=123`
+- Product details: `app://products/product?id=123`
 - Cart: `app://cart`
 - Favorites: `app://favorites`
 
