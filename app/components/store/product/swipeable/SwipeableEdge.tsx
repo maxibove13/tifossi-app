@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -8,22 +8,21 @@ import {
   ViewStyle,
   TextStyle,
   Platform,
-  ScrollView
+  ScrollView,
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, typography } from './styles';
-import { PanGestureHandler } from 'react-native-gesture-handler';
+import BottomSheet, { 
+  BottomSheetScrollView
+} from '@gorhom/bottom-sheet';
 import Animated, {
-  useAnimatedGestureHandler,
   useAnimatedStyle,
-  useAnimatedScrollHandler,
-  useSharedValue,
-  withSpring,
-  interpolate,
-  runOnJS,
-  Extrapolate
+  useSharedValue
 } from 'react-native-reanimated';
 
 // Import our custom components
@@ -47,6 +46,9 @@ const triggerHaptic = () => {
 const { height } = Dimensions.get('window');
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
+
+const DEFAULT_MIN_SNAP_HEIGHT = 250; // Fallback if measurement fails
+const COLLAPSED_BOTTOM_PADDING = spacing.lg; // Extra space below the header in collapsed state
 
 interface SwipeableEdgeProps {
   /**
@@ -86,11 +88,6 @@ interface SwipeableEdgeProps {
    */
   trendingProducts?: Product[];
   /**
-   * Minimum visible height when collapsed
-   * @default 250
-   */
-  minHeight?: number;
-  /**
    * Header height to respect when fully expanded
    * @default 120
    */
@@ -126,7 +123,6 @@ const SwipeableEdge = ({
   relatedProducts = [],
   recommendedProducts = [],
   trendingProducts = [],
-  minHeight = 250,
   headerHeight = 120,
   onExpandedChange,
   onAddToCart = () => {},
@@ -134,32 +130,42 @@ const SwipeableEdge = ({
   onProductPress = () => {},
   onSupportAction = () => {}
 }: SwipeableEdgeProps) => {
-  // Calculate panel dimensions
-  const MIN_PANEL_HEIGHT = minHeight;
-  const MAX_PANEL_HEIGHT = height - headerHeight;
-  const PANEL_RANGE = MAX_PANEL_HEIGHT - MIN_PANEL_HEIGHT;
-  
   // Component state
   const [expanded, setExpanded] = useState(false);
   const [isShippingOverlayVisible, setIsShippingOverlayVisible] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [headerContentHeight, setHeaderContentHeight] = useState<number | null>(null);
   
-  // React refs for DOM access
+  // References
+  const bottomSheetRef = useRef<BottomSheet>(null);
   const scrollViewRef = useRef(null);
   
-  // Shared animated values
-  const translateY = useSharedValue(PANEL_RANGE); // Distance from fully expanded (0 = fully expanded)
-  const scrollY = useSharedValue(0);
-  const isDragging = useSharedValue(false);
+  // Calculate panel dimensions
+  const MAX_PANEL_HEIGHT = height - headerHeight;
+  
+  // Calculate snap points dynamically based on header content height
+  const snapPoints = useMemo(() => {
+    const minSnap = headerContentHeight 
+      ? headerContentHeight + COLLAPSED_BOTTOM_PADDING
+      : DEFAULT_MIN_SNAP_HEIGHT;
+    
+    const effectiveMinSnap = Math.min(minSnap, MAX_PANEL_HEIGHT - 1);
+    return [effectiveMinSnap, MAX_PANEL_HEIGHT];
+  }, [headerContentHeight, MAX_PANEL_HEIGHT]);
+  
+  // Calculate initial index
+  const initialIndex = 0; // Start collapsed
   
   // Store the current product ID for change detection
   const productIdRef = useRef(product?.id);
   
+  // Shared animated values for scroll tracking
+  const scrollY = useSharedValue(0);
+  
   // Reset scroll position
   const resetScroll = useCallback(() => {
     if (scrollViewRef.current) {
-      // Cast to any to avoid TypeScript errors
-      (scrollViewRef.current as any).scrollTo?.({ x: 0, y: 0, animated: false });
+      (scrollViewRef.current as any).scrollTo?.({ y: 0, animated: false });
       scrollY.value = 0;
     }
   }, [scrollY]);
@@ -171,21 +177,29 @@ const SwipeableEdge = ({
       // Update ref
       productIdRef.current = product?.id;
       
+      // Reset header height measurement for new product
+      setHeaderContentHeight(null);
+      
       // Reset to collapsed state
       if (expanded) {
         setExpanded(false);
-        translateY.value = withSpring(PANEL_RANGE, {
-          damping: 20,
-          stiffness: 200,
-          mass: 1,
-        });
+        bottomSheetRef.current?.snapToIndex(0);
         resetScroll();
       }
     }
-  }, [product?.id, expanded, resetScroll, PANEL_RANGE, translateY]);
+  }, [product?.id, expanded, resetScroll]);
   
-  // Handle state change
-  const updateExpandedState = useCallback((isExpanded: boolean) => {
+  // Measure header content height
+  const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height: measuredHeight } = event.nativeEvent.layout;
+    if (measuredHeight > 0 && measuredHeight !== headerContentHeight) {
+      setHeaderContentHeight(measuredHeight);
+    }
+  }, [headerContentHeight]);
+  
+  // Handle sheet changes
+  const handleSheetChanges = useCallback((index: number) => {
+    const isExpanded = index === 1;
     if (expanded !== isExpanded) {
       setExpanded(isExpanded);
       onExpandedChange?.(isExpanded);
@@ -193,135 +207,28 @@ const SwipeableEdge = ({
     }
   }, [expanded, onExpandedChange]);
   
-  // Toggle expanded state with animation
-  const toggleExpanded = useCallback(() => {
-    const toValue = expanded ? PANEL_RANGE : 0;
-    translateY.value = withSpring(toValue, {
-      damping: 20,
-      stiffness: 200,
-      mass: 1,
-      overshootClamping: false,
-      restDisplacementThreshold: 0.01,
-      restSpeedThreshold: 0.01
-    }, () => {
-      runOnJS(updateExpandedState)(!expanded);
-      
-      // Reset scroll when collapsing
-      if (expanded) {
-        runOnJS(resetScroll)();
-      }
+  // Handle scroll events with native listener
+  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    // Use requestAnimationFrame to throttle updates and prevent rapid value changes
+    requestAnimationFrame(() => {
+      scrollY.value = offsetY;
     });
-  }, [expanded, PANEL_RANGE, translateY, updateExpandedState, resetScroll]);
+  }, [scrollY]);
   
-  // Gesture handler for the panel
-  const panGestureHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx: any) => {
-      ctx.startY = translateY.value;
-      isDragging.value = true;
-    },
-    onActive: (event, ctx) => {
-      // Calculate new position
-      let newY = ctx.startY + event.translationY;
-      
-      // Apply boundaries with subtle resistance
-      if (newY < 0) {
-        newY = -Math.log(1 - newY / -200) * 40; // Subtle resistance when pulling beyond bounds
-      } else if (newY > PANEL_RANGE) {
-        newY = PANEL_RANGE + Math.log(1 + (newY - PANEL_RANGE) / 200) * 40;
-      }
-      
-      translateY.value = newY;
-    },
-    onEnd: (event) => {
-      isDragging.value = false;
-      
-      // Determine whether to snap to expanded or collapsed
-      const shouldExpand = translateY.value < PANEL_RANGE * 0.4 || event.velocityY < -300;
-      
-      // Apply spring animation
-      translateY.value = withSpring(
-        shouldExpand ? 0 : PANEL_RANGE,
-        {
-          damping: 20,
-          stiffness: 200,
-          mass: 1,
-          velocity: event.velocityY,
-          overshootClamping: false,
-          restDisplacementThreshold: 0.01,
-          restSpeedThreshold: 0.01
-        }, 
-        () => {
-          runOnJS(updateExpandedState)(shouldExpand);
-          
-          // Reset scroll when collapsing
-          if (!shouldExpand && scrollY.value > 0) {
-            runOnJS(resetScroll)();
-          }
-        }
-      );
-    }
-  });
-  
-  // Handle scroll events
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollY.value = event.contentOffset.y;
-    },
-    onBeginDrag: () => {
-      isDragging.value = true;
-    },
-    onEndDrag: () => {
-      isDragging.value = false;
-    }
-  });
-  
-  // Panel height animation
-  const panelStyle = useAnimatedStyle(() => {
-    return {
-      height: interpolate(
-        translateY.value,
-        [0, PANEL_RANGE],
-        [MAX_PANEL_HEIGHT, MIN_PANEL_HEIGHT],
-        Extrapolate.CLAMP
-      )
-    };
-  });
-  
-  // Chevron rotation animation - directly tied to panel position
+  // Animation for chevron rotation based on expanded state
   const chevronStyle = useAnimatedStyle(() => {
     return {
       transform: [{ 
-        rotate: `${interpolate(
-          translateY.value,
-          [0, PANEL_RANGE],
-          [180, 0],
-          Extrapolate.CLAMP
-        )}deg` 
+        rotate: `${expanded ? 180 : 0}deg` 
       }]
     };
   });
   
-  // Header opacity animation
-  const headerOpacity = useAnimatedStyle(() => {
-    return {
-      opacity: interpolate(
-        translateY.value,
-        [0, PANEL_RANGE],
-        [1, 1],
-        Extrapolate.CLAMP
-      )
-    };
-  });
-  
-  // Details opacity animation
+  // Animation for details opacity
   const detailsOpacity = useAnimatedStyle(() => {
     return {
-      opacity: interpolate(
-        translateY.value,
-        [0, PANEL_RANGE * 0.3],
-        [1, 0],
-        Extrapolate.CLAMP
-      )
+      opacity: expanded ? 1 : 0
     };
   });
 
@@ -343,62 +250,68 @@ const SwipeableEdge = ({
     // onAddToCart will be called when user completes all selections
   }, []);
 
+  // Custom handle component to match original design
+  const renderHandle = useCallback(() => (
+    <View style={styles.dragHandleContainer}>
+      <TouchableOpacity
+        onPress={() => {
+          bottomSheetRef.current?.snapToIndex(expanded ? 0 : 1);
+        }}
+        style={styles.toggleArea}
+        activeOpacity={0.7}
+        testID="swipeable-edge-handle"
+      >
+        <View style={styles.invisibleTouchTarget} />
+      </TouchableOpacity>
+      
+      <Animated.View style={[styles.dragHandle, chevronStyle]}>
+        <Ionicons 
+          name="chevron-up" 
+          size={24} 
+          color={colors.border} 
+        />
+      </Animated.View>
+    </View>
+  ), [expanded, chevronStyle]);
+
+  // Custom background component
+  const renderBackgroundComponent = useCallback(() => (
+    <LinearGradient
+      colors={['rgba(12, 12, 12, 0.9)', 'rgba(12, 12, 12, 1)']}
+      style={StyleSheet.absoluteFill}
+    />
+  ), []);
+
+  // Only render sheet if we have valid minimum snap point height
+  const canRenderSheet = headerContentHeight !== null || DEFAULT_MIN_SNAP_HEIGHT > 0;
+
   return (
     <>
-      <Animated.View
-        style={[
-          styles.container,
-          panelStyle
-        ]}
-        testID="swipeable-edge-container"
-      >
-        {/* Header with gradient background */}
-        <LinearGradient
-          colors={['rgba(12, 12, 12, 0.9)', 'rgba(12, 12, 12, 1)']}
-          style={StyleSheet.absoluteFill}
-        />
-        
-        {/* Make the entire top edge draggable */}
-        <PanGestureHandler
-          onGestureEvent={panGestureHandler}
-          enabled={true}
-          shouldCancelWhenOutside={false}
+      {canRenderSheet && (
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={initialIndex}
+          snapPoints={snapPoints}
+          onChange={handleSheetChanges}
+          handleComponent={renderHandle}
+          backgroundComponent={renderBackgroundComponent}
+          style={styles.container}
+          enablePanDownToClose={false}
+          enableContentPanningGesture={true}
+          enableHandlePanningGesture={true}
+          enableOverDrag={true}
+          animateOnMount={true}
         >
-          <Animated.View style={styles.dragHandleContainer}>
-            {/* Clickable area for direct toggle */}
-            <TouchableOpacity
-              onPress={toggleExpanded}
-              style={styles.toggleArea}
-              activeOpacity={0.7}
-              testID="swipeable-edge-handle"
-            >
-              <View style={styles.invisibleTouchTarget} />
-            </TouchableOpacity>
-            
-            {/* Chevron indicator */}
-            <Animated.View style={[styles.dragHandle, chevronStyle]}>
-              <Ionicons 
-                name="chevron-up" 
-                size={24} 
-                color={colors.border} 
-              />
-            </Animated.View>
-          </Animated.View>
-        </PanGestureHandler>
-        
-        {/* Scrollable content */}
-        <AnimatedScrollView
-          ref={scrollViewRef}
-          scrollEnabled={expanded}
-          showsVerticalScrollIndicator={true}
-          contentContainerStyle={styles.contentContainer}
-          onScroll={scrollHandler}
-          scrollEventThrottle={16}
-          bounces={false}
-        >
-          {/* Product Info Header Section */}
-          <View style={styles.innerContent}>
-            <Animated.View style={headerOpacity}>
+          <BottomSheetScrollView
+            ref={scrollViewRef}
+            scrollEnabled={expanded}
+            showsVerticalScrollIndicator={true}
+            contentContainerStyle={styles.contentContainer}
+            onScroll={handleScroll}
+            bounces={false}
+          >
+            {/* Collapsed State Content - Measured for minHeight */}
+            <View onLayout={handleHeaderLayout} style={styles.innerContent}>
               <ProductInfoHeader
                 productName={product.name}
                 isCustomizable={product.isCustomizable}
@@ -407,66 +320,69 @@ const SwipeableEdge = ({
                 originalPrice={product.originalPrice}
                 onAddToCart={handleAddToCart}
               />
-            </Animated.View>
+            </View>
             
-            {/* Product Details Section - only visible when expanded */}
-            <Animated.View style={detailsOpacity}>
-              <ProductDetails
-                isCustomizable={product.isCustomizable}
-                shortDescription={product.shortDescription}
-                longDescription={product.longDescription}
-                sku={product.sku}
-                warranty={product.warranty}
-                returnPolicy={product.returnPolicy}
-                dimensions={product.dimensions}
-              />
-            </Animated.View>
-          </View>
-          
-          {/* Product Sections - add consistent padding */}
-          <View style={styles.sectionsContainer}>
-            <ProductSections
-              relatedProducts={relatedProducts}
-              recommendedProducts={recommendedProducts}
-              trendingProducts={trendingProducts}
-              onProductPress={onProductPress}
-              onViewMore={onViewMore}
-              invertTextColors={true}
-              useSwipeableStyle={true}
-            />
-          </View>
-          
-          {/* Support Section */}
-          <View style={styles.innerContent}>
-            <View style={styles.supportSection}>
-              <View style={styles.supportHeader}>
-                <Text style={styles.supportTitle}>¿Tienes alguna duda?</Text>
-                <TouchableOpacity 
-                  onPress={() => onSupportAction('call')}
-                  style={styles.callButton}
-                >
-                  <Text style={styles.callButtonText}>Llamar</Text>
-                </TouchableOpacity>
+            {/* Expanded State Content - Only visible when expanded */}
+            <Animated.View style={[detailsOpacity, styles.expandedContentContainer]}>
+              {/* Product Details Section */}
+              <View style={styles.innerContent}>
+                <ProductDetails
+                  isCustomizable={product.isCustomizable}
+                  shortDescription={product.shortDescription}
+                  longDescription={product.longDescription}
+                  sku={product.sku}
+                  warranty={product.warranty}
+                  returnPolicy={product.returnPolicy}
+                  dimensions={product.dimensions}
+                />
               </View>
               
-              <View style={styles.supportOptions}>
-                <SupportOption
-                  title="Iniciar chat"
-                  description="Conversa con uno de nuestros agentes."
-                  iconType="chat"
-                  onPress={() => onSupportAction('chat')}
-                />
-                <SupportOption
-                  title="Soporte | FAQ"
-                  description="Ve a la sección de ayuda."
-                  iconType="help"
-                  onPress={() => onSupportAction('faq')}
+              {/* Product Sections */}
+              <View style={styles.sectionsContainer}>
+                <ProductSections
+                  relatedProducts={relatedProducts}
+                  recommendedProducts={recommendedProducts}
+                  trendingProducts={trendingProducts}
+                  onProductPress={onProductPress}
+                  onViewMore={onViewMore}
+                  invertTextColors={true}
+                  useSwipeableStyle={true}
                 />
               </View>
-            </View>
-          </View>
-        </AnimatedScrollView>
-      </Animated.View>
+              
+              {/* Support Section */}
+              <View style={styles.innerContent}>
+                <View style={styles.supportSection}>
+                  <View style={styles.supportHeader}>
+                    <Text style={styles.supportTitle}>¿Tienes alguna duda?</Text>
+                    <TouchableOpacity 
+                      onPress={() => onSupportAction('call')}
+                      style={styles.callButton}
+                    >
+                      <Text style={styles.callButtonText}>Llamar</Text>
+                    </TouchableOpacity>
+                  </View>
+                  
+                  <View style={styles.supportOptions}>
+                    <SupportOption
+                      title="Iniciar chat"
+                      description="Conversa con uno de nuestros agentes."
+                      iconType="chat"
+                      onPress={() => onSupportAction('chat')}
+                    />
+                    <SupportOption
+                      title="Soporte | FAQ"
+                      description="Ve a la sección de ayuda."
+                      iconType="help"
+                      onPress={() => onSupportAction('faq')}
+                    />
+                  </View>
+                </View>
+              </View>
+            </Animated.View>
+          </BottomSheetScrollView>
+        </BottomSheet>
+      )}
       
       {/* Shipping Overlay */}
       <OverlayCheckoutShipping
@@ -489,6 +405,7 @@ type StylesType = {
   dragHandle: ViewStyle;
   contentContainer: ViewStyle;
   innerContent: ViewStyle;
+  expandedContentContainer: ViewStyle;
   sectionsContainer: ViewStyle;
   productsSection: ViewStyle;
   placeholderProducts: ViewStyle;
@@ -504,10 +421,6 @@ type StylesType = {
 
 const styles = StyleSheet.create<StylesType>({
   container: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     overflow: 'hidden',
@@ -547,6 +460,9 @@ const styles = StyleSheet.create<StylesType>({
   },
   innerContent: {
     paddingHorizontal: spacing.lg,
+  },
+  expandedContentContainer: {
+    marginTop: spacing.md,
   },
   sectionsContainer: {
     paddingHorizontal: spacing.lg,
