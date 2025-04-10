@@ -15,6 +15,7 @@ import CloseIcon from '../../../../../assets/icons/close.svg';
 import ChevronRight from '../../../../../assets/icons/chevron_right.svg';
 import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.svg';
 import OverlayCheckoutQuantity from './OverlayCheckoutQuantity';
+import OverlayProductEditSize from './OverlayProductEditSize';
 
 // Import style tokens
 import { colors } from '../../../../styles/colors';
@@ -27,9 +28,12 @@ const { width, height } = Dimensions.get('window');
 interface OverlayCheckoutShippingProps {
   isVisible: boolean;
   onClose: () => void;
-  onSelectSize: () => void;
+  onSelectSize: (size: string) => void;
   onSelectQuantity: (quantity: number) => void;
+  onBuyNow?: (size: string, quantity: number) => void;
+  onAddToCart?: (size: string, quantity: number) => void;
   initialQuantity?: number;
+  initialSize?: string;
 }
 
 export default function OverlayCheckoutShipping({
@@ -37,13 +41,18 @@ export default function OverlayCheckoutShipping({
   onClose,
   onSelectSize,
   onSelectQuantity,
-  initialQuantity = 1
+  onBuyNow = () => {},
+  onAddToCart = () => {},
+  initialQuantity = 1,
+  initialSize = ''
 }: OverlayCheckoutShippingProps) {
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(height));
   const [isQuantityOverlayVisible, setIsQuantityOverlayVisible] = useState(false);
+  const [isSizeOverlayVisible, setIsSizeOverlayVisible] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(initialQuantity);
+  const [selectedSize, setSelectedSize] = useState(initialSize);
 
   useEffect(() => {
     if (isVisible) {
@@ -78,11 +87,32 @@ export default function OverlayCheckoutShipping({
     // User will return to this overlay after selecting a quantity
   };
 
+  const handleOpenSizeOverlay = () => {
+    setIsSizeOverlayVisible(true);
+  };
+
+  const handleSizeSave = (size: string) => {
+    setSelectedSize(size);
+    onSelectSize(size);
+  };
+
+  // Handle buy now action
+  const handleBuyNow = () => {
+    onBuyNow(selectedSize, selectedQuantity);
+    onClose();
+  };
+
+  // Handle add to cart action
+  const handleAddToCart = () => {
+    onAddToCart(selectedSize, selectedQuantity);
+    onClose();
+  };
+
   return (
     <>
       <Modal
         transparent
-        visible={isVisible && !isQuantityOverlayVisible}
+        visible={isVisible && !isQuantityOverlayVisible && !isSizeOverlayVisible}
         onRequestClose={onClose}
         animationType="none"
       >
@@ -106,7 +136,9 @@ export default function OverlayCheckoutShipping({
           >
             {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.title}>Agregar al carrito</Text>
+              <Text style={styles.title}>
+                {selectedSize && selectedQuantity > 0 ? "Editar" : "Agregar al carrito"}
+              </Text>
               <TouchableOpacity
                 style={styles.closeButton}
                 onPress={onClose}
@@ -121,16 +153,24 @@ export default function OverlayCheckoutShipping({
               {/* Size Selection Row */}
               <TouchableOpacity
                 style={styles.selectionRow}
-                onPress={() => {
-                  onSelectSize();
-                  onClose();
-                }}
+                onPress={handleOpenSizeOverlay}
                 activeOpacity={0.7}
               >
                 <Text style={styles.selectionTitle}>Talle</Text>
                 <View style={styles.actionButton}>
-                  <Text style={styles.actionText}>Seleccionar</Text>
-                  <ChevronRight width={8} height={14} />
+                  {selectedSize ? (
+                    <>
+                      <Text style={[styles.actionText, styles.doneText]}>
+                        Listo
+                      </Text>
+                      <ChevronRightGreen width={8} height={14} />
+                    </>
+                  ) : (
+                    <>
+                      <Text style={styles.actionText}>Seleccionar</Text>
+                      <ChevronRight width={8} height={14} />
+                    </>
+                  )}
                 </View>
               </TouchableOpacity>
 
@@ -158,6 +198,27 @@ export default function OverlayCheckoutShipping({
                 </View>
               </TouchableOpacity>
             </View>
+
+            {/* Action Buttons - only show when both size and quantity are selected */}
+            {selectedSize && selectedQuantity > 0 && (
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleBuyNow}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.primaryButtonText}>Comprar ahora</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.secondaryButton}
+                  onPress={handleAddToCart}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.secondaryButtonText}>Agregar al carrito</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </Animated.View>
         </View>
       </Modal>
@@ -169,6 +230,15 @@ export default function OverlayCheckoutShipping({
         onGoBack={() => setIsQuantityOverlayVisible(false)}
         onSave={handleQuantitySave}
         initialQuantity={selectedQuantity}
+      />
+
+      {/* Size Overlay */}
+      <OverlayProductEditSize
+        isVisible={isSizeOverlayVisible}
+        onClose={onClose}
+        onGoBack={() => setIsSizeOverlayVisible(false)}
+        onSave={handleSizeSave}
+        initialSize={selectedSize}
       />
     </>
   );
@@ -187,6 +257,11 @@ type Styles = {
   actionButton: ViewStyle;
   actionText: TextStyle;
   doneText: TextStyle;
+  actionButtons: ViewStyle;
+  primaryButton: ViewStyle;
+  primaryButtonText: TextStyle;
+  secondaryButton: ViewStyle;
+  secondaryButtonText: TextStyle;
 };
 
 const styles = StyleSheet.create<Styles>({
@@ -234,6 +309,7 @@ const styles = StyleSheet.create<Styles>({
   },
   content: {
     gap: spacing.lg,
+    marginBottom: spacing.xl,
   },
   selectionRow: {
     flexDirection: 'row',
@@ -265,5 +341,45 @@ const styles = StyleSheet.create<Styles>({
   },
   doneText: {
     color: '#367C39',
+  },
+  actionButtons: {
+    flexDirection: 'column',
+    width: '100%',
+    gap: spacing.sm,
+    marginTop: spacing.xl,
+  },
+  primaryButton: {
+    width: '100%',
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.background.dark,
+  },
+  primaryButtonText: {
+    fontFamily: 'Inter',
+    fontSize: fontSizes.md,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.md,
+    color: '#FBFBFB',
+  },
+  secondaryButton: {
+    width: '100%',
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    borderWidth: 1,
+    borderColor: '#DCDCDC',
+    backgroundColor: 'transparent',
+  },
+  secondaryButtonText: {
+    fontFamily: 'Inter',
+    fontSize: fontSizes.md,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.md,
+    color: '#0C0C0C',
   },
 }); 
