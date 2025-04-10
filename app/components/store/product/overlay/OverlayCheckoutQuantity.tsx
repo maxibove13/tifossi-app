@@ -24,7 +24,7 @@ import { spacing, radius } from '../../../../styles/spacing';
 import { fontSizes, lineHeights } from '../../../../styles/typography';
 
 // Get screen dimensions
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 // Constants
 const MAX_QUANTITY = 16;

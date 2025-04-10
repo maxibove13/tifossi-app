@@ -16,6 +16,7 @@ import ChevronRight from '../../../../../assets/icons/chevron_right.svg';
 import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.svg';
 import OverlayCheckoutQuantity from './OverlayCheckoutQuantity';
 import OverlayProductEditSize from './OverlayProductEditSize';
+import OverlayShippingSelection from './OverlayShippingSelection';
 
 // Import style tokens
 import { colors } from '../../../../styles/colors';
@@ -23,7 +24,7 @@ import { spacing, radius } from '../../../../styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography';
 
 // Get screen dimensions
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 interface OverlayCheckoutShippingProps {
   isVisible: boolean;
@@ -40,7 +41,6 @@ export default function OverlayCheckoutShipping({
   isVisible,
   onClose,
   onSelectSize,
-  onSelectQuantity,
   onBuyNow = () => {},
   onAddToCart = () => {},
   initialQuantity = 1,
@@ -51,6 +51,7 @@ export default function OverlayCheckoutShipping({
   const [slideAnim] = useState(new Animated.Value(height));
   const [isQuantityOverlayVisible, setIsQuantityOverlayVisible] = useState(false);
   const [isSizeOverlayVisible, setIsSizeOverlayVisible] = useState(false);
+  const [isShippingOverlayVisible, setIsShippingOverlayVisible] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(initialQuantity);
   const [selectedSize, setSelectedSize] = useState(initialSize);
 
@@ -98,8 +99,8 @@ export default function OverlayCheckoutShipping({
 
   // Handle buy now action
   const handleBuyNow = () => {
-    onBuyNow(selectedSize, selectedQuantity);
-    onClose();
+    // Show the shipping overlay instead of closing
+    setIsShippingOverlayVisible(true);
   };
 
   // Handle add to cart action
@@ -108,11 +109,20 @@ export default function OverlayCheckoutShipping({
     onClose();
   };
 
+  // Handle shipping method selection
+  const handleSelectShipping = (method: 'delivery' | 'pickup' | '') => {
+    // Process the shipping selection and then proceed with buy now
+    if (method) {
+      onBuyNow(selectedSize, selectedQuantity);
+    }
+    onClose();
+  };
+
   return (
     <>
       <Modal
         transparent
-        visible={isVisible && !isQuantityOverlayVisible && !isSizeOverlayVisible}
+        visible={isVisible && !isQuantityOverlayVisible && !isSizeOverlayVisible && !isShippingOverlayVisible}
         onRequestClose={onClose}
         animationType="none"
       >
@@ -239,6 +249,13 @@ export default function OverlayCheckoutShipping({
         onGoBack={() => setIsSizeOverlayVisible(false)}
         onSave={handleSizeSave}
         initialSize={selectedSize}
+      />
+
+      {/* Shipping Overlay */}
+      <OverlayShippingSelection
+        isVisible={isShippingOverlayVisible}
+        onClose={() => setIsShippingOverlayVisible(false)}
+        onSelectShipping={handleSelectShipping}
       />
     </>
   );
