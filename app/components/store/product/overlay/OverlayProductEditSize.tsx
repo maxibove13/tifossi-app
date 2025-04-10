@@ -10,6 +10,9 @@ import {
   TouchableWithoutFeedback
 } from 'react-native';
 
+// Import shared components
+import RadioButton from '../../../../components/ui/form/RadioButton';
+
 // Import style tokens
 import { colors } from '../../../../styles/colors';
 import { spacing, radius } from '../../../../styles/spacing';
@@ -135,14 +138,7 @@ export default function OverlayProductEditSize({
                 activeOpacity={0.7}
               >
                 <Text style={styles.sizeOptionText}>{size}</Text>
-                <View style={[
-                  styles.radioButton,
-                  selectedSize === size && styles.radioButtonSelected
-                ]}>
-                  {selectedSize === size && (
-                    <View style={styles.radioButtonInner} />
-                  )}
-                </View>
+                <RadioButton selected={selectedSize === size} />
               </TouchableOpacity>
             ))}
           </View>
@@ -239,24 +235,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: lineHeights.md,
     color: '#0C0C0C',
-  },
-  radioButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1.6,
-    borderColor: '#DCDCDC',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  radioButtonSelected: {
-    borderColor: '#0C0C0C',
-  },
-  radioButtonInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#367C39',
   },
   actionButtons: {
     flexDirection: 'row',

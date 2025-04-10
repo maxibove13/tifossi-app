@@ -11,6 +11,7 @@ import {
   Animated,
   TouchableWithoutFeedback
 } from 'react-native';
+import { router } from 'expo-router';
 import CloseIcon from '../../../../../assets/icons/close.svg';
 import ChevronRight from '../../../../../assets/icons/chevron_right.svg';
 import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.svg';
@@ -111,11 +112,20 @@ export default function OverlayCheckoutShipping({
 
   // Handle shipping method selection
   const handleSelectShipping = (method: 'delivery' | 'pickup' | '') => {
-    // Process the shipping selection and then proceed with buy now
-    if (method) {
+    // If delivery is selected, navigate to the shipping address screen
+    if (method === 'delivery') {
+      setIsShippingOverlayVisible(false);
+      onClose(); // Close the current overlay
+      // Navigate to the shipping address screen
+      router.navigate('/checkout/shipping-address');
+    } else if (method === 'pickup') {
+      // For pickup, proceed directly to checkout
       onBuyNow(selectedSize, selectedQuantity);
+      onClose();
+    } else {
+      // If no method is selected (user closed the overlay), just close the shipping overlay
+      setIsShippingOverlayVisible(false);
     }
-    onClose();
   };
 
   return (
