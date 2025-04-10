@@ -38,7 +38,7 @@ export default function RelatedProducts({
   
   const handleProductPress = (id: string) => {
     router.push({
-      pathname: '/product',
+      pathname: '/products',
       params: { id }
     })
   }

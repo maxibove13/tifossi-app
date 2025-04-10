@@ -45,7 +45,7 @@ const triggerHaptic = () => {
 // Get screen dimensions
 const { height } = Dimensions.get('window');
 
-const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
+const _AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 const DEFAULT_MIN_SNAP_HEIGHT = 250; // Fallback if measurement fails
 const COLLAPSED_BOTTOM_PADDING = 56; // Extra space below the header in collapsed state
@@ -125,7 +125,7 @@ const SwipeableEdge = ({
   trendingProducts = [],
   headerHeight = 120,
   onExpandedChange,
-  onAddToCart = () => {},
+  onAddToCart: _onAddToCart = () => {},
   onViewMore = () => {},
   onProductPress = () => {},
   onSupportAction = () => {}

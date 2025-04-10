@@ -22,10 +22,10 @@ export default function ProductDetails({
   onAddToCart
 }: ProductDetailsProps) {
   const [quantity] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   
   // Convert labels to tags for display
-  const productTags = product.status ? [product.status] : [];
+  const _productTags = product.status ? [product.status] : [];
   
   // Get the first color name or default
   const colorValue = product.colors && product.colors.length > 0 
@@ -52,7 +52,7 @@ export default function ProductDetails({
   const returnPolicy = 'Puedes devolver este producto en un plazo de 30 días si no estás satisfecho con tu compra. Consulta nuestra política de devoluciones para más información.';
   
   // Handle add to cart
-  const handleAddToCart = async () => {
+  const _handleAddToCart = async () => {
     if (onAddToCart) {
       setIsLoading(true);
       try {

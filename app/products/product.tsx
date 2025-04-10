@@ -19,7 +19,7 @@ export default function ProductScreen() {
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product?.colors && product.colors.length > 0 ? product.colors[0].color : undefined
   )
-  const [selectedQuantity, setSelectedQuantity] = useState(1)
+  const [selectedQuantity, _setSelectedQuantity] = useState(1)
 
   // Get related products data
   const relatedProducts = productUtils.getRelatedProducts(id as string);

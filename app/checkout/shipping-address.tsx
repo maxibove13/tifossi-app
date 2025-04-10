@@ -25,7 +25,7 @@ interface Address {
 }
 
 export default function ShippingAddressScreen() {
-  const params = useLocalSearchParams();
+  const _params = useLocalSearchParams();
   // Extract product info from params if needed
   
   const [selectedAddress, setSelectedAddress] = useState<string>('');

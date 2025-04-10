@@ -7,7 +7,7 @@ type Props = {
   product: Product
 }
 
-export default function ColorSlider({ product }: Props) {
+export default function ColorSlider({ product: _product }: Props) {
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   // For demo purposes, create an array of the same image

@@ -23,7 +23,7 @@ const PromotionCard = ({
   darkMode = false,
   invertTextColor = false
 }: PromotionCardProps) => {
-  const isSmall = size === 's'
+  const _isSmall = size === 's'
   const { title, price, discountedPrice, image } = product
 
   return (
