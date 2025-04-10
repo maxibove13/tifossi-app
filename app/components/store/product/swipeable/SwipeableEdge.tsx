@@ -48,7 +48,7 @@ const { height } = Dimensions.get('window');
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 const DEFAULT_MIN_SNAP_HEIGHT = 250; // Fallback if measurement fails
-const COLLAPSED_BOTTOM_PADDING = spacing.lg; // Extra space below the header in collapsed state
+const COLLAPSED_BOTTOM_PADDING = 56; // Extra space below the header in collapsed state
 
 interface SwipeableEdgeProps {
   /**
