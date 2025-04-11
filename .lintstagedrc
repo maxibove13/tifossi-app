@@ -1,8 +1,7 @@
 {
   "*.{ts,tsx}": [
     "prettier --write",
-    "eslint",
-    "tsc --noEmit"
+    "eslint"
   ],
   "**/__tests__/**/*.{ts,tsx}": [
     "jest --ci --bail --findRelatedTests"

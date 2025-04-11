@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -27,12 +27,26 @@ interface Address {
 export default function ShippingAddressScreen() {
   const _params = useLocalSearchParams();
   // Extract product info from params if needed
-  
+
   const [selectedAddress, setSelectedAddress] = useState<string>('');
-  
-  // Sample addresses - in a real app, these would come from an API or context
-  // For testing the empty state, set this to an empty array
-  const addresses: Address[] = [];
+
+  // Use useMemo to prevent recreating the array on every render
+  const addresses = useMemo<Address[]>(
+    () => [
+      {
+        id: '1',
+        name: 'Calle Principal 123, Piso 2B, Madrid, España',
+      },
+    ],
+    []
+  );
+
+  // Select the first address by default
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddress) {
+      setSelectedAddress(addresses[0].id);
+    }
+  }, [addresses, selectedAddress]);
 
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddress(addressId);
@@ -46,8 +60,8 @@ export default function ShippingAddressScreen() {
   const handleNext = () => {
     if (selectedAddress) {
       // In a real app, you would save the selected address
-      // For now, just navigate back to the tabs since we don't have a payment screen yet
-      router.navigate('/(tabs)');
+      // Navigate to payment selection screen
+      router.navigate('/checkout/payment-selection');
     }
   };
 
@@ -63,20 +77,16 @@ export default function ShippingAddressScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen 
+      <Stack.Screen
         options={{
           headerShown: false,
-        }} 
+        }}
       />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Direcciones de envío</Text>
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={handleClose}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
           <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
         </TouchableOpacity>
       </View>
@@ -88,7 +98,7 @@ export default function ShippingAddressScreen() {
             <>
               <View style={styles.addressesContainer}>
                 <Text style={styles.sectionTitle}>Mis direcciones</Text>
-                
+
                 <View style={styles.addressList}>
                   {addresses.map((address) => (
                     <TouchableOpacity
@@ -125,7 +135,7 @@ export default function ShippingAddressScreen() {
                   Adiciona tu dirección de envío preferida para recibir tus pedidos.
                 </Text>
               </View>
-              
+
               <View style={styles.addAddressEmptyContainer}>
                 <TouchableOpacity
                   style={styles.addAddressButton}
@@ -146,7 +156,7 @@ export default function ShippingAddressScreen() {
         <TouchableOpacity
           style={[
             styles.primaryButton,
-            !selectedAddress && addresses.length > 0 && styles.disabledButton
+            !selectedAddress && addresses.length > 0 && styles.disabledButton,
           ]}
           onPress={handleNext}
           activeOpacity={0.7}
@@ -154,12 +164,8 @@ export default function ShippingAddressScreen() {
         >
           <Text style={styles.primaryButtonText}>Siguiente</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={handleBack}
-          activeOpacity={0.7}
-        >
+
+        <TouchableOpacity style={styles.secondaryButton} onPress={handleBack} activeOpacity={0.7}>
           <Text style={styles.secondaryButtonText}>Atrás</Text>
         </TouchableOpacity>
       </View>
@@ -337,4 +343,4 @@ const styles = StyleSheet.create<Styles>({
     lineHeight: 24,
     color: '#0C0C0C',
   },
-}); 
+});
