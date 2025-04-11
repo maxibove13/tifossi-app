@@ -5,3 +5,6 @@ export function test(): number {
   }
   return x;
 }
+
+// Test file
+console.log('Test pre-commit hook');
