@@ -31,10 +31,8 @@ export default function ShippingAddressScreen() {
   const [selectedAddress, setSelectedAddress] = useState<string>('');
   
   // Sample addresses - in a real app, these would come from an API or context
-  const addresses: Address[] = [
-    { id: '1', name: 'Luis A. de Herrera  - Pando' },
-    { id: '2', name: 'Calle 13 - Las Toscas' }
-  ];
+  // For testing the empty state, set this to an empty array
+  const addresses: Address[] = [];
 
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddress(addressId);
@@ -54,9 +52,8 @@ export default function ShippingAddressScreen() {
   };
 
   const handleAddNewAddress = () => {
-    // In a real app, this would navigate to an add address screen
-    // For now, we'll just log that this would navigate to a new screen
-    console.log('Would navigate to add new address screen');
+    // Navigate to add new address screen
+    router.navigate('/checkout/new-address' as any);
   };
 
   const handleClose = () => {
@@ -87,44 +84,73 @@ export default function ShippingAddressScreen() {
       {/* Content */}
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
-          <View style={styles.addressesContainer}>
-            <Text style={styles.sectionTitle}>Mis direcciones</Text>
-            
-            <View style={styles.addressList}>
-              {addresses.map((address) => (
+          {addresses.length > 0 ? (
+            <>
+              <View style={styles.addressesContainer}>
+                <Text style={styles.sectionTitle}>Mis direcciones</Text>
+                
+                <View style={styles.addressList}>
+                  {addresses.map((address) => (
+                    <TouchableOpacity
+                      key={address.id}
+                      style={styles.addressItem}
+                      onPress={() => handleAddressSelect(address.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.addressText}>{address.name}</Text>
+                      <RadioButton selected={selectedAddress === address.id} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.addAddressContainer}>
                 <TouchableOpacity
-                  key={address.id}
-                  style={styles.addressItem}
-                  onPress={() => handleAddressSelect(address.id)}
+                  style={styles.addAddressButton}
+                  onPress={handleAddNewAddress}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.addressText}>{address.name}</Text>
-                  <RadioButton selected={selectedAddress === address.id} />
+                  <PlusCircle width={20} height={20} stroke={colors.primary} strokeWidth={1.6} />
+                  <Text style={styles.addAddressText}>Añadir dirección nueva</Text>
                 </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.addAddressContainer}>
-            <TouchableOpacity
-              style={styles.addAddressButton}
-              onPress={handleAddNewAddress}
-              activeOpacity={0.7}
-            >
-              <PlusCircle width={20} height={20} stroke={colors.primary} strokeWidth={1.6} />
-              <Text style={styles.addAddressText}>Adicionar dirección nueva</Text>
-            </TouchableOpacity>
-          </View>
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.noAddressContainer}>
+                <Text style={styles.noAddressTitle}>
+                  Parece que no tienes ninguna dirección guardada.
+                </Text>
+                <Text style={styles.noAddressSubtitle}>
+                  Adiciona tu dirección de envío preferida para recibir tus pedidos.
+                </Text>
+              </View>
+              
+              <View style={styles.addAddressEmptyContainer}>
+                <TouchableOpacity
+                  style={styles.addAddressButton}
+                  onPress={handleAddNewAddress}
+                  activeOpacity={0.7}
+                >
+                  <PlusCircle width={20} height={20} stroke="#0C0C0C" strokeWidth={1.6} />
+                  <Text style={styles.addAddressText}>Adicionar dirección nueva</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </View>
       </ScrollView>
 
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
         <TouchableOpacity
-          style={styles.primaryButton}
+          style={[
+            styles.primaryButton,
+            !selectedAddress && addresses.length > 0 && styles.disabledButton
+          ]}
           onPress={handleNext}
           activeOpacity={0.7}
-          disabled={!selectedAddress}
+          disabled={!selectedAddress && addresses.length > 0}
         >
           <Text style={styles.primaryButtonText}>Siguiente</Text>
         </TouchableOpacity>
@@ -149,15 +175,20 @@ type Styles = {
   closeButton: ViewStyle;
   content: ViewStyle;
   addressesContainer: ViewStyle;
+  noAddressContainer: ViewStyle;
+  noAddressTitle: TextStyle;
+  noAddressSubtitle: TextStyle;
   sectionTitle: TextStyle;
   addressList: ViewStyle;
   addressItem: ViewStyle;
   addressText: TextStyle;
   addAddressContainer: ViewStyle;
+  addAddressEmptyContainer: ViewStyle;
   addAddressButton: ViewStyle;
   addAddressText: TextStyle;
   actionButtons: ViewStyle;
   primaryButton: ViewStyle;
+  disabledButton: ViewStyle;
   primaryButtonText: TextStyle;
   secondaryButton: ViewStyle;
   secondaryButtonText: TextStyle;
@@ -166,7 +197,7 @@ type Styles = {
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: colors.background.light,
+    backgroundColor: '#FAFAFA',
   },
   scrollView: {
     flex: 1,
@@ -199,6 +230,24 @@ const styles = StyleSheet.create<Styles>({
     gap: spacing.md,
     paddingHorizontal: spacing.xl,
   },
+  noAddressContainer: {
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xl + spacing.lg,
+  },
+  noAddressTitle: {
+    fontFamily: 'Roboto',
+    fontSize: 20,
+    fontWeight: fontWeights.regular,
+    lineHeight: 28,
+    color: '#0C0C0C',
+  },
+  noAddressSubtitle: {
+    fontFamily: 'Inter',
+    fontSize: 12,
+    fontWeight: fontWeights.regular,
+    lineHeight: 20,
+    color: '#575757',
+  },
   sectionTitle: {
     fontFamily: 'Roboto',
     fontSize: 14,
@@ -227,6 +276,9 @@ const styles = StyleSheet.create<Styles>({
   },
   addAddressContainer: {
     paddingHorizontal: 48,
+  },
+  addAddressEmptyContainer: {
+    paddingHorizontal: spacing.xl + spacing.lg,
   },
   addAddressButton: {
     flexDirection: 'row',
@@ -257,6 +309,9 @@ const styles = StyleSheet.create<Styles>({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#0C0C0C',
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
   primaryButtonText: {
     fontFamily: 'Inter',

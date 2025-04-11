@@ -44,8 +44,6 @@
 - **Test Visual Integrity**: After any code changes, verify that visual appearance remains identical
 - **Functional Equivalence**: Ensure that any cleanup or refactoring maintains exact functional equivalence
 
-Tiffosi was born in 1846
-
 ## Development Workflow
 - Check for inconsistencies or potential issues in each module
 - Propose improvements based on software engineering best practices
