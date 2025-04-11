@@ -13,13 +13,17 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 ```
 /
 ├── app/                # Main application code (Expo Router)
+├── app-example/        # Example application code/templates
 ├── assets/             # Static assets (images, fonts, icons)
 ├── docs/               # Documentation files
 ├── hooks/              # Custom React hooks
-├── raw-components/     # Reference components from Figma (JSX + screenshots)
 ├── scripts/            # Project utility scripts
 ├── ios/                # iOS specific configuration
+├── android/            # Android specific configuration
 ├── types/              # Global type definitions
+├── __tests__/          # Test files and utilities
+├── .husky/             # Git hooks configuration
+├── .vscode/            # VSCode configuration
 └── .cursor/            # Project guidelines and rules
 ```
 
@@ -37,11 +41,23 @@ app/
 │   └── tiffosiExplore.tsx # Explore screen
 ├── (home)/             # Home-specific screens
 │   └── index.tsx       # Home entry point
+├── checkout/           # Checkout process screens
+│   ├── _layout.tsx     # Checkout layout
+│   ├── shipping-address.tsx # Shipping address form
+│   ├── payment-selection.tsx # Payment method selection
+│   └── new-address.tsx # New address entry form
+├── products/           # Product-related screens
+│   ├── _layout.tsx     # Products layout
+│   ├── product.tsx     # Product details screen
+│   └── index.ts        # Product exports
 ├── components/         # All React components
 ├── types/              # TypeScript type definitions
 ├── styles/             # Global styles and themes
 ├── data/               # Mock data and content
-├── +not-found.tsx      # 404 error page
+├── utils/              # Utility functions
+│   └── product-utils.ts # Product utility functions
+├── _utils/             # Additional utility functions
+├── not-found.tsx       # 404 error page
 ├── _layout.tsx         # Root layout component
 └── index.tsx           # Entry point
 ```
@@ -67,6 +83,8 @@ components/
 │   │   ├── Input.tsx        # Text input
 │   │   ├── CountrySelect.tsx # Country selector
 │   │   └── SingleChoice.tsx # Option selector
+│   ├── icons/          # Icon components
+│   ├── links/          # Link components
 │   └── README.md       # UI component guidelines
 ├── store/              # Store-specific components
 │   ├── product/        # Product card variants
@@ -121,6 +139,15 @@ types/
 ├── product-card.ts    # Product card type system
 ├── _utils/types/declarations/svg.d.ts  # SVG type definitions (excluded from routing)
 └── README.md          # Type system documentation
+```
+
+### Tests Directory Structure
+
+```
+__tests__/
+├── setup.ts           # Test setup and configuration
+├── smoke.test.tsx     # Basic smoke tests
+└── components.test.tsx # Component tests
 ```
 
 ### Styles Directory Structure
@@ -308,3 +335,7 @@ interface CardDimensions {
 
 - Check [components.md](./components.md) for detailed component specifications
 - See [product_card.md](./product_card.md) for product card implementation details
+
+## Notes
+
+- The `raw-components` directory mentioned in this document and README.md does not currently exist in the codebase, though it's referenced as a place for Figma reference components.
