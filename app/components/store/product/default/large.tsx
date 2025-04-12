@@ -1,100 +1,196 @@
-import { memo } from 'react'
-import { StyleSheet, View, Text, Pressable } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
-import type { BaseProductCardProps } from '../types'
-import ProductImage from '../image/ProductImage'
-import { mapProductToCardData } from '../../../../types/product'
-import { getCardDimensions } from '../../../../types/product-card'
-import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography'
-import { spacing, radius } from '../../../../styles/spacing'
-import { colors } from '../../../../styles/colors'
+import React, { memo } from 'react';
+import { StyleSheet, View, Text, Pressable, ViewStyle, TextStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import type { BaseProductCardProps } from '../types';
+import ProductImage from '../image/ProductImage';
+import { mapProductToCardData, Product } from '../../../../types/product';
+import { getCardDimensions } from '../../../../types/product-card';
+import { fonts, fontSizes, lineHeights } from '../../../../styles/typography';
+import { spacing, radius } from '../../../../styles/spacing';
+import { colors } from '../../../../styles/colors';
+import HeartActiveIcon from '../../../ui/icons/HeartActiveIcon';
+import DiscountBadge from '../../../ui/badges/DiscountBadge';
 
-function DefaultLargeCard({
-  product,
-  onPress,
-}: BaseProductCardProps) {
-  const cardData = mapProductToCardData(product)
-  const dimensions = getCardDimensions('default', 'large')
-  
+interface DefaultLargeCardProps extends BaseProductCardProps {
+  product: Product;
+  isFavorite?: boolean;
+}
+
+// Define Styles type
+type Styles = {
+  container: ViewStyle;
+  imageContainer: ViewStyle;
+  wishlistButton: ViewStyle;
+  discountBadge: ViewStyle;
+  content: ViewStyle;
+  discountTag: TextStyle;
+  newTag: TextStyle;
+  name: TextStyle;
+  description: TextStyle;
+  priceRow: ViewStyle;
+  originalPrice: TextStyle;
+  discountPrice: TextStyle;
+  price: TextStyle;
+};
+
+function DefaultLargeCard({ product, onPress, isFavorite = false }: DefaultLargeCardProps) {
+  const cardData = mapProductToCardData(product);
+  const dimensions = getCardDimensions('default', 'large');
+
+  const discountPercentage = cardData.discountPercentage || 0;
+  const hasDiscount = discountPercentage > 0 && cardData.discountedPrice !== undefined;
+
+  const handleWishlistPress = () => {
+    console.log('Wishlist button pressed for product:', product.id);
+  };
+
   return (
-    <Pressable 
+    <Pressable
       style={[
         styles.container,
-        { width: typeof dimensions.width === 'number' ? dimensions.width : '100%' }
+        { width: typeof dimensions.width === 'number' ? dimensions.width : '100%' },
       ]}
       onPress={onPress}
     >
-      <View style={[styles.imageContainer, { width: dimensions.imageSize, height: dimensions.imageSize }]}>
-        <ProductImage 
-          source={cardData.image}
-          size={dimensions.imageSize}
-        />
-        <Pressable style={styles.wishlistButton}>
-          <Ionicons name="heart-outline" size={14} color={colors.border} />
+      <View
+        style={[
+          styles.imageContainer,
+          { width: dimensions.imageSize, height: dimensions.imageSize },
+        ]}
+      >
+        <ProductImage source={cardData.image} size={dimensions.imageSize} />
+        <Pressable
+          style={styles.wishlistButton}
+          onPress={handleWishlistPress}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          {isFavorite ? (
+            <HeartActiveIcon size={16} color={colors.primary} />
+          ) : (
+            <Ionicons name="heart-outline" size={16} color={colors.secondary} />
+          )}
         </Pressable>
+
+        {hasDiscount && (
+          <DiscountBadge percentage={discountPercentage} style={styles.discountBadge} />
+        )}
       </View>
-      
+
       <View style={styles.content}>
-        {cardData.isNew && (
-          <Text style={styles.tag}>Nuevo</Text>
-        )}
-        <Text style={styles.name} numberOfLines={1}>{cardData.name}</Text>
+        {hasDiscount && <Text style={styles.discountTag}>Descuento</Text>}
+        {!hasDiscount && cardData.isNew && <Text style={styles.newTag}>Nuevo</Text>}
+        <Text style={styles.name} numberOfLines={1}>
+          {cardData.name}
+        </Text>
         {product.isCustomizable && (
-          <Text style={styles.description} numberOfLines={1}>Personalizable</Text>
+          <Text style={styles.description} numberOfLines={1}>
+            Personalizable
+          </Text>
         )}
-        <Text style={styles.price}>${cardData.price.toFixed(2)}</Text>
+        {hasDiscount &&
+        cardData.discountedPrice !== undefined &&
+        cardData.originalPrice !== undefined ? (
+          <View style={styles.priceRow}>
+            <Text style={styles.originalPrice}>${cardData.originalPrice.toFixed(2)}</Text>
+            <Text style={styles.discountPrice}>${cardData.discountedPrice.toFixed(2)}</Text>
+          </View>
+        ) : (
+          <Text style={styles.price}>${cardData.price.toFixed(2)}</Text>
+        )}
       </View>
     </Pressable>
-  )
+  );
 }
 
-const styles = StyleSheet.create({
+// Use typed StyleSheet.create
+const styles = StyleSheet.create<Styles>({
   container: {
     gap: spacing.sm,
   },
   imageContainer: {
     borderRadius: radius.xs,
     overflow: 'hidden',
+    position: 'relative',
   },
   wishlistButton: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: spacing.xs,
+    right: spacing.xs,
     width: 28,
     height: 28,
-    padding: 3.5,
+    padding: 6,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
+  },
+  discountBadge: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    zIndex: 1,
+    borderTopRightRadius: radius.xs,
+    borderBottomLeftRadius: radius.xs,
   },
   content: {
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: 0,
     gap: spacing.xs,
   },
-  tag: {
+  discountTag: {
+    color: colors.error,
+    fontSize: fontSizes.sm,
+    fontFamily: fonts.secondary,
+    fontWeight: '400',
+    lineHeight: lineHeights.sm,
+  },
+  newTag: {
     color: colors.success,
     fontSize: fontSizes.sm,
     fontFamily: fonts.secondary,
+    fontWeight: '400',
     lineHeight: lineHeights.sm,
   },
   name: {
     color: colors.primary,
     fontSize: fontSizes.md,
     fontFamily: fonts.secondary,
-    fontWeight: fontWeights.medium,
+    fontWeight: '500',
     lineHeight: lineHeights.md,
   },
   description: {
     color: colors.secondary,
     fontSize: fontSizes.md,
     fontFamily: fonts.secondary,
+    fontWeight: '400',
+    lineHeight: lineHeights.md,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  originalPrice: {
+    color: colors.secondary,
+    fontSize: fontSizes.md,
+    fontFamily: fonts.secondary,
+    fontWeight: '400',
+    lineHeight: lineHeights.md,
+    textDecorationLine: 'line-through',
+  },
+  discountPrice: {
+    color: colors.error,
+    fontSize: fontSizes.md,
+    fontFamily: fonts.secondary,
+    fontWeight: '400',
     lineHeight: lineHeights.md,
   },
   price: {
     color: colors.secondary,
     fontSize: fontSizes.md,
     fontFamily: fonts.secondary,
+    fontWeight: '400',
     lineHeight: lineHeights.md,
   },
-})
+});
 
-export default memo(DefaultLargeCard) 
+export default memo(DefaultLargeCard);

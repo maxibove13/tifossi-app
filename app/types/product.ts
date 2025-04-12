@@ -55,6 +55,7 @@ export interface ProductCardData {
       };
   discountPercentage?: number;
   originalPrice?: number;
+  discountedPrice?: number;
   quantity?: number;
   color?: string;
   size?: string;
@@ -104,10 +105,17 @@ export function isProduct(value: unknown): value is Product {
 }
 
 export function mapProductToCardData(product: Product): ProductCardData {
+  const finalPrice = product.discountedPrice ?? product.price;
+  const originalPrice = product.discountedPrice ? product.price : undefined;
+  const discountPercentage =
+    product.discountedPrice && product.price
+      ? Math.round(((product.price - product.discountedPrice) / product.price) * 100)
+      : undefined;
+
   return {
     id: product.id,
     name: product.title,
-    price: product.discountedPrice || product.price,
+    price: finalPrice,
     image: product.image,
     isNew: product.label === ProductLabel.NEW,
     description:
@@ -117,10 +125,9 @@ export function mapProductToCardData(product: Product): ProductCardData {
           ? product.longDescription
           : { line1: product.longDescription[0] || '', line2: product.longDescription[1] || '' }
         : { line1: '', line2: '' }),
-    originalPrice: product.discountedPrice ? product.price : undefined,
-    discountPercentage: product.discountedPrice
-      ? Math.round(((product.price - product.discountedPrice) / product.price) * 100)
-      : undefined,
+    originalPrice: originalPrice,
+    discountedPrice: product.discountedPrice,
+    discountPercentage: discountPercentage,
     color: product.colors?.[0]?.colorName,
     size: product.size,
   };
