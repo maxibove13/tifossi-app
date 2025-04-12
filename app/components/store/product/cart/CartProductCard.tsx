@@ -1,8 +1,10 @@
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { Product } from '../../../../types/product';
 import ProductImage from '../image/ProductImage';
 import { colors } from '../../../../styles/colors';
 import { spacing } from '../../../../styles/spacing';
+import OverlayProductEdit from '../overlay/OverlayProductEdit';
 
 // Define CartProduct inheriting from Product
 interface CartProduct extends Product {
@@ -19,7 +21,7 @@ interface CartProductCardProps {
   quantity: number;
   onQuantityChange?: (quantity: number) => void;
   onRemove?: () => void;
-  onEdit?: () => void;
+  onEdit?: (productId: string, updates: { size?: string; quantity?: number }) => void;
   isDark?: boolean;
 }
 
@@ -58,9 +60,12 @@ type Styles = {
 export const CartProductCard = ({
   product,
   quantity,
+  onRemove,
   onEdit,
   isDark = false,
 }: CartProductCardProps) => {
+  const [isEditOverlayVisible, setIsEditOverlayVisible] = useState(false);
+
   const {
     title,
     price,
@@ -91,88 +96,133 @@ export const CartProductCard = ({
   const discountPercentage =
     discountedPrice && price ? Math.round(((price - discountedPrice) / price) * 100) : 0;
 
+  // Handler to open the edit overlay
+  const handleEditPress = () => {
+    setIsEditOverlayVisible(true);
+  };
+
+  // Handler for closing the overlay
+  const handleCloseOverlay = () => {
+    setIsEditOverlayVisible(false);
+  };
+
+  // Handler for saving changes from the overlay
+  const handleSaveEdit = (newSize: string, newQuantity: number) => {
+    console.log('Save changes:', { productId: product.id, newSize, newQuantity });
+    // Call the onEdit prop passed from the parent component
+    onEdit?.(product.id, { size: newSize, quantity: newQuantity });
+    setIsEditOverlayVisible(false);
+  };
+
+  // Handler for removing the item from the overlay
+  const handleRemoveItem = () => {
+    console.log('Remove item:', product.id);
+    onRemove?.(); // Call the original onRemove prop
+    setIsEditOverlayVisible(false);
+  };
+
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
-      {/* Product Image */}
-      <View style={styles.imageContainer}>
-        <ProductImage source={image} size={130} />
-      </View>
-
-      {/* Product Details */}
-      <View style={styles.content}>
-        {/* Top Section: Title and product info */}
-        <View style={styles.topSection}>
-          {/* Row for Title and Edit Button */}
-          <View style={styles.titleEditRow}>
-            <Text
-              style={[styles.title, isDark && styles.titleDark]}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {title}
-            </Text>
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={onEdit}
-              hitSlop={{ top: spacing.sm, right: spacing.sm, bottom: spacing.sm, left: spacing.sm }}
-            >
-              <Text style={styles.editButtonText}>Editar</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Product Attributes */}
-          {isCustomizable && <Text style={styles.customizableText}>Personalizable</Text>}
-
-          {displayColor && <Text style={styles.colorText}>{displayColor}</Text>}
-
-          {displaySize && (
-            <View style={styles.sizeRow}>
-              <Text style={styles.sizeLabel}>Talle:</Text>
-              <Text style={styles.sizeValue}>{displaySize}</Text>
-            </View>
-          )}
+    <>
+      <View style={[styles.container, isDark && styles.containerDark]}>
+        {/* Product Image */}
+        <View style={styles.imageContainer}>
+          <ProductImage source={image} size={130} />
         </View>
 
-        {/* Bottom Row: Quantity and Price - Fixed height section */}
-        <View style={styles.footer}>
-          <View style={styles.quantityRow}>
-            <Text style={styles.quantityLabel}>Cantidad:</Text>
-            <Text style={styles.quantityValue}>{quantity}</Text>
-          </View>
+        {/* Product Details */}
+        <View style={styles.content}>
+          {/* Top Section: Title and product info */}
+          <View style={styles.topSection}>
+            {/* Row for Title and Edit Button */}
+            <View style={styles.titleEditRow}>
+              <Text
+                style={[styles.title, isDark && styles.titleDark]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {title}
+              </Text>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={handleEditPress}
+                hitSlop={{
+                  top: spacing.sm,
+                  right: spacing.sm,
+                  bottom: spacing.sm,
+                  left: spacing.sm,
+                }}
+              >
+                <Text style={styles.editButtonText}>Editar</Text>
+              </TouchableOpacity>
+            </View>
 
-          {/* Price Section - Fixed height regardless of discount presence */}
-          <View style={styles.priceContainer}>
-            {discountedPrice && discountPercentage > 0 ? (
-              <>
-                {/* Discount Badge */}
-                <View style={styles.discountBadge}>
-                  <Text style={styles.discountBadgeText}>-{discountPercentage}%</Text>
-                </View>
+            {/* Product Attributes */}
+            {isCustomizable && <Text style={styles.customizableText}>Personalizable</Text>}
 
-                {/* Original Price (strikethrough) and Discounted Price */}
-                <Text style={[styles.originalPriceText, isDark && styles.priceDark]}>
-                  ${price.toFixed(2)}
-                </Text>
-                <Text style={[styles.discountPriceText, isDark && styles.priceDark]}>
-                  ${discountedPrice.toFixed(2)}
-                </Text>
-              </>
-            ) : (
-              <>
-                {/* Empty space for consistent layout */}
-                <View style={styles.emptyDiscountBadge} />
+            {displayColor && <Text style={styles.colorText}>{displayColor}</Text>}
 
-                {/* Empty space for original price */}
-                <View style={styles.emptyOriginalPrice} />
-
-                {/* Regular Price */}
-                <Text style={[styles.price, isDark && styles.priceDark]}>${price.toFixed(2)}</Text>
-              </>
+            {displaySize && (
+              <View style={styles.sizeRow}>
+                <Text style={styles.sizeLabel}>Talle:</Text>
+                <Text style={styles.sizeValue}>{displaySize}</Text>
+              </View>
             )}
           </View>
+
+          {/* Bottom Row: Quantity and Price - Fixed height section */}
+          <View style={styles.footer}>
+            <View style={styles.quantityRow}>
+              <Text style={styles.quantityLabel}>Cantidad:</Text>
+              <Text style={styles.quantityValue}>{quantity}</Text>
+            </View>
+
+            {/* Price Section - Fixed height regardless of discount presence */}
+            <View style={styles.priceContainer}>
+              {discountedPrice && discountPercentage > 0 ? (
+                <>
+                  {/* Discount Badge */}
+                  <View style={styles.discountBadge}>
+                    <Text style={styles.discountBadgeText}>-{discountPercentage}%</Text>
+                  </View>
+
+                  {/* Original Price (strikethrough) and Discounted Price */}
+                  <Text style={[styles.originalPriceText, isDark && styles.priceDark]}>
+                    ${price.toFixed(2)}
+                  </Text>
+                  <Text style={[styles.discountPriceText, isDark && styles.priceDark]}>
+                    ${discountedPrice.toFixed(2)}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  {/* Empty space for consistent layout */}
+                  <View style={styles.emptyDiscountBadge} />
+
+                  {/* Empty space for original price */}
+                  <View style={styles.emptyOriginalPrice} />
+
+                  {/* Regular Price */}
+                  <Text style={[styles.price, isDark && styles.priceDark]}>
+                    ${price.toFixed(2)}
+                  </Text>
+                </>
+              )}
+            </View>
+          </View>
         </View>
       </View>
-    </View>
+
+      {/* Edit Overlay */}
+      <OverlayProductEdit
+        isVisible={isEditOverlayVisible}
+        onClose={handleCloseOverlay}
+        onSave={handleSaveEdit}
+        onRemove={handleRemoveItem}
+        initialQuantity={quantity}
+        initialSize={displaySize}
+        product={product}
+      />
+    </>
   );
 };
 
