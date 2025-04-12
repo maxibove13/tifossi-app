@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { 
-  StyleSheet, 
-  View, 
+import {
+  StyleSheet,
+  View,
   Dimensions,
   TouchableOpacity,
   Text,
@@ -11,19 +11,14 @@ import {
   ScrollView,
   LayoutChangeEvent,
   NativeScrollEvent,
-  NativeSyntheticEvent
+  NativeSyntheticEvent,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, typography } from './styles';
-import BottomSheet, { 
-  BottomSheetScrollView
-} from '@gorhom/bottom-sheet';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 // Import our custom components
 import ProductInfoHeader from './ProductInfoHeader';
@@ -32,6 +27,7 @@ import SupportOption from './SupportOption';
 import { Product } from '../../../../types/product';
 import ProductSections from '../sections/ProductSections';
 import OverlayCheckoutShipping from '../overlay/OverlayCheckoutShipping';
+import { getProductById } from '../../../../data/products';
 
 // Helper function for cross-platform haptic feedback
 const triggerHaptic = () => {
@@ -50,6 +46,32 @@ const _AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 const DEFAULT_MIN_SNAP_HEIGHT = 250; // Fallback if measurement fails
 const COLLAPSED_BOTTOM_PADDING = 56; // Extra space below the header in collapsed state
 
+// Helper function to convert string shortDescription to object format if needed
+const formatShortDescription = (desc: string | { line1: string; line2: string } | undefined) => {
+  if (!desc) return undefined;
+  if (typeof desc === 'string') {
+    return { line1: desc, line2: '' };
+  }
+  return desc;
+};
+
+// Helper function to convert SwipeableEdge product to standard Product
+const adaptProductForOverlay = (product: SwipeableEdgeProps['product']): Partial<Product> => {
+  return {
+    id: product.id,
+    title: product.name,
+    price: parseFloat(product.currentPrice.replace(/[^0-9.-]+/g, '')),
+    isCustomizable: product.isCustomizable,
+    shortDescription: formatShortDescription(product.shortDescription),
+    longDescription: product.longDescription,
+    warranty: product.warranty,
+    returnPolicy: product.returnPolicy,
+    dimensions: product.dimensions,
+    // Find the full product from product catalog if possible
+    ...(getProductById(product.id) || {}),
+  };
+};
+
 interface SwipeableEdgeProps {
   /**
    * Product data
@@ -61,10 +83,12 @@ interface SwipeableEdgeProps {
     isDiscounted?: boolean;
     currentPrice: string;
     originalPrice?: string;
-    shortDescription?: string | {
-      line1: string;
-      line2: string;
-    };
+    shortDescription?:
+      | string
+      | {
+          line1: string;
+          line2: string;
+        };
     longDescription?: string | string[];
     sku?: string;
     warranty?: string;
@@ -118,7 +142,7 @@ interface SwipeableEdgeProps {
  * SwipeableEdge component for product details screen
  * Provides a swipeable panel that can be expanded/collapsed with gestures
  */
-const SwipeableEdge = ({ 
+const SwipeableEdge = ({
   product,
   relatedProducts = [],
   recommendedProducts = [],
@@ -128,40 +152,40 @@ const SwipeableEdge = ({
   onAddToCart: _onAddToCart = () => {},
   onViewMore = () => {},
   onProductPress = () => {},
-  onSupportAction = () => {}
+  onSupportAction = () => {},
 }: SwipeableEdgeProps) => {
   // Component state
   const [expanded, setExpanded] = useState(false);
   const [isShippingOverlayVisible, setIsShippingOverlayVisible] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [headerContentHeight, setHeaderContentHeight] = useState<number | null>(null);
-  
+
   // References
   const bottomSheetRef = useRef<BottomSheet>(null);
   const scrollViewRef = useRef(null);
-  
+
   // Calculate panel dimensions
   const MAX_PANEL_HEIGHT = height - headerHeight;
-  
+
   // Calculate snap points dynamically based on header content height
   const snapPoints = useMemo(() => {
-    const minSnap = headerContentHeight 
+    const minSnap = headerContentHeight
       ? headerContentHeight + COLLAPSED_BOTTOM_PADDING
       : DEFAULT_MIN_SNAP_HEIGHT;
-    
+
     const effectiveMinSnap = Math.min(minSnap, MAX_PANEL_HEIGHT - 1);
     return [effectiveMinSnap, MAX_PANEL_HEIGHT];
   }, [headerContentHeight, MAX_PANEL_HEIGHT]);
-  
+
   // Calculate initial index
   const initialIndex = 0; // Start collapsed
-  
+
   // Store the current product ID for change detection
   const productIdRef = useRef(product?.id);
-  
+
   // Shared animated values for scroll tracking
   const scrollY = useSharedValue(0);
-  
+
   // Reset scroll position
   const resetScroll = useCallback(() => {
     if (scrollViewRef.current) {
@@ -169,17 +193,17 @@ const SwipeableEdge = ({
       scrollY.value = 0;
     }
   }, [scrollY]);
-  
+
   // Reset when product changes
   useEffect(() => {
     // Check if product ID has changed
     if (product?.id !== productIdRef.current) {
       // Update ref
       productIdRef.current = product?.id;
-      
+
       // Reset header height measurement for new product
       setHeaderContentHeight(null);
-      
+
       // Reset to collapsed state
       if (expanded) {
         setExpanded(false);
@@ -188,47 +212,58 @@ const SwipeableEdge = ({
       }
     }
   }, [product?.id, expanded, resetScroll]);
-  
+
   // Measure header content height
-  const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
-    const { height: measuredHeight } = event.nativeEvent.layout;
-    if (measuredHeight > 0 && measuredHeight !== headerContentHeight) {
-      setHeaderContentHeight(measuredHeight);
-    }
-  }, [headerContentHeight]);
-  
+  const handleHeaderLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { height: measuredHeight } = event.nativeEvent.layout;
+      if (measuredHeight > 0 && measuredHeight !== headerContentHeight) {
+        setHeaderContentHeight(measuredHeight);
+      }
+    },
+    [headerContentHeight]
+  );
+
   // Handle sheet changes
-  const handleSheetChanges = useCallback((index: number) => {
-    const isExpanded = index === 1;
-    if (expanded !== isExpanded) {
-      setExpanded(isExpanded);
-      onExpandedChange?.(isExpanded);
-      triggerHaptic();
-    }
-  }, [expanded, onExpandedChange]);
-  
+  const handleSheetChanges = useCallback(
+    (index: number) => {
+      const isExpanded = index === 1;
+      if (expanded !== isExpanded) {
+        setExpanded(isExpanded);
+        onExpandedChange?.(isExpanded);
+        triggerHaptic();
+      }
+    },
+    [expanded, onExpandedChange]
+  );
+
   // Handle scroll events with native listener
-  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    // Use requestAnimationFrame to throttle updates and prevent rapid value changes
-    requestAnimationFrame(() => {
-      scrollY.value = offsetY;
-    });
-  }, [scrollY]);
-  
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const offsetY = event.nativeEvent.contentOffset.y;
+      // Use requestAnimationFrame to throttle updates and prevent rapid value changes
+      requestAnimationFrame(() => {
+        scrollY.value = offsetY;
+      });
+    },
+    [scrollY]
+  );
+
   // Animation for chevron rotation based on expanded state
   const chevronStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ 
-        rotate: `${expanded ? 180 : 0}deg` 
-      }]
+      transform: [
+        {
+          rotate: `${expanded ? 180 : 0}deg`,
+        },
+      ],
     };
   });
-  
+
   // Animation for details opacity
   const detailsOpacity = useAnimatedStyle(() => {
     return {
-      opacity: expanded ? 1 : 0
+      opacity: expanded ? 1 : 0,
     };
   });
 
@@ -236,13 +271,13 @@ const SwipeableEdge = ({
   const handleAddToCart = useCallback(() => {
     setIsShippingOverlayVisible(true);
   }, []);
-  
+
   // Handle selection actions
   const handleSelectSize = useCallback(() => {
     // Handle size selection action
     // Do not close the shipping overlay here, let the user complete all selections
   }, []);
-  
+
   const handleSelectQuantity = useCallback((quantity: number) => {
     // Handle quantity selection action
     setSelectedQuantity(quantity);
@@ -251,39 +286,44 @@ const SwipeableEdge = ({
   }, []);
 
   // Custom handle component to match original design
-  const renderHandle = useCallback(() => (
-    <View style={styles.dragHandleContainer}>
-      <TouchableOpacity
-        onPress={() => {
-          bottomSheetRef.current?.snapToIndex(expanded ? 0 : 1);
-        }}
-        style={styles.toggleArea}
-        activeOpacity={0.7}
-        testID="swipeable-edge-handle"
-      >
-        <View style={styles.invisibleTouchTarget} />
-      </TouchableOpacity>
-      
-      <Animated.View style={[styles.dragHandle, chevronStyle]}>
-        <Ionicons 
-          name="chevron-up" 
-          size={24} 
-          color={colors.border} 
-        />
-      </Animated.View>
-    </View>
-  ), [expanded, chevronStyle]);
+  const renderHandle = useCallback(
+    () => (
+      <View style={styles.dragHandleContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            bottomSheetRef.current?.snapToIndex(expanded ? 0 : 1);
+          }}
+          style={styles.toggleArea}
+          activeOpacity={0.7}
+          testID="swipeable-edge-handle"
+        >
+          <View style={styles.invisibleTouchTarget} />
+        </TouchableOpacity>
+
+        <Animated.View style={[styles.dragHandle, chevronStyle]}>
+          <Ionicons name="chevron-up" size={24} color={colors.border} />
+        </Animated.View>
+      </View>
+    ),
+    [expanded, chevronStyle]
+  );
 
   // Custom background component
-  const renderBackgroundComponent = useCallback(() => (
-    <LinearGradient
-      colors={['rgba(12, 12, 12, 0.9)', 'rgba(12, 12, 12, 1)']}
-      style={StyleSheet.absoluteFill}
-    />
-  ), []);
+  const renderBackgroundComponent = useCallback(
+    () => (
+      <LinearGradient
+        colors={['rgba(12, 12, 12, 0.9)', 'rgba(12, 12, 12, 1)']}
+        style={StyleSheet.absoluteFill}
+      />
+    ),
+    []
+  );
 
   // Only render sheet if we have valid minimum snap point height
   const canRenderSheet = headerContentHeight !== null || DEFAULT_MIN_SNAP_HEIGHT > 0;
+
+  // Create adapted product for overlay
+  const adaptedProduct = useMemo(() => adaptProductForOverlay(product), [product]);
 
   return (
     <>
@@ -321,7 +361,7 @@ const SwipeableEdge = ({
                 onAddToCart={handleAddToCart}
               />
             </View>
-            
+
             {/* Expanded State Content - Only visible when expanded */}
             <Animated.View style={[detailsOpacity, styles.expandedContentContainer]}>
               {/* Product Details Section */}
@@ -336,7 +376,7 @@ const SwipeableEdge = ({
                   dimensions={product.dimensions}
                 />
               </View>
-              
+
               {/* Product Sections */}
               <View style={styles.sectionsContainer}>
                 <ProductSections
@@ -349,20 +389,20 @@ const SwipeableEdge = ({
                   useSwipeableStyle={true}
                 />
               </View>
-              
+
               {/* Support Section */}
               <View style={styles.innerContent}>
                 <View style={styles.supportSection}>
                   <View style={styles.supportHeader}>
                     <Text style={styles.supportTitle}>¿Tienes alguna duda?</Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       onPress={() => onSupportAction('call')}
                       style={styles.callButton}
                     >
                       <Text style={styles.callButtonText}>Llamar</Text>
                     </TouchableOpacity>
                   </View>
-                  
+
                   <View style={styles.supportOptions}>
                     <SupportOption
                       title="Iniciar chat"
@@ -383,7 +423,7 @@ const SwipeableEdge = ({
           </BottomSheetScrollView>
         </BottomSheet>
       )}
-      
+
       {/* Shipping Overlay */}
       <OverlayCheckoutShipping
         isVisible={isShippingOverlayVisible}
@@ -391,6 +431,7 @@ const SwipeableEdge = ({
         onSelectSize={handleSelectSize}
         onSelectQuantity={handleSelectQuantity}
         initialQuantity={selectedQuantity}
+        product={adaptedProduct as Product}
       />
     </>
   );

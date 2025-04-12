@@ -7,7 +7,7 @@ export interface ProductColorImages {
 }
 
 export interface ProductColor {
-  color: string;
+  colorName: string; // Human-readable name like "Negro", "Blanco"
   quantity: number;
   images: ProductColorImages;
 }
@@ -28,7 +28,7 @@ export interface Product {
   longDescription?: string | string[];
   discountedPrice?: number;
   isCustomizable?: boolean;
-  colors?: ProductColor[];
+  colors: ProductColor[];
   size?: string;
   sizes?: ProductSize[];
   warranty?: string;
@@ -46,10 +46,13 @@ export interface ProductCardData {
   price: number;
   image: string | ImageSourcePropType;
   isNew?: boolean;
-  description?: string | string[] | {
-    line1: string;
-    line2: string;
-  };
+  description?:
+    | string
+    | string[]
+    | {
+        line1: string;
+        line2: string;
+      };
   discountPercentage?: number;
   originalPrice?: number;
   quantity?: number;
@@ -59,33 +62,33 @@ export interface ProductCardData {
 
 // Product Card Types
 export type BaseProductCardProps = ProductCardData & {
-  onPress?: () => void
-}
+  onPress?: () => void;
+};
 
 export interface PromotionProductCardProps extends BaseProductCardProps {
-  discountPercentage: number
-  originalPrice: number
+  discountPercentage: number;
+  originalPrice: number;
 }
 
 export interface CartProductCardProps extends BaseProductCardProps {
-  quantity: number
-  color?: string
-  size?: string
-  onEdit?: () => void
+  quantity: number;
+  color: string;
+  size?: string;
+  onEdit?: () => void;
 }
 
 export interface FeaturedProductCardProps extends BaseProductCardProps {
-  description?: string
+  description?: string;
 }
 
 export interface HorizontalProductCardProps extends BaseProductCardProps {
-  description: string
-  subDescription?: string
+  description: string;
+  subDescription?: string;
 }
 
-export type ImageOnlyProductCardProps = Pick<BaseProductCardProps, 'image' | 'name' | 'onPress'>
+export type ImageOnlyProductCardProps = Pick<BaseProductCardProps, 'image' | 'name' | 'onPress'>;
 
-export type ProductCardSize = 'small' | 'large'
+export type ProductCardSize = 'small' | 'large';
 
 export function isProduct(value: unknown): value is Product {
   if (!value || typeof value !== 'object') return false;
@@ -107,19 +110,20 @@ export function mapProductToCardData(product: Product): ProductCardData {
     price: product.discountedPrice || product.price,
     image: product.image,
     isNew: product.label === ProductLabel.NEW,
-    description: product.shortDescription || 
-                (product.longDescription ? 
-                  (typeof product.longDescription === 'string' ? 
-                    product.longDescription : 
-                    { line1: product.longDescription[0] || '', line2: product.longDescription[1] || '' }) : 
-                  { line1: '', line2: '' }),
+    description:
+      product.shortDescription ||
+      (product.longDescription
+        ? typeof product.longDescription === 'string'
+          ? product.longDescription
+          : { line1: product.longDescription[0] || '', line2: product.longDescription[1] || '' }
+        : { line1: '', line2: '' }),
     originalPrice: product.discountedPrice ? product.price : undefined,
-    discountPercentage: product.discountedPrice 
+    discountPercentage: product.discountedPrice
       ? Math.round(((product.price - product.discountedPrice) / product.price) * 100)
       : undefined,
-    color: product.colors?.[0]?.color,
+    color: product.colors?.[0]?.colorName,
     size: product.size,
-  }
+  };
 }
 
 export interface ProductSize {
@@ -127,4 +131,4 @@ export interface ProductSize {
   available: boolean;
 }
 
-export default { isProduct, mapProductToCardData }; 
+export default { isProduct, mapProductToCardData };

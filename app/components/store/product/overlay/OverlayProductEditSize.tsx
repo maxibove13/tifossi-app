@@ -7,7 +7,7 @@ import {
   Modal,
   Dimensions,
   Animated,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
 } from 'react-native';
 
 // Import shared components
@@ -17,12 +17,10 @@ import RadioButton from '../../../../components/ui/form/RadioButton';
 import { colors } from '../../../../styles/colors';
 import { spacing, radius } from '../../../../styles/spacing';
 import { fontSizes, lineHeights } from '../../../../styles/typography';
+import { ProductSize } from '../../../../types/product';
 
 // Get screen dimensions
 const { height } = Dimensions.get('window');
-
-// Available size options
-const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL'];
 
 interface OverlayProductEditSizeProps {
   isVisible: boolean;
@@ -30,6 +28,7 @@ interface OverlayProductEditSizeProps {
   onGoBack: () => void;
   onSave: (size: string) => void;
   initialSize?: string;
+  productSizes?: ProductSize[]; // Add product sizes prop
 }
 
 export default function OverlayProductEditSize({
@@ -37,14 +36,25 @@ export default function OverlayProductEditSize({
   onClose,
   onGoBack,
   onSave,
-  initialSize = ''
+  initialSize = '',
+  productSizes = [], // Default to empty array
 }: OverlayProductEditSizeProps) {
   // State for selected size
   const [selectedSize, setSelectedSize] = useState(initialSize);
-  
+
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(height));
+
+  // Filter to only available sizes
+  const availableSizes =
+    productSizes.length > 0
+      ? productSizes.filter((size) => size.available)
+      : [
+          { value: 'S', available: true },
+          { value: 'M', available: true },
+          { value: 'L', available: true },
+        ];
 
   // Reset selected size when overlay opens with initialSize
   useEffect(() => {
@@ -66,7 +76,7 @@ export default function OverlayProductEditSize({
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
-        })
+        }),
       ]).start();
     } else {
       // Reset animation values when overlay is hidden
@@ -89,56 +99,38 @@ export default function OverlayProductEditSize({
   // Handle size guide press
   const handleSizeGuidePress = () => {
     // Implement size guide functionality here
-    console.log("Size guide pressed");
+    console.log('Size guide pressed');
   };
 
   return (
-    <Modal
-      transparent
-      visible={isVisible}
-      onRequestClose={onClose}
-      animationType="none"
-    >
+    <Modal transparent visible={isVisible} onRequestClose={onClose} animationType="none">
       <View style={styles.modalContainer}>
         {/* Animated overlay background that can be tapped to close */}
         <TouchableWithoutFeedback onPress={onClose}>
-          <Animated.View 
-            style={[
-              styles.overlay, 
-              { opacity: fadeAnim }
-            ]} 
-          />
+          <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />
         </TouchableWithoutFeedback>
 
         {/* Animated container that slides up */}
-        <Animated.View 
-          style={[
-            styles.container, 
-            { transform: [{ translateY: slideAnim }] }
-          ]}
-        >
+        <Animated.View style={[styles.container, { transform: [{ translateY: slideAnim }] }]}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Cambiar talle</Text>
-            <TouchableOpacity
-              onPress={handleSizeGuidePress}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity onPress={handleSizeGuidePress} activeOpacity={0.7}>
               <Text style={styles.sizeGuideText}>Tabla de medidas</Text>
             </TouchableOpacity>
           </View>
 
           {/* Size Selection */}
           <View style={styles.sizeSelectionContainer}>
-            {SIZE_OPTIONS.map((size) => (
+            {availableSizes.map((size) => (
               <TouchableOpacity
-                key={size}
+                key={size.value}
                 style={styles.sizeOption}
-                onPress={() => handleSelectSize(size)}
+                onPress={() => handleSelectSize(size.value)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.sizeOptionText}>{size}</Text>
-                <RadioButton selected={selectedSize === size} />
+                <Text style={styles.sizeOptionText}>{size.value}</Text>
+                <RadioButton selected={selectedSize === size.value} />
               </TouchableOpacity>
             ))}
           </View>
@@ -146,14 +138,10 @@ export default function OverlayProductEditSize({
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
             {/* Back button */}
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={onGoBack}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.backButton} onPress={onGoBack} activeOpacity={0.7}>
               <Text style={styles.backButtonText}>Atrás</Text>
             </TouchableOpacity>
-            
+
             {/* Save button */}
             <TouchableOpacity
               style={styles.saveButton}
@@ -185,7 +173,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: radius.lg,
     padding: spacing.xxl,
     paddingBottom: spacing.xxl + 2,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: -16,
@@ -275,4 +263,4 @@ const styles = StyleSheet.create({
     lineHeight: fontSizes.sm * 1.429,
     color: '#FBFBFB',
   },
-}); 
+});

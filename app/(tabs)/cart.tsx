@@ -1,56 +1,68 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
-import { spacing } from '../styles/spacing';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { spacing, radius } from '../styles/spacing';
 import { colors } from '../styles/colors';
-import { fonts } from '../styles/typography';
+import { fonts, fontSizes, lineHeights } from '../styles/typography';
 import { router } from 'expo-router';
 import EmptyCart from '../components/store/cart/EmptyCart';
 import { Product } from '../types/product';
-import { ProductLabel } from '../types/product-status';
 import Subheader from '../components/common/Subheader';
 import PromotionCard from '../components/store/product/promotion/PromotionCard';
+import CartProductCard from '../components/store/product/cart/CartProductCard';
+import Button from '../components/ui/buttons/Button';
+import Dropdown from '../components/ui/form/Dropdown';
+import { getProductById, products } from '../data/products';
 
-// Dummy data for recently viewed products
+// Dummy data for recently viewed products - use actual products from data file
 const recentlyViewedProducts: Product[] = [
+  getProductById('neceser-ball') || products[0],
+  getProductById('mochila-classic') || products[1],
+  getProductById('mochila-sq') || products[2],
+  getProductById('buzo-oversize') || products[3],
+  getProductById('cap-v3') || products[4],
+].filter((p): p is Product => p !== undefined);
+
+// Cart item interface - simply extends Product with quantity
+interface CartItem extends Product {
+  quantity: number;
+  selectedSize?: string;
+  color?: string; // Override color display in cart
+}
+
+// Dummy data for cart items - use actual products from data file
+const mockCartItems: CartItem[] = [
   {
-    id: '1',
-    title: 'Neceser Ball',
-    price: 590.0,
-    discountedPrice: 390.0,
-    image: require('../../assets/images/products/neceser9-1.png'),
-    label: ProductLabel.SALE,
+    ...getProductById('socks-v2')!,
+    quantity: 1,
+    selectedSize: 'M',
+    color: 'Blanco',
   },
   {
-    id: '2',
-    title: 'Mochila Classic',
-    price: 590.0,
-    image: require('../../assets/images/products/product_bag_0.png'),
+    ...getProductById('mochila-classic')!,
+    quantity: 2,
+    color: 'Gris',
+    // No selected size yet, will use sizes array from the product
   },
   {
-    id: '3',
-    title: 'Neceser WX',
-    price: 590.0,
-    image: require('../../assets/images/products/product_bag_1.png'),
+    ...getProductById('mochila-sq')!, // Product has price: 1190, discountedPrice: 890
+    quantity: 1,
+    color: 'Gris',
   },
-  {
-    id: '4',
-    title: 'Neceser F2',
-    price: 590.0,
-    image: require('../../assets/images/products/product_bag_2.png'),
-    label: ProductLabel.NEW,
-  },
-  {
-    id: '5',
-    title: 'Black Neceser',
-    price: 590.0,
-    image: require('../../assets/images/products/product_bag_3.png'),
-  },
-];
+].filter(Boolean) as CartItem[];
 
 export default function CartScreen() {
-  // In a real implementation, this would come from a cart context or store
-  const [cartItems, setCartItems] = useState<any[]>([]);
+  // ---- TEMPORARY FOR TESTING - START ----
+  // State to track which view to show (for testing)
+  const [showMockItems, setShowMockItems] = useState(true);
+
+  // Initialize cartItems based on the test state
+  const [cartItems, setCartItems] = useState<CartItem[]>(showMockItems ? mockCartItems : []);
   const isEmpty = cartItems.length === 0;
+  // ---- TEMPORARY FOR TESTING - END ----
+
+  // In a real implementation, this would come from a cart context or store
+  // const [cartItems, setCartItems] = useState<CartItem[]>([]); // Replace temporary state with this later
+  // const isEmpty = cartItems.length === 0; // Use this later
 
   const handleGoToStore = () => {
     router.replace('/');
@@ -64,22 +76,152 @@ export default function CartScreen() {
     console.log('View all recently viewed products');
   };
 
+  const handleQuantityChange = (id: string, quantity: number) => {
+    setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity } : item)));
+  };
+
+  const handleRemoveItem = (id: string) => {
+    setCartItems(cartItems.filter((item) => item.id !== id));
+  };
+
+  const handleEditItem = (id: string) => {
+    console.log('Edit item', id);
+    // In a real implementation, navigate to product edit page or show modal
+  };
+
+  const calculateTotal = () => {
+    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  };
+
+  const calculateDiscountTotal = () => {
+    return cartItems.reduce((sum, item) => {
+      const regularPrice = item.price * item.quantity;
+      const discountedPrice = (item.discountedPrice || item.price) * item.quantity;
+      return sum + (regularPrice - discountedPrice);
+    }, 0);
+  };
+
+  const hasDiscountedItems = () => {
+    return cartItems.some((item) => item.discountedPrice);
+  };
+
+  const handleBuyNow = () => {
+    console.log('Proceed to checkout');
+  };
+
+  const handleCouponPress = () => {
+    console.log('Coupon dropdown pressed');
+    // Logic to show coupon options
+  };
+
+  const handleGiftCardPress = () => {
+    console.log('Gift card dropdown pressed');
+    // Logic to show gift card options
+  };
+
+  // ---- TEMPORARY FOR TESTING - START ----
+  // Handler to toggle the view
+  const toggleCartView = () => {
+    const nextShowMockItems = !showMockItems;
+    setShowMockItems(nextShowMockItems);
+    setCartItems(nextShowMockItems ? mockCartItems : []);
+  };
+  // ---- TEMPORARY FOR TESTING - END ----
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <View style={styles.headerTopSpace} />
         <Text style={styles.title}>Carrito</Text>
+        {/* ---- TEMPORARY FOR TESTING - START ---- */}
+        {/* Temporary Toggle Button for Dev - REMOVE LATER */}
+        <TouchableOpacity onPress={toggleCartView} style={styles.toggleButton}>
+          <Text style={styles.toggleButtonText}>{showMockItems ? 'Ver Vacío' : 'Ver Items'}</Text>
+        </TouchableOpacity>
+        {/* ---- TEMPORARY FOR TESTING - END ---- */}
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isEmpty && styles.scrollContentEmpty, // Apply light background when empty
+        ]}
+      >
         {isEmpty ? (
           <EmptyCart onGoToStore={handleGoToStore} />
         ) : (
-          // Cart items would go here
-          <View />
+          <>
+            {/* Cart Items Section */}
+            <View style={styles.cartItemsContainer}>
+              {cartItems.map((item) => (
+                <CartProductCard
+                  key={item.id}
+                  product={item}
+                  quantity={item.quantity}
+                  onQuantityChange={(quantity) => handleQuantityChange(item.id, quantity)}
+                  onRemove={() => handleRemoveItem(item.id)}
+                  onEdit={() => handleEditItem(item.id)}
+                />
+              ))}
+            </View>
+
+            {/* Spacer */}
+            <View style={styles.sectionSpacer} />
+
+            {/* Payment Summary Section */}
+            <View style={styles.summarySection}>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Subtotal</Text>
+                <Text style={styles.summaryValue}>${calculateTotal().toFixed(2)}</Text>
+              </View>
+              {/* Only show discount row if there are discounted items */}
+              {hasDiscountedItems() && (
+                <View style={styles.summaryRow}>
+                  <Text style={[styles.summaryLabel, styles.discountLabel]}>Descuento</Text>
+                  <Text style={[styles.summaryValue, styles.discountValue]}>
+                    -${calculateDiscountTotal().toFixed(2)}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Envío</Text>
+                <Text style={styles.summaryValue}>$0.00</Text>
+              </View>
+              <View style={[styles.summaryRow, styles.totalRow]}>
+                <Text style={styles.totalLabel}>Total a pagar</Text>
+                <Text style={styles.totalValue}>
+                  ${(calculateTotal() - calculateDiscountTotal()).toFixed(2)}
+                </Text>
+              </View>
+            </View>
+
+            {/* Spacer */}
+            <View style={styles.sectionSpacer} />
+
+            {/* Coupon Dropdown */}
+            <View style={styles.dropdownSection}>
+              <Dropdown label="¿Tienes algún cupón disponible?" onPress={handleCouponPress} />
+            </View>
+
+            {/* Spacer */}
+            <View style={styles.sectionSpacer} />
+
+            {/* Gift Card Dropdown */}
+            <View style={styles.dropdownSection}>
+              <Dropdown label="¿Tienes alguna tarjeta de regalo?" onPress={handleGiftCardPress} />
+            </View>
+
+            {/* Final Spacer */}
+            <View style={styles.sectionSpacer} />
+
+            {/* Empty space at bottom */}
+            <View style={styles.finalLightSpacer} />
+          </>
         )}
 
-        {/* Recently viewed products section */}
-        {recentlyViewedProducts.length > 0 && (
+        {/* Recently viewed products section - Show only when cart IS empty */}
+        {isEmpty && recentlyViewedProducts.length > 0 && (
           <View style={styles.section}>
             <Subheader
               title="Vistos recientemente"
@@ -103,6 +245,24 @@ export default function CartScreen() {
           </View>
         )}
       </ScrollView>
+
+      {!isEmpty && (
+        <View style={styles.checkoutContainer}>
+          {/* Total row */}
+          <View style={styles.checkoutTotalRow}>
+            <Text style={styles.checkoutTotalLabel}>Total</Text>
+            <Text style={styles.checkoutTotalValue}>
+              ${(calculateTotal() - calculateDiscountTotal()).toFixed(2)}
+            </Text>
+          </View>
+          <Button
+            text="Comprar ahora"
+            variant="primary"
+            onPress={handleBuyNow}
+            style={styles.buyButton}
+          />
+        </View>
+      )}
     </View>
   );
 }
@@ -110,29 +270,159 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.light,
+    backgroundColor: colors.background.medium, // Light gray background for the main container
   },
   header: {
     backgroundColor: colors.background.light,
-    paddingTop: 44,
-    paddingBottom: 8,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
-    gap: 24,
+    gap: spacing.md,
+  },
+  headerTopSpace: {
+    height: spacing.xxxl, // Match the height that the toggle/search takes in the Tienda tab
   },
   title: {
-    fontSize: 32,
-    lineHeight: 44,
+    fontSize: fontSizes.xxxl,
+    lineHeight: lineHeights.xxxl,
     color: colors.primary,
     fontFamily: fonts.primary,
   },
+  // ---- TEMPORARY FOR TESTING - START ----
+  // Styles for the toggle button - REMOVE LATER
+  toggleButton: {
+    backgroundColor: colors.secondary,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.xs,
+  },
+  toggleButtonText: {
+    color: colors.background.light,
+    fontSize: fontSizes.sm,
+  },
+  // ---- TEMPORARY FOR TESTING - END ----
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 100, // Adjusted padding for checkout button
+    backgroundColor: colors.background.medium, // Default background for non-empty cart
+  },
+  scrollContentEmpty: {
+    backgroundColor: colors.background.light, // White background when cart is empty
   },
   section: {
     paddingVertical: spacing.xl,
+    backgroundColor: colors.background.light,
   },
   horizontalScrollContent: {
     paddingHorizontal: spacing.lg,
     gap: spacing.md,
+  },
+  cartItemsContainer: {
+    backgroundColor: colors.background.light,
+    paddingVertical: spacing.md,
+  },
+  sectionSpacer: {
+    height: spacing.md, // Create a 16px gap between sections
+    backgroundColor: colors.background.medium, // Light gray background for spacers
+  },
+  summarySection: {
+    backgroundColor: colors.background.light,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.xs, // Gap between summary rows
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  summaryLabel: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    lineHeight: lineHeights.md,
+    color: colors.secondary,
+  },
+  summaryValue: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    lineHeight: lineHeights.md,
+    color: colors.secondary,
+  },
+  discountLabel: {
+    color: colors.error,
+  },
+  discountValue: {
+    color: colors.error,
+  },
+  totalRow: {
+    marginTop: spacing.xs,
+  },
+  totalLabel: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
+    fontWeight: '500',
+    lineHeight: lineHeights.lg,
+    color: colors.primary,
+  },
+  totalValue: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
+    fontWeight: '500',
+    lineHeight: lineHeights.lg,
+    color: colors.primary,
+  },
+  dropdownSection: {
+    backgroundColor: colors.background.light,
+    paddingVertical: spacing.md,
+  },
+  finalLightSpacer: {
+    height: 128, // Match the empty frame height from Figma
+    backgroundColor: colors.background.light, // White background
+  },
+  checkoutContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.background.light,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+    paddingTop: spacing.xl,
+    gap: spacing.sm, // Slightly increased gap
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    // Shadow from Figma
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  checkoutTotalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg, // Increased to 24px as in Figma
+    marginBottom: spacing.xs, // Add some space before the button
+  },
+  checkoutTotalLabel: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    fontWeight: '500',
+    lineHeight: lineHeights.md,
+    color: colors.primary,
+  },
+  checkoutTotalValue: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    fontWeight: '500',
+    lineHeight: lineHeights.md,
+    color: colors.primary,
+  },
+  buyButton: {
+    width: '100%',
+    borderRadius: radius.xxl,
   },
 });

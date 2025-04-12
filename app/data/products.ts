@@ -20,59 +20,62 @@ export const products: Product[] = [
       'Material de alta durabilidad resistente al desgaste por uso frecuente.',
     ],
     warranty: '6 meses',
-    returnPolicy: 'Si no estás satisfecho con tu compra, puedes devolver el producto sin usar dentro de los 30 días posteriores a la compra con el ticket original y el embalaje intacto.',
+    returnPolicy:
+      'Si no estás satisfecho con tu compra, puedes devolver el producto sin usar dentro de los 30 días posteriores a la compra con el ticket original y el embalaje intacto.',
     dimensions: {
       height: '12cm',
       width: '8cm',
     },
     colors: [
-      { 
-        color: '#FFFFFF', 
+      {
+        colorName: 'Blanco',
         quantity: 10,
         images: {
           main: require('../../assets/images/products/white-sock-1.png'),
           additional: [
             require('../../assets/images/products/white-sock-2.png'),
-            require('../../assets/images/products/white-sock-3.png')
-          ]
-        }
+            require('../../assets/images/products/white-sock-3.png'),
+          ],
+        },
       },
-      { 
-        color: '#0C0C0C', 
+      {
+        colorName: 'Negro',
         quantity: 8,
         images: {
           main: require('../../assets/images/products/sock-color-2.png'),
-          additional: [
-          ]
-        }
+          additional: [],
+        },
       },
-      { 
-        color: '#FFBA54', 
+      {
+        colorName: 'Naranja',
         quantity: 5,
         images: {
           main: require('../../assets/images/products/sock-color-3.png'),
-          additional: [
-          ]
-        }
+          additional: [],
+        },
       },
-      { 
-        color: '#4CAF50', 
+      {
+        colorName: 'Verde',
         quantity: 12,
         images: {
           main: require('../../assets/images/products/sock-color-5.png'),
-          additional: [
-          ]
-        }
+          additional: [],
+        },
       },
-      { 
-        color: '#FFF27C', 
+      {
+        colorName: 'Amarillo',
         quantity: 7,
         images: {
           main: require('../../assets/images/products/sock-color-4.png'),
-          additional: [
-          ]
-        }
+          additional: [],
+        },
       },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+      { value: 'XL', available: false },
     ],
   },
   {
@@ -91,13 +94,18 @@ export const products: Product[] = [
       'Tejido suelto que brinda mayor confortabilidad y reduce la presión sobre los pies.',
     ],
     colors: [
-      { 
-        color: '#4CAF50', 
+      {
+        colorName: 'Verde',
         quantity: 10,
         images: {
-          main: require('../../assets/images/products/product_socks_2.png')
-        }
+          main: require('../../assets/images/products/product_socks_2.png'),
+        },
       },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: false },
     ],
   },
   {
@@ -118,20 +126,27 @@ export const products: Product[] = [
       'Completamente personalizables con tus colores y diseños preferidos.',
     ],
     colors: [
-      { 
-        color: '#FAFAFA', 
+      {
+        colorName: 'Blanco',
         quantity: 10,
         images: {
-          main: require('../../assets/images/products/product_socks_0.png')
-        }
+          main: require('../../assets/images/products/product_socks_0.png'),
+        },
       },
-      { 
-        color: '#0C0C0C', 
+      {
+        colorName: 'Negro',
         quantity: 10,
         images: {
-          main: require('../../assets/images/products/product_socks_0.png')
-        }
+          main: require('../../assets/images/products/product_socks_0.png'),
+        },
       },
+    ],
+    sizes: [
+      { value: 'XS', available: false },
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+      { value: 'XL', available: true },
     ],
   },
   {
@@ -152,51 +167,53 @@ export const products: Product[] = [
       'Interior espacioso con compartimentos organizados para todos tus objetos esenciales.',
     ],
     colors: [
-      { 
-        color: '#FAFAFA', 
+      {
+        colorName: 'Blanco',
         quantity: 10,
         images: {
-          main: require('../../assets/images/products/sock-color-1.png')
-        }
+          main: require('../../assets/images/products/sock-color-1.png'),
+        },
       },
-      { 
-        color: '#0C0C0C', 
+      {
+        colorName: 'Negro',
         quantity: 10,
         images: {
           main: require('../../assets/images/products/sock-color-2.png'),
-          additional: [
-            require('../../assets/images/products/white-sock-2.png'),
-          ]
-        }
+          additional: [require('../../assets/images/products/white-sock-2.png')],
+        },
       },
-      { 
-        color: '#FFBA54', 
+      {
+        colorName: 'Naranja',
         quantity: 10,
         images: {
           main: require('../../assets/images/products/sock-color-3.png'),
           additional: [
             require('../../assets/images/products/white-sock-2.png'),
-            require('../../assets/images/products/white-sock-3.png')
-          ]
-        }
+            require('../../assets/images/products/white-sock-3.png'),
+          ],
+        },
       },
-      { 
-        color: '#FFF27C', 
+      {
+        colorName: 'Amarillo',
         quantity: 10,
         images: {
-          main: require('../../assets/images/products/sock-color-4.png')
-        }
+          main: require('../../assets/images/products/sock-color-4.png'),
+        },
       },
-      { 
-        color: '#4CAF50', 
+      {
+        colorName: 'Verde',
         quantity: 10,
         images: {
           main: require('../../assets/images/products/sock-color-5.png'),
-          additional: [
-            require('../../assets/images/products/white-sock-3.png')
-          ]
-        }
+          additional: [require('../../assets/images/products/white-sock-3.png')],
+        },
       },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+      { value: 'XL', available: false },
     ],
   },
   {
@@ -217,6 +234,15 @@ export const products: Product[] = [
       'Diseño resistente a las inclemencias del tiempo para proteger tus pertenencias.',
       'Completamente personalizable con tus colores, parches o iniciales favoritas.',
     ],
+    colors: [
+      {
+        colorName: 'Gris',
+        quantity: 12,
+        images: {
+          main: require('../../assets/images/products/product_bag_1.png'),
+        },
+      },
+    ],
   },
   {
     id: 'buzo-oversize',
@@ -236,20 +262,27 @@ export const products: Product[] = [
       'Disponible en varios colores y completamente personalizable.',
     ],
     colors: [
-      { 
-        color: '#FAFAFA', 
+      {
+        colorName: 'Blanco',
         quantity: 10,
         images: {
-          main: require('../../assets/images/products/product_sweater.png')
-        }
+          main: require('../../assets/images/products/product_sweater.png'),
+        },
       },
-      { 
-        color: '#0C0C0C', 
+      {
+        colorName: 'Negro',
         quantity: 10,
         images: {
-          main: require('../../assets/images/products/product_sweater.png')
-        }
+          main: require('../../assets/images/products/product_sweater.png'),
+        },
       },
+    ],
+    sizes: [
+      { value: 'XS', available: true },
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+      { value: 'XL', available: false },
     ],
   },
   {
@@ -269,6 +302,15 @@ export const products: Product[] = [
       'Pequeño por fuera pero espacioso por dentro para todos tus esenciales.',
       'Fabricado con material de alta resistencia al agua y rasgaduras.',
     ],
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 10,
+        images: {
+          main: require('../../assets/images/products/product_bag_2.png'),
+        },
+      },
+    ],
   },
   {
     id: 'mochila-classic',
@@ -284,6 +326,15 @@ export const products: Product[] = [
       'Proporciona espacio suficiente para tus objetos cotidianos con un estilo sobrio.',
       'Su diseño atemporal garantiza que nunca pase de moda, convirtiéndola en una inversión duradera.',
       'Fabricada con materiales resistentes para acompañarte en todas tus aventuras.',
+    ],
+    colors: [
+      {
+        colorName: 'Gris',
+        quantity: 8,
+        images: {
+          main: require('../../assets/images/products/product_bag_3.png'),
+        },
+      },
     ],
   },
   {
@@ -301,6 +352,15 @@ export const products: Product[] = [
       'El material transpirable garantiza comodidad incluso en los días más calurosos.',
       'Un accesorio versátil que complementa cualquier conjunto casual o deportivo.',
     ],
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 12,
+        images: {
+          main: require('../../assets/images/products/product_cap_black.png'),
+        },
+      },
+    ],
   },
   {
     id: 'relaxed-classic',
@@ -316,6 +376,21 @@ export const products: Product[] = [
       'Diseñada para proporcionar la máxima comodidad sin sacrificar el estilo.',
       'Tejido de alta calidad que mantiene su forma incluso después de múltiples lavados.',
       'Perfecta para ocasiones informales o para un look elegante pero relajado en la oficina.',
+    ],
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 15,
+        images: {
+          main: require('../../assets/images/products/product_shirt_black_relaxed.png'),
+        },
+      },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+      { value: 'XL', available: true },
     ],
   },
   {
@@ -333,6 +408,21 @@ export const products: Product[] = [
       'Fabricada con algodón de primera calidad que garantiza durabilidad y transpirabilidad.',
       'Un básico imprescindible en cualquier armario que combina con todo tipo de prendas.',
     ],
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 20,
+        images: {
+          main: require('../../assets/images/products/product_shirt_black_regular.png'),
+        },
+      },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+      { value: 'XL', available: false },
+    ],
   },
   {
     id: 'white-shirt',
@@ -348,6 +438,22 @@ export const products: Product[] = [
       'Confeccionada con tejido premium que garantiza un acabado impecable y duradero.',
       'Su diseño versátil la hace perfecta tanto para ocasiones formales como informales.',
       'El corte estudiado proporciona un ajuste cómodo y favorecedor para cualquier silueta.',
+    ],
+    colors: [
+      {
+        colorName: 'Blanco',
+        quantity: 18,
+        images: {
+          main: require('../../assets/images/products/product_shirt_white.png'),
+        },
+      },
+    ],
+    sizes: [
+      { value: 'XS', available: false },
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+      { value: 'XL', available: true },
     ],
   },
   {
@@ -365,6 +471,21 @@ export const products: Product[] = [
       'Su color negro profundo mantiene su intensidad lavado tras lavado.',
       'Versátil y combinable con cualquier prenda para un look casual o deportivo.',
     ],
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 25,
+        images: {
+          main: require('../../assets/images/products/product_t_shirt_black.png'),
+        },
+      },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+      { value: 'XL', available: true },
+    ],
   },
   {
     id: 'backpack-pro',
@@ -381,6 +502,15 @@ export const products: Product[] = [
       'Fabricada con materiales resistentes al agua y al desgaste para una durabilidad excepcional.',
       'Sistema ergonómico de correas que distribuye el peso de forma óptima para mayor comodidad.',
       'Ideal para el uso diario en entornos profesionales o viajes de negocios.',
+    ],
+    colors: [
+      {
+        colorName: 'Gris',
+        quantity: 15,
+        images: {
+          main: require('../../assets/images/products/product_bag_4.png'),
+        },
+      },
     ],
   },
   {
@@ -404,7 +534,8 @@ export const products: Product[] = [
       'El cierre resistente al agua protege el contenido de salpicaduras y pequeños derrames.',
     ],
     warranty: '3 meses',
-    returnPolicy: 'Este producto tiene una política de devolución de 15 días siempre que se mantenga sin uso y con todas las etiquetas originales.',
+    returnPolicy:
+      'Este producto tiene una política de devolución de 15 días siempre que se mantenga sin uso y con todas las etiquetas originales.',
     dimensions: {
       height: '25cm',
       width: '18cm',
@@ -412,17 +543,17 @@ export const products: Product[] = [
     },
     colors: [
       {
-        color: '#0C0C0C',
+        colorName: 'Negro',
         quantity: 15,
         images: {
           main: require('../../assets/images/products/neceser9-1.png'),
           additional: [
             require('../../assets/images/products/neceser9-3.png'),
-            require('../../assets/images/products/neceser9-4.png')
-          ]
-        }
-      }
-    ]
+            require('../../assets/images/products/neceser9-4.png'),
+          ],
+        },
+      },
+    ],
   },
   {
     id: 'backpack-travel',
@@ -440,20 +571,30 @@ export const products: Product[] = [
       'Materiales impermeables y costuras reforzadas que protegen tus pertenencias en cualquier clima.',
       'Correas acolchadas y soporte lumbar para distribuir el peso de forma óptima en largas caminatas.',
     ],
+    colors: [
+      {
+        colorName: 'Gris',
+        quantity: 10,
+        images: {
+          main: require('../../assets/images/products/product_bag_6.png'),
+        },
+      },
+    ],
   },
 ];
 
 export const getHighlightedProducts = () => products.slice(0, 3);
 export const getFeaturedProduct = () => products[products.length - 2];
 export const getRecommendedProducts = () => products.slice(4, 7);
-export const getTrendingProducts = () => [
-  products.find(p => p.id === 'regular-shirt'),
-  products.find(p => p.id === 'relaxed-classic'),
-  products.find(p => p.id === 'white-shirt'),
-  products.find(p => p.id === 'cap-v3'),
-].filter((p): p is Product => p !== undefined);
+export const getTrendingProducts = () =>
+  [
+    products.find((p) => p.id === 'regular-shirt'),
+    products.find((p) => p.id === 'relaxed-classic'),
+    products.find((p) => p.id === 'white-shirt'),
+    products.find((p) => p.id === 'cap-v3'),
+  ].filter((p): p is Product => p !== undefined);
 export const getNewReleases = () => products.slice(0, 4);
-export const getProductById = (id: string) => products.find(p => p.id === id);
+export const getProductById = (id: string) => products.find((p) => p.id === id);
 
 const ProductData = {
   products,
@@ -465,4 +606,4 @@ const ProductData = {
   getProductById,
 };
 
-export default ProductData; 
+export default ProductData;

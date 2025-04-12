@@ -1,32 +1,35 @@
-import React from 'react'
-import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native'
-import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography'
-import { spacing, radius } from '../../../../styles/spacing'
-import { colors } from '../../../../styles/colors'
-import { ProductSize } from '../../../../types/product'
+import React from 'react';
+import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
+import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography';
+import { spacing, radius } from '../../../../styles/spacing';
+import { colors } from '../../../../styles/colors';
+import { ProductSize } from '../../../../types/product';
 
 type SizeSelectorProps = {
-  sizes: ProductSize[]
-  selectedSize: string | null
-  onSelectSize: (size: string) => void
-  darkMode?: boolean
-}
+  sizes: ProductSize[];
+  selectedSize: string | null;
+  onSelectSize: (size: string) => void;
+  darkMode?: boolean;
+};
 
-export default function SizeSelector({ 
-  sizes, 
-  selectedSize, 
+export default function SizeSelector({
+  sizes,
+  selectedSize,
   onSelectSize,
-  darkMode = false
+  darkMode = false,
 }: SizeSelectorProps) {
+  // Filter out unavailable sizes
+  const availableSizes = sizes.filter((size) => size.available);
+
   return (
     <View style={styles.container}>
       <Text style={[styles.label, darkMode && styles.labelDark]}>Talle</Text>
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.sizesContainer}
       >
-        {sizes.map((size) => (
+        {availableSizes.map((size) => (
           <Pressable
             key={size.value}
             style={[
@@ -34,19 +37,14 @@ export default function SizeSelector({
               darkMode && styles.sizeButtonDark,
               selectedSize === size.value && styles.selectedSize,
               selectedSize === size.value && darkMode && styles.selectedSizeDark,
-              !size.available && styles.unavailableSize,
-              !size.available && darkMode && styles.unavailableSizeDark
             ]}
-            onPress={() => size.available && onSelectSize(size.value)}
-            disabled={!size.available}
+            onPress={() => onSelectSize(size.value)}
           >
-            <Text 
+            <Text
               style={[
                 styles.sizeText,
                 darkMode && styles.sizeTextDark,
                 selectedSize === size.value && styles.selectedSizeText,
-                !size.available && styles.unavailableSizeText,
-                !size.available && darkMode && styles.unavailableSizeTextDark
               ]}
             >
               {size.value}
@@ -55,7 +53,7 @@ export default function SizeSelector({
         ))}
       </ScrollView>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -101,16 +99,6 @@ const styles = StyleSheet.create({
     borderColor: colors.background.light,
     backgroundColor: colors.background.light,
   },
-  unavailableSize: {
-    borderColor: 'rgba(220, 220, 220, 0.3)',
-    backgroundColor: 'rgba(220, 220, 220, 0.05)',
-    opacity: 0.5,
-  },
-  unavailableSizeDark: {
-    borderColor: 'rgba(177, 177, 177, 0.3)',
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
-    opacity: 0.3,
-  },
   sizeText: {
     color: colors.primary,
     fontSize: fontSizes.md,
@@ -125,10 +113,4 @@ const styles = StyleSheet.create({
     color: colors.background.light,
     fontWeight: fontWeights.semibold,
   },
-  unavailableSizeText: {
-    color: colors.secondary,
-  },
-  unavailableSizeTextDark: {
-    color: 'rgba(177, 177, 177, 0.5)',
-  },
-}) 
+});

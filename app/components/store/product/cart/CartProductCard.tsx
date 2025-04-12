@@ -1,194 +1,364 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
-import { Product } from '../../../../types/product'
-import Counter from '../../../ui/form/Counter'
-import ProductImage from '../image/ProductImage'
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { Product } from '../../../../types/product';
+import ProductImage from '../image/ProductImage';
+import { colors } from '../../../../styles/colors';
+import { spacing } from '../../../../styles/spacing';
 
+// Define CartProduct inheriting from Product
 interface CartProduct extends Product {
-  salePrice?: number
-  image: string
-  title: string
-  price: number
+  quantity: number;
+  isCustomizable?: boolean;
+  color?: string; // Color name displayed in cart
+  selectedSize?: string;
+  sizes?: { value: string; available: boolean }[];
+  size?: string;
 }
 
 interface CartProductCardProps {
-  product: CartProduct
-  quantity: number
-  onQuantityChange: (quantity: number) => void
-  onRemove: () => void
-  isDark?: boolean
-  isLoading?: boolean
+  product: CartProduct;
+  quantity: number;
+  onQuantityChange?: (quantity: number) => void;
+  onRemove?: () => void;
+  onEdit?: () => void;
+  isDark?: boolean;
 }
+
+// Define a type for the styles
+type Styles = {
+  container: ViewStyle;
+  containerDark: ViewStyle;
+  imageContainer: ViewStyle;
+  content: ViewStyle;
+  topSection: ViewStyle;
+  titleEditRow: ViewStyle;
+  title: TextStyle;
+  titleDark: TextStyle;
+  editButton: ViewStyle;
+  editButtonText: TextStyle;
+  customizableText: TextStyle;
+  colorText: TextStyle;
+  sizeRow: ViewStyle;
+  sizeLabel: TextStyle;
+  sizeValue: TextStyle;
+  footer: ViewStyle;
+  quantityRow: ViewStyle;
+  quantityLabel: TextStyle;
+  quantityValue: TextStyle;
+  priceContainer: ViewStyle;
+  originalPriceText: TextStyle;
+  price: TextStyle;
+  priceDark: TextStyle;
+  discountPriceText: TextStyle;
+  discountBadge: ViewStyle;
+  discountBadgeText: TextStyle;
+  emptyDiscountBadge: ViewStyle;
+  emptyOriginalPrice: ViewStyle;
+};
 
 export const CartProductCard = ({
   product,
   quantity,
-  onQuantityChange,
-  onRemove,
+  onEdit,
   isDark = false,
-  isLoading = false,
 }: CartProductCardProps) => {
-  const totalPrice = product.salePrice 
-    ? product.salePrice * quantity
-    : product.price * quantity
+  const {
+    title,
+    price,
+    discountedPrice,
+    image,
+    isCustomizable,
+    color,
+    selectedSize,
+    sizes,
+    size,
+    colors,
+  } = product;
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, isDark && styles.containerDark]}>
-        <View style={[
-          styles.loadingImage,
-          isDark && styles.loadingDark,
-        ]} />
-        <View style={styles.content}>
-          <View style={[
-            styles.loadingTitle,
-            isDark && styles.loadingDark,
-          ]} />
-          <View style={[
-            styles.loadingPrice,
-            isDark && styles.loadingDark,
-          ]} />
-          <View style={[
-            styles.loadingCounter,
-            isDark && styles.loadingDark,
-          ]} />
-        </View>
-      </View>
-    )
-  }
+  // Get the display color - prefer explicitly set color, fall back to first color's name
+  const displayColor = color || (colors && colors.length > 0 ? colors[0].colorName : undefined);
+
+  // Determine what size to display
+  // 1. Use selectedSize if available
+  // 2. Use size (legacy) if available
+  // 3. Use the first available size from sizes array if exists
+  // 4. For items like bags without size info, show "Único"
+  const displaySize =
+    selectedSize ||
+    size ||
+    (sizes && sizes.length > 0 ? sizes.find((s) => s.available)?.value || sizes[0].value : 'Único');
+
+  // Calculate discount percentage if applicable
+  const discountPercentage =
+    discountedPrice && price ? Math.round(((price - discountedPrice) / price) * 100) : 0;
 
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
-      <ProductImage source={product.image} size={80} />
+      {/* Product Image */}
+      <View style={styles.imageContainer}>
+        <ProductImage source={image} size={130} />
+      </View>
 
+      {/* Product Details */}
       <View style={styles.content}>
-        <View style={styles.header}>
-          <Text
-            style={[styles.title, isDark && styles.titleDark]}
-            numberOfLines={1}
-          >
-            {product.title}
-          </Text>
-          <TouchableOpacity
-            onPress={onRemove}
-            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-          >
-            <Ionicons
-              name="close"
-              size={20}
-              color={isDark ? '#FFFFFF' : '#707070'}
-            />
-          </TouchableOpacity>
+        {/* Top Section: Title and product info */}
+        <View style={styles.topSection}>
+          {/* Row for Title and Edit Button */}
+          <View style={styles.titleEditRow}>
+            <Text
+              style={[styles.title, isDark && styles.titleDark]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {title}
+            </Text>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={onEdit}
+              hitSlop={{ top: spacing.sm, right: spacing.sm, bottom: spacing.sm, left: spacing.sm }}
+            >
+              <Text style={styles.editButtonText}>Editar</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Product Attributes */}
+          {isCustomizable && <Text style={styles.customizableText}>Personalizable</Text>}
+
+          {displayColor && <Text style={styles.colorText}>{displayColor}</Text>}
+
+          {displaySize && (
+            <View style={styles.sizeRow}>
+              <Text style={styles.sizeLabel}>Talle:</Text>
+              <Text style={styles.sizeValue}>{displaySize}</Text>
+            </View>
+          )}
         </View>
 
-        {product.salePrice && (
-          <Text style={styles.originalPrice}>
-            ${product.price}
-          </Text>
-        )}
-
+        {/* Bottom Row: Quantity and Price - Fixed height section */}
         <View style={styles.footer}>
-          <Counter
-            value={quantity}
-            onChange={onQuantityChange}
-            min={1}
-            isDark={isDark}
-          />
-          <Text style={[styles.price, isDark && styles.priceDark]}>
-            ${totalPrice.toFixed(2)}
-          </Text>
+          <View style={styles.quantityRow}>
+            <Text style={styles.quantityLabel}>Cantidad:</Text>
+            <Text style={styles.quantityValue}>{quantity}</Text>
+          </View>
+
+          {/* Price Section - Fixed height regardless of discount presence */}
+          <View style={styles.priceContainer}>
+            {discountedPrice && discountPercentage > 0 ? (
+              <>
+                {/* Discount Badge */}
+                <View style={styles.discountBadge}>
+                  <Text style={styles.discountBadgeText}>-{discountPercentage}%</Text>
+                </View>
+
+                {/* Original Price (strikethrough) and Discounted Price */}
+                <Text style={[styles.originalPriceText, isDark && styles.priceDark]}>
+                  ${price.toFixed(2)}
+                </Text>
+                <Text style={[styles.discountPriceText, isDark && styles.priceDark]}>
+                  ${discountedPrice.toFixed(2)}
+                </Text>
+              </>
+            ) : (
+              <>
+                {/* Empty space for consistent layout */}
+                <View style={styles.emptyDiscountBadge} />
+
+                {/* Empty space for original price */}
+                <View style={styles.emptyOriginalPrice} />
+
+                {/* Regular Price */}
+                <Text style={[styles.price, isDark && styles.priceDark]}>${price.toFixed(2)}</Text>
+              </>
+            )}
+          </View>
         </View>
       </View>
     </View>
-  )
-}
+  );
+};
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<Styles>({
   container: {
     flexDirection: 'row',
-    padding: 16,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 2,
-    borderWidth: 1,
-    borderColor: '#DCDCDC',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.background.light,
+    gap: spacing.lg,
+    alignItems: 'flex-start',
   },
   containerDark: {
-    backgroundColor: '#0C0C0C',
-    borderColor: '#373737',
+    backgroundColor: colors.background.dark,
+    flex: 1,
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+  },
+  imageContainer: {
+    width: 130,
+    height: 130,
+    overflow: 'hidden',
+    borderRadius: 2,
   },
   content: {
     flex: 1,
-    marginLeft: 16,
+    paddingVertical: spacing.sm,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    height: 130,
   },
-  header: {
+  topSection: {
+    flexDirection: 'column',
+    alignSelf: 'stretch',
+    flexShrink: 1,
+    flex: 1,
+  },
+  titleEditRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+    flexShrink: 1,
   },
   title: {
-    flex: 1,
     fontFamily: 'Inter',
     fontSize: 14,
     fontWeight: '500',
-    color: '#0C0C0C',
-    marginRight: 16,
+    lineHeight: 20,
+    color: colors.primary,
+    flexShrink: 1,
+    marginRight: spacing.sm,
   },
   titleDark: {
-    color: '#FFFFFF',
+    color: colors.background.light,
   },
-  originalPrice: {
+  editButton: {},
+  editButtonText: {
     fontFamily: 'Inter',
     fontSize: 12,
     fontWeight: '400',
-    color: '#707070',
-    textDecorationLine: 'line-through',
-    marginTop: 4,
+    lineHeight: 16,
+    color: colors.secondary,
+    textDecorationLine: 'underline',
+  },
+  customizableText: {
+    fontFamily: 'Inter',
+    fontSize: 10,
+    fontWeight: '400',
+    lineHeight: 14,
+    color: colors.secondary,
+    marginTop: spacing.xs,
+  },
+  colorText: {
+    fontFamily: 'Inter',
+    fontSize: 10,
+    fontWeight: '400',
+    lineHeight: 14,
+    color: colors.secondary,
+    marginTop: spacing.xs / 2,
+  },
+  sizeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.xs / 2,
+  },
+  sizeLabel: {
+    fontFamily: 'Inter',
+    fontSize: 10,
+    fontWeight: '400',
+    lineHeight: 14,
+    color: colors.secondary,
+    textAlign: 'right',
+  },
+  sizeValue: {
+    fontFamily: 'Inter',
+    fontSize: 10,
+    fontWeight: '400',
+    lineHeight: 14,
+    color: colors.secondary,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    alignSelf: 'stretch',
+    gap: spacing.xs,
+  },
+  quantityRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 12,
+    gap: spacing.xs,
+  },
+  quantityLabel: {
+    fontFamily: 'Inter',
+    fontSize: 10,
+    fontWeight: '400',
+    lineHeight: 14,
+    color: colors.secondary,
+    textAlign: 'right',
+  },
+  quantityValue: {
+    fontFamily: 'Inter',
+    fontSize: 10,
+    fontWeight: '400',
+    lineHeight: 14,
+    color: colors.secondary,
+    textAlign: 'right',
+  },
+  priceContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    height: 44, // Fixed height for price container to accommodate discount
+    justifyContent: 'flex-end',
+  },
+  originalPriceText: {
+    fontFamily: 'Inter',
+    fontSize: 12,
+    fontWeight: '400',
+    lineHeight: 16,
+    color: colors.secondary,
+    textDecorationLine: 'line-through',
+    textAlign: 'right',
   },
   price: {
     fontFamily: 'Inter',
     fontSize: 14,
     fontWeight: '500',
-    color: '#0C0C0C',
+    lineHeight: 20,
+    color: colors.primary,
+    textAlign: 'right',
   },
   priceDark: {
-    color: '#FFFFFF',
+    color: colors.background.light,
   },
-  loadingImage: {
-    width: 80,
-    height: 80,
+  discountPriceText: {
+    fontFamily: 'Inter',
+    fontSize: 14,
+    fontWeight: '500',
+    lineHeight: 20,
+    color: colors.error,
+    textAlign: 'right',
+  },
+  discountBadge: {
+    backgroundColor: colors.error,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
     borderRadius: 2,
-    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  loadingTitle: {
-    width: '80%',
-    height: 20,
-    borderRadius: 2,
-    backgroundColor: '#F5F5F5',
-    marginBottom: 8,
+  discountBadgeText: {
+    fontFamily: 'Inter',
+    fontSize: 10,
+    fontWeight: '400',
+    lineHeight: 14,
+    color: colors.background.light,
+    textAlign: 'center',
   },
-  loadingPrice: {
-    width: 60,
-    height: 16,
-    borderRadius: 2,
-    backgroundColor: '#F5F5F5',
-    marginTop: 4,
+  emptyDiscountBadge: {
+    height: 16, // Same height as discount badge
   },
-  loadingCounter: {
-    width: 120,
-    height: 40,
-    borderRadius: 2,
-    backgroundColor: '#F5F5F5',
-    marginTop: 12,
+  emptyOriginalPrice: {
+    height: 16, // Same height as original price text
   },
-  loadingDark: {
-    backgroundColor: '#373737',
-  },
-})
+});
 
-export default CartProductCard 
+export default CartProductCard;

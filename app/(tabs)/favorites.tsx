@@ -2,12 +2,14 @@ import { StyleSheet, View, Text } from 'react-native';
 import { spacing } from '../styles/spacing';
 import { colors } from '../styles/colors';
 import { fonts, fontSizes, lineHeights } from '../styles/typography';
-import { layout } from '../styles/spacing';
 
 export default function FavoritesScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Favorites</Text>
+      <View style={styles.header}>
+        <View style={styles.headerTopSpace} />
+        <Text style={styles.title}>Favorites</Text>
+      </View>
     </View>
   );
 }
@@ -16,13 +18,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background.light,
-    paddingTop: layout.headerTopPadding,
+  },
+  header: {
+    backgroundColor: colors.background.light,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
+    gap: spacing.md,
+  },
+  headerTopSpace: {
+    height: spacing.xxxl, // Match the height that the toggle/search takes in the Tienda tab
   },
   title: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    lineHeight: lineHeights.xl,
+    fontSize: fontSizes.xxxl,
+    lineHeight: lineHeights.xxxl,
     color: colors.primary,
+    fontFamily: fonts.primary,
   },
-}); 
+});

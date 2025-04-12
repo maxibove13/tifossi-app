@@ -96,6 +96,30 @@ interface SizeableProductCardProps<T extends CardVariant> extends BaseProductCar
 - Square or portrait format
 - No additional info
 
+### Product Color Requirements
+All products must include a color property to ensure consistent presentation across the app. The Product interface enforces this with the following structure:
+
+```typescript
+interface ProductColor {
+  color: string;
+  quantity: number;
+  images: ProductColorImages;
+}
+
+// Required on all products
+colors: ProductColor[];
+```
+
+Cart product cards additionally require a color string to be passed:
+```typescript
+export interface CartProductCardProps extends BaseProductCardProps {
+  quantity: number
+  color: string  // Required
+  size?: string
+  onEdit?: () => void
+}
+```
+
 ## Implementation Guidelines
 
 ### 1. Directory Structure
@@ -231,4 +255,3 @@ export function getCardDimensions<T extends CardVariant>(
 - Support proper color contrast ratios
 - Follow platform-specific accessibility guidelines
 - Test with VoiceOver (iOS) and TalkBack (Android)
-``` 
