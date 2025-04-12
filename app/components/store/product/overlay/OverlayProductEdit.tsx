@@ -17,6 +17,7 @@ import ChevronRightBlue from '../../../../../assets/icons/chevron_right_blue.svg
 import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.svg';
 import OverlayCheckoutQuantity from './OverlayCheckoutQuantity';
 import OverlayProductEditSize from './OverlayProductEditSize';
+import OverlayDeleteConfirmation from './OverlayDeleteConfirmation';
 import { Product } from '../../../../types/product';
 
 // Import style tokens
@@ -53,6 +54,7 @@ function OverlayProductEdit({
   const [slideAnim] = useState(new Animated.Value(height));
   const [isQuantityOverlayVisible, setIsQuantityOverlayVisible] = useState(false);
   const [isSizeOverlayVisible, setIsSizeOverlayVisible] = useState(false);
+  const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(initialQuantity);
   const [selectedSize, setSelectedSize] = useState(initialSize);
 
@@ -87,6 +89,7 @@ function OverlayProductEdit({
       // Reset overlay visibility states
       setIsQuantityOverlayVisible(false);
       setIsSizeOverlayVisible(false);
+      setIsDeleteConfirmationVisible(false);
     }
   }, [isVisible, fadeAnim, slideAnim, initialQuantity, initialSize]);
 
@@ -115,13 +118,26 @@ function OverlayProductEdit({
     onClose();
   };
 
-  const handleRemove = () => {
+  const handleShowDeleteConfirmation = () => {
+    setIsDeleteConfirmationVisible(true);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteConfirmationVisible(false);
+  };
+
+  const handleConfirmDelete = () => {
+    // This will first close the delete confirmation overlay
+    setIsDeleteConfirmationVisible(false);
+    // Then call the onRemove prop passed from parent
     onRemove();
+    // Finally close the edit overlay
     onClose();
   };
 
   // Determine if main overlay should be visible
-  const isMainOverlayVisible = isVisible && !isQuantityOverlayVisible && !isSizeOverlayVisible;
+  const isMainOverlayVisible =
+    isVisible && !isQuantityOverlayVisible && !isSizeOverlayVisible && !isDeleteConfirmationVisible;
 
   // Flags to check if size or quantity has been changed from initial
   const hasSizeChanged = selectedSize !== initialSize;
@@ -200,7 +216,7 @@ function OverlayProductEdit({
             <View style={styles.actionButtons}>
               <TouchableOpacity
                 style={styles.trashButton}
-                onPress={handleRemove}
+                onPress={handleShowDeleteConfirmation}
                 activeOpacity={0.7}
               >
                 <TrashIcon width={24} height={24} stroke={colors.primary} strokeWidth={1.2} />
@@ -230,6 +246,13 @@ function OverlayProductEdit({
         onSave={handleSizeSave}
         initialSize={selectedSize}
         productSizes={product?.sizes}
+      />
+
+      {/* Delete Confirmation Overlay */}
+      <OverlayDeleteConfirmation
+        isVisible={isDeleteConfirmationVisible}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
       />
     </>
   );
