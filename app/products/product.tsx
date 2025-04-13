@@ -1,70 +1,69 @@
-import { StyleSheet, View } from 'react-native'
-import { useLocalSearchParams, useRouter } from 'expo-router'
-import ProductHeader from '../components/store/layout/ProductHeader'
-import EnhancedProductGallery from '../components/store/product/gallery/EnhancedProductGallery'
-import SwipeableEdge from '../components/store/product/swipeable/SwipeableEdge'
-import ProductData from '../data/products'
-import { colors } from '../styles/colors'
-import { isProduct, Product } from '../types/product'
-import { useState } from 'react'
-import { StatusBar } from 'expo-status-bar'
-import productUtils from '../utils/product-utils'
+import { StyleSheet, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import ProductHeader from '../components/store/layout/ProductHeader';
+import EnhancedProductGallery from '../components/store/product/gallery/EnhancedProductGallery';
+import SwipeableEdge from '../components/store/product/swipeable/SwipeableEdge';
+import ProductData from '../data/products';
+import { colors } from '../styles/colors';
+import { isProduct, Product } from '../types/product';
+import { useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
 
 export default function ProductScreen() {
-  const { id } = useLocalSearchParams()
-  const router = useRouter()
-  const product = ProductData.getProductById(id as string)
+  const { id } = useLocalSearchParams();
+  const router = useRouter();
+  const product = ProductData.getProductById(id as string);
 
   // State for selected color and quantity
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
-    product?.colors && product.colors.length > 0 ? product.colors[0].color : undefined
-  )
-  const [selectedQuantity, _setSelectedQuantity] = useState(1)
+    product?.colors && product.colors.length > 0 ? product.colors[0].colorName : undefined
+  );
+  const [selectedQuantity, _setSelectedQuantity] = useState(1);
 
   // Get related products data
-  const relatedProducts = productUtils.getRelatedProducts(id as string);
-    
+  const relatedProducts = ProductData.getRecommendedProducts().filter((p) => p.id !== id);
+
   // Get recommended products data
-  const recommendedProducts = productUtils.getRecommendedProducts(id as string);
-    
+  const recommendedProducts = ProductData.getRecommendedProducts().filter((p) => p.id !== id);
+
   // Get trending products data
-  const trendingProducts = productUtils.getTrendingProducts(id as string);
+  const trendingProducts = ProductData.getTrendingProducts().filter((p) => p.id !== id);
 
   const handleAddToCart = async (product: Product, quantity: number = selectedQuantity) => {
     // Add to cart logic with quantity
     console.log('Added to cart', {
       product: product.id,
       quantity,
-    })
-    
-    return Promise.resolve() // Return a resolved promise for the async function
-  }
-  
+    });
+
+    return Promise.resolve(); // Return a resolved promise for the async function
+  };
+
   const handleProductPress = (productId: string) => {
-    router.push(`/products/product?id=${productId}`)
-  }
+    router.push(`/products/product?id=${productId}`);
+  };
 
   const handleSupportAction = (action: 'chat' | 'faq' | 'call') => {
-    console.log('Support action:', action)
+    console.log('Support action:', action);
     // Handle support actions
-  }
-  
+  };
+
   const handleViewMore = (section: string) => {
-    console.log('View more:', section)
+    console.log('View more:', section);
     // Navigate to section view
-  }
+  };
 
   if (!product || !isProduct(product)) {
     return (
       <View style={styles.container}>
         <ProductHeader title="Product not found" />
       </View>
-    )
+    );
   }
 
   // Use shortDescription directly, no fallback to description
   const shortDescription = product.shortDescription;
-    
+
   // Use longDescription directly, no fallback to description
   const longDescription = product.longDescription;
 
@@ -72,14 +71,14 @@ export default function ProductScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       <ProductHeader title={product.title} />
-      
+
       <View style={styles.mainContent}>
-        <EnhancedProductGallery 
+        <EnhancedProductGallery
           product={product}
           selectedColor={selectedColor}
           onColorChange={setSelectedColor}
         />
-        
+
         <SwipeableEdge
           key={`product-edge-${product.id}`}
           product={{
@@ -94,7 +93,7 @@ export default function ProductScreen() {
             sku: product.id,
             warranty: product.warranty,
             returnPolicy: product.returnPolicy,
-            dimensions: product.dimensions
+            dimensions: product.dimensions,
           }}
           relatedProducts={relatedProducts}
           recommendedProducts={recommendedProducts}
@@ -107,7 +106,7 @@ export default function ProductScreen() {
         />
       </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -120,10 +119,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.light,
     position: 'relative', // For positioning SwipeableEdge
   },
-})
+});
 
 // Metadata for the router (export to satisfy the linter)
 export const screenExport = {
   name: 'ProductScreen',
-  version: '1.0.0'
+  version: '1.0.0',
 };

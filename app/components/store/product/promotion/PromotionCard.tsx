@@ -1,62 +1,95 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { colors } from '../../../../styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography';
 import { Product } from '../../../../types/product';
-import { Ionicons } from '@expo/vector-icons'
-import ProductImage from '../image/ProductImage'
+import { Ionicons } from '@expo/vector-icons';
+import ProductImage from '../image/ProductImage';
+import HeartActiveIcon from '../../../ui/icons/HeartActiveIcon';
+import { ProductLabel } from '../../../../types/product-status';
 
-type ProductCardSize = 's' | 'm' | 'l'
+type ProductCardSize = 's' | 'm' | 'l';
 
 type PromotionCardProps = {
-  product: Product
-  size?: ProductCardSize
-  onPress?: () => void
-  darkMode?: boolean
-  invertTextColor?: boolean
-}
+  product: Product;
+  size?: ProductCardSize;
+  onPress?: () => void;
+  darkMode?: boolean;
+  invertTextColor?: boolean;
+  isFavorite?: boolean;
+};
 
-const PromotionCard = ({ 
-  product, 
-  size = 's', 
+const PromotionCard = ({
+  product,
+  size = 's',
   onPress,
   darkMode = false,
-  invertTextColor = false
+  invertTextColor = false,
+  isFavorite = false,
 }: PromotionCardProps) => {
-  const _isSmall = size === 's'
-  const { title, price, discountedPrice, image } = product
+  const [isCurrentlyFavorite, setIsCurrentlyFavorite] = useState(isFavorite);
+  const _isSmall = size === 's';
+  const { title, price, discountedPrice, image, label } = product;
+
+  const handleWishlistPress = () => {
+    setIsCurrentlyFavorite((prev) => !prev);
+    console.log('Wishlist button pressed for product:', product.id);
+  };
+
+  const iconColor = darkMode ? colors.background.light : colors.primary;
+  const inactiveIconColor = darkMode ? colors.background.light : '#DCDCDC';
+
+  // Determine label color based on discount
+  const hasDiscount = discountedPrice !== undefined && discountedPrice < price;
+  const labelColor = hasDiscount ? colors.error : colors.tag.new;
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
       <View style={styles.imageContainer}>
-        <ProductImage 
-          source={image}
-          size={132}
-        />
-        <Pressable style={styles.wishlistButton}>
-          <Ionicons name="heart-outline" size={14} color={darkMode ? colors.background.light : "#DCDCDC"} />
+        <ProductImage source={image} size={132} />
+        <Pressable
+          style={styles.wishlistButton}
+          onPress={handleWishlistPress}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          aria-label={isCurrentlyFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          {isCurrentlyFavorite ? (
+            <HeartActiveIcon size={14} color={iconColor} />
+          ) : (
+            <Ionicons name="heart-outline" size={14} color={inactiveIconColor} />
+          )}
         </Pressable>
       </View>
       <View style={styles.content}>
-        <Text style={styles.label}>Nuevo</Text>
-        <Text 
+        {label === ProductLabel.NEW && (
+          <Text style={[styles.label, { color: labelColor }]}>Nuevo</Text>
+        )}
+        <Text
           style={[
-            styles.title, 
+            styles.title,
             darkMode && styles.titleDark,
-            invertTextColor && styles.invertedTitle
-          ]} 
+            invertTextColor && styles.invertedTitle,
+          ]}
           numberOfLines={1}
         >
           {title}
         </Text>
         <View style={styles.priceContainer}>
-          <Text style={[styles.originalPrice, darkMode && styles.originalPriceDark]}>${price.toFixed(2)}</Text>
-          <Text style={styles.salePrice}>${discountedPrice?.toFixed(2)}</Text>
+          {discountedPrice ? (
+            <>
+              <Text style={[styles.originalPrice, darkMode && styles.originalPriceDark]}>
+                ${price.toFixed(2)}
+              </Text>
+              <Text style={styles.salePrice}>${discountedPrice.toFixed(2)}</Text>
+            </>
+          ) : (
+            <Text style={[styles.price, darkMode && styles.priceDark]}>${price.toFixed(2)}</Text>
+          )}
         </View>
       </View>
     </Pressable>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -82,11 +115,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   label: {
-    color: '#AD3026',
     fontSize: fontSizes.sm,
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.sm,
   },
   title: {
     color: '#0C0C0C',
@@ -124,6 +155,16 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.regular,
     lineHeight: lineHeights.sm,
   },
-})
+  price: {
+    color: '#707070',
+    fontSize: fontSizes.sm,
+    fontFamily: fonts.secondary,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.sm,
+  },
+  priceDark: {
+    color: 'rgba(220, 220, 220, 0.7)',
+  },
+});
 
-export default PromotionCard; 
+export default PromotionCard;

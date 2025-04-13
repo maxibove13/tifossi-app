@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { StyleSheet, View, Text, Pressable, ViewStyle, TextStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { BaseProductCardProps } from '../types';
@@ -37,6 +37,7 @@ type Styles = {
 };
 
 function DefaultLargeCard({ product, onPress, isFavorite = false }: DefaultLargeCardProps) {
+  const [isCurrentlyFavorite, setIsCurrentlyFavorite] = useState(isFavorite);
   const cardData = mapProductToCardData(product);
   const dimensions = getCardDimensions('default', 'large');
 
@@ -44,6 +45,8 @@ function DefaultLargeCard({ product, onPress, isFavorite = false }: DefaultLarge
   const hasDiscount = discountPercentage > 0 && cardData.discountedPrice !== undefined;
 
   const handleWishlistPress = () => {
+    setIsCurrentlyFavorite((prev) => !prev);
+    // We'll integrate with actual state management later
     console.log('Wishlist button pressed for product:', product.id);
   };
 
@@ -92,7 +95,7 @@ function DefaultLargeCard({ product, onPress, isFavorite = false }: DefaultLarge
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
-          {isFavorite ? (
+          {isCurrentlyFavorite ? (
             <HeartActiveIcon size={16} color={colors.primary} />
           ) : (
             <Ionicons name="heart-outline" size={16} color={colors.secondary} />

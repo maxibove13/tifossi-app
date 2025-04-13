@@ -611,7 +611,7 @@ export const products: Product[] = [
 
 export const getHighlightedProducts = () => products.slice(0, 3);
 export const getFeaturedProduct = () => products[products.length - 2];
-export const getRecommendedProducts = () => products.slice(4, 7);
+export const getRecommendedProducts = () => products.slice(3, 9);
 export const getTrendingProducts = () =>
   [
     products.find((p) => p.id === 'regular-shirt'),

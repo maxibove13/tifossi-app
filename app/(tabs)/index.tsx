@@ -13,7 +13,6 @@ import { Product } from '../types/product';
 import HomeScreenSkeleton from '../components/skeletons/HomeScreenSkeleton';
 import ProductSections from '../components/store/product/sections/ProductSections';
 import { useState, useEffect } from 'react';
-import productUtils from '../utils/product-utils';
 import DefaultLargeCard from '../components/store/product/default/large';
 import { fonts, fontSizes, lineHeights } from '../styles/typography';
 
@@ -55,8 +54,8 @@ export default function HomeScreen() {
 
         const highlightedProducts = ProductData.getHighlightedProducts();
         const featuredProduct = ProductData.getFeaturedProduct();
-        const recommendedProducts = productUtils.getRecommendedProducts();
-        const trendingProducts = productUtils.getTrendingProducts();
+        const recommendedProducts = ProductData.getRecommendedProducts();
+        const trendingProducts = ProductData.getTrendingProducts();
         const newReleases = ProductData.getNewReleases();
         const launchAndOpportunityProducts = ProductData.getLaunchAndOpportunityProducts();
 
