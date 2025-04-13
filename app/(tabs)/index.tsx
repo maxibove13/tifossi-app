@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   showcaseSection: {
     gap: spacing.md,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: 0,
     paddingVertical: spacing.xxl, // Consistent vertical padding
   },
   launchSection: {

@@ -38,20 +38,20 @@ export default function ProductSections({
       return {
         title: 'Recomendados para ti',
         viewMoreSection: 'recommended',
-        actionText: 'Ver Todos',
+        actionText: 'Ver Todo',
         CardComponent: PromotionCard,
       };
     } else {
       return {
         title: 'Tendencias',
         viewMoreSection: 'trending',
-        actionText: 'Ver Todos',
+        actionText: 'Ver Todo',
         CardComponent: MinicardLarge,
       };
     }
   };
 
-  const { title, viewMoreSection, actionText, CardComponent } = getSectionInfo();
+  const { title, viewMoreSection, actionText } = getSectionInfo();
 
   // Check if products is undefined or empty before accessing length
   if (!products || products.length === 0) {
