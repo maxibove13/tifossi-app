@@ -38,7 +38,9 @@ export default function HighlightedCard({ product, onPress }: HighlightedCardPro
     return (
       <View style={styles.descriptionContainer}>
         <View style={styles.descriptionItem}>
-          <Text style={styles.descriptionText}>{displayDescription.line1}</Text>
+          <Text style={styles.descriptionText} numberOfLines={1} ellipsizeMode="tail">
+            {displayDescription.line1}
+          </Text>
         </View>
         <View style={styles.separator} />
         <View style={styles.descriptionItem}>

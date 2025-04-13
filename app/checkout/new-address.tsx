@@ -15,13 +15,15 @@ import {
 import { router, Stack } from 'expo-router';
 import CloseIcon from '../../assets/icons/close.svg';
 import Input from '../components/ui/form/Input';
-import { CountryCode } from 'react-native-country-picker-modal';
 import Svg, { Path } from 'react-native-svg';
 
 // Import style tokens
 import { colors } from '../styles/colors';
 import { spacing, radius } from '../styles/spacing';
 import { fontWeights, fontSizes, lineHeights } from '../styles/typography';
+
+// Define country code type locally
+type CountryCode = string;
 
 // Simple Chevron Down icon component
 const ChevronDownIcon = ({ width = 20, height = 20, stroke = '#424242', strokeWidth = 1.5 }) => (
@@ -74,10 +76,10 @@ const SOUTH_AMERICAN_COUNTRIES = [
 ];
 
 // Custom Country Dropdown component
-const CountryDropdown = ({ 
-  value, 
-  onSelect 
-}: { 
+const CountryDropdown = ({
+  value,
+  onSelect,
+}: {
   value: { code: CountryCode; name: string } | null;
   onSelect: (code: CountryCode, name: string) => void;
 }) => {
@@ -109,11 +111,8 @@ const CountryDropdown = ({
 
   return (
     <View style={dropdownStyles.container}>
-      <TouchableOpacity 
-        style={[
-          dropdownStyles.header,
-          isOpen ? dropdownStyles.headerOpen : {}
-        ]} 
+      <TouchableOpacity
+        style={[dropdownStyles.header, isOpen ? dropdownStyles.headerOpen : {}]}
         onPress={handleToggle}
         activeOpacity={0.7}
       >
@@ -121,8 +120,8 @@ const CountryDropdown = ({
           {value ? (
             <View style={dropdownStyles.selectedCountry}>
               <Image
-                source={{ 
-                  uri: `https://flagcdn.com/w20/${value.code.toLowerCase()}.png` 
+                source={{
+                  uri: `https://flagcdn.com/w20/${value.code.toLowerCase()}.png`,
                 }}
                 style={dropdownStyles.flagImage}
               />
@@ -139,7 +138,7 @@ const CountryDropdown = ({
 
       {isOpen && (
         <View style={dropdownStyles.dropdown}>
-          <ScrollView 
+          <ScrollView
             style={dropdownStyles.list}
             nestedScrollEnabled={true}
             showsVerticalScrollIndicator={true}
@@ -152,8 +151,8 @@ const CountryDropdown = ({
                 activeOpacity={0.7}
               >
                 <Image
-                  source={{ 
-                    uri: `https://flagcdn.com/w20/${item.code.toLowerCase()}.png` 
+                  source={{
+                    uri: `https://flagcdn.com/w20/${item.code.toLowerCase()}.png`,
                   }}
                   style={dropdownStyles.flagImage}
                 />
@@ -178,69 +177,69 @@ function NewAddressScreen() {
     department: '',
     countryCode: 'UY', // Default country code for Uruguay
     countryName: 'Uruguay', // Default value as shown in Figma
-    additionalInfo: ''
+    additionalInfo: '',
   });
 
   // Validation errors state
   const [errors, setErrors] = useState<ValidationErrors>({});
-  
+
   // Track if form was submitted to show validation errors
   const [submitted, setSubmitted] = useState(false);
 
   // Update form fields
   const handleChange = (field: keyof AddressFormData, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error for this field if it has a value now
     if (value.trim() && errors[field as keyof ValidationErrors]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: undefined
+        [field]: undefined,
       }));
     }
   };
 
   // Handle country selection
   const handleCountrySelect = (code: CountryCode, name: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       countryCode: code,
-      countryName: name
+      countryName: name,
     }));
   };
 
   // Validate the form
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
-    
+
     // Check required fields
     if (!formData.name.trim()) {
       newErrors.name = 'El nombre es obligatorio';
     }
-    
+
     if (!formData.phone.trim()) {
       newErrors.phone = 'El número de celular es obligatorio';
     }
-    
+
     if (!formData.street.trim()) {
       newErrors.street = 'La calle es obligatoria';
     }
-    
+
     if (!formData.number.trim()) {
       newErrors.number = 'El número es obligatorio';
     }
-    
+
     if (!formData.city.trim()) {
       newErrors.city = 'La ciudad es obligatoria';
     }
-    
+
     if (!formData.department.trim()) {
       newErrors.department = 'El departamento es obligatorio';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -258,12 +257,12 @@ function NewAddressScreen() {
   // Handle save button
   const handleSave = () => {
     setSubmitted(true);
-    
+
     // Validate form before saving
     if (!validateForm()) {
       return; // Don't proceed if validation fails
     }
-    
+
     // In a real app, you would save the address data
     // For now, just go back to the address selection screen
     router.back();
@@ -271,21 +270,17 @@ function NewAddressScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen 
+      <Stack.Screen
         options={{
           headerShown: false,
-        }} 
+        }}
       />
-      
+
       <View style={styles.mainContent}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Añadir dirección de envío</Text>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={handleClose}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
             <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
           </TouchableOpacity>
         </View>
@@ -352,8 +347,8 @@ function NewAddressScreen() {
               {/* Country Dropdown */}
               <CountryDropdown
                 value={
-                  formData.countryCode 
-                    ? { code: formData.countryCode, name: formData.countryName } 
+                  formData.countryCode
+                    ? { code: formData.countryCode, name: formData.countryName }
                     : null
                 }
                 onSelect={handleCountrySelect}
@@ -378,19 +373,11 @@ function NewAddressScreen() {
 
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={handleSave}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={styles.primaryButton} onPress={handleSave} activeOpacity={0.7}>
           <Text style={styles.primaryButtonText}>Guardar</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={handleBack}
-          activeOpacity={0.7}
-        >
+
+        <TouchableOpacity style={styles.secondaryButton} onPress={handleBack} activeOpacity={0.7}>
           <Text style={styles.secondaryButtonText}>Atrás</Text>
         </TouchableOpacity>
       </View>
@@ -614,4 +601,4 @@ const styles = StyleSheet.create<Styles>({
     lineHeight: lineHeights.md,
     color: '#0C0C0C',
   },
-}); 
+});

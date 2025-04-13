@@ -41,7 +41,7 @@ export default function HorizontalProductList<T extends Product>({
   renderItem,
   showViewAll = false,
   onViewAllPress,
-  containerStyle
+  containerStyle,
 }: HorizontalProductListProps<T>) {
   if (products.length === 0) {
     return null;
@@ -49,12 +49,12 @@ export default function HorizontalProductList<T extends Product>({
 
   return (
     <View style={[styles.container, containerStyle]}>
-      <SectionHeader 
+      <SectionHeader
         title={title}
-        showViewAll={showViewAll}
-        onViewAllPress={onViewAllPress}
+        actionText={showViewAll ? 'Ver Más' : undefined}
+        onActionPress={showViewAll ? onViewAllPress : undefined}
       />
-      
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -82,5 +82,5 @@ const styles = StyleSheet.create({
   },
   productContainer: {
     // Individual product container styles can be applied here if needed
-  }
-}); 
+  },
+});

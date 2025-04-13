@@ -38,18 +38,20 @@ export default function ProductSections({
       return {
         title: 'Recomendados para ti',
         viewMoreSection: 'recommended',
+        actionText: 'Ver Todos',
         CardComponent: PromotionCard,
       };
     } else {
       return {
         title: 'Tendencias',
         viewMoreSection: 'trending',
+        actionText: 'Ver Todos',
         CardComponent: MinicardLarge,
       };
     }
   };
 
-  const { title, viewMoreSection, CardComponent } = getSectionInfo();
+  const { title, viewMoreSection, actionText, CardComponent } = getSectionInfo();
 
   // Check if products is undefined or empty before accessing length
   if (!products || products.length === 0) {
@@ -61,13 +63,13 @@ export default function ProductSections({
       {useSwipeableStyle ? (
         <HeaderComponent
           title={title}
-          actionText="Ver Más"
+          actionText={actionText}
           onActionPress={() => onViewMore(viewMoreSection)}
         />
       ) : (
         <HeaderComponent
           title={title}
-          buttonText="Ver Todo"
+          buttonText={actionText}
           onButtonPress={() => onViewMore(viewMoreSection)}
         />
       )}

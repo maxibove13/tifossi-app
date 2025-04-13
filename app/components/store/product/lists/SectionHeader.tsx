@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { colors, spacing } from '../swipeable/styles';
+import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
+import { colors } from '../../../../styles/colors';
+import { fonts, fontSizes, lineHeights } from '../../../../styles/typography';
 
 interface SectionHeaderProps {
   title: string;
-  showViewAll?: boolean;
-  onViewAllPress?: () => void;
+  actionText?: string;
+  onActionPress?: () => void;
+  containerStyle?: ViewStyle;
 }
 
 /**
@@ -14,20 +16,18 @@ interface SectionHeaderProps {
  */
 export default function SectionHeader({
   title,
-  showViewAll = false,
-  onViewAllPress
+  actionText,
+  onActionPress,
+  containerStyle,
 }: SectionHeaderProps) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       <Text style={styles.title}>{title}</Text>
-      
-      {showViewAll && (
-        <TouchableOpacity 
-          onPress={onViewAllPress}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.viewAllText}>Ver todo</Text>
-        </TouchableOpacity>
+
+      {onActionPress && (
+        <Pressable onPress={onActionPress}>
+          <Text style={styles.actionText}>{actionText}</Text>
+        </Pressable>
       )}
     </View>
   );
@@ -38,16 +38,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.md,
-    paddingTop: spacing.xl,
+    width: '100%',
   },
   title: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: colors.background.light,
+    fontFamily: fonts.primary,
+    fontSize: fontSizes.xl,
+    fontWeight: '400',
+    lineHeight: (lineHeights.xl * 1.4) / ((fontSizes.xl * 1.4) / 20),
+    color: colors.primary,
   },
-  viewAllText: {
-    fontSize: 14,
-    color: colors.secondary.text,
-  }
-}); 
+  actionText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    fontWeight: '400',
+    lineHeight: (lineHeights.sm * 1.333) / ((fontSizes.sm * 1.333) / 12),
+    color: colors.secondary,
+    textDecorationLine: 'underline',
+  },
+});

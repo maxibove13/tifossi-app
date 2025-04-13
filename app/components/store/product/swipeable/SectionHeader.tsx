@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
-import { colors, spacing, typography } from './styles';
+import { StyleSheet, View, Text, Pressable, ViewStyle } from 'react-native';
+import { colors } from '../../../../styles/colors';
+import { fonts, fontSizes, lineHeights } from '../../../../styles/typography';
 
 interface SectionHeaderProps {
   title: string;
@@ -19,44 +20,34 @@ export default function SectionHeader({
     <View style={[styles.container, style]}>
       <Text style={styles.title}>{title}</Text>
       {actionText && onActionPress && (
-        <TouchableOpacity onPress={onActionPress} style={styles.actionButton}>
+        <Pressable onPress={onActionPress}>
           <Text style={styles.actionText}>{actionText}</Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
     </View>
   );
 }
 
-type Styles = {
-  container: ViewStyle;
-  title: TextStyle;
-  actionButton: ViewStyle;
-  actionText: TextStyle;
-};
-
-const styles = StyleSheet.create<Styles>({
+const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    width: '100%',
   },
   title: {
-    fontFamily: typography.heading.fontFamily,
+    fontFamily: fonts.primary,
+    fontSize: fontSizes.xl,
     fontWeight: '400',
-    fontSize: typography.heading.fontSize,
-    color: colors.primary.text,
-  },
-  actionButton: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 4,
+    lineHeight: (lineHeights.xl * 1.4) / ((fontSizes.xl * 1.4) / 20),
+    color: colors.primary,
   },
   actionText: {
-    fontFamily: typography.body.fontFamily,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
     fontWeight: '400',
-    fontSize: typography.body.fontSize,
-    color: colors.secondary.text,
+    lineHeight: (lineHeights.sm * 1.333) / ((fontSizes.sm * 1.333) / 12),
+    color: colors.secondary,
     textDecorationLine: 'underline',
   },
 });

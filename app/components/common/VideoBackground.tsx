@@ -1,17 +1,17 @@
-import { View, StyleSheet, Image, useWindowDimensions } from 'react-native'
-import { useVideoPlayer, VideoView } from 'expo-video'
-import { useState, useEffect, useRef } from 'react'
-import { LinearGradient } from 'expo-linear-gradient'
+import { View, StyleSheet, Image, useWindowDimensions } from 'react-native';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { useState, useEffect, useRef } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface VideoBackgroundProps {
-  source: string
-  fallbackImage?: string
-  children?: React.ReactNode
-  overlayOpacity?: number
-  style?: any
-  shouldLoop?: boolean
-  shouldMute?: boolean
-  shouldAutoPlay?: boolean
+  source: number | string;
+  fallbackImage?: string;
+  children?: React.ReactNode;
+  overlayOpacity?: number;
+  style?: any;
+  shouldLoop?: boolean;
+  shouldMute?: boolean;
+  shouldAutoPlay?: boolean;
 }
 
 export const VideoBackground = ({
@@ -24,49 +24,47 @@ export const VideoBackground = ({
   shouldMute = true,
   shouldAutoPlay = true,
 }: VideoBackgroundProps) => {
-  const [isError, setIsError] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const { width, height } = useWindowDimensions()
-  const videoRef = useRef(null)
+  const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { width, height } = useWindowDimensions();
+  const videoRef = useRef(null);
 
-  const player = useVideoPlayer(source, player => {
-    if (!player) return
-    player.loop = shouldLoop
-    player.muted = shouldMute
-    player.staysActiveInBackground = false
-  })
+  const player = useVideoPlayer(source, (player) => {
+    if (!player) return;
+    player.loop = shouldLoop;
+    player.muted = shouldMute;
+    player.staysActiveInBackground = false;
+  });
 
   useEffect(() => {
-    if (!player) return
+    if (!player) return;
 
     const statusSubscription = player.addListener('statusChange', (status) => {
+      console.log('Video status changed:', status);
       if (status.error) {
-        setIsError(true)
-        setIsLoading(false)
+        console.error('Video error:', status.error);
+        setIsError(true);
+        setIsLoading(false);
       }
       if (status.status === 'readyToPlay') {
-        setIsLoading(false)
+        setIsLoading(false);
         if (shouldAutoPlay) {
-          player.play()
+          player.play();
         }
       }
-    })
+    });
 
     return () => {
-      statusSubscription?.remove()
-    }
-  }, [player, shouldAutoPlay])
+      statusSubscription?.remove();
+    };
+  }, [player, shouldAutoPlay]);
 
   return (
     <View style={[styles.container, style, { width, height }]}>
       {isError && fallbackImage ? (
-        <Image
-          source={{ uri: fallbackImage }}
-          style={styles.fallback}
-          resizeMode="cover"
-        />
+        <Image source={{ uri: fallbackImage }} style={styles.fallback} resizeMode="cover" />
       ) : (
-        <VideoView 
+        <VideoView
           ref={videoRef}
           player={player}
           style={[styles.video, { width, height }]}
@@ -91,8 +89,8 @@ export const VideoBackground = ({
 
       <View style={styles.content}>{children}</View>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -122,6 +120,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     zIndex: 3,
   },
-})
+});
 
-export default VideoBackground
+export default VideoBackground;
