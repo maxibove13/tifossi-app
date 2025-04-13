@@ -2,6 +2,8 @@ import { StyleSheet, View, Text, Pressable } from 'react-native';
 import type { Product } from '../../../../types/product';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../styles/typography';
 import ProductImage from '../image/ProductImage';
+import { colors } from '../../../../styles/colors';
+import { ProductLabel } from '../../../../types/product-status';
 
 type HighlightedCardProps = {
   product: Product;
@@ -10,13 +12,29 @@ type HighlightedCardProps = {
 
 export default function HighlightedCard({ product, onPress }: HighlightedCardProps) {
   const { label, shortDescription, image, title } = product;
-  
+
+  // Determine label text and color based on ProductLabel enum
+  let labelText: string | null = null;
+  let labelColor: string | undefined;
+
+  if (label === ProductLabel.NEW) {
+    labelText = 'Nuevo';
+    labelColor = colors.tag.new;
+  } else if (label === ProductLabel.OPPORTUNITY) {
+    labelText = 'Oportunidad'; // Assuming this is the text for opportunity
+    labelColor = colors.tag.opportunity; // Use opportunity tag color
+  } else if (label === ProductLabel.SALE) {
+    labelText = 'Sale'; // Assuming this is the text for SALE
+    labelColor = colors.tag.opportunity; // Reuse opportunity color for sale? Adjust if needed.
+  }
+  // Add more conditions for other labels if necessary
+
   // Only use shortDescription
   const displayDescription = shortDescription;
 
   const renderDescription = () => {
     if (!displayDescription) return null;
-    
+
     return (
       <View style={styles.descriptionContainer}>
         <View style={styles.descriptionItem}>
@@ -33,16 +51,11 @@ export default function HighlightedCard({ product, onPress }: HighlightedCardPro
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.imageContainer}>
-        <ProductImage 
-          source={image}
-          size={119}
-        />
+        <ProductImage source={image} size={119} />
       </View>
       <View style={styles.content}>
-        {label && (
-          <Text style={[styles.label, { color: label === 'Nuevo' ? '#367C39' : '#AD3026' }]}>
-            {label}
-          </Text>
+        {labelText && labelColor && (
+          <Text style={[styles.label, { color: labelColor }]}>{labelText}</Text>
         )}
         <Text style={styles.title}>{title}</Text>
         {renderDescription()}
@@ -84,7 +97,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    color: '#0C0C0C',
+    color: colors.primary,
     fontSize: fontSizes.md,
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.medium,
@@ -98,19 +111,19 @@ const styles = StyleSheet.create({
   },
   descriptionItem: {
     width: '100%',
-    wordWrap: 'break-word'
+    wordWrap: 'break-word',
   },
   descriptionText: {
-    color: '#707070',
+    color: colors.secondary,
     fontSize: fontSizes.sm,
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.regular,
     lineHeight: lineHeights.md,
-    wordWrap: 'break-word'
+    wordWrap: 'break-word',
   },
   separator: {
     height: 1,
-    backgroundColor: '#DCDCDC',
+    backgroundColor: colors.border,
     marginTop: 8,
   },
-}); 
+});

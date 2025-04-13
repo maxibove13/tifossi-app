@@ -31,6 +31,9 @@ type Styles = {
   originalPrice: TextStyle;
   discountPrice: TextStyle;
   price: TextStyle;
+  colorPaletteContainer: ViewStyle;
+  colorCircle: ViewStyle;
+  colorMoreText: TextStyle;
 };
 
 function DefaultLargeCard({ product, onPress, isFavorite = false }: DefaultLargeCardProps) {
@@ -42,6 +45,30 @@ function DefaultLargeCard({ product, onPress, isFavorite = false }: DefaultLarge
 
   const handleWishlistPress = () => {
     console.log('Wishlist button pressed for product:', product.id);
+  };
+
+  // Determine how to render the color palette
+  const renderColorPalette = () => {
+    if (!product.colors || product.colors.length === 0) {
+      return null;
+    }
+
+    const maxVisibleColors = 4;
+    const hasMoreColors = product.colors.length > maxVisibleColors;
+    const visibleColors = product.colors.slice(0, maxVisibleColors);
+    const extraColorsCount = product.colors.length - maxVisibleColors;
+
+    return (
+      <View style={styles.colorPaletteContainer}>
+        {visibleColors.map((color, index) => (
+          <View
+            key={`${color.colorName}-${index}`}
+            style={[styles.colorCircle, { backgroundColor: color.hex || '#FAFAFA' }]}
+          />
+        ))}
+        {hasMoreColors && <Text style={styles.colorMoreText}>+{extraColorsCount}</Text>}
+      </View>
+    );
   };
 
   return (
@@ -98,6 +125,8 @@ function DefaultLargeCard({ product, onPress, isFavorite = false }: DefaultLarge
         ) : (
           <Text style={styles.price}>${cardData.price.toFixed(2)}</Text>
         )}
+
+        {renderColorPalette()}
       </View>
     </Pressable>
   );
@@ -190,6 +219,25 @@ const styles = StyleSheet.create<Styles>({
     fontFamily: fonts.secondary,
     fontWeight: '400',
     lineHeight: lineHeights.md,
+  },
+  colorPaletteContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    padding: 4,
+  },
+  colorCircle: {
+    width: 12,
+    height: 12,
+    borderRadius: radius.circle,
+    borderWidth: 0.5,
+    borderColor: colors.border,
+  },
+  colorMoreText: {
+    fontSize: fontSizes.xs,
+    fontFamily: fonts.secondary,
+    fontWeight: '500',
+    color: colors.secondary,
   },
 });
 

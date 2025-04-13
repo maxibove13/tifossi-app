@@ -10,6 +10,7 @@ export interface ProductColor {
   colorName: string; // Human-readable name like "Negro", "Blanco"
   quantity: number;
   images: ProductColorImages;
+  hex?: string; // Hex color code like "#FFFFFF" for display in UI
 }
 
 export interface Product {

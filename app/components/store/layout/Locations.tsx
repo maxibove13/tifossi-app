@@ -1,4 +1,7 @@
 import { StyleSheet, View, Text, Image } from 'react-native';
+import { fonts, fontSizes, lineHeights } from '../../../styles/typography';
+import { colors } from '../../../styles/colors';
+import { spacing } from '../../../styles/spacing';
 
 type LocationCardProps = {
   image: any;
@@ -44,30 +47,33 @@ export default function StoreLocations() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 16,
-    gap: 12,
+    paddingVertical: spacing.lg,
+    gap: spacing.md,
   },
   header: {
-    alignItems: 'center',
-    paddingVertical: 8,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.md,
+    alignItems: 'flex-start',
   },
   title: {
-    fontSize: 20,
-    lineHeight: 28,
-    color: '#0C0C0C',
-    fontFamily: 'Roboto',
+    fontSize: fontSizes.xl,
+    lineHeight: lineHeights.xl,
+    color: colors.primary,
+    fontFamily: fonts.primary,
+    textAlign: 'center',
   },
   locationsGrid: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
+    gap: spacing.lg,
     height: 280,
   },
   locationCard: {
     flex: 1,
-    gap: 8,
+    gap: spacing.sm,
   },
   locationImage: {
     width: '100%',
@@ -75,13 +81,13 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   locationTextWrapper: {
-    paddingHorizontal: 4,
+    paddingHorizontal: spacing.xs,
   },
   locationText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#0C0C0C',
+    fontSize: fontSizes.md,
+    lineHeight: lineHeights.md,
+    color: colors.primary,
     fontWeight: '500',
-    fontFamily: 'Inter',
+    fontFamily: fonts.secondary,
   },
-}); 
+});

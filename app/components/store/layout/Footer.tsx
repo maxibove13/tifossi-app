@@ -1,8 +1,11 @@
 import { StyleSheet, View, Text, Image, ViewStyle } from 'react-native';
+import { fonts, fontSizes, lineHeights } from '../../../styles/typography';
+import { colors } from '../../../styles/colors';
+import { spacing } from '../../../styles/spacing';
 
 type FooterProps = {
-  style?: ViewStyle
-}
+  style?: ViewStyle;
+};
 
 export default function Footer({ style }: FooterProps) {
   return (
@@ -24,22 +27,24 @@ export default function Footer({ style }: FooterProps) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: '#FBFBFB',
+    backgroundColor: colors.background.light,
     borderTopWidth: 0.4,
-    borderTopColor: '#DCDCDC',
-    paddingBottom: 34,
+    borderTopColor: colors.border,
+    paddingTop: 64,
+    paddingBottom: 16,
+    gap: spacing.md,
   },
   content: {
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 10,
+    justifyContent: 'center',
+    gap: spacing.sm,
   },
   tagline: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: '#0C0C0C',
-    fontFamily: 'Inter',
-    fontWeight: '400',
+    fontSize: fontSizes.md,
+    lineHeight: lineHeights.md * 1.4286,
+    color: colors.primary,
+    fontFamily: fonts.secondary,
+    fontWeight: '500',
     textAlign: 'center',
   },
   logoWrapper: {
@@ -50,4 +55,4 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
-}); 
+});

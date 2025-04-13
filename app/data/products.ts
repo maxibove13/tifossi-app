@@ -30,6 +30,7 @@ export const products: Product[] = [
       {
         colorName: 'Blanco',
         quantity: 10,
+        hex: '#FAFAFA',
         images: {
           main: require('../../assets/images/products/white-sock-1.png'),
           additional: [
@@ -41,6 +42,7 @@ export const products: Product[] = [
       {
         colorName: 'Negro',
         quantity: 8,
+        hex: '#0C0C0C',
         images: {
           main: require('../../assets/images/products/sock-color-2.png'),
           additional: [],
@@ -49,6 +51,7 @@ export const products: Product[] = [
       {
         colorName: 'Naranja',
         quantity: 5,
+        hex: '#FFBA54',
         images: {
           main: require('../../assets/images/products/sock-color-3.png'),
           additional: [],
@@ -57,6 +60,7 @@ export const products: Product[] = [
       {
         colorName: 'Verde',
         quantity: 12,
+        hex: '#70BF73',
         images: {
           main: require('../../assets/images/products/sock-color-5.png'),
           additional: [],
@@ -65,6 +69,7 @@ export const products: Product[] = [
       {
         colorName: 'Amarillo',
         quantity: 7,
+        hex: '#FFF27C',
         images: {
           main: require('../../assets/images/products/sock-color-4.png'),
           additional: [],
@@ -97,6 +102,7 @@ export const products: Product[] = [
       {
         colorName: 'Verde',
         quantity: 10,
+        hex: '#70BF73',
         images: {
           main: require('../../assets/images/products/product_socks_2.png'),
         },
@@ -129,6 +135,7 @@ export const products: Product[] = [
       {
         colorName: 'Blanco',
         quantity: 10,
+        hex: '#FAFAFA',
         images: {
           main: require('../../assets/images/products/product_socks_0.png'),
         },
@@ -136,6 +143,7 @@ export const products: Product[] = [
       {
         colorName: 'Negro',
         quantity: 10,
+        hex: '#0C0C0C',
         images: {
           main: require('../../assets/images/products/product_socks_0.png'),
         },
@@ -170,6 +178,7 @@ export const products: Product[] = [
       {
         colorName: 'Blanco',
         quantity: 10,
+        hex: '#FAFAFA',
         images: {
           main: require('../../assets/images/products/sock-color-1.png'),
         },
@@ -177,6 +186,7 @@ export const products: Product[] = [
       {
         colorName: 'Negro',
         quantity: 10,
+        hex: '#0C0C0C',
         images: {
           main: require('../../assets/images/products/sock-color-2.png'),
           additional: [require('../../assets/images/products/white-sock-2.png')],
@@ -185,6 +195,7 @@ export const products: Product[] = [
       {
         colorName: 'Naranja',
         quantity: 10,
+        hex: '#FFBA54',
         images: {
           main: require('../../assets/images/products/sock-color-3.png'),
           additional: [
@@ -196,6 +207,7 @@ export const products: Product[] = [
       {
         colorName: 'Amarillo',
         quantity: 10,
+        hex: '#FFF27C',
         images: {
           main: require('../../assets/images/products/sock-color-4.png'),
         },
@@ -203,6 +215,7 @@ export const products: Product[] = [
       {
         colorName: 'Verde',
         quantity: 10,
+        hex: '#70BF73',
         images: {
           main: require('../../assets/images/products/sock-color-5.png'),
           additional: [require('../../assets/images/products/white-sock-3.png')],
@@ -238,6 +251,7 @@ export const products: Product[] = [
       {
         colorName: 'Gris',
         quantity: 12,
+        hex: '#9E9E9E',
         images: {
           main: require('../../assets/images/products/product_bag_1.png'),
         },
@@ -265,6 +279,7 @@ export const products: Product[] = [
       {
         colorName: 'Blanco',
         quantity: 10,
+        hex: '#FAFAFA',
         images: {
           main: require('../../assets/images/products/product_sweater.png'),
         },
@@ -272,6 +287,7 @@ export const products: Product[] = [
       {
         colorName: 'Negro',
         quantity: 10,
+        hex: '#0C0C0C',
         images: {
           main: require('../../assets/images/products/product_sweater.png'),
         },
@@ -291,7 +307,7 @@ export const products: Product[] = [
     title: 'Neceser Ball',
     price: 590,
     discountedPrice: 390,
-    label: ProductLabel.SALE,
+    label: ProductLabel.NEW,
     shortDescription: {
       line1: 'Neceser redondo compacto en oferta.',
       line2: 'Pequeño por fuera, espacioso por dentro.',
@@ -306,6 +322,7 @@ export const products: Product[] = [
       {
         colorName: 'Negro',
         quantity: 10,
+        hex: '#0C0C0C',
         images: {
           main: require('../../assets/images/products/product_bag_2.png'),
         },
@@ -331,6 +348,7 @@ export const products: Product[] = [
       {
         colorName: 'Gris',
         quantity: 8,
+        hex: '#9E9E9E',
         images: {
           main: require('../../assets/images/products/product_bag_3.png'),
         },
@@ -356,6 +374,7 @@ export const products: Product[] = [
       {
         colorName: 'Negro',
         quantity: 12,
+        hex: '#0C0C0C',
         images: {
           main: require('../../assets/images/products/product_cap_black.png'),
         },
@@ -381,6 +400,7 @@ export const products: Product[] = [
       {
         colorName: 'Negro',
         quantity: 15,
+        hex: '#0C0C0C',
         images: {
           main: require('../../assets/images/products/product_shirt_black_relaxed.png'),
         },
@@ -412,6 +432,7 @@ export const products: Product[] = [
       {
         colorName: 'Negro',
         quantity: 20,
+        hex: '#0C0C0C',
         images: {
           main: require('../../assets/images/products/product_shirt_black_regular.png'),
         },
@@ -443,6 +464,7 @@ export const products: Product[] = [
       {
         colorName: 'Blanco',
         quantity: 18,
+        hex: '#FAFAFA',
         images: {
           main: require('../../assets/images/products/product_shirt_white.png'),
         },
@@ -475,6 +497,7 @@ export const products: Product[] = [
       {
         colorName: 'Negro',
         quantity: 25,
+        hex: '#0C0C0C',
         images: {
           main: require('../../assets/images/products/product_t_shirt_black.png'),
         },
@@ -507,6 +530,7 @@ export const products: Product[] = [
       {
         colorName: 'Gris',
         quantity: 15,
+        hex: '#9E9E9E',
         images: {
           main: require('../../assets/images/products/product_bag_4.png'),
         },
@@ -519,7 +543,7 @@ export const products: Product[] = [
     title: 'Neceser Globo',
     price: 590,
     discountedPrice: 390,
-    label: ProductLabel.SALE,
+    label: ProductLabel.NEW,
     isCustomizable: true,
     shortDescription: {
       line1: 'Neceser compacto y funcional para todos tus viajes.',
@@ -545,6 +569,7 @@ export const products: Product[] = [
       {
         colorName: 'Negro',
         quantity: 15,
+        hex: '#0C0C0C',
         images: {
           main: require('../../assets/images/products/neceser9-1.png'),
           additional: [
@@ -575,6 +600,7 @@ export const products: Product[] = [
       {
         colorName: 'Gris',
         quantity: 10,
+        hex: '#9E9E9E',
         images: {
           main: require('../../assets/images/products/product_bag_6.png'),
         },
@@ -596,6 +622,14 @@ export const getTrendingProducts = () =>
 export const getNewReleases = () => products.slice(0, 4);
 export const getProductById = (id: string) => products.find((p) => p.id === id);
 
+// Add the function for Lanzamientos & Oportunidades
+export const getLaunchAndOpportunityProducts = (): Product[] => {
+  const ids = ['socks-v2', 'regular-black', 'mochila-sq', 'buzo-oversize'];
+  return ids
+    .map((id) => products.find((p) => p.id === id))
+    .filter((p): p is Product => p !== undefined);
+};
+
 const ProductData = {
   products,
   getHighlightedProducts,
@@ -604,6 +638,7 @@ const ProductData = {
   getTrendingProducts,
   getNewReleases,
   getProductById,
+  getLaunchAndOpportunityProducts,
 };
 
 export default ProductData;
