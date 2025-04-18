@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import Animated, { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { colors } from '../../_styles/colors';
 import { spacing } from '../../_styles/spacing';
@@ -9,17 +9,17 @@ export default function SplashScreen() {
 
   useEffect(() => {
     progress.value = withTiming(1, { duration: 2000 });
-  }, []);
+  }, [progress]);
 
   const logoAnimatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: progress.value
+      opacity: progress.value,
     };
   });
 
   const progressBarAnimatedStyle = useAnimatedStyle(() => {
     return {
-      width: `${progress.value * 100}%`
+      width: `${progress.value * 100}%`,
     };
   });
 
@@ -35,9 +35,7 @@ export default function SplashScreen() {
         </View>
         <View style={styles.progressBarContainer}>
           <View style={styles.progressBarBackground} />
-          <Animated.View 
-            style={[styles.progressBarFill, progressBarAnimatedStyle]} 
-          />
+          <Animated.View style={[styles.progressBarFill, progressBarAnimatedStyle]} />
         </View>
       </View>
     </View>
@@ -84,4 +82,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 32,
   },
-}); 
+});
