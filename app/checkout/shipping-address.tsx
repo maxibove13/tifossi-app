@@ -12,12 +12,12 @@ import {
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import CloseIcon from '../../assets/icons/close.svg';
 import PlusCircle from '../../assets/icons/plus_circle.svg';
-import RadioButton from '../components/ui/form/RadioButton';
+import RadioButton from '../_components/ui/form/RadioButton';
 
 // Import style tokens
-import { colors } from '../styles/colors';
-import { spacing, radius } from '../styles/spacing';
-import { fontWeights } from '../styles/typography';
+import { colors } from '../_styles/colors';
+import { spacing, radius } from '../_styles/spacing';
+import { fontWeights } from '../_styles/typography';
 
 interface Address {
   id: string;

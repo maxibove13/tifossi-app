@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { spacing, radius } from '../styles/spacing';
-import { colors } from '../styles/colors';
-import { fonts, fontSizes, lineHeights } from '../styles/typography';
+import { spacing, radius } from '../_styles/spacing';
+import { colors } from '../_styles/colors';
+import { fonts, fontSizes, lineHeights } from '../_styles/typography';
 import { router } from 'expo-router';
-import EmptyCart from '../components/store/cart/EmptyCart';
-import { Product } from '../types/product';
-import Subheader from '../components/common/Subheader';
-import PromotionCard from '../components/store/product/promotion/PromotionCard';
-import CartProductCard from '../components/store/product/cart/CartProductCard';
-import Button from '../components/ui/buttons/Button';
-import Dropdown from '../components/ui/form/Dropdown';
-import { getProductById, products } from '../data/products';
+import EmptyCart from '../_components/store/cart/EmptyCart';
+import { Product } from '../_types/product';
+import Subheader from '../_components/common/Subheader';
+import PromotionCard from '../_components/store/product/promotion/PromotionCard';
+import CartProductCard from '../_components/store/product/cart/CartProductCard';
+import Button from '../_components/ui/buttons/Button';
+import Dropdown from '../_components/ui/form/Dropdown';
+import { getProductById, products } from '../_data/products';
 
 // Dummy data for recently viewed products - use actual products from data file
 const recentlyViewedProducts: Product[] = [

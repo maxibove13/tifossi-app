@@ -4,7 +4,7 @@ import { Inter_500Medium } from '@expo-google-fonts/inter';
 import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import SplashScreenComponent from './components/splash/SplashScreen';
+import SplashScreenComponent from './_components/splash/SplashScreen';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();

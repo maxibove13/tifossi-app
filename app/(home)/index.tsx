@@ -1,9 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import HomeHeader from '../components/home/HomeHeader';
-import HomeContent from '../components/home/HomeContent';
-import { VideoBackground } from '../components/common/VideoBackground';
+import HomeHeader from '../_components/home/HomeHeader';
+import HomeContent from '../_components/home/HomeContent';
+import { VideoBackground } from '../_components/common/VideoBackground';
 
 export default function HomeScreen() {
   const router = useRouter();

@@ -83,3 +83,7 @@ xcuserdata/
 DerivedData/
 *.hmap
 *.ipa
+ios/Pods/
+ios/Podfile.lock
+ios/Podfile.properties.json
+ios/tifossi.xcodeproj/project.pbxproj

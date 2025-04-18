@@ -14,13 +14,13 @@ import {
 } from 'react-native';
 import { router, Stack } from 'expo-router';
 import CloseIcon from '../../assets/icons/close.svg';
-import Input from '../components/ui/form/Input';
+import Input from '../_components/ui/form/Input';
 import Svg, { Path } from 'react-native-svg';
 
 // Import style tokens
-import { colors } from '../styles/colors';
-import { spacing, radius } from '../styles/spacing';
-import { fontWeights, fontSizes, lineHeights } from '../styles/typography';
+import { colors } from '../_styles/colors';
+import { spacing, radius } from '../_styles/spacing';
+import { fontWeights, fontSizes, lineHeights } from '../_styles/typography';
 
 // Define country code type locally
 type CountryCode = string;

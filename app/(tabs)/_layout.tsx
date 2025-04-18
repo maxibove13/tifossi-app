@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { Tabs } from 'expo-router';
-import TabBar from '../components/navigation/TabBar';
-import type { TabRoute } from '../components/navigation/TabBar';
+import TabBar from '../_components/navigation/TabBar';
+import type { TabRoute } from '../_components/navigation/TabBar';
 
 export default function TabLayout() {
   const getActiveRoute = (index: number): TabRoute => {

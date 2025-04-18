@@ -9,16 +9,16 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { spacing, radius } from '../styles/spacing';
-import { colors } from '../styles/colors';
-import { fonts, fontSizes, lineHeights } from '../styles/typography';
+import { spacing, radius } from '../_styles/spacing';
+import { colors } from '../_styles/colors';
+import { fonts, fontSizes, lineHeights } from '../_styles/typography';
 import { router } from 'expo-router';
-import EmptyFavorites from '../components/store/favorites/EmptyFavorites';
-import Subheader from '../components/common/Subheader';
-import PromotionCard from '../components/store/product/promotion/PromotionCard';
-import { Product } from '../types/product';
-import { getProductById, products } from '../data/products';
-import DefaultLargeCard from '../components/store/product/default/large';
+import EmptyFavorites from '../_components/store/favorites/EmptyFavorites';
+import Subheader from '../_components/common/Subheader';
+import PromotionCard from '../_components/store/product/promotion/PromotionCard';
+import { Product } from '../_types/product';
+import { getProductById, products } from '../_data/products';
+import DefaultLargeCard from '../_components/store/product/default/large';
 
 // Dummy data for recently viewed products - use actual products from data file
 const recentlyViewedProducts: Product[] = [

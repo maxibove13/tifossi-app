@@ -1,7 +1,7 @@
 import { StyleSheet, View, Text } from 'react-native';
-import { spacing } from '../styles/spacing';
-import { colors } from '../styles/colors';
-import { fonts, fontSizes, lineHeights } from '../styles/typography';
+import { spacing } from '../_styles/spacing';
+import { colors } from '../_styles/colors';
+import { fonts, fontSizes, lineHeights } from '../_styles/typography';
 
 export default function ProfileScreen() {
   return (

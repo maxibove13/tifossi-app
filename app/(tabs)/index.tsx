@@ -1,20 +1,20 @@
 import { StyleSheet, View, ScrollView, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { colors } from '../styles/colors';
-import { spacing } from '../styles/spacing';
-import { StoreHeader, CategoryShowcase } from '../components/store/layout';
-import HighlightedCard from '../components/store/product/horizontal/HighlightedCard';
-import FeaturedCard from '../components/store/product/featured/FeaturedCard';
-import Button from '../components/ui/buttons/Button';
-import StoreLocations from '../components/store/layout/Locations';
-import ProductData from '../data/products';
-import Footer from '../components/store/layout/Footer';
-import { Product } from '../types/product';
-import HomeScreenSkeleton from '../components/skeletons/HomeScreenSkeleton';
-import ProductSections from '../components/store/product/sections/ProductSections';
+import { colors } from '../_styles/colors';
+import { spacing } from '../_styles/spacing';
+import { StoreHeader, CategoryShowcase } from '../_components/store/layout';
+import HighlightedCard from '../_components/store/product/horizontal/HighlightedCard';
+import FeaturedCard from '../_components/store/product/featured/FeaturedCard';
+import Button from '../_components/ui/buttons/Button';
+import StoreLocations from '../_components/store/layout/Locations';
+import ProductData from '../_data/products';
+import Footer from '../_components/store/layout/Footer';
+import { Product } from '../_types/product';
+import HomeScreenSkeleton from '../_components/skeletons/HomeScreenSkeleton';
+import ProductSections from '../_components/store/product/sections/ProductSections';
 import { useState, useEffect } from 'react';
-import DefaultLargeCard from '../components/store/product/default/large';
-import { fonts, fontSizes, lineHeights } from '../styles/typography';
+import DefaultLargeCard from '../_components/store/product/default/large';
+import { fonts, fontSizes, lineHeights } from '../_styles/typography';
 
 interface HomeScreenData {
   highlightedProducts: Product[];
@@ -25,7 +25,7 @@ interface HomeScreenData {
   launchAndOpportunityProducts: Product[];
 }
 
-export default function HomeScreen() {
+function HomeScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<HomeScreenData>({
@@ -37,11 +37,11 @@ export default function HomeScreen() {
     launchAndOpportunityProducts: [],
   });
 
-  const handleProductPress = (productId: string) => {
+  function handleProductPress(productId: string) {
     router.push(`/products/product?id=${productId}`);
   };
 
-  const handleViewMore = (section: string) => {
+  function handleViewMore(section: string) {
     console.log('View more:', section);
     // Handle view more action
   };
@@ -80,7 +80,7 @@ export default function HomeScreen() {
   }
 
   // Helper to render product pairs for the grid
-  const renderProductPair = (products: Product[]) => {
+  function renderProductPair(products: Product[]) {
     return (
       <View style={styles.gridRow}>
         {products.map((product) => (
@@ -266,3 +266,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+
+// Ensure this component is not treated as a route
+export default HomeScreen;
+
+// Add metadata to help router identification
+const metadata = {
+  isRoute: false,
+  componentType: 'Component'
+};

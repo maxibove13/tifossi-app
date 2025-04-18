@@ -1,11 +1,11 @@
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import ProductHeader from '../components/store/layout/ProductHeader';
-import EnhancedProductGallery from '../components/store/product/gallery/EnhancedProductGallery';
-import SwipeableEdge from '../components/store/product/swipeable/SwipeableEdge';
-import ProductData from '../data/products';
-import { colors } from '../styles/colors';
-import { isProduct, Product } from '../types/product';
+import ProductHeader from '../_components/store/layout/ProductHeader';
+import EnhancedProductGallery from '../_components/store/product/gallery/EnhancedProductGallery';
+import SwipeableEdge from '../_components/store/product/swipeable/SwipeableEdge';
+import ProductData from '../_data/products';
+import { colors } from '../_styles/colors';
+import { isProduct, Product } from '../_types/product';
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
@@ -122,4 +122,11 @@ const styles = StyleSheet.create({
 export const screenExport = {
   name: 'ProductScreen',
   version: '1.0.0',
+};
+
+
+// Add metadata to help router identification
+const metadata = {
+  isRoute: false,
+  componentType: 'Component'
 };
