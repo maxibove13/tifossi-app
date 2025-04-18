@@ -1,4 +1,3 @@
-import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, typography, radius } from './styles';
@@ -18,37 +17,31 @@ export default function ProductInfoHeader({
   isDiscounted = false,
   currentPrice,
   originalPrice,
-  onAddToCart
+  onAddToCart,
 }: ProductInfoHeaderProps) {
   return (
     <View style={styles.container}>
       {/* Discount Label - Top Row */}
-      {isDiscounted && (
-        <Text style={styles.discountLabel}>Descuento</Text>
-      )}
+      {isDiscounted && <Text style={styles.discountLabel}>Descuento</Text>}
 
       {/* Product Name and Current Price - Middle Row */}
       <View style={styles.titleRow}>
         <Text style={styles.productName}>{productName}</Text>
         <Text style={styles.currentPrice}>{currentPrice}</Text>
       </View>
-      
+
       {/* Personalizable and Original Price - Bottom Row */}
       <View style={styles.detailsRow}>
         <View style={styles.leftColumn}>
-          {isCustomizable && (
-            <Text style={styles.featureLabel}>Personalizable</Text>
-          )}
+          {isCustomizable && <Text style={styles.featureLabel}>Personalizable</Text>}
         </View>
         <View style={styles.rightColumn}>
-          {originalPrice && (
-            <Text style={styles.originalPrice}>{originalPrice}</Text>
-          )}
+          {originalPrice && <Text style={styles.originalPrice}>{originalPrice}</Text>}
         </View>
       </View>
 
       {/* Add to Cart Button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.addToCartButtonContainer}
         onPress={onAddToCart}
         activeOpacity={0.8}

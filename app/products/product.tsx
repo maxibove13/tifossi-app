@@ -20,10 +20,7 @@ export default function ProductScreen() {
   );
   const [selectedQuantity, _setSelectedQuantity] = useState(1);
 
-  // Get related products data
-  const relatedProducts = ProductData.getRecommendedProducts().filter((p) => p.id !== id);
-
-  // Get recommended products data
+  // Get recommended products data (will be used for both related and recommended sections)
   const recommendedProducts = ProductData.getRecommendedProducts().filter((p) => p.id !== id);
 
   // Get trending products data
@@ -95,7 +92,7 @@ export default function ProductScreen() {
             returnPolicy: product.returnPolicy,
             dimensions: product.dimensions,
           }}
-          relatedProducts={relatedProducts}
+          relatedProducts={recommendedProducts}
           recommendedProducts={recommendedProducts}
           trendingProducts={trendingProducts}
           onAddToCart={() => handleAddToCart(product, selectedQuantity)}
