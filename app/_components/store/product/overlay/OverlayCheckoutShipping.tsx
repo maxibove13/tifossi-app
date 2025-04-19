@@ -44,7 +44,7 @@ export default function OverlayCheckoutShipping({
   isVisible,
   onClose,
   onSelectSize,
-  onBuyNow = () => {},
+  onBuyNow: _onBuyNow = () => {},
   onAddToCart = () => {},
   initialQuantity = 1,
   initialSize = '',
@@ -113,21 +113,14 @@ export default function OverlayCheckoutShipping({
     onClose();
   };
 
-  // Handle shipping method selection
   const handleSelectShipping = (method: 'delivery' | 'pickup' | '') => {
-    // If delivery is selected, navigate to the shipping address screen
+    setIsShippingOverlayVisible(false);
+    onClose();
+
     if (method === 'delivery') {
-      setIsShippingOverlayVisible(false);
-      onClose(); // Close the current overlay
-      // Navigate to the shipping address screen
       router.navigate('/checkout/shipping-address');
     } else if (method === 'pickup') {
-      // For pickup, proceed directly to checkout
-      onBuyNow(selectedSize, selectedQuantity);
-      onClose();
-    } else {
-      // If no method is selected (user closed the overlay), just close the shipping overlay
-      setIsShippingOverlayVisible(false);
+      router.navigate('/checkout/shipping-pickup');
     }
   };
 

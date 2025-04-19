@@ -7,19 +7,21 @@ import {
   CardSizeByVariant,
   getCardDimensions,
   isValidSize,
-  isValidCardSize
+  isValidCardSize,
 } from './product-card';
+import { StoreDetails } from './store';
 
 // Re-export all types from a central location for easier imports
 export * from './product-status';
 export * from './navigation';
 export * from './ui';
+export * from './svg';
 
 // Selectively re-export to avoid naming conflicts
-export { 
-  Product, 
-  ProductSize, 
-  isProduct, 
+export {
+  Product,
+  ProductSize,
+  isProduct,
   mapProductToCardData,
   CardVariant,
   CardSize,
@@ -27,13 +29,14 @@ export {
   CardSizeByVariant,
   getCardDimensions,
   isValidSize,
-  isValidCardSize
+  isValidCardSize,
+  StoreDetails,
 };
 
 // Add default export to fix router warnings
 const typesExport = {
   name: 'TifossiTypes',
-  version: '1.0.0'
+  version: '1.0.0',
 };
 
 export default typesExport;
