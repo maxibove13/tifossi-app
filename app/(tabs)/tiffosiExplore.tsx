@@ -42,6 +42,7 @@ const ExploreProductCard = ({ product }: { product: Product }) => {
         fallbackImage={product.frontImage}
         style={styles.videoBackground}
         overlayOpacity={0.3}
+        preloadPriority="high"
       >
         {/* Added Gradient for bottom fade-to-black effect */}
         <LinearGradient
@@ -100,10 +101,19 @@ export default function TiffosiExploreScreen() {
         const videoProducts = exploreProducts.filter((p) => p.videoSource);
 
         if (videoProducts.length > 0) {
+          console.log(`Preloading ${videoProducts.length} videos for TiffosiExplore`);
+
+          // Log each video source to help with debugging
+          videoProducts.forEach((product, index) => {
+            console.log(
+              `Video ${index + 1}: ${product.id}, source type: ${typeof product.videoSource}`
+            );
+          });
+
           // Create preload assets array for videos with proper priorities
-          const videoAssets = videoProducts.map((product, index) => {
-            // Explicitly type the priority to match PreloadAsset type
-            const priority: 'high' | 'medium' | 'low' = index < 2 ? 'high' : 'medium';
+          const videoAssets = videoProducts.map((product) => {
+            // Always set HIGH priority for videos to ensure they load
+            const priority: 'high' | 'medium' | 'low' = 'high';
             return {
               key: `video_${product.id}`,
               asset: product.videoSource,
@@ -209,6 +219,9 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.md,
     lineHeight: lineHeights.md,
     color: colors.background.light,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.background.light,
+    paddingBottom: 0.5,
   },
   detailsContainer: {
     alignSelf: 'stretch',

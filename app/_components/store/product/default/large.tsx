@@ -151,7 +151,6 @@ const styles = StyleSheet.create<Styles>({
     right: spacing.xs,
     width: 28,
     height: 28,
-    padding: 6,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,

@@ -1,29 +1,23 @@
-import { StyleProp, ViewStyle } from 'react-native'
-import { Product } from '../../../_types/product'
+import { StyleProp, ViewStyle } from 'react-native';
+import { Product } from '../../../_types/product';
 import {
   BaseProductCardProps,
   SizeableProductCardProps,
   CardVariant,
-  CardSizeByVariant
-} from '../../../_types/product-card'
+  CardSizeByVariant,
+} from '../../../_types/product-card';
 
-export type {
-  BaseProductCardProps,
-  SizeableProductCardProps,
-  CardVariant,
-  CardSizeByVariant
-}
+export type { BaseProductCardProps, SizeableProductCardProps, CardVariant, CardSizeByVariant };
 
-export type DefaultCardProps = SizeableProductCardProps<'default'>
+export type DefaultCardProps = SizeableProductCardProps<'default'>;
 export type FeaturedCardProps = SizeableProductCardProps<'featured'> & {
-  onBuyPress?: () => void
-  onPress?: () => void
-}
+  onBuyPress?: () => void;
+};
 export type HorizontalCardProps = BaseProductCardProps & {
-  aspectRatio?: number
-}
-export type MinicardProps = BaseProductCardProps
-export type ImageOnlyCardProps = SizeableProductCardProps<'image-only'>
+  aspectRatio?: number;
+};
+export type MinicardProps = BaseProductCardProps;
+export type ImageOnlyCardProps = SizeableProductCardProps<'image-only'>;
 
 // Add required types for product index.tsx
 export type ProductCardSize = 'small' | 'large';
@@ -36,7 +30,7 @@ export type PromotionProductCardProps = {
 };
 
 export type FeaturedProductCardProps = FeaturedCardProps;
-export type HorizontalProductCardProps = HorizontalCardProps; 
+export type HorizontalProductCardProps = HorizontalCardProps;
 
 // Add default export to prevent Expo Router warnings
 const typesExport = {

@@ -10,7 +10,7 @@ import { PreloadAsset } from './types';
 export const loadSingleAsset = async (asset: any): Promise<void> => {
   try {
     if (typeof asset === 'number') {
-      // For required assets (which are numbers)
+      // For required assets (which are numbers) - includes both images and videos
       await Asset.fromModule(asset).downloadAsync();
     } else if (
       typeof asset === 'string' &&
@@ -18,12 +18,19 @@ export const loadSingleAsset = async (asset: any): Promise<void> => {
     ) {
       // For remote image URLs, use Image.prefetch
       await Image.prefetch(asset);
+    } else if (
+      typeof asset === 'string' &&
+      (asset.includes('.mp4') || asset.includes('.mov') || asset.includes('.avi'))
+    ) {
+      // For remote video URLs - there's no specific prefetch for videos
+      // but we'll mark it as handled to prevent logging
+      console.log('Video asset will be handled by expo-video at runtime:', asset);
     } else if (asset && typeof asset === 'object' && asset.uri) {
       // For objects with uri property (e.g. local file paths)
       await Image.prefetch(asset.uri);
     } else {
-      // For any other type, just log that we're skipping it
-      console.log('Unknown asset type, skipping preload:', asset);
+      // For any other type, log with more detail to help debugging
+      console.log('Unknown asset type in preloader:', asset, typeof asset);
     }
   } catch (error) {
     console.error('Error loading asset:', error);

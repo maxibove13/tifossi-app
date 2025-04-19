@@ -93,12 +93,19 @@ export const VideoBackground = ({
     }
   }, [hasValidSource]);
 
-  // Error handler function
-  const handleVideoError = useCallback(() => {
-    console.error('(NOBRIDGE) Video loading error - falling back to image');
-    setIsError(true);
-    setIsLoading(false);
-  }, []);
+  // Error handler function with improved logging
+  const handleVideoError = useCallback(
+    (errorInfo?: any) => {
+      console.error(
+        'Video loading error - falling back to image:',
+        typeof source === 'number' ? 'Video asset ID: ' + source : source,
+        errorInfo || ''
+      );
+      setIsError(true);
+      setIsLoading(false);
+    },
+    [source]
+  );
 
   useEffect(() => {
     // If we don't have a valid source or player, there's nothing to do
@@ -108,26 +115,37 @@ export const VideoBackground = ({
       return;
     }
 
-    // Set a timeout to trigger fallback if video doesn't load within 3 seconds
+    // Set a timeout to trigger fallback if video doesn't load within 5 seconds
+    // Increased from 3 to 5 seconds to give more time on slow connections
     const fallbackTimer = setTimeout(() => {
       if (isLoading) {
-        handleVideoError();
+        handleVideoError({
+          timedOut: true,
+          message: 'Video loading timed out after 5 seconds',
+        });
       }
-    }, 3000);
+    }, 5000);
 
     const statusSubscription = player.addListener('statusChange', (status) => {
       if (status.error) {
-        handleVideoError();
+        handleVideoError({
+          statusError: status.error,
+          playerStatus: status.status,
+        });
       }
+
       if (status.status === 'readyToPlay') {
         clearTimeout(fallbackTimer);
         setIsLoading(false);
         if (shouldAutoPlay) {
           try {
             player.play();
-          } catch {
-            // Catch any play errors and fall back to image
-            handleVideoError();
+          } catch (error) {
+            // Catch any play errors and fall back to image with detailed info
+            handleVideoError({
+              playError: error,
+              message: 'Error during video.play() call',
+            });
           }
         }
       }

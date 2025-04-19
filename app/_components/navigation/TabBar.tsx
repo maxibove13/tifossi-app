@@ -119,8 +119,6 @@ const styles = StyleSheet.create({
     height: 84,
     paddingBottom: 34,
     backgroundColor: '#FBFBFB',
-    borderTopWidth: 0.4,
-    borderTopColor: '#DCDCDC',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',

@@ -31,12 +31,7 @@ const ButtonGradient = ({ pressed, disabled }: { pressed: boolean; disabled: boo
   );
 };
 
-export default function FeaturedCard({
-  product,
-  onBuyPress,
-  onPress,
-  size = 'small',
-}: FeaturedCardProps) {
+export default function FeaturedCard({ product, onBuyPress, size = 'small' }: FeaturedCardProps) {
   const cardData = mapProductToCardData(product);
   const dimensions = getCardDimensions('featured', size);
   const isFullWidth = dimensions.width === 'full';
@@ -50,62 +45,58 @@ export default function FeaturedCard({
   const isNew = product.label === ProductLabel.NEW;
 
   return (
-    <Pressable onPress={onPress} style={{ width: '100%', height: '100%' }}>
-      <LinearGradient
-        colors={[colors.secondary, colors.primary] as const} // Card background
-        style={[
-          styles.container,
-          {
-            width: typeof dimensions.width === 'number' ? dimensions.width : '100%',
-            height: dimensions.height,
-          },
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-      >
-        <View style={styles.content}>
-          <View style={styles.textSection}>
-            {isNew && <Text style={styles.label}>Nuevo</Text>}
-            <Text style={styles.title}>{cardData.name || 'Producto no disponible'}</Text>
-            {product.isCustomizable && <Text style={styles.customizable}>Personalizable</Text>}
-          </View>
-
-          <View
-            style={[
-              styles.imageSection,
-              isFullWidth ? styles.imageFullWidth : styles.imageSmall,
-              { height: dimensions.imageSize },
-            ]}
-          >
-            <ProductImage
-              source={cardData.image}
-              overlay
-              overlayColor={colors.primary}
-              overlayOpacity={0.0}
-              size={dimensions.imageSize}
-            />
-          </View>
-
-          <View style={styles.actionSection}>
-            <Text style={styles.price}>{formatPrice(cardData.price)}</Text>
-            <Pressable
-              style={({ pressed }) => [
-                styles.buyButtonContainer,
-                isBuyDisabled && styles.buyButtonDisabled,
-                pressed && !isBuyDisabled && { backgroundColor: colors.button.pressed },
-              ]}
-              onPress={(e) => {
-                e.stopPropagation();
-                onBuyPress && onBuyPress();
-              }}
-              disabled={isBuyDisabled}
-            >
-              {({ pressed }) => <ButtonGradient pressed={pressed} disabled={isBuyDisabled} />}
-            </Pressable>
-          </View>
+    <LinearGradient
+      colors={[colors.secondary, colors.primary] as const} // Card background
+      style={[
+        styles.container,
+        {
+          width: typeof dimensions.width === 'number' ? dimensions.width : '100%',
+          height: dimensions.height,
+        },
+      ]}
+    >
+      <View style={styles.content}>
+        <View style={styles.textSection}>
+          {isNew && <Text style={styles.label}>Nuevo</Text>}
+          <Text style={styles.title}>{cardData.name || 'Producto no disponible'}</Text>
+          {product.isCustomizable && <Text style={styles.customizable}>Personalizable</Text>}
         </View>
-      </LinearGradient>
-    </Pressable>
+
+        <View
+          style={[
+            styles.imageSection,
+            isFullWidth ? styles.imageFullWidth : styles.imageSmall,
+            { height: dimensions.imageSize },
+          ]}
+        >
+          <ProductImage
+            source={cardData.image}
+            overlay
+            overlayColor={colors.primary}
+            overlayOpacity={0.0}
+            size={dimensions.imageSize}
+          />
+        </View>
+
+        <View style={styles.actionSection}>
+          <Text style={styles.price}>{formatPrice(cardData.price)}</Text>
+          <Pressable
+            style={({ pressed }) => [
+              styles.buyButtonContainer,
+              isBuyDisabled && styles.buyButtonDisabled,
+              pressed && !isBuyDisabled && { backgroundColor: colors.button.pressed },
+            ]}
+            onPress={(e) => {
+              e.stopPropagation();
+              onBuyPress && onBuyPress();
+            }}
+            disabled={isBuyDisabled}
+          >
+            {({ pressed }) => <ButtonGradient pressed={pressed} disabled={isBuyDisabled} />}
+          </Pressable>
+        </View>
+      </View>
+    </LinearGradient>
   );
 }
 
