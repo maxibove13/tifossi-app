@@ -5,6 +5,8 @@
 - Always run linters and type checkers before submitting changes
 - NEVER test the application by running it directly; only make code changes
 - Follow the code style guidelines below
+- ALWAYS follow rules in /.cursor/rules if they exist
+- ALWAYS refer to README.md and the /docs folder to understand project structure and guidelines
 
 ## Build Commands
 - `npm install` - Install dependencies

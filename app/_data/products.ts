@@ -8,7 +8,7 @@ export const defaultReturnPolicy =
 export const products: Product[] = [
   {
     id: 'tiffosi-fast',
-    image: require('../../assets/images/products/product_socks_1.png'),
+    frontImage: require('../../assets/images/products/product_socks_1.png'),
     title: 'Tiffosi Fast',
     price: 590,
     label: ProductLabel.NEW,
@@ -88,7 +88,7 @@ export const products: Product[] = [
   },
   {
     id: 'classic-socks',
-    image: require('../../assets/images/products/product_socks_2.png'),
+    frontImage: require('../../assets/images/products/product_socks_2.png'),
     title: 'Classic Socks',
     price: 590,
     label: ProductLabel.FEATURED,
@@ -119,7 +119,7 @@ export const products: Product[] = [
   },
   {
     id: 'socks-v2',
-    image: require('../../assets/images/products/product_socks_0.png'),
+    frontImage: require('../../assets/images/products/product_socks_0.png'),
     title: 'Socks V2',
     price: 590,
     label: ProductLabel.NEW,
@@ -162,7 +162,7 @@ export const products: Product[] = [
   },
   {
     id: 'regular-black',
-    image: require('../../assets/images/products/product_bag_0.png'),
+    frontImage: require('../../assets/images/products/product_bag_0.png'),
     title: 'Regular Black',
     price: 990,
     label: ProductLabel.FEATURED,
@@ -234,7 +234,7 @@ export const products: Product[] = [
   },
   {
     id: 'mochila-sq',
-    image: require('../../assets/images/products/product_bag_1.png'),
+    frontImage: require('../../assets/images/products/product_bag_1.png'),
     title: 'Mochila SQ',
     price: 1190,
     discountedPrice: 890,
@@ -263,7 +263,7 @@ export const products: Product[] = [
   },
   {
     id: 'buzo-oversize',
-    image: require('../../assets/images/products/product_sweater.png'),
+    frontImage: require('../../assets/images/products/product_sweater.png'),
     title: 'Buzo Oversize',
     price: 1590,
     discountedPrice: 1190,
@@ -306,7 +306,7 @@ export const products: Product[] = [
   },
   {
     id: 'neceser-ball',
-    image: require('../../assets/images/products/product_bag_2.png'),
+    frontImage: require('../../assets/images/products/product_bag_2.png'),
     title: 'Neceser Ball',
     price: 590,
     discountedPrice: 390,
@@ -334,7 +334,7 @@ export const products: Product[] = [
   },
   {
     id: 'mochila-classic',
-    image: require('../../assets/images/products/product_bag_3.png'),
+    frontImage: require('../../assets/images/products/product_bag_3.png'),
     title: 'Mochila Classic',
     price: 590,
     shortDescription: {
@@ -360,7 +360,7 @@ export const products: Product[] = [
   },
   {
     id: 'cap-v3',
-    image: require('../../assets/images/products/product_cap_black.png'),
+    frontImage: require('../../assets/images/products/product_cap_black.png'),
     title: 'Cap V3',
     price: 590,
     shortDescription: {
@@ -386,7 +386,7 @@ export const products: Product[] = [
   },
   {
     id: 'relaxed-classic',
-    image: require('../../assets/images/products/product_shirt_black_relaxed.png'),
+    frontImage: require('../../assets/images/products/product_shirt_black_relaxed.png'),
     title: 'Relaxed Classic',
     price: 590,
     shortDescription: {
@@ -418,7 +418,7 @@ export const products: Product[] = [
   },
   {
     id: 'regular-shirt',
-    image: require('../../assets/images/products/product_shirt_black_regular.png'),
+    frontImage: require('../../assets/images/products/product_shirt_black_regular.png'),
     title: 'Regular Shirt',
     price: 790,
     shortDescription: {
@@ -450,7 +450,7 @@ export const products: Product[] = [
   },
   {
     id: 'white-shirt',
-    image: require('../../assets/images/products/product_shirt_white.png'),
+    frontImage: require('../../assets/images/products/product_shirt_white.png'),
     title: 'White Shirt',
     price: 790,
     shortDescription: {
@@ -483,7 +483,7 @@ export const products: Product[] = [
   },
   {
     id: 't-shirt-black',
-    image: require('../../assets/images/products/product_t_shirt_black.png'),
+    frontImage: require('../../assets/images/products/product_t_shirt_black.png'),
     title: 'T-Shirt Black',
     price: 690,
     shortDescription: {
@@ -515,7 +515,7 @@ export const products: Product[] = [
   },
   {
     id: 'backpack-pro',
-    image: require('../../assets/images/products/product_bag_4.png'),
+    frontImage: require('../../assets/images/products/product_bag_4.png'),
     title: 'Backpack Pro',
     price: 1290,
     shortDescription: {
@@ -542,7 +542,7 @@ export const products: Product[] = [
   },
   {
     id: 'neceserr',
-    image: require('../../assets/images/products/product_bag_5.png'),
+    frontImage: require('../../assets/images/products/product_bag_5.png'),
     title: 'Neceser Globo',
     price: 590,
     discountedPrice: 390,
@@ -584,7 +584,7 @@ export const products: Product[] = [
   },
   {
     id: 'backpack-travel',
-    image: require('../../assets/images/products/product_bag_6.png'),
+    frontImage: require('../../assets/images/products/product_bag_6.png'),
     title: 'Backpack Travel',
     price: 1490,
     shortDescription: {
@@ -607,6 +607,315 @@ export const products: Product[] = [
           main: require('../../assets/images/products/product_bag_6.png'),
         },
       },
+    ],
+  },
+  {
+    id: 'mochila-gold',
+    frontImage: require('../../assets/images/products/mochila-gold.png'),
+    videoSource: require('../../assets/videos/mochila-gold.mov'),
+    title: 'Mochila Gold',
+    price: 1890,
+    label: ProductLabel.APP_EXCLUSIVE,
+    shortDescription: {
+      line1: 'Mochila premium con detalles dorados.',
+      line2: 'Diseño elegante para destacar en cualquier ocasión.',
+    },
+    longDescription: [
+      'Mochila Gold es nuestra propuesta más exclusiva y elegante.',
+      'Confeccionada con materiales premium y detalles en tonos dorados que la convierten en un accesorio único.',
+      'Cuenta con múltiples compartimentos interiores para una organización perfecta de tus pertenencias.',
+      'Correas ergonómicas que garantizan comodidad incluso en largas jornadas.',
+      'Resistente al agua y al desgaste diario sin perder su aspecto lujoso.',
+    ],
+    warranty: '12 meses',
+    returnPolicy: defaultReturnPolicy,
+    dimensions: {
+      height: '45cm',
+      width: '30cm',
+      depth: '15cm',
+    },
+    colors: [
+      {
+        colorName: 'Dorado',
+        quantity: 8,
+        hex: '#D4AF37',
+        images: {
+          main: require('../../assets/images/products/mochila-gold.png'),
+        },
+      },
+    ],
+    sizes: [{ value: 'Único', available: true }],
+  },
+  {
+    id: 'mochila-black',
+    frontImage: require('../../assets/images/products/mochila-black.png'),
+    videoSource: require('../../assets/videos/mochila-black.mov'),
+    title: 'Mochila Black',
+    price: 1690,
+    label: ProductLabel.POPULAR,
+    shortDescription: {
+      line1: 'Mochila negra de diseño minimalista y versátil.',
+      line2: 'Perfecta para uso diario y viajes cortos.',
+    },
+    longDescription: [
+      'Mochila Black combina elegancia y funcionalidad con su diseño minimalista.',
+      'Material resistente al agua y rasguños para proteger tus pertenencias en cualquier situación.',
+      'Interior espacioso con compartimentos organizados para dispositivos electrónicos y objetos personales.',
+      'Sistema de correas acolchadas que distribuyen el peso de forma óptima para mayor comodidad.',
+      'Versátil para uso diario en la ciudad o escapadas de fin de semana.',
+    ],
+    warranty: '12 meses',
+    returnPolicy: defaultReturnPolicy,
+    dimensions: {
+      height: '42cm',
+      width: '28cm',
+      depth: '14cm',
+    },
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 15,
+        hex: '#0C0C0C',
+        images: {
+          main: require('../../assets/images/products/mochila-black.png'),
+        },
+      },
+    ],
+    sizes: [{ value: 'Único', available: true }],
+  },
+  // Additional products from the explore screen that need to be accessible
+  {
+    id: 'explore-campera-deportiva',
+    title: 'Campera Deportiva',
+    price: 1890,
+    label: ProductLabel.NEW,
+    frontImage: require('../../assets/images/products/campera-deportiva.png'),
+    shortDescription: {
+      line1: 'Campera deportiva de alto rendimiento.',
+      line2: 'Material de primera calidad con tecnología térmica.',
+    },
+    longDescription: [
+      'Campera deportiva diseñada para atletas de alto rendimiento.',
+      'Material premium que proporciona aislamiento térmico sin sacrificar la transpirabilidad.',
+      'Diseño ergonómico que permite total libertad de movimiento durante la actividad física.',
+      'Bolsillos estratégicamente ubicados para mantener tus pertenencias seguras durante el ejercicio.',
+      'Acabado resistente al agua que te protege durante condiciones climáticas adversas.',
+    ],
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 12,
+        hex: '#0C0C0C',
+        images: {
+          main: require('../../assets/images/products/campera-deportiva.png'),
+        },
+      },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+      { value: 'XL', available: false },
+    ],
+  },
+  {
+    id: 'explore-antideslizantes-1',
+    title: 'Antideslizantes',
+    price: 490,
+    frontImage: require('../../assets/images/products/antideslizantes-1.png'),
+    shortDescription: {
+      line1: 'Calcetines antideslizantes para mayor agarre.',
+      line2: 'Perfectos para entrenamientos de alta intensidad.',
+    },
+    longDescription: [
+      'Los calcetines antideslizantes proporcionan un agarre excepcional en cualquier superficie.',
+      'Ideales para prácticas deportivas donde la tracción es fundamental como yoga, pilates o fútbol sala.',
+      'Fabricados con materiales transpirables que mantienen tus pies secos durante toda la actividad.',
+      'Diseño anatómico que se adapta perfectamente al pie para mayor comodidad y rendimiento.',
+      'La tecnología antisudor evita malos olores incluso después de entrenamientos intensos.',
+    ],
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 20,
+        hex: '#0C0C0C',
+        images: {
+          main: require('../../assets/images/products/antideslizantes-1.png'),
+        },
+      },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+    ],
+  },
+  {
+    id: 'explore-antideslizantes-2',
+    title: 'Antideslizantes V2',
+    price: 490,
+    frontImage: require('../../assets/images/products/antideslizantes-2.png'),
+    shortDescription: {
+      line1: 'Segunda generación de calcetines con mejor agarre.',
+      line2: 'Diseño mejorado para mayor durabilidad.',
+    },
+    longDescription: [
+      'Los Antideslizantes V2 representan la evolución de nuestros populares calcetines deportivos.',
+      'Tecnología de agarre mejorada que proporciona estabilidad en cualquier tipo de superficie.',
+      'Tejido reforzado en puntos estratégicos para extender significativamente su vida útil.',
+      'Mayor densidad de puntos de silicona en la planta para un agarre sin precedentes.',
+      'Perfectos para deportes indoor y actividades que requieren máxima tracción sin calzado.',
+    ],
+    colors: [
+      {
+        colorName: 'Gris',
+        quantity: 15,
+        hex: '#9E9E9E',
+        images: {
+          main: require('../../assets/images/products/antideslizantes-2.png'),
+        },
+      },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+    ],
+  },
+  {
+    id: 'explore-tiffosi-antideslizante-1',
+    title: 'Tiffosi Antideslizante',
+    price: 550,
+    label: ProductLabel.RECOMMENDED,
+    frontImage: require('../../assets/images/products/tiffosi-antideslizante-1.png'),
+    shortDescription: {
+      line1: 'Calcetines premium con tecnología antideslizante.',
+      line2: 'La mejor opción para deportes de alta exigencia.',
+    },
+    longDescription: [
+      'Tiffosi Antideslizante representa lo último en tecnología de calcetines deportivos.',
+      'Combina el diseño exclusivo de Tiffosi con una funcionalidad superior para deportistas exigentes.',
+      'El patrón antideslizante cubre toda la planta del pie proporcionando un agarre incomparable.',
+      'Materiales de primera calidad que garantizan durabilidad sin sacrificar comodidad.',
+      'Recomendados por atletas profesionales por su rendimiento excepcional en competiciones.',
+    ],
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 18,
+        hex: '#0C0C0C',
+        images: {
+          main: require('../../assets/images/products/tiffosi-antideslizante-1.png'),
+        },
+      },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+    ],
+  },
+  {
+    id: 'explore-shinguards-1',
+    title: 'Shinguards Pro',
+    price: 790,
+    isCustomizable: true,
+    frontImage: require('../../assets/images/products/shinguards-1.png'),
+    shortDescription: {
+      line1: 'Espinilleras profesionales con protección avanzada.',
+      line2: 'Personalizables con tu nombre o número.',
+    },
+    longDescription: [
+      'Las Shinguards Pro ofrecen protección de nivel profesional para futbolistas exigentes.',
+      'Desarrolladas con tecnología de absorción de impactos para garantizar máxima seguridad durante el juego.',
+      'Estructura ligera que no compromete la movilidad ni velocidad en el campo.',
+      'Sistema de ventilación que mantiene tus piernas frescas incluso en los partidos más intensos.',
+      'Completamente personalizables con tu nombre, número o iniciales para un toque único.',
+    ],
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 15,
+        hex: '#0C0C0C',
+        images: {
+          main: require('../../assets/images/products/shinguards-1.png'),
+        },
+      },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+    ],
+  },
+  {
+    id: 'explore-shinguards-2',
+    title: 'Shinguards Lite',
+    price: 690,
+    frontImage: require('../../assets/images/products/shinguards-2.png'),
+    shortDescription: {
+      line1: 'Espinilleras ultraligeras para máxima velocidad.',
+      line2: 'Protección efectiva sin sacrificar agilidad.',
+    },
+    longDescription: [
+      'Shinguards Lite está diseñado para jugadores que priorizan la velocidad y agilidad.',
+      'Su construcción ultraligera minimiza el peso sin comprometer la protección necesaria.',
+      'Material flexible que se adapta a la forma de tu pierna para un ajuste perfecto.',
+      'Sistema de sujeción que mantiene las espinilleras en su lugar durante todo el partido.',
+      'Diseño minimalista ideal para jugadores ofensivos que necesitan máxima libertad de movimiento.',
+    ],
+    colors: [
+      {
+        colorName: 'Blanco',
+        quantity: 10,
+        hex: '#FAFAFA',
+        images: {
+          main: require('../../assets/images/products/shinguards-2.png'),
+        },
+      },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+    ],
+  },
+  {
+    id: 'explore-shirt-os-black-1',
+    title: 'Shirt OS Black',
+    price: 890,
+    label: ProductLabel.FEATURED,
+    frontImage: require('../../assets/images/products/shirt-os-black-1.png'),
+    shortDescription: {
+      line1: 'Camisa oversize de corte moderno.',
+      line2: 'Estilo urbano con máxima comodidad.',
+    },
+    longDescription: [
+      'Shirt OS Black representa la esencia del estilo urbano contemporáneo.',
+      'Corte oversize que proporciona una silueta moderna y relajada, perfecta para el día a día.',
+      'Fabricada con algodón premium que garantiza suavidad y durabilidad excepcionales.',
+      'Diseño minimalista que facilita combinaciones infinitas con el resto de tu guardarropa.',
+      'Los detalles sutiles en el acabado le otorgan un toque de distinción a una prenda aparentemente simple.',
+    ],
+    colors: [
+      {
+        colorName: 'Negro',
+        quantity: 25,
+        hex: '#0C0C0C',
+        images: {
+          main: require('../../assets/images/products/shirt-os-black-1.png'),
+          additional: [
+            require('../../assets/images/products/shirt-os-black-2.png'),
+            require('../../assets/images/products/shirt-os-black-3.png'),
+          ],
+        },
+      },
+    ],
+    sizes: [
+      { value: 'S', available: true },
+      { value: 'M', available: true },
+      { value: 'L', available: true },
+      { value: 'XL', available: true },
     ],
   },
 ];
@@ -633,6 +942,34 @@ export const getLaunchAndOpportunityProducts = (): Product[] => {
     .filter((p): p is Product => p !== undefined);
 };
 
+// Function to get products for TiffosiExplore screen - prioritizing products with videos
+export const getTiffosiExploreProducts = (): Product[] => {
+  // IDs of products to include in the explore section, with mochila-gold first
+  const ids = [
+    'mochila-gold', // First item (has video)
+    'mochila-black', // Second item (has video)
+    'explore-campera-deportiva',
+    'explore-antideslizantes-1',
+    'tiffosi-fast',
+    'explore-antideslizantes-2',
+    'explore-tiffosi-antideslizante-1',
+    'socks-v2',
+    'explore-shinguards-1',
+    'explore-shinguards-2',
+    'explore-shirt-os-black-1',
+    't-shirt-black',
+    'buzo-oversize',
+    'regular-black',
+    'backpack-pro',
+    'neceserr',
+    'cap-v3',
+  ];
+
+  return ids
+    .map((id) => products.find((p) => p.id === id))
+    .filter((p): p is Product => p !== undefined);
+};
+
 const ProductData = {
   products,
   getHighlightedProducts,
@@ -643,6 +980,7 @@ const ProductData = {
   getNewReleases,
   getProductById,
   getLaunchAndOpportunityProducts,
+  getTiffosiExploreProducts,
 };
 
 export default ProductData;

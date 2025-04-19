@@ -11,7 +11,7 @@ type HighlightedCardProps = {
 };
 
 export default function HighlightedCard({ product, onPress }: HighlightedCardProps) {
-  const { label, shortDescription, image, title } = product;
+  const { label, shortDescription, frontImage, title } = product;
 
   // Determine label text and color based on ProductLabel enum
   let labelText: string | null = null;
@@ -53,7 +53,7 @@ export default function HighlightedCard({ product, onPress }: HighlightedCardPro
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.imageContainer}>
-        <ProductImage source={image} size={119} />
+        <ProductImage source={frontImage} size={119} />
       </View>
       <View style={styles.content}>
         {labelText && labelColor && (

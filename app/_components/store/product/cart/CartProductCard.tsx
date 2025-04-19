@@ -70,7 +70,7 @@ export const CartProductCard = ({
     title,
     price,
     discountedPrice,
-    image,
+    frontImage,
     isCustomizable,
     color,
     selectedSize,
@@ -126,7 +126,7 @@ export const CartProductCard = ({
       <View style={[styles.container, isDark && styles.containerDark]}>
         {/* Product Image */}
         <View style={styles.imageContainer}>
-          <ProductImage source={image} size={130} />
+          <ProductImage source={frontImage} size={130} />
         </View>
 
         {/* Product Details */}

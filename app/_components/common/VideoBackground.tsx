@@ -1,11 +1,11 @@
-import { View, StyleSheet, Image, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, Image, useWindowDimensions, ImageSourcePropType } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface VideoBackgroundProps {
   source: number | string;
-  fallbackImage?: string;
+  fallbackImage?: string | ImageSourcePropType;
   children?: React.ReactNode;
   overlayOpacity?: number;
   style?: any;
@@ -29,6 +29,10 @@ export const VideoBackground = ({
   const { width, height } = useWindowDimensions();
   const videoRef = useRef(null);
 
+  // Default to fallback image if source is empty/invalid
+  const hasValidSource = !!source && source !== '';
+
+  // Always initialize the player, but we'll handle the invalid source case separately
   const player = useVideoPlayer(source, (player) => {
     if (!player) return;
     player.loop = shouldLoop;
@@ -36,34 +40,76 @@ export const VideoBackground = ({
     player.staysActiveInBackground = false;
   });
 
+  // Immediately show fallback if source is invalid
   useEffect(() => {
-    if (!player) return;
+    if (!hasValidSource) {
+      setIsError(true);
+      setIsLoading(false);
+    }
+  }, [hasValidSource]);
+
+  // Error handler function
+  const handleVideoError = useCallback(() => {
+    console.error('(NOBRIDGE) Video loading error - falling back to image');
+    setIsError(true);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    // If we don't have a valid source or player, there's nothing to do
+    if (!hasValidSource || !player) {
+      setIsError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    // Set a timeout to trigger fallback if video doesn't load within 3 seconds
+    const fallbackTimer = setTimeout(() => {
+      if (isLoading) {
+        handleVideoError();
+      }
+    }, 3000);
 
     const statusSubscription = player.addListener('statusChange', (status) => {
-      console.log('Video status changed:', status);
       if (status.error) {
-        console.error('Video error:', status.error);
-        setIsError(true);
-        setIsLoading(false);
+        handleVideoError();
       }
       if (status.status === 'readyToPlay') {
+        clearTimeout(fallbackTimer);
         setIsLoading(false);
         if (shouldAutoPlay) {
-          player.play();
+          try {
+            player.play();
+          } catch {
+            // Catch any play errors and fall back to image
+            handleVideoError();
+          }
         }
       }
     });
 
     return () => {
+      clearTimeout(fallbackTimer);
       statusSubscription?.remove();
     };
-  }, [player, shouldAutoPlay]);
+  }, [player, shouldAutoPlay, isLoading, hasValidSource, handleVideoError]);
+
+  // Always render fallback image if no valid fallback is provided
+  if (!fallbackImage && (isError || !hasValidSource)) {
+    console.warn('VideoBackground: No fallback image provided but video failed to load');
+  }
 
   return (
     <View style={[styles.container, style, { width, height }]}>
-      {isError && fallbackImage ? (
-        <Image source={{ uri: fallbackImage }} style={styles.fallback} resizeMode="cover" />
-      ) : (
+      {/* Show fallback image if we have an error or invalid source */}
+      {(isError || !hasValidSource) && fallbackImage ? (
+        <Image
+          source={typeof fallbackImage === 'string' ? { uri: fallbackImage } : fallbackImage}
+          style={styles.fallback}
+          resizeMode="cover"
+        />
+      ) : // Only try to render video if we have a valid source and player and no errors
+      hasValidSource && player && !isError ? (
         <VideoView
           ref={videoRef}
           player={player}
@@ -72,16 +118,17 @@ export const VideoBackground = ({
           nativeControls={false}
           requiresLinearPlayback
         />
-      )}
+      ) : null}
 
       <LinearGradient
         colors={['rgba(12, 12, 12, 0)', `rgba(12, 12, 12, ${overlayOpacity})`]}
         style={styles.overlay}
       />
 
+      {/* Show fallback image during loading if available */}
       {isLoading && fallbackImage && (
         <Image
-          source={{ uri: fallbackImage }}
+          source={typeof fallbackImage === 'string' ? { uri: fallbackImage } : fallbackImage}
           style={[styles.fallback, styles.loadingFallback]}
           resizeMode="cover"
         />

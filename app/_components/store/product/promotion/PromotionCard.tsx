@@ -29,7 +29,7 @@ const PromotionCard = ({
 }: PromotionCardProps) => {
   const [isCurrentlyFavorite, setIsCurrentlyFavorite] = useState(isFavorite);
   const _isSmall = size === 's';
-  const { title, price, discountedPrice, image, label } = product;
+  const { title, price, discountedPrice, frontImage, label } = product;
 
   const handleWishlistPress = () => {
     setIsCurrentlyFavorite((prev) => !prev);
@@ -46,7 +46,7 @@ const PromotionCard = ({
   return (
     <Pressable onPress={onPress} style={styles.container}>
       <View style={styles.imageContainer}>
-        <ProductImage source={image} size={132} />
+        <ProductImage source={frontImage} size={132} />
         <Pressable
           style={styles.wishlistButton}
           onPress={handleWishlistPress}

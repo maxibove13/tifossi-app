@@ -17,7 +17,9 @@ export interface Product {
   id: string;
   title: string;
   price: number;
-  image: string | ImageSourcePropType;
+  images?: (string | ImageSourcePropType)[]; // Array of product images
+  frontImage: string | ImageSourcePropType; // Main/front image to display (REQUIRED)
+  videoSource?: number | string; // Video source for product displays
   label?: ProductLabel;
   status?: ProductStatus;
   /** @deprecated Use shortDescription or longDescription instead */
@@ -100,6 +102,7 @@ export function isProduct(value: unknown): value is Product {
     typeof p.id === 'string' &&
     typeof p.title === 'string' &&
     typeof p.price === 'number' &&
+    p.frontImage !== undefined &&
     (!p.status || isValidStatus(p.status)) &&
     (!p.label || isValidLabel(p.label))
   );
@@ -117,7 +120,7 @@ export function mapProductToCardData(product: Product): ProductCardData {
     id: product.id,
     name: product.title,
     price: finalPrice,
-    image: product.image,
+    image: product.frontImage,
     isNew: product.label === ProductLabel.NEW,
     description:
       product.shortDescription ||

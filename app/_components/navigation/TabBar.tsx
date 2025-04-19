@@ -1,23 +1,23 @@
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native'
-import { fonts, fontSizes, lineHeights, fontWeights } from '../../_styles/typography'
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { fonts, fontSizes, lineHeights, fontWeights } from '../../_styles/typography';
 
 // Import SVG icons
-import HouseActive from '../../../assets/icons/house_active.svg'
-import HouseInactive from '../../../assets/icons/house_inactive.svg'
-import HeartActive from '../../../assets/icons/heart_active.svg'
-import HeartInactive from '../../../assets/icons/heart_inactive.svg'
-import CartActive from '../../../assets/icons/cart_active.svg'
-import CartInactive from '../../../assets/icons/cart_inactive.svg'
-import UserCircleActive from '../../../assets/icons/user_circle_active.svg'
-import UserCircleInactive from '../../../assets/icons/user_circle_inactive.svg'
+import HouseActive from '../../../assets/icons/house_active.svg';
+import HouseInactive from '../../../assets/icons/house_inactive.svg';
+import HeartActive from '../../../assets/icons/heart_active.svg';
+import HeartInactive from '../../../assets/icons/heart_inactive.svg';
+import CartActive from '../../../assets/icons/cart_active.svg';
+import CartInactive from '../../../assets/icons/cart_inactive.svg';
+import UserCircleActive from '../../../assets/icons/user_circle_active.svg';
+import UserCircleInactive from '../../../assets/icons/user_circle_inactive.svg';
 
-export type TabRoute = 'store' | 'favorites' | 'tiffosi' | 'cart' | 'profile'
+export type TabRoute = 'store' | 'favorites' | 'tiffosi' | 'cart' | 'profile';
 
 interface TabBarProps {
-  activeRoute: TabRoute
-  onChangeRoute: (route: TabRoute) => void
-  cartItemCount?: number
-  isDark?: boolean
+  activeRoute: TabRoute;
+  onChangeRoute: (route: TabRoute) => void;
+  cartItemCount?: number;
+  isDark?: boolean;
 }
 
 const LABELS = {
@@ -25,74 +25,66 @@ const LABELS = {
   favorites: 'Favoritos',
   tiffosi: '',
   cart: 'Carrito',
-  profile: 'Perfil'
-}
+  profile: 'Perfil',
+};
 
-const TabBar = ({
-  activeRoute,
-  onChangeRoute,
-  cartItemCount = 0,
-  isDark = false,
-}: TabBarProps) => {
+const TabBar = ({ activeRoute, onChangeRoute, cartItemCount = 0, isDark = false }: TabBarProps) => {
   const renderIcon = (route: TabRoute, isActive: boolean) => {
-    const iconProps = { 
-      width: 24, 
+    const iconProps = {
+      width: 24,
       height: 24,
-    }
-    
+    };
+
     switch (route) {
       case 'store':
-        return isActive ? <HouseActive {...iconProps} /> : <HouseInactive {...iconProps} />
+        return isActive ? <HouseActive {...iconProps} /> : <HouseInactive {...iconProps} />;
       case 'favorites':
-        return isActive ? <HeartActive {...iconProps} /> : <HeartInactive {...iconProps} />
+        return isActive ? <HeartActive {...iconProps} /> : <HeartInactive {...iconProps} />;
       case 'tiffosi':
-        return null
+        return null;
       case 'cart':
-        return isActive ? <CartActive {...iconProps} /> : <CartInactive {...iconProps} />
+        return isActive ? <CartActive {...iconProps} /> : <CartInactive {...iconProps} />;
       case 'profile':
-        return isActive ? <UserCircleActive {...iconProps} /> : <UserCircleInactive {...iconProps} />
+        return isActive ? (
+          <UserCircleActive {...iconProps} />
+        ) : (
+          <UserCircleInactive {...iconProps} />
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   const renderTab = (route: TabRoute) => {
-    const isActive = activeRoute === route
-    const label = LABELS[route]
+    const isActive = activeRoute === route;
+    const label = LABELS[route];
 
     if (route === 'tiffosi') {
       return (
         <TouchableOpacity
           onPress={() => onChangeRoute('tiffosi')}
-          style={[
-            styles.centerTab,
-            isActive && styles.centerTabActive,
-          ]}
+          style={[styles.centerTab, isActive && styles.centerTabActive]}
         >
-          <Image 
-            source={require('../../../assets/images/logo/tiffosi.png')}
+          <Image
+            source={
+              isDark
+                ? require('../../../assets/images/logo/tiffosi-light.png')
+                : require('../../../assets/images/logo/tiffosi.png')
+            }
             style={styles.centerLogo}
             resizeMode="contain"
           />
         </TouchableOpacity>
-      )
+      );
     }
 
     return (
-      <TouchableOpacity
-        onPress={() => onChangeRoute(route)}
-        style={styles.tab}
-      >
+      <TouchableOpacity onPress={() => onChangeRoute(route)} style={styles.tab}>
         <View style={styles.iconContainer}>
           {renderIcon(route, isActive)}
           {route === 'cart' && cartItemCount > 0 && (
-            <View style={[
-              styles.badge,
-              isDark && styles.badgeDark,
-            ]}>
-              <Text style={styles.badgeText}>
-                {cartItemCount > 99 ? '99+' : cartItemCount}
-              </Text>
+            <View style={[styles.badge, isDark && styles.badgeDark]}>
+              <Text style={styles.badgeText}>{cartItemCount > 99 ? '99+' : cartItemCount}</Text>
             </View>
           )}
         </View>
@@ -107,22 +99,19 @@ const TabBar = ({
           {label}
         </Text>
       </TouchableOpacity>
-    )
-  }
+    );
+  };
 
   return (
-    <View style={[
-      styles.container,
-      isDark && styles.containerDark,
-    ]}>
+    <View style={[styles.container, isDark && styles.containerDark]}>
       {renderTab('store')}
       {renderTab('favorites')}
       {renderTab('tiffosi')}
       {renderTab('cart')}
       {renderTab('profile')}
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -215,6 +204,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-})
+});
 
-export default TabBar 
+export default TabBar;
