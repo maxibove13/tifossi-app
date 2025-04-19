@@ -96,9 +96,9 @@ function DefaultLargeCard({ product, onPress, isFavorite = false }: DefaultLarge
           aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
           {isCurrentlyFavorite ? (
-            <HeartActiveIcon size={16} color={colors.primary} />
+            <HeartActiveIcon size={24} color={colors.primary} />
           ) : (
-            <Ionicons name="heart-outline" size={16} color={colors.secondary} />
+            <Ionicons name="heart-outline" size={24} color={colors.secondary} />
           )}
         </Pressable>
 

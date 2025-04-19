@@ -1,6 +1,10 @@
 import { Product } from '../_types/product';
 import { ProductLabel } from '../_types/product-status';
 
+// Define the default return policy
+export const defaultReturnPolicy =
+  'Si no estás satisfecho con tu compra, puedes devolver el producto sin usar dentro de los 30 días posteriores a la compra con el ticket original y el embalaje intacto.';
+
 export const products: Product[] = [
   {
     id: 'tiffosi-fast',
@@ -20,8 +24,7 @@ export const products: Product[] = [
       'Material de alta durabilidad resistente al desgaste por uso frecuente.',
     ],
     warranty: '6 meses',
-    returnPolicy:
-      'Si no estás satisfecho con tu compra, puedes devolver el producto sin usar dentro de los 30 días posteriores a la compra con el ticket original y el embalaje intacto.',
+    returnPolicy: defaultReturnPolicy,
     dimensions: {
       height: '12cm',
       width: '8cm',
@@ -558,8 +561,7 @@ export const products: Product[] = [
       'El cierre resistente al agua protege el contenido de salpicaduras y pequeños derrames.',
     ],
     warranty: '3 meses',
-    returnPolicy:
-      'Este producto tiene una política de devolución de 15 días siempre que se mantenga sin uso y con todas las etiquetas originales.',
+    returnPolicy: defaultReturnPolicy,
     dimensions: {
       height: '25cm',
       width: '18cm',

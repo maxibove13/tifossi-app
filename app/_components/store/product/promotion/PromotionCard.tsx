@@ -54,9 +54,9 @@ const PromotionCard = ({
           aria-label={isCurrentlyFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
           {isCurrentlyFavorite ? (
-            <HeartActiveIcon size={14} color={iconColor} />
+            <HeartActiveIcon size={24} color={iconColor} />
           ) : (
-            <Ionicons name="heart-outline" size={14} color={inactiveIconColor} />
+            <Ionicons name="heart-outline" size={24} color={inactiveIconColor} />
           )}
         </Pressable>
       </View>

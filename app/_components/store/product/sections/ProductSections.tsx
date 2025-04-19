@@ -86,9 +86,11 @@ export default function ProductSections({
 const styles = StyleSheet.create({
   section: {
     paddingVertical: spacing.xl,
+    gap: spacing.md,
   },
   swipeableSection: {
     paddingVertical: spacing.xl,
+    gap: spacing.md,
     // Horizontal padding is handled by the parent in SwipeableEdge
   },
   headerContainer: {

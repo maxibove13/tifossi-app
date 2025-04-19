@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, TextStyle, ViewStyle } from 'react-native';
 import { colors, spacing, typography } from './styles';
+import { defaultReturnPolicy } from '../../../../_data/products';
 
 interface ProductDetailsProps {
   isCustomizable?: boolean;
@@ -11,10 +12,12 @@ interface ProductDetailsProps {
     width?: string;
   };
   sku?: string;
-  shortDescription?: string | {
-    line1: string;
-    line2: string;
-  };
+  shortDescription?:
+    | string
+    | {
+        line1: string;
+        line2: string;
+      };
   longDescription?: string | string[];
   returnPolicy?: string;
 }
@@ -26,12 +29,10 @@ export default function ProductDetails({
   sku,
   shortDescription,
   longDescription,
-  returnPolicy
+  returnPolicy,
 }: ProductDetailsProps) {
   // Only combine dimensions if they exist
-  const dimensionsText = dimensions 
-    ? Object.values(dimensions).filter(Boolean).join(' | ') 
-    : '';
+  const dimensionsText = dimensions ? Object.values(dimensions).filter(Boolean).join(' | ') : '';
 
   return (
     <View style={styles.container}>
@@ -49,24 +50,23 @@ export default function ProductDetails({
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>INFORMACIÓN DEL PRODUCTO</Text>
         <Text style={styles.sectionText}>
-          {longDescription ? 
-            (typeof longDescription === 'string' ? 
-              longDescription : 
-              longDescription.join('\n\n')) : 
-            (typeof shortDescription === 'string' ? 
-              shortDescription : 
-              shortDescription ? `${shortDescription.line1}\n\n${shortDescription.line2}` : '')
-          }
+          {longDescription
+            ? typeof longDescription === 'string'
+              ? longDescription
+              : longDescription.join('\n')
+            : typeof shortDescription === 'string'
+              ? shortDescription
+              : shortDescription
+                ? `${shortDescription.line1}\n${shortDescription.line2}`
+                : ''}
         </Text>
       </View>
 
-      {/* Return Policy - only show if provided */}
-      {returnPolicy && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>POLÍTICA DE DEVOLUCIÓN Y REEMBOLSO</Text>
-          <Text style={styles.sectionText}>{returnPolicy}</Text>
-        </View>
-      )}
+      {/* Return Policy - Always show and use the default policy */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>POLÍTICA DE DEVOLUCIÓN Y REEMBOLSO</Text>
+        <Text style={styles.sectionText}>{defaultReturnPolicy}</Text>
+      </View>
     </View>
   );
 }
@@ -110,6 +110,7 @@ const styles = StyleSheet.create<Styles>({
     fontSize: typography.body.fontSize,
     color: colors.primary.text,
     marginBottom: spacing.xs,
+    textDecorationLine: 'underline',
   },
   sectionText: {
     fontFamily: typography.body.fontFamily,
