@@ -149,7 +149,7 @@ const styles = StyleSheet.create<Styles>({
     fontSize: fontSizes.xl,
     fontWeight: fontWeights.regular,
     lineHeight: lineHeights.xl * 1.4,
-    color: colors.secondary,
+    color: colors.primary,
   },
   closeButton: {
     padding: spacing.sm,
