@@ -2,6 +2,7 @@ import { View, StyleSheet, Image, useWindowDimensions, ImageSourcePropType } fro
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
+import preloadService from '../../_services/preload';
 
 interface VideoBackgroundProps {
   source: number | string;
@@ -12,6 +13,7 @@ interface VideoBackgroundProps {
   shouldLoop?: boolean;
   shouldMute?: boolean;
   shouldAutoPlay?: boolean;
+  preloadPriority?: 'high' | 'medium' | 'low';
 }
 
 export const VideoBackground = ({
@@ -23,11 +25,54 @@ export const VideoBackground = ({
   shouldLoop = true,
   shouldMute = true,
   shouldAutoPlay = true,
+  preloadPriority = 'medium',
 }: VideoBackgroundProps) => {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPreloaded, setIsPreloaded] = useState(false);
   const { width, height } = useWindowDimensions();
   const videoRef = useRef(null);
+
+  // Preload the video asset when the component mounts
+  useEffect(() => {
+    if (source && !isPreloaded) {
+      // Create a unique key for this asset
+      const assetKey =
+        typeof source === 'number'
+          ? `video_${source}`
+          : `video_${source.toString().split('/').pop()}`;
+
+      // Add to preload service
+      preloadService.updateAssetList([
+        {
+          key: assetKey,
+          asset: source,
+          type: 'video',
+          priority: preloadPriority,
+        },
+      ]);
+
+      // Mark as preloaded so we don't try to preload again
+      setIsPreloaded(true);
+    }
+
+    // Also preload the fallback image if provided
+    if (fallbackImage && !isPreloaded) {
+      const imageKey =
+        typeof fallbackImage === 'number'
+          ? `image_${fallbackImage}`
+          : `image_fallback_${Math.random().toString(36).substring(7)}`;
+
+      preloadService.updateAssetList([
+        {
+          key: imageKey,
+          asset: fallbackImage,
+          type: 'image',
+          priority: preloadPriority,
+        },
+      ]);
+    }
+  }, [source, fallbackImage, isPreloaded, preloadPriority]);
 
   // Default to fallback image if source is empty/invalid
   const hasValidSource = !!source && source !== '';

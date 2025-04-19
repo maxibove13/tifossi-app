@@ -11,31 +11,32 @@ SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
   const [showSplash, setShowSplash] = useState(true);
+  const [appReady, setAppReady] = useState(false);
   const [fontsLoaded] = useFonts({
-    'Roboto': Roboto_500Medium,
-    'Inter': Inter_500Medium,
+    Roboto: Roboto_500Medium,
+    Inter: Inter_500Medium,
   });
 
   useEffect(() => {
     if (fontsLoaded) {
-      // Hide the native splash screen
+      // Hide the native splash screen once fonts are loaded
       SplashScreen.hideAsync();
-      
-      // Show our custom splash screen for 2 seconds
-      const timer = setTimeout(() => {
-        setShowSplash(false);
-      }, 2000);
-
-      return () => clearTimeout(timer);
+      // Our custom SplashScreen will handle the rest of the loading
+      setAppReady(true);
     }
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) {
+  // Handle completion of the preloading process
+  const handlePreloadComplete = () => {
+    setShowSplash(false);
+  };
+
+  if (!fontsLoaded || !appReady) {
     return null;
   }
 
   if (showSplash) {
-    return <SplashScreenComponent />;
+    return <SplashScreenComponent onComplete={handlePreloadComplete} />;
   }
 
   return (

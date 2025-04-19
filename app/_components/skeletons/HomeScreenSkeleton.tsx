@@ -4,6 +4,26 @@ import { spacing } from '../../_styles/spacing';
 import { useEffect, useRef } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 
+// This defines the loading state for each section of the home screen
+export interface SectionLoadingState {
+  highlighted: boolean;
+  featured: boolean;
+  recommended: boolean;
+  trending: boolean;
+  newReleases: boolean;
+  launchOpportunity: boolean;
+}
+
+// Props for the skeleton with options for progressive loading
+interface HomeScreenSkeletonProps {
+  // If true, render the full skeleton; if false, show nothing
+  isLoading?: boolean;
+  // If provided, enables progressive loading by section
+  sectionLoadingState?: Partial<SectionLoadingState>;
+  // For allowing children to be passed (actual content sections)
+  children?: React.ReactNode;
+}
+
 const ShimmerPlaceholder = ({ style }: { style: any }) => {
   const translateX = useRef(new Animated.Value(-100)).current;
 
@@ -44,7 +64,22 @@ const ShimmerPlaceholder = ({ style }: { style: any }) => {
   );
 };
 
-export default function HomeScreenSkeleton() {
+export default function HomeScreenSkeleton({
+  isLoading = true,
+  sectionLoadingState,
+  children,
+}: HomeScreenSkeletonProps) {
+  // If not loading at all, render nothing (or children if provided)
+  if (!isLoading && !sectionLoadingState) {
+    return children ? <>{children}</> : null;
+  }
+
+  // Fallback to full skeleton if isLoading=true and no sectionLoadingState
+  const shouldShowSection = (sectionName: keyof SectionLoadingState): boolean => {
+    if (!sectionLoadingState) return isLoading;
+    return sectionLoadingState[sectionName] ?? false;
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -52,107 +87,120 @@ export default function HomeScreenSkeleton() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Skeleton - Matches HomeHeader.tsx */}
+        {/* Header Skeleton - Always shown during loading */}
         <View style={styles.header}>
           <ShimmerPlaceholder style={styles.headerLogo} />
         </View>
 
         {/* Highlighted Products Skeleton */}
-        <View style={styles.highlightedSection}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollContent}
-          >
-            {[1, 2, 3].map((key) => (
-              <ShimmerPlaceholder key={key} style={styles.highlightedCard} />
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Promotions Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeaderContainer}>
-            <ShimmerPlaceholder style={styles.sectionTitle} />
-            <ShimmerPlaceholder style={styles.sectionButton} />
+        {shouldShowSection('highlighted') && (
+          <View style={styles.highlightedSection}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalScrollContent}
+            >
+              {[1, 2, 3].map((key) => (
+                <ShimmerPlaceholder key={key} style={styles.highlightedCard} />
+              ))}
+            </ScrollView>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollContent}
-          >
-            {[1, 2, 3, 4].map((key) => (
-              <ShimmerPlaceholder key={key} style={styles.promotionCard} />
-            ))}
-          </ScrollView>
-        </View>
+        )}
 
-        {/* Triple Showcase Skeleton */}
+        {/* Recommended Products Section (Promotions) */}
+        {shouldShowSection('recommended') && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeaderContainer}>
+              <ShimmerPlaceholder style={styles.sectionTitle} />
+              <ShimmerPlaceholder style={styles.sectionButton} />
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalScrollContent}
+            >
+              {[1, 2, 3, 4].map((key) => (
+                <ShimmerPlaceholder key={key} style={styles.promotionCard} />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Triple Showcase Skeleton - Static content, always shown */}
         <View style={[styles.section, styles.showcaseSection]}>
           {[1, 2, 3].map((key) => (
             <ShimmerPlaceholder key={key} style={styles.showcaseItem} />
           ))}
         </View>
 
-        {/* Popular Products */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeaderContainer}>
-            <ShimmerPlaceholder style={styles.sectionTitle} />
-            <ShimmerPlaceholder style={styles.sectionButton} />
+        {/* Trending Products Section */}
+        {shouldShowSection('trending') && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeaderContainer}>
+              <ShimmerPlaceholder style={styles.sectionTitle} />
+              <ShimmerPlaceholder style={styles.sectionButton} />
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalScrollContent}
+            >
+              {[1, 2, 3, 4].map((key) => (
+                <ShimmerPlaceholder key={key} style={styles.productCard} />
+              ))}
+            </ScrollView>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollContent}
-          >
-            {[1, 2, 3, 4].map((key) => (
-              <ShimmerPlaceholder key={key} style={styles.productCard} />
-            ))}
-          </ScrollView>
-        </View>
+        )}
 
         {/* Featured Product */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeaderContainer}>
-            <ShimmerPlaceholder style={styles.sectionTitle} />
+        {shouldShowSection('featured') && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeaderContainer}>
+              <ShimmerPlaceholder style={styles.sectionTitle} />
+            </View>
+            <View style={styles.featuredCardContainer}>
+              <ShimmerPlaceholder style={styles.featuredCard} />
+            </View>
           </View>
-          <View style={styles.featuredCardContainer}>
-            <ShimmerPlaceholder style={styles.featuredCard} />
-          </View>
-        </View>
+        )}
 
-        {/* Product Grid */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeaderContainer}>
-            <ShimmerPlaceholder style={styles.sectionTitle} />
+        {/* Launch & Opportunity Products (Product Grid) */}
+        {shouldShowSection('launchOpportunity') && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeaderContainer}>
+              <ShimmerPlaceholder style={styles.sectionTitle} />
+            </View>
+            <View style={styles.productGrid}>
+              {[1, 2, 3, 4].map((key) => (
+                <ShimmerPlaceholder key={key} style={styles.gridCard} />
+              ))}
+            </View>
           </View>
-          <View style={styles.productGrid}>
-            {[1, 2, 3, 4].map((key) => (
-              <ShimmerPlaceholder key={key} style={styles.gridCard} />
-            ))}
-          </View>
-        </View>
+        )}
 
-        {/* CTA Button */}
+        {/* CTA Button - Static content, always shown */}
         <View style={styles.buttonContainer}>
           <ShimmerPlaceholder style={styles.button} />
         </View>
 
-        {/* Locations */}
+        {/* Locations - Static content, always shown */}
         <ShimmerPlaceholder style={styles.locations} />
 
-        {/* Sos parte section */}
+        {/* Sos parte section - Static content, always shown */}
         <View style={styles.sosParteSection}>
           <ShimmerPlaceholder style={styles.sosParteText} />
           <ShimmerPlaceholder style={styles.sosParteLogo} />
         </View>
 
-        {/* Footer */}
+        {/* Footer - Static content, always shown */}
         <ShimmerPlaceholder style={styles.footer} />
       </ScrollView>
     </View>
   );
 }
+
+// Export ShimmerPlaceholder for reuse in other components
+export { ShimmerPlaceholder };
 
 const styles = StyleSheet.create({
   container: {
@@ -285,4 +333,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
     borderRadius: 8,
   },
-}); 
+});

@@ -380,14 +380,83 @@ import { CategoryNavigation } from '../components/navigation/category/CategoryNa
 
 ### Skeleton Components (`/app/components/skeletons/`)
 
-Loading state placeholders for components.
+Loading state placeholders with progressive loading support.
 
-**HomeScreenSkeleton** (`/skeletons/HomeScreenSkeleton.tsx`): Loading state for home screen
+#### HomeScreenSkeleton (`/skeletons/HomeScreenSkeleton.tsx`)
+
+Advanced skeleton with progressive section loading:
+
 ```tsx
 import { HomeScreenSkeleton } from '../components/skeletons/HomeScreenSkeleton';
 
+// Simple usage - full skeleton
 {isLoading ? <HomeScreenSkeleton /> : <HomeContent />}
+
+// Progressive loading with section states
+<HomeScreenSkeleton
+  isLoading={false}
+  sectionLoadingState={{
+    highlighted: true,    // Still loading
+    featured: false,      // Already loaded
+    recommended: true,    // Still loading
+    trending: false,      // Already loaded
+  }}
+/>
 ```
+
+Props:
+- `isLoading`: boolean - When true, shows the entire skeleton
+- `sectionLoadingState`: Partial<SectionLoadingState> - Per-section loading states
+- `children`: ReactNode - Content to show when not loading
+
+#### ProgressiveLoadingSection (`/skeletons/ProgressiveLoadingSection.tsx`)
+
+Reusable component for section-specific progressive loading:
+
+```tsx
+import { ProgressiveLoadingSection, createSectionSkeleton } from '../components/skeletons/ProgressiveLoadingSection';
+
+<ProgressiveLoadingSection
+  isLoading={sectionLoadingState.featured}
+  skeleton={createSectionSkeleton({
+    title: true,
+    height: 400,
+    borderRadius: 8
+  })}
+>
+  <FeaturedContent />
+</ProgressiveLoadingSection>
+```
+
+Props:
+- `isLoading`: boolean - When true, shows the skeleton
+- `skeleton`: ReactNode - Skeleton placeholder to show while loading
+- `children`: ReactNode - Actual content to show when loaded
+- `style`: StyleProp<ViewStyle> - Optional container style
+
+### Splash Screen Components (`/app/components/splash/`)
+
+App initialization and global asset loading components.
+
+#### SplashScreen (`/splash/SplashScreen.tsx`)
+
+The app splash screen that handles initial loading of global UI assets:
+
+```tsx
+import { SplashScreen } from '../components/splash/SplashScreen';
+
+<SplashScreen onComplete={handleSplashComplete} />
+```
+
+Props:
+- `onComplete`: () => void - Called when splash screen loading is complete
+- `minDisplayTime`: number - Minimum time to display splash screen (default: 1500ms)
+
+Implementation:
+- Uses PreloadService to load only global UI assets (logos, essential UI elements)
+- Does NOT load screen-specific content during splash screen
+- Shows loading progress indicator
+- Transitions to main app when essential loading is complete
 
 ## Component Design Principles
 
@@ -520,7 +589,10 @@ const styles = StyleSheet.create<Styles>({
 | **Common** | AdvancedAnimation | ✅ | Implemented with useMemo optimization |
 | **Navigation** | TabBar | ✅ | Fully implemented |
 | **Navigation** | CategoryNavigation | ✅ | Fully implemented |
-| **Skeletons** | HomeScreenSkeleton | ✅ | Fully implemented |
+| **Skeletons** | HomeScreenSkeleton | ✅ | Fully implemented with progressive loading |
+| **Skeletons** | ProgressiveLoadingSection | ✅ | Fully implemented |
+| **Services** | PreloadService | ✅ | Full asset preloading system implemented |
+| **Services** | Home Asset Loader | ✅ | Home screen asset loading implemented |
 
 ## Best Practices
 

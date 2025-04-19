@@ -1,19 +1,56 @@
 import { StyleSheet, View } from 'react-native';
-import { useEffect } from 'react';
-import Animated, { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
+import { useEffect, useState } from 'react';
+import Animated, {
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+  Easing,
+} from 'react-native-reanimated';
 import { colors } from '../../_styles/colors';
 import { spacing } from '../../_styles/spacing';
+// No typography imports needed since we removed the loading text
+import preloadService, { PreloadProgress } from '../../_services/preload';
 
-export default function SplashScreen() {
+// Loading stages handled internally, no visible messages
+
+interface SplashScreenProps {
+  onComplete?: () => void;
+}
+
+export default function SplashScreen({ onComplete }: SplashScreenProps) {
   const progress = useSharedValue(0);
+  const [_loadingState, setLoadingState] = useState<PreloadProgress>({
+    progress: 0,
+    stage: 'INIT',
+    isComplete: false,
+  });
 
+  // Start preloading when component mounts
   useEffect(() => {
-    progress.value = withTiming(1, { duration: 2000 });
-  }, [progress]);
+    const handleProgress = (progressData: PreloadProgress) => {
+      // Update the animated value smoothly
+      progress.value = withTiming(progressData.progress / 100, {
+        duration: 300,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      });
+
+      // Update the loading state for the message
+      setLoadingState(progressData);
+
+      // Call onComplete callback when preloading is complete
+      if (progressData.isComplete && onComplete) {
+        // Add a small delay to ensure the animation completes
+        setTimeout(onComplete, 500);
+      }
+    };
+
+    // Start preloading
+    preloadService.preloadEssentials(handleProgress);
+  }, [progress, onComplete]);
 
   const logoAnimatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: progress.value,
+      opacity: Math.min(1, progress.value * 2), // Fade in faster
     };
   });
 
@@ -68,6 +105,7 @@ const styles = StyleSheet.create({
     width: 112,
     height: 4,
     position: 'relative',
+    marginBottom: spacing.md,
   },
   progressBarBackground: {
     position: 'absolute',

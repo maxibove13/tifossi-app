@@ -15,6 +15,8 @@ import { fonts, fontSizes, lineHeights } from '../_styles/typography';
 import VideoBackground from '../_components/common/VideoBackground';
 import { Product } from '../_types/product';
 import { getTiffosiExploreProducts } from '../_data/products';
+import preloadService from '../_services/preload/service';
+import { useState, useEffect } from 'react';
 
 // Get explore products from our dedicated function in products.ts
 // This function returns products in specific order with mochila-gold first (has video)
@@ -82,13 +84,69 @@ const ExploreProductCard = ({ product }: { product: Product }) => {
   );
 };
 
+// Enhanced TiffosiExploreScreen with strategic preloading
 export default function TiffosiExploreScreen() {
   const tabBarHeight = useBottomTabBarHeight(); // Get height for ScrollView padding
+  const [preloaded, setPreloaded] = useState(false);
+
+  // Preload all explore products when the screen is accessed (but only once)
+  useEffect(() => {
+    if (preloaded) return;
+
+    // This function preloads all assets for products in TiffosiExplore
+    async function preloadExploreProducts() {
+      try {
+        // First, preload all video sources (high priority for the first 2)
+        const videoProducts = exploreProducts.filter((p) => p.videoSource);
+
+        if (videoProducts.length > 0) {
+          // Create preload assets array for videos with proper priorities
+          const videoAssets = videoProducts.map((product, index) => {
+            // Explicitly type the priority to match PreloadAsset type
+            const priority: 'high' | 'medium' | 'low' = index < 2 ? 'high' : 'medium';
+            return {
+              key: `video_${product.id}`,
+              asset: product.videoSource,
+              type: 'video' as const,
+              priority,
+            };
+          });
+
+          // Update preload service with these assets
+          preloadService.updateAssetList(videoAssets);
+        }
+
+        // Then, preload all product images (medium priority)
+        const imageAssets = exploreProducts.map((product) => {
+          return {
+            key: `image_${product.id}`,
+            asset: product.frontImage,
+            type: 'image' as const,
+            priority: 'medium' as const,
+          };
+        });
+
+        // Update preload service with image assets
+        preloadService.updateAssetList(imageAssets);
+
+        // Trigger preload in background - don't await, let it happen in bg
+        preloadService.preloadSecondary();
+
+        // Mark as preloaded so we don't try to preload again
+        setPreloaded(true);
+      } catch (error) {
+        console.error('Failed to preload explore assets:', error);
+      }
+    }
+
+    // Execute the preload function
+    preloadExploreProducts();
+  }, [preloaded]);
 
   return (
     <View style={styles.container}>
-      {/* Header can remain outside ScrollView if needed */}
-      {/* <View style={styles.header}> ... </View> */}
+      {/* We don't block rendering with a loading indicator, 
+          instead we let the VideoBackground components handle their fallbacks */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={{ paddingBottom: tabBarHeight }} // Add padding to avoid overlap
