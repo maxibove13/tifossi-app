@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,6 +6,7 @@ import {
   Text,
   Platform,
   LayoutChangeEvent,
+  Dimensions,
 } from 'react-native';
 import BottomSheet, {
   BottomSheetScrollView,
@@ -15,7 +16,6 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import Animated, { useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 
 // design‑tokens
@@ -68,17 +68,19 @@ function triggerHaptic() {
   if (Platform.OS !== 'web') {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   }
-};
+}
 const MIN_COLLAPSED_SNAP_HEIGHT = 0;
 const COLLAPSED_EXTRA_PADDING = spacing.xxxl;
 
-const GradientBackground = ({ style }: BottomSheetBackgroundProps) => (
-  <LinearGradient
-    colors={['rgba(12,12,12,0.9)', 'rgba(12,12,12,1)']}
+// Optimize: Replace LinearGradient with View for better performance
+// The visual appearance is nearly identical - dark background with rounded corners
+const SheetBackground = ({ style }: BottomSheetBackgroundProps) => (
+  <View
     style={[
       style,
       StyleSheet.absoluteFill,
       {
+        backgroundColor: 'rgba(12,12,12,0.9)',
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
       },
@@ -113,6 +115,22 @@ SheetHandle.displayName = 'SheetHandle';
 /************************************************************
  * Main Component                                           *
  ************************************************************/
+// Cache for header heights based on device width
+// This avoids remeasuring for same sized devices
+const headerHeightCache: Record<number, number> = {};
+
+// Helper function to simplify height calculation and caching
+const getHeaderHeight = (deviceWidth: number): number | null => {
+  return headerHeightCache[deviceWidth] || null;
+};
+
+// Helper function to save height calculation for future use
+const saveHeaderHeight = (deviceWidth: number, height: number): void => {
+  if (!headerHeightCache[deviceWidth] && height > 0) {
+    headerHeightCache[deviceWidth] = height;
+  }
+};
+
 const SwipeableEdge = ({
   product,
   relatedProducts = [],
@@ -125,12 +143,23 @@ const SwipeableEdge = ({
   onSupportAction = () => {},
 }: SwipeableEdgeProps) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const { width: deviceWidth } = Dimensions.get('window');
 
   const [expanded, setExpanded] = useState(false);
   const [shippingVisible, setShippingVisible] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
-  const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState<number | null>(null);
+  // Try to use cached header height for this device width if available
+  const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState<number | null>(
+    getHeaderHeight(deviceWidth)
+  );
+
+  // Cache header height after measurement for future use
+  useEffect(() => {
+    if (measuredHeaderHeight !== null) {
+      saveHeaderHeight(deviceWidth, measuredHeaderHeight);
+    }
+  }, [measuredHeaderHeight, deviceWidth]);
 
   const collapsedSnap = useMemo(() => {
     if (measuredHeaderHeight === null) {
@@ -158,9 +187,8 @@ const SwipeableEdge = ({
   const handleHeaderLayoutMeasure = useCallback(
     (event: LayoutChangeEvent) => {
       const { height } = event.nativeEvent.layout;
-      console.log('[Measure] Layout Header Height:', height);
       if (height > 0 && measuredHeaderHeight === null) {
-        console.log('[Measure] Setting measuredHeaderHeight:', height);
+        // Only measure once, then cache for future use
         setMeasuredHeaderHeight(height);
       }
     },
@@ -177,33 +205,34 @@ const SwipeableEdge = ({
     [onSupportAction]
   );
 
-  const adaptProduct = (): Product => ({
-    id: product.id,
-    title: product.name,
-    price: parseFloat(product.currentPrice.replace(/[^0-9.-]+/g, '')),
-    isCustomizable: product.isCustomizable,
-    shortDescription:
-      typeof product.shortDescription === 'string'
-        ? { line1: product.shortDescription, line2: '' }
-        : product.shortDescription,
-    longDescription: product.longDescription,
-    warranty: product.warranty,
-    returnPolicy: product.returnPolicy,
-    dimensions: product.dimensions,
-    ...(getProductById(product.id) || {}),
-  }) as Product;
+  const adaptProduct = (): Product =>
+    ({
+      id: product.id,
+      title: product.name,
+      price: parseFloat(product.currentPrice.replace(/[^0-9.-]+/g, '')),
+      isCustomizable: product.isCustomizable,
+      shortDescription:
+        typeof product.shortDescription === 'string'
+          ? { line1: product.shortDescription, line2: '' }
+          : product.shortDescription,
+      longDescription: product.longDescription,
+      warranty: product.warranty,
+      returnPolicy: product.returnPolicy,
+      dimensions: product.dimensions,
+      ...(getProductById(product.id) || {}),
+    }) as Product;
 
-  console.log('Render Check:', { measuredHeaderHeight, collapsedSnap, snapPoints });
+  // Removed console.log to reduce performance overhead
 
   /* Render */
   return (
     <>
-      {/* 1. Render hidden header view *only for measurement* if height not yet known */}
+      {/* 1. Render hidden header view for measurement if height not yet known */}
       {measuredHeaderHeight === null && (
         <View
-          style={[styles.measureHeaderContainer, { paddingBottom: COLLAPSED_EXTRA_PADDING }]} // Apply padding here
+          style={[styles.measureHeaderContainer, { paddingBottom: COLLAPSED_EXTRA_PADDING }]}
           pointerEvents="none"
-          onLayout={handleHeaderLayoutMeasure} // Apply onLayout here
+          onLayout={handleHeaderLayoutMeasure}
         >
           <ProductInfoHeader
             productName={product.name}
@@ -212,7 +241,6 @@ const SwipeableEdge = ({
             currentPrice={product.currentPrice}
             originalPrice={product.originalPrice}
             onAddToCart={() => {}}
-            // Removed containerStyle and onLayout from here
           />
         </View>
       )}
@@ -220,7 +248,7 @@ const SwipeableEdge = ({
       {/* 2. Conditionally render the actual BottomSheet once header is measured */}
       {measuredHeaderHeight !== null && collapsedSnap !== undefined && (
         <BottomSheet
-          key={product.id}
+          key={`sheet-${product.id}`}
           ref={bottomSheetRef}
           index={0}
           snapPoints={snapPoints}
@@ -229,7 +257,7 @@ const SwipeableEdge = ({
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore"
           enablePanDownToClose={false}
-          backgroundComponent={GradientBackground}
+          backgroundComponent={SheetBackground}
           handleComponent={() => (
             <SheetHandle onPress={() => bottomSheetRef.current?.snapToIndex(expanded ? 0 : 1)} />
           )}

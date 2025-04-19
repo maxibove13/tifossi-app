@@ -15,7 +15,6 @@
 - `npm run lint` - Run ESLint
 - `npm test` - Run all tests
 - `npm test -- -t "test name"` - Run specific test
-- `npm run reset-project` - Reset project state
 
 ## Code Style
 - **TypeScript**: Use strict mode with proper type annotations
