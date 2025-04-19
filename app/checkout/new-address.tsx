@@ -143,22 +143,24 @@ const CountryDropdown = ({
             nestedScrollEnabled={true}
             showsVerticalScrollIndicator={true}
           >
-            {SOUTH_AMERICAN_COUNTRIES.map((item) => (
-              <TouchableOpacity
-                key={item.code}
-                style={dropdownStyles.countryItem}
-                onPress={() => handleSelectCountry(item.code as CountryCode, item.name)}
-                activeOpacity={0.7}
-              >
-                <Image
-                  source={{
-                    uri: `https://flagcdn.com/w20/${item.code.toLowerCase()}.png`,
-                  }}
-                  style={dropdownStyles.flagImage}
-                />
-                <Text style={dropdownStyles.countryName}>{item.name}</Text>
-              </TouchableOpacity>
-            ))}
+            {SOUTH_AMERICAN_COUNTRIES.filter((country) => country.code !== value?.code).map(
+              (item) => (
+                <TouchableOpacity
+                  key={item.code}
+                  style={dropdownStyles.countryItem}
+                  onPress={() => handleSelectCountry(item.code as CountryCode, item.name)}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={{
+                      uri: `https://flagcdn.com/w20/${item.code.toLowerCase()}.png`,
+                    }}
+                    style={dropdownStyles.flagImage}
+                  />
+                  <Text style={dropdownStyles.countryName}>{item.name}</Text>
+                </TouchableOpacity>
+              )
+            )}
           </ScrollView>
         </View>
       )}
@@ -437,25 +439,12 @@ const dropdownStyles = StyleSheet.create({
     opacity: 0.5,
   },
   dropdown: {
-    position: 'absolute',
-    top: 40,
-    left: 0,
-    right: 0,
     borderWidth: 1,
     borderTopWidth: 0,
     borderColor: '#DCDCDC',
     borderBottomLeftRadius: 4,
     borderBottomRightRadius: 4,
     backgroundColor: '#FFFFFF',
-    zIndex: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   list: {
     maxHeight: 220,
