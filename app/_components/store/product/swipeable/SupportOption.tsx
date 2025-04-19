@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, TextStyle, ViewStyle } from 'react-native';
-import { colors, spacing, typography, radius } from './styles';
+import { colors, spacing, typography } from './styles';
 import ChatBubble from '../../../../../assets/icons/chat-bubble.svg';
 import HelpCircle from '../../../../../assets/icons/help-circle.svg';
 
@@ -11,12 +11,12 @@ interface SupportOptionProps {
   onPress: () => void;
 }
 
-const SupportIcon = ({ type, color }: { type: 'chat' | 'help', color: string }) => {
+const SupportIcon = ({ type, color }: { type: 'chat' | 'help'; color: string }) => {
   const iconProps = {
     width: 24,
     height: 24,
     stroke: color,
-    strokeWidth: 1.6
+    strokeWidth: 1.6,
   };
 
   if (type === 'chat') {
@@ -30,14 +30,10 @@ export default function SupportOption({
   title,
   description,
   iconType,
-  onPress
+  onPress,
 }: SupportOptionProps) {
   return (
-    <TouchableOpacity 
-      style={styles.container}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.textContainer}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.description}>{description}</Text>
@@ -62,8 +58,8 @@ const styles = StyleSheet.create<Styles>({
     alignItems: 'center',
     backgroundColor: colors.background.overlay,
     padding: spacing.lg,
-    borderRadius: radius.md,
     marginBottom: spacing.md,
+    marginHorizontal: -spacing.lg,
   },
   textContainer: {
     flex: 1,

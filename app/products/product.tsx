@@ -20,8 +20,11 @@ export default function ProductScreen() {
   );
   const [selectedQuantity, _setSelectedQuantity] = useState(1);
 
-  // Get recommended products data (will be used for both related and recommended sections)
+  // Get recommended products data
   const recommendedProducts = ProductData.getRecommendedProducts().filter((p) => p.id !== id);
+
+  // Get related products data using the new function
+  const relatedProducts = ProductData.getRelatedProducts().filter((p) => p.id !== id);
 
   // Get trending products data
   const trendingProducts = ProductData.getTrendingProducts().filter((p) => p.id !== id);
@@ -92,7 +95,7 @@ export default function ProductScreen() {
             returnPolicy: product.returnPolicy,
             dimensions: product.dimensions,
           }}
-          relatedProducts={recommendedProducts}
+          relatedProducts={relatedProducts}
           recommendedProducts={recommendedProducts}
           trendingProducts={trendingProducts}
           onAddToCart={() => handleAddToCart(product, selectedQuantity)}
@@ -124,9 +127,8 @@ export const screenExport = {
   version: '1.0.0',
 };
 
-
 // Add metadata to help router identification
 const metadata = {
   isRoute: false,
-  componentType: 'Component'
+  componentType: 'Component',
 };

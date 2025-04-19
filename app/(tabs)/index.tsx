@@ -15,6 +15,8 @@ import ProductSections from '../_components/store/product/sections/ProductSectio
 import { useState, useEffect } from 'react';
 import DefaultLargeCard from '../_components/store/product/default/large';
 import { fonts, fontSizes, lineHeights } from '../_styles/typography';
+import PromotionCard from '../_components/store/product/promotion/PromotionCard';
+import MinicardLarge from '../_components/store/product/minicard/large';
 
 interface HomeScreenData {
   highlightedProducts: Product[];
@@ -39,12 +41,12 @@ function HomeScreen() {
 
   function handleProductPress(productId: string) {
     router.push(`/products/product?id=${productId}`);
-  };
+  }
 
-  function handleViewMore(section: string) {
-    console.log('View more:', section);
-    // Handle view more action
-  };
+  function handleViewMore(title: string) {
+    console.log('View more:', title);
+    // Handle view more action based on title if necessary
+  }
 
   useEffect(() => {
     const loadData = async () => {
@@ -90,7 +92,7 @@ function HomeScreen() {
         ))}
       </View>
     );
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -117,10 +119,11 @@ function HomeScreen() {
           ))}
         </ScrollView>
 
-        {/* Recommended Products */}
+        {/* Recommended Products - Updated */}
         <ProductSections
+          title="Recomendados para ti"
           products={data.recommendedProducts}
-          sectionType="recommended"
+          CardComponent={PromotionCard}
           onProductPress={handleProductPress}
           onViewMore={handleViewMore}
         />
@@ -132,10 +135,11 @@ function HomeScreen() {
           <CategoryShowcase title="ver todo" onPress={() => {}} />
         </View>
 
-        {/* Trending Products */}
+        {/* Trending Products - Updated */}
         <ProductSections
+          title="Tendencias"
           products={data.trendingProducts}
-          sectionType="trending"
+          CardComponent={MinicardLarge}
           onProductPress={handleProductPress}
           onViewMore={handleViewMore}
         />
@@ -273,5 +277,5 @@ export default HomeScreen;
 // Add metadata to help router identification
 const metadata = {
   isRoute: false,
-  componentType: 'Component'
+  componentType: 'Component',
 };

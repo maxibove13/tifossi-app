@@ -8,6 +8,7 @@ interface SectionHeaderProps {
   actionText?: string;
   onActionPress?: () => void;
   style?: ViewStyle;
+  invertTitleColor?: boolean;
 }
 
 export default function SectionHeader({
@@ -15,13 +16,20 @@ export default function SectionHeader({
   actionText,
   onActionPress,
   style,
+  invertTitleColor = false,
 }: SectionHeaderProps) {
+  const titleColorStyle = {
+    color: invertTitleColor ? colors.background.light : colors.primary,
+  };
+
+  const actionTextColor = invertTitleColor ? colors.secondary : colors.secondary;
+
   return (
     <View style={[styles.container, style]}>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[styles.title, titleColorStyle]}>{title}</Text>
       {actionText && onActionPress && (
         <Pressable onPress={onActionPress}>
-          <Text style={styles.actionText}>{actionText}</Text>
+          <Text style={[styles.actionText, { color: actionTextColor }]}>{actionText}</Text>
         </Pressable>
       )}
     </View>
@@ -40,14 +48,12 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.xl,
     fontWeight: '400',
     lineHeight: (lineHeights.xl * 1.4) / ((fontSizes.xl * 1.4) / 20),
-    color: colors.primary,
   },
   actionText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
     fontWeight: '400',
     lineHeight: (lineHeights.sm * 1.333) / ((fontSizes.sm * 1.333) / 12),
-    color: colors.secondary,
     textDecorationLine: 'underline',
   },
 });

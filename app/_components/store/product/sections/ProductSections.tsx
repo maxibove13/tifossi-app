@@ -2,28 +2,28 @@ import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { Product } from '../../../../_types/product';
 import Subheader from '../../../common/Subheader';
-import PromotionCard from '../promotion/PromotionCard';
-import MinicardLarge from '../minicard/large';
 import { spacing } from '../../../../_styles/spacing';
 import SectionHeader from '../swipeable/SectionHeader';
 
-type SectionType = 'recommended' | 'trending';
-
 interface ProductSectionsProps {
+  title: string;
   products: Product[];
-  sectionType: SectionType;
+  CardComponent: React.ComponentType<any>;
   onProductPress: (productId: string) => void;
-  onViewMore: (section: string) => void;
+  onViewMore: (title: string) => void;
   invertTextColors?: boolean;
+  invertTitleColor?: boolean;
   useSwipeableStyle?: boolean;
 }
 
 export default function ProductSections({
+  title,
   products,
-  sectionType,
+  CardComponent,
   onProductPress,
   onViewMore,
   invertTextColors = false,
+  invertTitleColor = false,
   useSwipeableStyle = false,
 }: ProductSectionsProps) {
   // Select the appropriate header component based on context
@@ -32,26 +32,13 @@ export default function ProductSections({
   // Use different styles for swipeable edge context
   const sectionStyle = useSwipeableStyle ? styles.swipeableSection : styles.section;
 
-  // Set title and section based on sectionType
-  const getSectionInfo = () => {
-    if (sectionType === 'recommended') {
-      return {
-        title: 'Recomendados para ti',
-        viewMoreSection: 'recommended',
-        actionText: 'Ver Todo',
-        CardComponent: PromotionCard,
-      };
-    } else {
-      return {
-        title: 'Tendencias',
-        viewMoreSection: 'trending',
-        actionText: 'Ver Todo',
-        CardComponent: MinicardLarge,
-      };
-    }
-  };
+  // Adjust scroll content padding based on context
+  const scrollContentStyle = useSwipeableStyle
+    ? styles.swipeableHorizontalScrollContent
+    : styles.horizontalScrollContent;
 
-  const { title, viewMoreSection, actionText } = getSectionInfo();
+  // Define action text (could also be a prop if needed)
+  const actionText = 'Ver Todo';
 
   // Check if products is undefined or empty before accessing length
   if (!products || products.length === 0) {
@@ -60,46 +47,37 @@ export default function ProductSections({
 
   return (
     <View style={sectionStyle}>
-      {useSwipeableStyle ? (
-        <HeaderComponent
-          title={title}
-          actionText={actionText}
-          onActionPress={() => onViewMore(viewMoreSection)}
-        />
-      ) : (
-        <HeaderComponent
-          title={title}
-          buttonText={actionText}
-          onButtonPress={() => onViewMore(viewMoreSection)}
-        />
-      )}
+      {/* Add a wrapper View for consistent header padding */}
+      <View style={styles.headerContainer}>
+        {useSwipeableStyle ? (
+          <HeaderComponent
+            title={title}
+            actionText={actionText}
+            onActionPress={() => onViewMore(title)}
+            invertTitleColor={invertTitleColor}
+          />
+        ) : (
+          <Subheader
+            title={title}
+            buttonText={actionText}
+            onButtonPress={() => onViewMore(title)}
+          />
+        )}
+      </View>
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.horizontalScrollContent}
+        contentContainerStyle={scrollContentStyle}
       >
-        {products.map((product) => {
-          if (sectionType === 'recommended') {
-            return (
-              <PromotionCard
-                key={product.id}
-                product={product}
-                size="s"
-                invertTextColor={invertTextColors}
-                onPress={() => onProductPress(product.id)}
-              />
-            );
-          } else {
-            return (
-              <MinicardLarge
-                key={product.id}
-                product={product}
-                invertTextColor={invertTextColors}
-                onPress={() => onProductPress(product.id)}
-              />
-            );
-          }
-        })}
+        {products.map((product) => (
+          <CardComponent
+            key={product.id}
+            product={product}
+            invertTextColor={invertTextColors}
+            onPress={() => onProductPress(product.id)}
+          />
+        ))}
       </ScrollView>
     </View>
   );
@@ -111,10 +89,18 @@ const styles = StyleSheet.create({
   },
   swipeableSection: {
     paddingVertical: spacing.xl,
-    paddingHorizontal: 0, // No horizontal padding inside SwipeableEdge
+    // Horizontal padding is handled by the parent in SwipeableEdge
+  },
+  headerContainer: {
+    paddingVertical: spacing.sm,
+    // Horizontal padding is handled by the parent or header component
   },
   horizontalScrollContent: {
     paddingHorizontal: spacing.lg,
+    gap: spacing.md,
+  },
+  swipeableHorizontalScrollContent: {
+    paddingHorizontal: 0, // No horizontal padding needed here
     gap: spacing.md,
   },
 });

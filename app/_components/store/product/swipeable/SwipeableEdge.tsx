@@ -31,6 +31,10 @@ import OverlayCheckoutShipping from '../overlay/OverlayCheckoutShipping';
 import { Product } from '../../../../_types/product';
 import { getProductById } from '../../../../_data/products';
 
+// Import card components
+import PromotionCard from '../promotion/PromotionCard';
+import MinicardLarge from '../minicard/large';
+
 /************************************************************
  * Types & helpers                                          *
  ************************************************************/
@@ -70,7 +74,7 @@ function triggerHaptic() {
   }
 }
 const MIN_COLLAPSED_SNAP_HEIGHT = 0;
-const COLLAPSED_EXTRA_PADDING = spacing.xxxl;
+const COLLAPSED_EXTRA_PADDING = spacing.xxl;
 
 // Optimize: Replace LinearGradient with View for better performance
 // The visual appearance is nearly identical - dark background with rounded corners
@@ -80,7 +84,7 @@ const SheetBackground = ({ style }: BottomSheetBackgroundProps) => (
       style,
       StyleSheet.absoluteFill,
       {
-        backgroundColor: 'rgba(12,12,12,0.9)',
+        backgroundColor: 'rgba(12,12,12,0.98)',
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
       },
@@ -205,6 +209,14 @@ const SwipeableEdge = ({
     [onSupportAction]
   );
 
+  const handleViewMorePress = useCallback(
+    (title: string) => {
+      console.log('View more from SwipeableEdge:', title);
+      onViewMore(title);
+    },
+    [onViewMore]
+  );
+
   const adaptProduct = (): Product =>
     ({
       id: product.id,
@@ -298,33 +310,40 @@ const SwipeableEdge = ({
             </BottomSheetView>
 
             <BottomSheetView style={styles.paddedHorizontal}>
+              {/* Use refactored ProductSections */}
               {relatedProducts.length > 0 && (
                 <ProductSections
+                  title="Productos Relacionados" // Pass title
                   products={relatedProducts}
-                  sectionType="recommended"
+                  CardComponent={PromotionCard} // Pass CardComponent
                   onProductPress={onProductPress}
-                  onViewMore={onViewMore}
+                  onViewMore={handleViewMorePress} // Pass updated handler
                   invertTextColors
+                  invertTitleColor
                   useSwipeableStyle
                 />
               )}
               {recommendedProducts.length > 0 && (
                 <ProductSections
+                  title="Recomendados para ti" // Pass title
                   products={recommendedProducts}
-                  sectionType="recommended"
+                  CardComponent={PromotionCard} // Pass CardComponent
                   onProductPress={onProductPress}
-                  onViewMore={onViewMore}
+                  onViewMore={handleViewMorePress}
                   invertTextColors
+                  invertTitleColor
                   useSwipeableStyle
                 />
               )}
               {trendingProducts.length > 0 && (
                 <ProductSections
+                  title="Tendencias" // Pass title
                   products={trendingProducts}
-                  sectionType="trending"
+                  CardComponent={MinicardLarge} // Pass CardComponent
                   onProductPress={onProductPress}
-                  onViewMore={onViewMore}
+                  onViewMore={handleViewMorePress}
                   invertTextColors
+                  invertTitleColor
                   useSwipeableStyle
                 />
               )}

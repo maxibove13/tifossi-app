@@ -612,6 +612,7 @@ export const products: Product[] = [
 export const getHighlightedProducts = () => products.slice(0, 3);
 export const getFeaturedProduct = () => products[products.length - 2];
 export const getRecommendedProducts = () => products.slice(3, 9);
+export const getRelatedProducts = () => products.slice(9, 15);
 export const getTrendingProducts = () =>
   [
     products.find((p) => p.id === 'regular-shirt'),
@@ -635,6 +636,7 @@ const ProductData = {
   getHighlightedProducts,
   getFeaturedProduct,
   getRecommendedProducts,
+  getRelatedProducts,
   getTrendingProducts,
   getNewReleases,
   getProductById,
