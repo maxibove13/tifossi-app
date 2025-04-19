@@ -83,9 +83,8 @@ tifossi/
 │   │       ├── form/      # Form components
 │   │       └── ...        # Other UI components
 │   ├── data/              # Data sources
-│   ├── styles/            # Style definitions
-│   ├── types/             # TypeScript type definitions
-│   └── _utils/            # Utility functions
+│   ├── _styles/            # Style definitions
+│   └── _types/             # TypeScript type definitions
 ├── assets/                # Static assets
 │   ├── fonts/             # Custom fonts
 │   ├── icons/             # App icons

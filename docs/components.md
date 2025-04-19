@@ -240,6 +240,9 @@ Components that support swipe gestures for interactive product displays.
 3. **SectionHeader** (`/product/swipeable/SectionHeader.tsx`): Section header
 4. **SupportOption** (`/product/swipeable/SupportOption.tsx`): Support options
 5. **SwipeableEdge** (`/product/swipeable/SwipeableEdge.tsx`): Main swipeable panel component for product details
+   - Performance-optimized with device-width based height caching
+   - Uses lightweight View component for background instead of LinearGradient
+   - Implements efficient memory usage techniques for smooth animations
 
 #### Overlay Components (`/store/product/overlay/`)
 
@@ -286,22 +289,35 @@ Utility components used throughout the application.
 
 #### Background Components
 
-1. **GradientBackground** (`/common/GradientBackground.tsx`): Gradient background
-   ```tsx
-   import { GradientBackground } from '../components/common/GradientBackground';
-   
-   <GradientBackground colors={['#0C0C0C', '#3E3E3E']}>
-     <Content />
-   </GradientBackground>
-   ```
-
-2. **VideoBackground** (`/common/VideoBackground.tsx`): Video background
+1. **VideoBackground** (`/common/VideoBackground.tsx`): Video background
    ```tsx
    import { VideoBackground } from '../components/common/VideoBackground';
    
    <VideoBackground source={videoSource}>
      <Content />
    </VideoBackground>
+   ```
+
+2. **Custom Background Solutions**
+   - For gradient backgrounds, use React Native's built-in components:
+   ```tsx
+   import { LinearGradient } from 'expo-linear-gradient';
+   
+   <LinearGradient 
+     colors={['#0C0C0C', '#3E3E3E']} 
+     style={styles.gradient}
+   >
+     <Content />
+   </LinearGradient>
+   ```
+   - For performance-critical components, use simpler alternatives:
+   ```tsx
+   <View style={[
+     styles.background, 
+     { backgroundColor: 'rgba(12,12,12,0.98)' }
+   ]}>
+     <Content />
+   </View>
    ```
 
 #### Error Handling
@@ -498,7 +514,7 @@ const styles = StyleSheet.create<Styles>({
 | **Store** | Header | ✅ | Fully implemented |
 | **Store** | Footer | ✅ | Fully implemented |
 | **Store** | Locations | ✅ | Fully implemented |
-| **Common** | GradientBackground | ✅ | Fully implemented |
+| **Common** | Background Solutions | ✅ | Optimized for performance |
 | **Common** | VideoBackground | ✅ | Fully implemented |
 | **Common** | ErrorBoundary | ✅ | Fully implemented |
 | **Common** | AdvancedAnimation | ✅ | Implemented with useMemo optimization |

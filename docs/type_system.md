@@ -14,7 +14,7 @@ All types are organized in the `app/types` directory, with the following structu
 - `product-status.ts`: Enums and utilities for product statuses and labels
 - `navigation.ts`: Navigation route parameters and navigation component props
 - `ui.ts`: Common UI component prop interfaces
-- `_utils/types/declarations/svg.d.ts`: TypeScript declaration for SVG imports (excluded from routing)
+- `declarations/svg.d.ts`: TypeScript declaration for SVG imports (excluded from routing)
 
 ## Core Type Domains
 

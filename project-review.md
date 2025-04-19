@@ -383,7 +383,7 @@ This document contains a comprehensive review of the Tifossi Expo React Native p
 - Add unit tests for key components and utility functions:
   ```tsx
   // __tests__/utils/product-utils.test.ts
-  import { mapProductToCardData } from '../../app/utils/product-utils';
+  import { mapProductToCardData } from '../../app/_types/product';
   
   describe('Product Utils', () => {
     test('mapProductToCardData transforms product correctly', () => {

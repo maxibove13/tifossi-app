@@ -350,6 +350,12 @@ Apply styles conditionally:
 
 9. **Test in Both Themes**: Test components in both light and dark themes
 
+10. **Performance Optimization**:
+    - Use simpler components (View instead of LinearGradient) for performance-critical areas
+    - Cache dimensions using device width/height-based keys to avoid repeated measurements
+    - Remove all console.log statements in production, especially in animation components
+    - Implement device-based caching for layout measurements to avoid jank on first render
+
 ## Debugging Styles
 
 To debug style issues:
@@ -365,6 +371,66 @@ To debug style issues:
 3. Use the `onLayout` event to log component dimensions
 4. Test on multiple device sizes to ensure responsive behavior
 
+## Animation and Performance
+
+Optimizing animations is crucial for a smooth user experience, particularly in critical UI elements like the SwipeableEdge component:
+
+### Animation Performance Best Practices
+
+1. **Use Simple Components**: 
+   - Replace `LinearGradient` with simple `View` components for backgrounds in animated elements
+   - When visual fidelity can be maintained, choose the simpler implementation
+
+2. **Measurement Caching**:
+   - Cache layout measurements based on device dimensions
+   - Avoid measuring components on each render
+   - Use `useRef` and `useState` to store measurements
+   ```typescript
+   // Example from SwipeableEdge.tsx
+   const headerHeightCache: Record<number, number> = {};
+   
+   // Helper function to get cached height or null
+   const getHeaderHeight = (deviceWidth: number): number | null => {
+     return headerHeightCache[deviceWidth] || null;
+   };
+   
+   // Helper function to save height calculation
+   const saveHeaderHeight = (deviceWidth: number, height: number): void => {
+     if (!headerHeightCache[deviceWidth] && height > 0) {
+       headerHeightCache[deviceWidth] = height;
+     }
+   };
+   ```
+
+3. **Avoid Console Logging**:
+   - Remove all `console.log` statements in production
+   - Especially avoid logging in render or animation methods
+
+4. **Two-Phase Rendering**:
+   - Use a two-phase approach for complex components that need measurement
+   - First render: measure in a hidden view
+   - Second render: use the measurements to render the actual component
+   - Cache measurements to avoid this on subsequent renders
+
+5. **Memoize Components**:
+   - Use `React.memo` for pure components
+   - Properly memoize expensive calculations
+   - Use `useCallback` for event handlers
+   
+6. **Proper Animation Techniques**:
+   - Use `react-native-reanimated` for complex animations
+   - Run animations on the UI thread with worklets when possible
+   - Use proper interpolation and timing functions
+
+### Example: Performance-Optimized SwipeableEdge
+
+The SwipeableEdge component demonstrates these practices by:
+- Replacing LinearGradient with a simple View component
+- Implementing device-width based caching for header heights
+- Removing console logs to reduce overhead
+- Using helper functions to manage the measurement cache
+- Implementing efficient initial rendering strategies
+
 ## Style Evolution
 
 The style system should evolve with the application:
@@ -373,3 +439,5 @@ The style system should evolve with the application:
 2. Refactor repeated styles into reusable components
 3. Document any style system changes
 4. Maintain backward compatibility where possible
+5. Make performance-focused optimizations for animation-heavy components
+6. Document performance considerations in component comments

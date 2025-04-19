@@ -36,6 +36,27 @@ interface BaseProductCardProps {
 interface SizeableProductCardProps<T extends CardVariant> extends BaseProductCardProps {
   size?: CardSizeByVariant<T>
 }
+
+export const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensions>>> = {
+  default: {
+    small: { width: 132, height: 196, imageSize: 132 },
+    large: { width: 160, height: 272, imageSize: 160 }
+  },
+  featured: {
+    small: { width: 'full', height: 420, imageSize: 220 },
+    large: { width: 'full', height: 160, imageSize: 160 }
+  },
+  horizontal: {
+    large: { width: 'full', height: 142, imageSize: 119 }
+  },
+  minicard: {
+    large: { width: 128, height: 304, imageSize: 256 }
+  },
+  'image-only': {
+    small: { width: 132, height: 132, imageSize: 132 },
+    large: { width: 160, height: 264, imageSize: 160 }
+  }
+}
 ```
 
 ### Card Variants
@@ -52,24 +73,37 @@ interface SizeableProductCardProps<T extends CardVariant> extends BaseProductCar
 - Size variants affect image and text scaling
 - Customizable indicator (large variant only)
 
+#### 1B. Promotion Card
+**Variants**: Small (132x132) by default  
+**Props**: `PromotionCardProps extends { product: Product, size?: 's'|'m'|'l', onPress?: () => void, darkMode?: boolean, invertTextColor?: boolean, isFavorite?: boolean }`  
+**Features**:
+- Product image (132x132)
+- New tag or discount label
+- Product name
+- Original and sale price (if discounted)
+- Wishlist button with toggle state
+- Dark mode and inverted text color support
+- Similar to DefaultCard but optimized for promotions
+
 #### 2. Featured Card
 **Variants**: Small (Full Width x 420), Large (Full Width x 160)  
-**Props**: `FeaturedCardProps extends SizeableProductCardProps<'featured'>`  
+**Props**: `FeaturedCardProps extends SizeableProductCardProps<'featured'> & { onBuyPress?: () => void; onPress?: () => void; }`  
 **Features**:
 - Dark gradient background (#373737 to #0C0C0C)
 - New tag (optional)
 - Product name
 - Price
-- Buy button with semi-transparent background
+- Buy button with gradient background
 - Customizable indicator
 - Large image placement (220px or 160px)
 - Full width container
 - Centered content with 28px gaps
 - Exact Figma-matched typography and spacing
+- Dedicated buy and press handlers
 
-#### 3. Horizontal Card
+#### 3. Horizontal Card (HighlightedCard)
 **Variants**: Large only (Full Width x 142)  
-**Props**: `HorizontalCardProps extends BaseProductCardProps`  
+**Props**: `HorizontalCardProps extends BaseProductCardProps & { aspectRatio?: number }`  
 **Features**:
 - Horizontal layout
 - Fixed image width (119px)  
@@ -77,6 +111,7 @@ interface SizeableProductCardProps<T extends CardVariant> extends BaseProductCar
 - Structured description with two text elements separated by divider
 - Support for shortDescription with line1 and line2 properties
 - Status label with color variants
+- Optional aspectRatio property for image sizing
 
 #### 4. Minicard
 **Variants**: Large only (128x304)  
@@ -124,7 +159,7 @@ export interface CartProductCardProps extends BaseProductCardProps {
 
 ### 1. Directory Structure
 ```
-app/components/store/product/
+app/_components/store/product/
 ├── types.ts                # Shared types
 ├── index.tsx              # Main export
 ├── default/               # Default card variants
@@ -136,6 +171,7 @@ app/components/store/product/
 ├── horizontal/            # Horizontal layout cards
 │   └── HighlightedCard.tsx
 ├── minicard/             # Minimal info cards
+│   ├── index.tsx
 │   └── large.tsx
 ├── image/                # Image-focused cards
 │   ├── ImageOnlyCard.tsx
@@ -143,9 +179,28 @@ app/components/store/product/
 ├── promotion/            # Promotion cards
 │   └── PromotionCard.tsx
 ├── cart/                 # Cart cards
+│   ├── AddToCartButton.tsx
 │   └── CartProductCard.tsx
-└── color/                # Color selection components
-    └── ColorSlider.tsx
+├── color/                # Color selection components
+│   └── index.tsx
+├── gallery/              # Product gallery components
+│   ├── EnhancedProductGallery.tsx
+│   └── views/
+│       └── ProductViewGallery.tsx
+├── swipeable/            # Swipeable components (performance optimized)
+│   ├── ProductDetails.tsx
+│   ├── ProductInfoHeader.tsx
+│   ├── SectionHeader.tsx
+│   ├── SupportOption.tsx
+│   └── SwipeableEdge.tsx
+├── overlay/              # Overlay components
+│   ├── OverlayCheckoutQuantity.tsx
+│   ├── OverlayCheckoutShipping.tsx
+│   ├── OverlayDeleteConfirmation.tsx
+│   ├── OverlayProductEdit.tsx
+│   ├── OverlayProductEditSize.tsx
+│   └── OverlayShippingSelection.tsx
+└── many other specialized components...
 ```
 
 ### 2. Styling Guidelines
@@ -180,7 +235,19 @@ app/components/store/product/
 ### 4. Usage Examples
 
 ```typescript
+// Import all product cards from index.tsx
+import ProductCards from '../_components/store/product';
+
 // Default Card
+<ProductCards.Default 
+  product={product}
+  size="large"
+  onPress={() => {}}
+/>
+
+// Alternative import approach
+import { Default as DefaultCard } from '../_components/store/product';
+
 <DefaultCard 
   product={product}
   size="large"
@@ -188,26 +255,36 @@ app/components/store/product/
 />
 
 // Featured Card
-<FeaturedCard
+<ProductCards.Featured
   product={product}
   size="small"
   onBuyPress={() => {}}
+  onPress={() => {}}
 />
 
 // Horizontal Card
-<HighlightedCard
+<ProductCards.Highlighted
   product={product}
   onPress={() => {}}
 />
 
+// Promotion Card
+<ProductCards.Promotion
+  product={product}
+  darkMode={false}
+  invertTextColor={false}
+  isFavorite={false}
+  onPress={() => {}}
+/>
+
 // Minicard
-<MinicardLarge
+<ProductCards.Minicard
   product={product}
   onPress={() => {}}
 />
 
 // Image Only Card
-<ImageOnlyCard
+<ProductCards.ImageOnly
   product={product}
   size="small"
   onPress={() => {}}
@@ -247,6 +324,10 @@ export function getCardDimensions<T extends CardVariant>(
 - Handle large lists efficiently with FlatList
 - Minimize re-renders with proper prop types
 - Use proper caching strategies for images
+- Replace expensive components (like LinearGradient) with simpler alternatives when appropriate
+- Implement device-based caching for dimensions to avoid repeated measurements
+- Avoid console.log statements in production code, especially within render methods
+- Use optimized background components based on performance needs
 
 ### 7. Accessibility
 - Support screen readers with proper labels

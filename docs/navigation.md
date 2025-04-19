@@ -26,10 +26,18 @@ app/
 │   ├── index.tsx           # Store tab (default)
 │   ├── cart.tsx            # Cart tab
 │   ├── favorites.tsx       # Favorites tab
-│   ├── product.tsx         # Product details (modal)
 │   ├── profile.tsx         # Profile tab
 │   └── tiffosiExplore.tsx  # Explore tab
-├── +not-found.tsx          # 404 page
+├── checkout/               # Checkout process screens
+│   ├── _layout.tsx         # Checkout layout
+│   ├── shipping-address.tsx # Shipping address form
+│   ├── payment-selection.tsx # Payment method selection
+│   └── new-address.tsx     # New address entry form
+├── products/               # Product-related screens
+│   ├── _layout.tsx         # Products layout
+│   ├── product.tsx         # Product details screen
+│   └── index.ts            # Product exports
+├── not-found.tsx           # 404 page
 ├── _layout.tsx             # Root layout (includes splash screen)
 └── index.tsx               # Entry point (redirects to tabs)
 ```
@@ -408,4 +416,25 @@ The app supports deep linking to specific screens:
 3. **Navigation Caching**: Cache screens to prevent unnecessary re-renders
    ```tsx
    <Tabs screenOptions={{ lazy: true }} />
+   ```
+
+4. **Optimized Bottom Sheet Transitions**: For performance-critical components like SwipeableEdge
+   ```tsx
+   // Use device-based dimension caching
+   const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState(
+     headerHeightCache[deviceWidth] || null
+   );
+   
+   // Cache measurements after first render
+   useEffect(() => {
+     if (measuredHeaderHeight !== null) {
+       headerHeightCache[deviceWidth] = measuredHeaderHeight;
+     }
+   }, [measuredHeaderHeight, deviceWidth]);
+   ```
+
+5. **Simplified Visual Components**: Replace expensive components in transitions
+   ```tsx
+   // Instead of LinearGradient for background in animations
+   <View style={[styles.background, { backgroundColor: 'rgba(12,12,12,0.98)' }]} />
    ```

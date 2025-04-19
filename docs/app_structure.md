@@ -34,7 +34,6 @@ app/
 ├── (tabs)/             # Tab-based navigation screens
 │   ├── _layout.tsx     # Tab navigation layout
 │   ├── index.tsx       # Home screen (store)
-│   ├── product.tsx     # Product details screen
 │   ├── cart.tsx        # Shopping cart screen
 │   ├── favorites.tsx   # Favorite products screen
 │   ├── profile.tsx     # User profile screen
@@ -50,13 +49,10 @@ app/
 │   ├── _layout.tsx     # Products layout
 │   ├── product.tsx     # Product details screen
 │   └── index.ts        # Product exports
-├── components/         # All React components
-├── types/              # TypeScript type definitions
-├── styles/             # Global styles and themes
-├── data/               # Mock data and content
-├── utils/              # Utility functions
-│   └── product-utils.ts # Product utility functions
-├── _utils/             # Additional utility functions
+├── _components/        # All React components
+├── _types/             # TypeScript type definitions
+├── _styles/            # Global styles and themes
+├── _data/              # Mock data and content
 ├── not-found.tsx       # 404 error page
 ├── _layout.tsx         # Root layout component
 └── index.tsx           # Entry point
@@ -65,7 +61,7 @@ app/
 ### Components Directory Structure
 
 ```
-components/
+_components/
 ├── ui/                 # Core UI components
 │   ├── layout/         # Layout primitives
 │   │   ├── Grid.tsx    # Grid system
@@ -75,15 +71,19 @@ components/
 │   ├── buttons/        # Button variants
 │   │   └── Button.tsx  # Button component
 │   ├── cards/          # Generic card components
-│   │   └── ProfileCard.tsx # User profile card
+│   ├── badges/         # Badge components
+│   │   └── DiscountBadge.tsx # Discount badge
 │   ├── toggle/         # Toggle components
 │   │   └── ToggleSport.tsx # Sport toggle
 │   ├── form/           # Form components
 │   │   ├── Counter.tsx      # Quantity counter
 │   │   ├── Input.tsx        # Text input
-│   │   ├── CountrySelect.tsx # Country selector
+│   │   ├── Dropdown.tsx     # Dropdown selector
+│   │   ├── RadioButton.tsx  # Radio button
 │   │   └── SingleChoice.tsx # Option selector
 │   ├── icons/          # Icon components
+│   │   ├── HeartActiveIcon.tsx # Active heart icon
+│   │   └── index.ts      # Icon exports
 │   ├── links/          # Link components
 │   └── README.md       # UI component guidelines
 ├── store/              # Store-specific components
@@ -93,8 +93,15 @@ components/
 │   │   ├── featured/       # Featured product cards
 │   │   ├── horizontal/     # Horizontal product cards
 │   │   ├── promotion/      # Promotion product cards
-│   │   ├── swipeable/      # Swipeable product details
+│   │   ├── swipeable/      # Swipeable product details (performance optimized)
+│   │   ├── gallery/        # Product gallery components
+│   │   ├── overlay/        # Overlay components
 │   │   ├── cart/           # Cart product cards
+│   │   ├── details/        # Product details components
+│   │   ├── header/         # Product header components
+│   │   ├── lists/          # Product list components
+│   │   ├── size/           # Size selector components
+│   │   ├── support/        # Support components
 │   │   └── index.tsx       # Product component exports
 │   ├── layout/         # Store layout components
 │   │   ├── Header.tsx       # Store header
@@ -103,6 +110,10 @@ components/
 │   │   ├── Locations.tsx    # Store locations
 │   │   ├── ProductHeader.tsx # Product detail header
 │   │   └── index.tsx         # Layout exports
+│   ├── cart/           # Cart components
+│   │   └── EmptyCart.tsx    # Empty cart state
+│   ├── favorites/      # Favorites components
+│   │   └── EmptyFavorites.tsx # Empty favorites state
 │   └── review/          # Product review components
 │       └── ReviewCard.tsx   # Review component
 ├── home/               # Home screen components
@@ -112,7 +123,6 @@ components/
 │   └── HomeScreenSkeleton.tsx # Loading skeleton
 ├── common/             # Shared utility components
 │   ├── ErrorBoundary.tsx   # Error handler
-│   ├── GradientBackground.tsx # Gradient background
 │   ├── Subheader.tsx        # Subheader component
 │   ├── VideoBackground.tsx  # Video background
 │   ├── animation/           # Animation components
@@ -121,6 +131,7 @@ components/
 │       └── ShareButton.tsx  # Share button
 ├── navigation/         # Navigation components
 │   ├── TabBar.tsx          # Bottom tab bar
+│   ├── TabBarBackground.tsx # Tab bar background
 │   └── category/           # Category navigation
 │       └── CategoryNavigation.tsx # Category menu
 └── splash/             # Splash screen components
@@ -137,7 +148,7 @@ types/
 ├── product.ts         # Product interface and related types
 ├── product-status.ts  # Product status and label enums
 ├── product-card.ts    # Product card type system
-├── _utils/types/declarations/svg.d.ts  # SVG type definitions (excluded from routing)
+└── declarations/svg.d.ts  # SVG type definitions (excluded from routing)
 └── README.md          # Type system documentation
 ```
 
@@ -216,7 +227,6 @@ The app uses Expo Router with a tab-based navigation structure:
 ### Common Components
 1. **Utility Components**
    - Error boundaries for error handling
-   - Gradient backgrounds
    - Video backgrounds
    - Animation utilities
 
@@ -326,9 +336,21 @@ interface CardDimensions {
 - Review System
 - User Authentication
 
+✅ **Fully Implemented**
+- Core UI Components
+- Product Card System
+- Navigation Structure
+- Type System
+- Store Layout
+- Swipeable Interfaces (Performance Optimized)
+
+🟡 **Partially Implemented**
+- Form Components
+- Review System
+- User Authentication
+
 ⏳ **In Progress**
-- Swipeable Interfaces
-- Animations
+- Advanced Animations
 - Loading States
 
 ## Additional Resources
