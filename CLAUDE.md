@@ -7,6 +7,7 @@
 - Follow the code style guidelines below
 - ALWAYS follow rules in /.cursor/rules if they exist
 - ALWAYS refer to README.md and the /docs folder to understand project structure and guidelines
+- don't run npx expo start yourself
 
 ## Build Commands
 - `npm install` - Install dependencies

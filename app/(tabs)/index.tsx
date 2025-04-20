@@ -59,8 +59,23 @@ function HomeScreen() {
   }
 
   function handleViewMore(title: string) {
-    console.log('View more:', title);
-    // Handle view more action based on title if necessary
+    // Navigate to catalog page with title and tag filter
+    switch (title) {
+      case 'Tienda':
+        router.push('/catalog?title=Tienda&tag=recommended');
+        break;
+      case 'featured':
+        router.push('/catalog?title=Destacados&tag=featured');
+        break;
+      case 'Tendencias':
+        router.push('/catalog?title=Tendencias&tag=popular');
+        break;
+      case 'launch':
+        router.push('/catalog?title=Lanzamientos & Oportunidades&tag=opportunity');
+        break;
+      default:
+        router.push('/catalog');
+    }
   }
 
   // No unused preload implementation - we load assets while skeleton is displayed
@@ -264,19 +279,28 @@ function HomeScreen() {
           })}
         >
           <ProductSections
-            title="Recomendados para ti"
+            title="Productos Recomendados"
             products={data.recommendedProducts}
             CardComponent={PromotionCard}
             onProductPress={handleProductPress}
-            onViewMore={handleViewMore}
+            onViewMore={() => handleViewMore('Tienda')}
           />
         </ProgressiveLoadingSection>
 
         {/* Triple Vertical Layout - Static content, always shown */}
         <View style={[styles.section, styles.showcaseSection]}>
-          <CategoryShowcase title="medias" onPress={() => {}} />
-          <CategoryShowcase title="mochilas" onPress={() => {}} />
-          <CategoryShowcase title="ver todo" onPress={() => {}} />
+          <CategoryShowcase
+            title="medias"
+            onPress={() => router.push('/catalog?title=Medias&category=medias')}
+          />
+          <CategoryShowcase
+            title="mochilas"
+            onPress={() => router.push('/catalog?title=Mochilas&category=mochilas')}
+          />
+          <CategoryShowcase
+            title="ver todo"
+            onPress={() => router.push('/catalog?title=Productos')}
+          />
         </View>
 
         {/* Trending Products with Progressive Loading */}
@@ -390,7 +414,11 @@ function HomeScreen() {
 
         {/* CTA Button - Static, always shown */}
         <View style={styles.buttonContainer}>
-          <Button variant="primary" text="Ver Todo" onPress={() => {}} />
+          <Button
+            variant="primary"
+            text="Ver Todo"
+            onPress={() => router.push('/catalog?title=Todos los Productos')}
+          />
         </View>
 
         {/* Locations - Static, always shown */}

@@ -1,5 +1,8 @@
 import { Product } from '../_types/product';
 import { ProductLabel } from '../_types/product-status';
+import TagData from './tags';
+
+// TODO: Update ALL products below to include categoryId and tagIds fields.
 
 // Define the default return policy
 export const defaultReturnPolicy =
@@ -10,6 +13,8 @@ export const products: Product[] = [
     id: 'tiffosi-fast',
     frontImage: require('../../assets/images/products/product_socks_1.png'),
     title: 'Tiffosi Fast',
+    categoryId: 'medias',
+    tagIds: ['new_arrival', 'fast_dry', 'non_slip', 'sport'],
     price: 590,
     label: ProductLabel.NEW,
     shortDescription: {
@@ -90,6 +95,8 @@ export const products: Product[] = [
     id: 'classic-socks',
     frontImage: require('../../assets/images/products/product_socks_2.png'),
     title: 'Classic Socks',
+    categoryId: 'medias',
+    tagIds: ['featured', 'cotton', 'sport'],
     price: 590,
     label: ProductLabel.FEATURED,
     shortDescription: {
@@ -121,6 +128,8 @@ export const products: Product[] = [
     id: 'socks-v2',
     frontImage: require('../../assets/images/products/product_socks_0.png'),
     title: 'Socks V2',
+    categoryId: 'medias',
+    tagIds: ['new_arrival', 'customizable', 'fast_dry', 'sport'],
     price: 590,
     label: ProductLabel.NEW,
     isCustomizable: true,
@@ -164,6 +173,8 @@ export const products: Product[] = [
     id: 'regular-black',
     frontImage: require('../../assets/images/products/product_bag_0.png'),
     title: 'Regular Black',
+    categoryId: 'bolsos',
+    tagIds: ['featured', 'urban', 'popular'],
     price: 990,
     label: ProductLabel.FEATURED,
     shortDescription: {
@@ -236,6 +247,8 @@ export const products: Product[] = [
     id: 'mochila-sq',
     frontImage: require('../../assets/images/products/product_bag_1.png'),
     title: 'Mochila SQ',
+    categoryId: 'mochilas',
+    tagIds: ['opportunity', 'customizable', 'travel', 'urban'],
     price: 1190,
     discountedPrice: 890,
     label: ProductLabel.OPPORTUNITY,
@@ -265,6 +278,8 @@ export const products: Product[] = [
     id: 'buzo-oversize',
     frontImage: require('../../assets/images/products/product_sweater.png'),
     title: 'Buzo Oversize',
+    categoryId: 'buzos',
+    tagIds: ['customizable', 'oversize', 'urban', 'popular'],
     price: 1590,
     discountedPrice: 1190,
     isCustomizable: true,
@@ -308,6 +323,8 @@ export const products: Product[] = [
     id: 'neceser-ball',
     frontImage: require('../../assets/images/products/product_bag_2.png'),
     title: 'Neceser Ball',
+    categoryId: 'neceser',
+    tagIds: ['new_arrival', 'travel'],
     price: 590,
     discountedPrice: 390,
     label: ProductLabel.NEW,
@@ -336,6 +353,8 @@ export const products: Product[] = [
     id: 'mochila-classic',
     frontImage: require('../../assets/images/products/product_bag_3.png'),
     title: 'Mochila Classic',
+    categoryId: 'mochilas',
+    tagIds: ['urban', 'travel'],
     price: 590,
     shortDescription: {
       line1: 'Mochila clásica de diseño atemporal.',
@@ -362,6 +381,8 @@ export const products: Product[] = [
     id: 'cap-v3',
     frontImage: require('../../assets/images/products/product_cap_black.png'),
     title: 'Cap V3',
+    categoryId: 'gorros',
+    tagIds: ['urban', 'popular'],
     price: 590,
     shortDescription: {
       line1: 'Gorra urbana de estilo contemporáneo.',
@@ -388,6 +409,8 @@ export const products: Product[] = [
     id: 'relaxed-classic',
     frontImage: require('../../assets/images/products/product_shirt_black_relaxed.png'),
     title: 'Relaxed Classic',
+    categoryId: 'remeras',
+    tagIds: ['relaxed_fit', 'urban'],
     price: 590,
     shortDescription: {
       line1: 'Camisa de corte relajado para máximo confort.',
@@ -420,6 +443,8 @@ export const products: Product[] = [
     id: 'regular-shirt',
     frontImage: require('../../assets/images/products/product_shirt_black_regular.png'),
     title: 'Regular Shirt',
+    categoryId: 'remeras',
+    tagIds: ['regular_fit', 'urban', 'popular'],
     price: 790,
     shortDescription: {
       line1: 'Camisa de corte regular para uso diario.',
@@ -452,6 +477,8 @@ export const products: Product[] = [
     id: 'white-shirt',
     frontImage: require('../../assets/images/products/product_shirt_white.png'),
     title: 'White Shirt',
+    categoryId: 'remeras',
+    tagIds: ['regular_fit', 'urban'],
     price: 790,
     shortDescription: {
       line1: 'Camisa blanca elegante y versátil.',
@@ -485,6 +512,8 @@ export const products: Product[] = [
     id: 't-shirt-black',
     frontImage: require('../../assets/images/products/product_t_shirt_black.png'),
     title: 'T-Shirt Black',
+    categoryId: 'remeras',
+    tagIds: ['regular_fit', 'organic_cotton', 'urban', 'popular'],
     price: 690,
     shortDescription: {
       line1: 'Camiseta negra esencial para todo guardarropa.',
@@ -517,6 +546,8 @@ export const products: Product[] = [
     id: 'backpack-pro',
     frontImage: require('../../assets/images/products/product_bag_4.png'),
     title: 'Backpack Pro',
+    categoryId: 'mochilas',
+    tagIds: ['premium', 'travel', 'urban', 'water_resistant'],
     price: 1290,
     shortDescription: {
       line1: 'Mochila premium con características profesionales.',
@@ -544,6 +575,8 @@ export const products: Product[] = [
     id: 'neceserr',
     frontImage: require('../../assets/images/products/product_bag_5.png'),
     title: 'Neceser Globo',
+    categoryId: 'neceser',
+    tagIds: ['new_arrival', 'customizable', 'travel', 'water_resistant'],
     price: 590,
     discountedPrice: 390,
     label: ProductLabel.NEW,
@@ -586,6 +619,8 @@ export const products: Product[] = [
     id: 'backpack-travel',
     frontImage: require('../../assets/images/products/product_bag_6.png'),
     title: 'Backpack Travel',
+    categoryId: 'mochilas',
+    tagIds: ['travel', 'water_resistant'],
     price: 1490,
     shortDescription: {
       line1: 'Mochila espaciosa diseñada para viajes largos.',
@@ -614,6 +649,8 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/mochila-gold.png'),
     videoSource: require('../../assets/videos/mochila-gold.mov'),
     title: 'Mochila Gold',
+    categoryId: 'mochilas',
+    tagIds: ['app_exclusive', 'premium', 'urban', 'water_resistant'],
     price: 1890,
     label: ProductLabel.APP_EXCLUSIVE,
     shortDescription: {
@@ -651,6 +688,8 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/mochila-black.png'),
     videoSource: require('../../assets/videos/mochila-black.mov'),
     title: 'Mochila Black',
+    categoryId: 'mochilas',
+    tagIds: ['popular', 'urban', 'travel', 'water_resistant'],
     price: 1690,
     label: ProductLabel.POPULAR,
     shortDescription: {
@@ -687,6 +726,8 @@ export const products: Product[] = [
   {
     id: 'explore-campera-deportiva',
     title: 'Campera Deportiva',
+    categoryId: 'buzos',
+    tagIds: ['new_arrival', 'sport', 'thermal', 'high_performance', 'water_resistant'],
     price: 1890,
     label: ProductLabel.NEW,
     frontImage: require('../../assets/images/products/campera-deportiva.png'),
@@ -721,6 +762,8 @@ export const products: Product[] = [
   {
     id: 'explore-antideslizantes-1',
     title: 'Antideslizantes',
+    categoryId: 'medias',
+    tagIds: ['non_slip', 'sport', 'high_performance'],
     price: 490,
     frontImage: require('../../assets/images/products/antideslizantes-1.png'),
     shortDescription: {
@@ -753,6 +796,8 @@ export const products: Product[] = [
   {
     id: 'explore-antideslizantes-2',
     title: 'Antideslizantes V2',
+    categoryId: 'medias',
+    tagIds: ['non_slip', 'sport', 'high_performance'],
     price: 490,
     frontImage: require('../../assets/images/products/antideslizantes-2.png'),
     shortDescription: {
@@ -785,6 +830,8 @@ export const products: Product[] = [
   {
     id: 'explore-tiffosi-antideslizante-1',
     title: 'Tiffosi Antideslizante',
+    categoryId: 'medias',
+    tagIds: ['recommended', 'non_slip', 'sport', 'premium', 'high_performance'],
     price: 550,
     label: ProductLabel.RECOMMENDED,
     frontImage: require('../../assets/images/products/tiffosi-antideslizante-1.png'),
@@ -818,6 +865,8 @@ export const products: Product[] = [
   {
     id: 'explore-shinguards-1',
     title: 'Shinguards Pro',
+    categoryId: 'canilleras',
+    tagIds: ['customizable', 'sport', 'premium', 'high_performance'],
     price: 790,
     isCustomizable: true,
     frontImage: require('../../assets/images/products/shinguards-1.png'),
@@ -851,6 +900,8 @@ export const products: Product[] = [
   {
     id: 'explore-shinguards-2',
     title: 'Shinguards Lite',
+    categoryId: 'canilleras',
+    tagIds: ['sport', 'lightweight', 'high_performance'],
     price: 690,
     frontImage: require('../../assets/images/products/shinguards-2.png'),
     shortDescription: {
@@ -883,6 +934,8 @@ export const products: Product[] = [
   {
     id: 'explore-shirt-os-black-1',
     title: 'Shirt OS Black',
+    categoryId: 'remeras',
+    tagIds: ['featured', 'oversize', 'urban', 'cotton'],
     price: 890,
     label: ProductLabel.FEATURED,
     frontImage: require('../../assets/images/products/shirt-os-black-1.png'),
@@ -970,6 +1023,33 @@ export const getTiffosiExploreProducts = (): Product[] => {
     .filter((p): p is Product => p !== undefined);
 };
 
+// Function to get products by category
+export const getProductsByCategory = (categoryId: string): Product[] => {
+  if (categoryId === 'todo') {
+    return products;
+  }
+  return products.filter((product) => product.categoryId === categoryId);
+};
+
+// Function to get products by category and tag
+export const getProductsByCategoryAndTag = (categoryId: string, tagId: string): Product[] => {
+  let categoryProducts = getProductsByCategory(categoryId);
+
+  if (tagId === 'all') {
+    return categoryProducts;
+  }
+
+  return categoryProducts.filter((product) => product.tagIds.includes(tagId));
+};
+
+// Function to get relevant tags for a category - now uses pre-computed map from TagData
+export const getTagsForCategory = (
+  categoryId: string
+): { id: string; name: string; slug: string }[] => {
+  // Use the more efficient pre-computed tag data
+  return TagData.getTagsForCategory(categoryId);
+};
+
 const ProductData = {
   products,
   getHighlightedProducts,
@@ -981,6 +1061,9 @@ const ProductData = {
   getProductById,
   getLaunchAndOpportunityProducts,
   getTiffosiExploreProducts,
+  getProductsByCategory,
+  getProductsByCategoryAndTag,
+  getTagsForCategory,
 };
 
 export default ProductData;

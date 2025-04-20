@@ -1,4 +1,5 @@
 import { Product } from '../../_types/product';
+import { Tag } from '../../_types/tag';
 
 /**
  * Stages of the preloading process
@@ -8,6 +9,7 @@ export type PreloadStage =
   | 'LOADING_VIDEOS' // Loading video assets
   | 'LOADING_IMAGES' // Loading image assets
   | 'LOADING_DATA' // Loading product data
+  | 'LOADING_CATEGORY_TAGS' // Loading category-tag relationships
   | 'READY'; // Ready to show main app
 
 /**
@@ -31,6 +33,7 @@ export interface CriticalData {
   featuredProducts: Product[];
   exploreProducts: Product[];
   trendingProducts: Product[];
+  categoryTagMap?: Record<string, Tag[]>; // Pre-computed category-tag relationships
 }
 
 /**

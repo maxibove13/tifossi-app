@@ -1,34 +1,31 @@
-import DefaultCard from './default'
-import FeaturedCard from './featured/FeaturedCard'
-import HighlightedCard from './horizontal/HighlightedCard'
-import PromotionCard from './promotion/PromotionCard'
-import MinicardCard from './minicard'
-import ImageOnlyCard from './image/ImageOnlyCard'
+import FeaturedCard from './featured/FeaturedCard';
+import HighlightedCard from './horizontal/HighlightedCard';
+import PromotionCard from './promotion/PromotionCard';
+import MinicardCard from './minicard';
+import ImageOnlyCard from './image/ImageOnlyCard';
 import type {
   BaseProductCardProps,
   PromotionProductCardProps,
   FeaturedProductCardProps,
   HorizontalProductCardProps,
   ProductCardSize,
-} from './types'
+} from './types';
 
 const ProductCards = {
-  Default: DefaultCard,
   Featured: FeaturedCard,
   Highlighted: HighlightedCard,
   Promotion: PromotionCard,
   Minicard: MinicardCard,
   ImageOnly: ImageOnlyCard,
-}
+};
 
 export {
-  DefaultCard as Default,
   FeaturedCard as Featured,
   HighlightedCard as Highlighted,
   PromotionCard as Promotion,
   MinicardCard as Minicard,
   ImageOnlyCard as ImageOnly,
-}
+};
 
 export type {
   BaseProductCardProps,
@@ -36,6 +33,6 @@ export type {
   FeaturedProductCardProps,
   HorizontalProductCardProps,
   ProductCardSize,
-}
+};
 
-export default ProductCards 
+export default ProductCards;

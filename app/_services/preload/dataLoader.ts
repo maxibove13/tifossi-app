@@ -1,6 +1,8 @@
 import { CriticalData } from './types';
 import ProductData, { getFeaturedProduct } from '../../_data/products';
+import TagData, { CATEGORY_TAGS_MAP } from '../../_data/tags';
 import { Product } from '../../_types/product';
+import { Tag } from '../../_types/tag';
 
 /**
  * Loads critical product data from local data sources
@@ -10,6 +12,7 @@ import { Product } from '../../_types/product';
  * - Only load absolute minimum data during startup
  * - Featured products are loaded because they appear on the first screen
  * - Other product data is loaded when the relevant screen is accessed
+ * - Category-tag relationships are pre-computed for better performance
  */
 export const loadCriticalData = async (
   progressCallback: (progress: number) => void
@@ -17,17 +20,29 @@ export const loadCriticalData = async (
   try {
     // Simulate network request with a small delay
     await new Promise((resolve) => setTimeout(resolve, 200));
-    progressCallback(30);
+    progressCallback(20);
 
     // Only get featured product for home screen (absolute minimum)
     const featuredProducts = [getFeaturedProduct()].filter(Boolean) as Product[];
+    progressCallback(40);
+
+    // Pre-compute category-tag map for all categories
+    // This dramatically improves performance of the catalog filter system
+    const categoryTagMap: Record<string, Tag[]> = {};
+
+    // For each category in our pre-computed map, convert tag IDs to full Tag objects
+    Object.keys(CATEGORY_TAGS_MAP).forEach((categoryId) => {
+      categoryTagMap[categoryId] = TagData.getTagsForCategory(categoryId);
+    });
+
     progressCallback(100);
 
-    // Return only what's needed for immediate display
+    // Return data including the pre-computed category-tag map
     return {
       featuredProducts,
       exploreProducts: [], // Will be loaded when TiffosiExplore screen is accessed
       trendingProducts: [], // Will be loaded when needed
+      categoryTagMap, // Pre-computed category-tag relationships
     };
   } catch (error) {
     console.error('Error loading critical data:', error);

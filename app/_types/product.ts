@@ -17,6 +17,8 @@ export interface Product {
   id: string;
   title: string;
   price: number;
+  categoryId: string; // Added category reference
+  tagIds: string[]; // Added tags reference
   images?: (string | ImageSourcePropType)[]; // Array of product images
   frontImage: string | ImageSourcePropType; // Main/front image to display (REQUIRED)
   videoSource?: number | string; // Video source for product displays
