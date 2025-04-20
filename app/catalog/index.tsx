@@ -182,20 +182,18 @@ export default function CatalogScreen() {
     // This helps with browser history and sharing links
     const newParams = new URLSearchParams();
 
-    // If switching to "todo" category and we have a title param,
-    // reset to default "Tienda" title by not including it in params
-    if (categoryId === 'todo' && params.title) {
-      // Don't add title param to reset to default "Tienda"
-    } else if (params.title) {
-      // Otherwise keep the title as is
+    // Always omit the title param when switching to 'todo' category
+    // to ensure we reset to the default 'Tienda' title
+    if (categoryId !== 'todo' && params.title) {
       newParams.append('title', params.title as string);
     }
 
     // Update category
     newParams.append('category', categoryId);
 
-    // Keep the tag if it exists
-    if (activeTagId && activeTagId !== 'all') {
+    // Keep the tag if it exists and we're not switching to 'todo'
+    // Reset tags when switching to 'todo' for a clean state
+    if (categoryId !== 'todo' && activeTagId && activeTagId !== 'all') {
       newParams.append('tag', activeTagId);
     }
 
@@ -245,6 +243,11 @@ export default function CatalogScreen() {
 
   // Function to get the display title based on context
   const getDisplayTitle = () => {
+    // Special case: if category is 'todo', always use default title
+    if (activeCategoryId === 'todo') {
+      return 'Tienda';
+    }
+
     // When the activeTagId is 'all', we should show category title or default title
     if (activeTagId === 'all') {
       // If it's a category, show category name
@@ -290,6 +293,7 @@ export default function CatalogScreen() {
     return rawPageTitle;
   };
 
+  // Calculate display title and update whenever category or tag changes
   const displayTitle = getDisplayTitle();
 
   return (
