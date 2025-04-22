@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { Product } from '../../../../_types/product';
 import ProductImage from '../image/ProductImage';
 import { colors } from '../../../../_styles/colors';
-import { spacing } from '../../../../_styles/spacing';
-import OverlayProductEdit from '../overlay/OverlayProductEdit';
+import { spacing, radius } from '../../../../_styles/spacing';
+import { fonts, fontSizes, fontWeights, lineHeights } from '../../../../_styles/typography';
 
 // Define CartProduct inheriting from Product
 interface CartProduct extends Product {
@@ -21,7 +21,7 @@ interface CartProductCardProps {
   quantity: number;
   onQuantityChange?: (quantity: number) => void;
   onRemove?: () => void;
-  onEdit?: (productId: string, updates: { size?: string; quantity?: number }) => void;
+  onEdit?: () => void;
   isDark?: boolean;
 }
 
@@ -60,12 +60,9 @@ type Styles = {
 export const CartProductCard = ({
   product,
   quantity,
-  onRemove,
   onEdit,
   isDark = false,
 }: CartProductCardProps) => {
-  const [isEditOverlayVisible, setIsEditOverlayVisible] = useState(false);
-
   const {
     title,
     price,
@@ -90,139 +87,101 @@ export const CartProductCard = ({
   const displaySize =
     selectedSize ||
     size ||
-    (sizes && sizes.length > 0 ? sizes.find((s) => s.available)?.value || sizes[0].value : 'Único');
+    (sizes && sizes.length > 0
+      ? sizes.find((s) => s.available)?.value || sizes[0].value
+      : 'Talle Único');
 
   // Calculate discount percentage if applicable
   const discountPercentage =
     discountedPrice && price ? Math.round(((price - discountedPrice) / price) * 100) : 0;
 
-  // Handler to open the edit overlay
-  const handleEditPress = () => {
-    setIsEditOverlayVisible(true);
-  };
-
-  // Handler for closing the overlay
-  const handleCloseOverlay = () => {
-    setIsEditOverlayVisible(false);
-  };
-
-  // Handler for saving changes from the overlay
-  const handleSaveEdit = (newSize: string, newQuantity: number) => {
-    console.log('Save changes:', { productId: product.id, newSize, newQuantity });
-    // Call the onEdit prop passed from the parent component
-    onEdit?.(product.id, { size: newSize, quantity: newQuantity });
-    setIsEditOverlayVisible(false);
-  };
-
-  // Handler for removing the item from the overlay
-  const handleRemoveItem = () => {
-    console.log('Remove item:', product.id);
-    onRemove?.(); // Call the original onRemove prop
-    setIsEditOverlayVisible(false);
-  };
-
   return (
-    <>
-      <View style={[styles.container, isDark && styles.containerDark]}>
-        {/* Product Image */}
-        <View style={styles.imageContainer}>
-          <ProductImage source={frontImage} size={130} />
-        </View>
+    <View style={[styles.container, isDark && styles.containerDark]}>
+      {/* Product Image */}
+      <View style={styles.imageContainer}>
+        <ProductImage source={frontImage} size={130} />
+      </View>
 
-        {/* Product Details */}
-        <View style={styles.content}>
-          {/* Top Section: Title and product info */}
-          <View style={styles.topSection}>
-            {/* Row for Title and Edit Button */}
-            <View style={styles.titleEditRow}>
-              <Text
-                style={[styles.title, isDark && styles.titleDark]}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {title}
-              </Text>
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={handleEditPress}
-                hitSlop={{
-                  top: spacing.sm,
-                  right: spacing.sm,
-                  bottom: spacing.sm,
-                  left: spacing.sm,
-                }}
-              >
-                <Text style={styles.editButtonText}>Editar</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Product Attributes */}
-            {isCustomizable && <Text style={styles.customizableText}>Personalizable</Text>}
-
-            {displayColor && <Text style={styles.colorText}>{displayColor}</Text>}
-
-            {displaySize && (
-              <View style={styles.sizeRow}>
-                <Text style={styles.sizeLabel}>Talle:</Text>
-                <Text style={styles.sizeValue}>{displaySize}</Text>
-              </View>
-            )}
+      {/* Product Details */}
+      <View style={styles.content}>
+        {/* Top Section: Title and product info */}
+        <View style={styles.topSection}>
+          {/* Row for Title and Edit Button */}
+          <View style={styles.titleEditRow}>
+            <Text
+              style={[styles.title, isDark && styles.titleDark]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {title}
+            </Text>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={onEdit}
+              hitSlop={{
+                top: spacing.sm,
+                right: spacing.sm,
+                bottom: spacing.sm,
+                left: spacing.sm,
+              }}
+            >
+              <Text style={styles.editButtonText}>Editar</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Bottom Row: Quantity and Price - Fixed height section */}
-          <View style={styles.footer}>
-            <View style={styles.quantityRow}>
-              <Text style={styles.quantityLabel}>Cantidad:</Text>
-              <Text style={styles.quantityValue}>{quantity}</Text>
+          {/* Product Attributes */}
+          {isCustomizable && <Text style={styles.customizableText}>Personalizable</Text>}
+
+          {displayColor && <Text style={styles.colorText}>{displayColor}</Text>}
+
+          {displaySize && (
+            <View style={styles.sizeRow}>
+              <Text style={styles.sizeLabel}>Talle:</Text>
+              <Text style={styles.sizeValue}>{displaySize}</Text>
             </View>
+          )}
+        </View>
 
-            {/* Price Section - Fixed height regardless of discount presence */}
-            <View style={styles.priceContainer}>
-              {discountedPrice && discountPercentage > 0 ? (
-                <>
-                  {/* Discount Badge */}
-                  <View style={styles.discountBadge}>
-                    <Text style={styles.discountBadgeText}>-{discountPercentage}%</Text>
-                  </View>
+        {/* Bottom Row: Quantity and Price - Fixed height section */}
+        <View style={styles.footer}>
+          <View style={styles.quantityRow}>
+            <Text style={styles.quantityLabel}>Cantidad:</Text>
+            <Text style={styles.quantityValue}>{quantity}</Text>
+          </View>
 
-                  {/* Original Price (strikethrough) and Discounted Price */}
-                  <Text style={[styles.originalPriceText, isDark && styles.priceDark]}>
-                    ${price.toFixed(2)}
-                  </Text>
-                  <Text style={[styles.discountPriceText, isDark && styles.priceDark]}>
-                    ${discountedPrice.toFixed(2)}
-                  </Text>
-                </>
-              ) : (
-                <>
-                  {/* Empty space for consistent layout */}
-                  <View style={styles.emptyDiscountBadge} />
+          {/* Price Section - Fixed height regardless of discount presence */}
+          <View style={styles.priceContainer}>
+            {discountedPrice && discountPercentage > 0 ? (
+              <>
+                {/* Discount Badge */}
+                <View style={styles.discountBadge}>
+                  <Text style={styles.discountBadgeText}>-{discountPercentage}%</Text>
+                </View>
 
-                  {/* Empty space for original price */}
-                  <View style={styles.emptyOriginalPrice} />
+                {/* Original Price (strikethrough) and Discounted Price */}
+                <Text style={[styles.originalPriceText, isDark && styles.priceDark]}>
+                  ${price.toFixed(2)}
+                </Text>
+                <Text style={[styles.discountPriceText, isDark && styles.priceDark]}>
+                  ${discountedPrice.toFixed(2)}
+                </Text>
+              </>
+            ) : (
+              <>
+                {/* Empty space for consistent layout */}
+                <View style={styles.emptyDiscountBadge} />
 
-                  {/* Regular Price */}
-                  <Text style={[styles.price, isDark && styles.priceDark]}>
-                    ${price.toFixed(2)}
-                  </Text>
-                </>
-              )}
-            </View>
+                {/* Empty space for original price */}
+                <View style={styles.emptyOriginalPrice} />
+
+                {/* Regular Price */}
+                <Text style={[styles.price, isDark && styles.priceDark]}>${price.toFixed(2)}</Text>
+              </>
+            )}
           </View>
         </View>
       </View>
-
-      {/* Edit Overlay */}
-      <OverlayProductEdit
-        isVisible={isEditOverlayVisible}
-        onClose={handleCloseOverlay}
-        onSave={handleSaveEdit}
-        onRemove={handleRemoveItem}
-        initialQuantity={quantity}
-        initialSize={displaySize}
-        product={product}
-      />
-    </>
+    </View>
   );
 };
 
@@ -245,7 +204,7 @@ const styles = StyleSheet.create<Styles>({
     width: 130,
     height: 130,
     overflow: 'hidden',
-    borderRadius: 2,
+    borderRadius: radius.xs,
   },
   content: {
     flex: 1,
@@ -268,10 +227,10 @@ const styles = StyleSheet.create<Styles>({
     flexShrink: 1,
   },
   title: {
-    fontFamily: 'Inter',
-    fontSize: 14,
-    fontWeight: '500',
-    lineHeight: 20,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.md,
     color: colors.primary,
     flexShrink: 1,
     marginRight: spacing.sm,
@@ -281,26 +240,26 @@ const styles = StyleSheet.create<Styles>({
   },
   editButton: {},
   editButtonText: {
-    fontFamily: 'Inter',
-    fontSize: 12,
-    fontWeight: '400',
-    lineHeight: 16,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.sm,
     color: colors.secondary,
     textDecorationLine: 'underline',
   },
   customizableText: {
-    fontFamily: 'Inter',
-    fontSize: 10,
-    fontWeight: '400',
-    lineHeight: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.xs,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.xs,
     color: colors.secondary,
     marginTop: spacing.xs,
   },
   colorText: {
-    fontFamily: 'Inter',
-    fontSize: 10,
-    fontWeight: '400',
-    lineHeight: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.xs,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.xs,
     color: colors.secondary,
     marginTop: spacing.xs / 2,
   },
@@ -311,18 +270,18 @@ const styles = StyleSheet.create<Styles>({
     marginTop: spacing.xs / 2,
   },
   sizeLabel: {
-    fontFamily: 'Inter',
-    fontSize: 10,
-    fontWeight: '400',
-    lineHeight: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.xs,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.xs,
     color: colors.secondary,
     textAlign: 'right',
   },
   sizeValue: {
-    fontFamily: 'Inter',
-    fontSize: 10,
-    fontWeight: '400',
-    lineHeight: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.xs,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.xs,
     color: colors.secondary,
   },
   footer: {
@@ -338,41 +297,41 @@ const styles = StyleSheet.create<Styles>({
     gap: spacing.xs,
   },
   quantityLabel: {
-    fontFamily: 'Inter',
-    fontSize: 10,
-    fontWeight: '400',
-    lineHeight: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.xs,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.xs,
     color: colors.secondary,
     textAlign: 'right',
   },
   quantityValue: {
-    fontFamily: 'Inter',
-    fontSize: 10,
-    fontWeight: '400',
-    lineHeight: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.xs,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.xs,
     color: colors.secondary,
     textAlign: 'right',
   },
   priceContainer: {
     flexDirection: 'column',
     alignItems: 'flex-end',
-    height: 44, // Fixed height for price container to accommodate discount
+    height: lineHeights.xxxl,
     justifyContent: 'flex-end',
   },
   originalPriceText: {
-    fontFamily: 'Inter',
-    fontSize: 12,
-    fontWeight: '400',
-    lineHeight: 16,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.sm,
     color: colors.secondary,
     textDecorationLine: 'line-through',
     textAlign: 'right',
   },
   price: {
-    fontFamily: 'Inter',
-    fontSize: 14,
-    fontWeight: '500',
-    lineHeight: 20,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.md,
     color: colors.primary,
     textAlign: 'right',
   },
@@ -380,10 +339,10 @@ const styles = StyleSheet.create<Styles>({
     color: colors.background.light,
   },
   discountPriceText: {
-    fontFamily: 'Inter',
-    fontSize: 14,
-    fontWeight: '500',
-    lineHeight: 20,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.md,
     color: colors.error,
     textAlign: 'right',
   },
@@ -391,23 +350,23 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: colors.error,
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,
-    borderRadius: 2,
+    borderRadius: radius.xs,
     justifyContent: 'center',
     alignItems: 'center',
   },
   discountBadgeText: {
-    fontFamily: 'Inter',
-    fontSize: 10,
-    fontWeight: '400',
-    lineHeight: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.xs,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.xs,
     color: colors.background.light,
     textAlign: 'center',
   },
   emptyDiscountBadge: {
-    height: 16, // Same height as discount badge
+    height: lineHeights.sm,
   },
   emptyOriginalPrice: {
-    height: 16, // Same height as original price text
+    height: lineHeights.sm,
   },
 });
 

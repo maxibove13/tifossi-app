@@ -56,6 +56,7 @@ interface BasicProduct {
   warranty?: string;
   returnPolicy?: string;
   dimensions?: DimensionsType;
+  isFavorite?: boolean;
 }
 export interface SwipeableEdgeProps {
   product: BasicProduct;
@@ -67,6 +68,9 @@ export interface SwipeableEdgeProps {
   onViewMore?: (section: string) => void;
   onProductPress?: (productId: string) => void;
   onSupportAction?: (action: 'chat' | 'faq' | 'call') => void;
+  onToggleFavorite?: () => void;
+  quantity?: number;
+  onQuantityChange?: (quantity: number) => void;
 }
 function triggerHaptic() {
   if (Platform.OS !== 'web') {
@@ -152,6 +156,7 @@ const SwipeableEdge = ({
   const [expanded, setExpanded] = useState(false);
   const [shippingVisible, setShippingVisible] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<string>('');
 
   // Try to use cached header height for this device width if available
   const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState<number | null>(
@@ -201,8 +206,7 @@ const SwipeableEdge = ({
 
   const handleAddToCartPress = useCallback(() => {
     setShippingVisible(true);
-    onAddToCart?.();
-  }, [onAddToCart]);
+  }, []);
 
   const handleSupportPress = useCallback(
     (type: 'chat' | 'faq' | 'call') => onSupportAction?.(type),
@@ -215,6 +219,14 @@ const SwipeableEdge = ({
       onViewMore(title);
     },
     [onViewMore]
+  );
+
+  const handleActualAddToCart = useCallback(
+    (size: string, qty: number) => {
+      console.log(`Adding to cart from overlay: Size ${size}, Quantity ${qty}`);
+      onAddToCart?.();
+    },
+    [onAddToCart]
   );
 
   const adaptProduct = (): Product =>
@@ -378,7 +390,9 @@ const SwipeableEdge = ({
         onClose={() => setShippingVisible(false)}
         initialQuantity={quantity}
         onSelectQuantity={setQuantity}
-        onSelectSize={() => {}}
+        initialSize={selectedSize}
+        onSelectSize={setSelectedSize}
+        onAddToCart={handleActualAddToCart}
         product={adaptProduct()}
       />
     </>

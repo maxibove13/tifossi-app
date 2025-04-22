@@ -1,6 +1,5 @@
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import { StyleSheet, View, Text, Pressable, ViewStyle, TextStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import type { BaseProductCardProps } from '../types';
 import ProductImage from '../image/ProductImage';
 import { mapProductToCardData, Product } from '../../../../_types/product';
@@ -8,12 +7,16 @@ import { getCardDimensions } from '../../../../_types/product-card';
 import { fonts, fontSizes, lineHeights } from '../../../../_styles/typography';
 import { spacing, radius } from '../../../../_styles/spacing';
 import { colors } from '../../../../_styles/colors';
-import HeartActiveIcon from '../../../ui/icons/HeartActiveIcon';
 import DiscountBadge from '../../../ui/badges/DiscountBadge';
+import { useFavoriteStatus } from '../../../../../hooks/useFavoriteStatus';
 
-interface DefaultLargeCardProps extends BaseProductCardProps {
+// Import SVG icons
+import HeartActive from '../../../../../assets/icons/heart_active.svg';
+import HeartInactive from '../../../../../assets/icons/heart_inactive.svg';
+
+interface DefaultLargeCardProps
+  extends Omit<BaseProductCardProps, 'isFavorite' | 'onToggleFavorite'> {
   product: Product;
-  isFavorite?: boolean;
 }
 
 // Define Styles type
@@ -36,19 +39,13 @@ type Styles = {
   colorMoreText: TextStyle;
 };
 
-function DefaultLargeCard({ product, onPress, isFavorite = false }: DefaultLargeCardProps) {
-  const [isCurrentlyFavorite, setIsCurrentlyFavorite] = useState(isFavorite);
+function DefaultLargeCard({ product, onPress }: DefaultLargeCardProps) {
+  const { isFavorite, toggle: toggleFavorite } = useFavoriteStatus(product.id);
   const cardData = mapProductToCardData(product);
   const dimensions = getCardDimensions('default', 'large');
 
   const discountPercentage = cardData.discountPercentage || 0;
   const hasDiscount = discountPercentage > 0 && cardData.discountedPrice !== undefined;
-
-  const handleWishlistPress = () => {
-    setIsCurrentlyFavorite((prev) => !prev);
-    // We'll integrate with actual state management later
-    console.log('Wishlist button pressed for product:', product.id);
-  };
 
   // Determine how to render the color palette
   const renderColorPalette = () => {
@@ -91,14 +88,14 @@ function DefaultLargeCard({ product, onPress, isFavorite = false }: DefaultLarge
         <ProductImage source={cardData.image} size={dimensions.imageSize} />
         <Pressable
           style={styles.wishlistButton}
-          onPress={handleWishlistPress}
+          onPress={toggleFavorite}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
-          {isCurrentlyFavorite ? (
-            <HeartActiveIcon size={24} color={colors.primary} />
+          {isFavorite ? (
+            <HeartActive width={24} height={24} />
           ) : (
-            <Ionicons name="heart-outline" size={24} color={colors.secondary} />
+            <HeartInactive width={24} height={24} />
           )}
         </Pressable>
 

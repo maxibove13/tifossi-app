@@ -1,85 +1,65 @@
-import { TouchableOpacity, StyleSheet, StyleProp, ViewStyle, Image, View } from 'react-native'
+import { TouchableOpacity, StyleSheet, StyleProp, ViewStyle, Image, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   withSpring,
   useSharedValue,
   withTiming,
-} from 'react-native-reanimated'
+} from 'react-native-reanimated';
 
-type ToggleMode = 'sport' | 'tiffosi'
+type ToggleMode = 'sport' | 'tiffosi';
 
 interface ToggleSportProps {
-  mode: ToggleMode
-  onToggle: (mode: ToggleMode) => void
-  size?: 's' | 'l'
-  style?: StyleProp<ViewStyle>
+  mode: ToggleMode;
+  onToggle: (mode: ToggleMode) => void;
+  size?: 's' | 'l';
+  style?: StyleProp<ViewStyle>;
 }
 
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity)
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-function ToggleSport({
-  mode,
-  onToggle,
-  size = 's',
-  style,
-}: ToggleSportProps) {
-  const progress = useSharedValue(mode === 'sport' ? 1 : 0)
-  const isSmall = size === 's'
+function ToggleSport({ mode, onToggle, size = 's', style }: ToggleSportProps) {
+  const progress = useSharedValue(mode === 'sport' ? 1 : 0);
+  const isSmall = size === 's';
 
   const handleToggle = () => {
-    const newMode = mode === 'sport' ? 'tiffosi' : 'sport'
+    const newMode = mode === 'sport' ? 'tiffosi' : 'sport';
     progress.value = withSpring(newMode === 'sport' ? 1 : 0, {
       mass: 0.5,
       damping: 12,
       stiffness: 100,
-    })
-    onToggle(newMode)
-  }
+    });
+    onToggle(newMode);
+  };
 
   const containerAnimatedStyle = useAnimatedStyle(() => ({
     backgroundColor: progress.value === 1 ? 'rgba(251, 251, 251, 0.25)' : undefined,
-  }))
+  }));
 
   const gradientAnimatedStyle = useAnimatedStyle(() => ({
     opacity: withTiming(progress.value === 0 ? 1 : 0, { duration: 200 }),
-  }))
+  }));
 
   const highlightAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateX: withSpring(
-          mode === 'sport' ? 
-            (isSmall ? 40 : 35) :
-            0, 
-          {
-            mass: 0.5,
-            damping: 12,
-            stiffness: 100,
-          }
-        ),
+        translateX: withSpring(mode === 'sport' ? (isSmall ? 40 : 35) : 0, {
+          mass: 0.5,
+          damping: 12,
+          stiffness: 100,
+        }),
       },
     ],
-    width: withSpring(
-      mode === 'sport' ? 
-        (isSmall ? 32 : 57) :
-        (isSmall ? 28 : 36),
-      {
-        mass: 0.5,
-        damping: 12,
-        stiffness: 100,
-      }
-    ),
-    height: withSpring(
-      mode === 'sport' ? 
-        (isSmall ? 28 : 36) :
-        (isSmall ? 28 : 36),
-      {
-        mass: 0.5,
-        damping: 12,
-        stiffness: 100,
-      }
-    ),
-  }))
+    width: withSpring(mode === 'sport' ? (isSmall ? 32 : 57) : isSmall ? 28 : 36, {
+      mass: 0.5,
+      damping: 12,
+      stiffness: 100,
+    }),
+    height: withSpring(mode === 'sport' ? (isSmall ? 28 : 36) : isSmall ? 28 : 36, {
+      mass: 0.5,
+      damping: 12,
+      stiffness: 100,
+    }),
+  }));
 
   return (
     <AnimatedTouchable
@@ -91,12 +71,7 @@ function ToggleSport({
         style,
       ]}
     >
-      <Animated.View 
-        style={[
-          styles.gradient,
-          gradientAnimatedStyle,
-        ]} 
-      />
+      <Animated.View style={[styles.gradient, gradientAnimatedStyle]} />
       <View style={styles.content}>
         <Animated.View
           style={[
@@ -115,14 +90,11 @@ function ToggleSport({
 
         <Image
           source={require('../../../../assets/images/logo/tiffosi-sport.png')}
-          style={[
-            styles.sportText,
-            isSmall ? styles.sportTextSmall : styles.sportTextLarge,
-          ]}
+          style={[styles.sportText, isSmall ? styles.sportTextSmall : styles.sportTextLarge]}
         />
       </View>
     </AnimatedTouchable>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -206,13 +178,14 @@ const styles = StyleSheet.create({
     width: 49,
     height: 8,
   },
-})
+});
 
 // Ensure this component is not treated as a route
-export default ToggleSport
+export default ToggleSport;
 
 // Add metadata to help router identification
+// eslint-disable-next-line unused-imports/no-unused-vars
 const metadata = {
   isRoute: false,
-  componentType: 'UI'
-} 
+  componentType: 'UI',
+};

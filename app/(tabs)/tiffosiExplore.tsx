@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   useWindowDimensions,
+  ImageBackground,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
@@ -16,7 +17,7 @@ import VideoBackground from '../_components/common/VideoBackground';
 import { Product } from '../_types/product';
 import { getTiffosiExploreProducts } from '../_data/products';
 import preloadService from '../_services/preload/service';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 
 // Get explore products from our dedicated function in products.ts
 // This function returns products in specific order with mochila-gold first (has video)
@@ -26,7 +27,7 @@ const exploreProducts: Product[] = getTiffosiExploreProducts();
 const ArrowUpRightIcon = () => <Text style={styles.iconText}>↗</Text>;
 
 // Component for a single Explore Product Card
-const ExploreProductCard = ({ product }: { product: Product }) => {
+const ExploreProductCard = memo(({ product }: { product: Product }) => {
   const router = useRouter();
   const { height: screenHeight } = useWindowDimensions();
   const tabBarHeight = useBottomTabBarHeight();
@@ -35,55 +36,78 @@ const ExploreProductCard = ({ product }: { product: Product }) => {
     router.push(`/products/product?id=${product.id}`);
   };
 
-  return (
-    <View style={[styles.cardContainer, { height: screenHeight }]}>
-      <VideoBackground
-        source={product.videoSource || ''}
-        fallbackImage={product.frontImage}
-        style={styles.videoBackground}
-        overlayOpacity={0.3}
-        preloadPriority="high"
-      >
-        {/* Added Gradient for bottom fade-to-black effect */}
-        <LinearGradient
-          colors={['rgba(12, 12, 12, 0)', colors.background.dark]}
-          style={styles.bottomGradient}
-        />
+  // Common content layout to avoid repetition
+  const cardContent = (
+    <>
+      {/* Added Gradient for bottom fade-to-black effect */}
+      <LinearGradient
+        colors={['rgba(12, 12, 12, 0)', colors.background.dark]}
+        style={styles.bottomGradient}
+      />
 
-        {/* Content Section - Renders on top of the new gradient */}
-        <View style={[styles.contentContainer, { bottom: tabBarHeight }]}>
-          {/* Button aligned to the right */}
-          <TouchableOpacity style={styles.viewProductButton} onPress={handleViewProduct}>
-            <ArrowUpRightIcon />
-            <Text style={styles.viewProductButtonText}>Ver Producto</Text>
-          </TouchableOpacity>
+      {/* Content Section - Renders on top of the new gradient */}
+      <View style={[styles.contentContainer, { bottom: tabBarHeight }]}>
+        {/* Button aligned to the right */}
+        <TouchableOpacity style={styles.viewProductButton} onPress={handleViewProduct}>
+          <ArrowUpRightIcon />
+          <Text style={styles.viewProductButtonText}>Ver Producto</Text>
+        </TouchableOpacity>
 
-          {/* Product Details aligned to the left */}
-          <View style={styles.detailsContainer}>
-            {product.label && (
-              <View style={styles.labelBadge}>
-                <Text style={styles.labelText}>{product.label}</Text>
+        {/* Product Details aligned to the left */}
+        <View style={styles.detailsContainer}>
+          {product.label && (
+            <View style={styles.labelBadge}>
+              <Text style={styles.labelText}>{product.label}</Text>
+            </View>
+          )}
+          <View style={styles.titleContainer}>
+            <Text style={styles.productTitle}>{product.title}</Text>
+          </View>
+          <View style={styles.tagsContainer}>
+            {product.isCustomizable && (
+              <View style={styles.tagPersonalizable}>
+                <Text style={styles.tagTextPersonalizable}>Personalizable</Text>
               </View>
             )}
-            <View style={styles.titleContainer}>
-              <Text style={styles.productTitle}>{product.title}</Text>
-            </View>
-            <View style={styles.tagsContainer}>
-              {product.isCustomizable && (
-                <View style={styles.tagPersonalizable}>
-                  <Text style={styles.tagTextPersonalizable}>Personalizable</Text>
-                </View>
-              )}
-              <View style={styles.tagPrice}>
-                <Text style={styles.tagTextPrice}>${product.price.toFixed(2)}</Text>
-              </View>
+            <View style={styles.tagPrice}>
+              <Text style={styles.tagTextPrice}>${product.price.toFixed(2)}</Text>
             </View>
           </View>
         </View>
-      </VideoBackground>
+      </View>
+    </>
+  );
+
+  return (
+    <View style={[styles.cardContainer, { height: screenHeight }]}>
+      {product.videoSource ? (
+        <VideoBackground
+          source={product.videoSource}
+          fallbackImage={product.frontImage}
+          style={styles.videoBackground}
+          overlayOpacity={0.3}
+          preloadPriority="high"
+        >
+          {cardContent}
+        </VideoBackground>
+      ) : (
+        <ImageBackground
+          source={
+            typeof product.frontImage === 'string'
+              ? { uri: product.frontImage }
+              : product.frontImage
+          }
+          style={styles.videoBackground}
+          resizeMode="cover"
+        >
+          {cardContent}
+        </ImageBackground>
+      )}
     </View>
   );
-};
+});
+
+ExploreProductCard.displayName = 'ExploreProductCard';
 
 // Enhanced TiffosiExploreScreen with strategic preloading
 export default function TiffosiExploreScreen() {
@@ -192,14 +216,16 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: '35%',
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
+    paddingTop: spacing.md,
   },
   contentContainer: {
     position: 'absolute',
-    // bottom is now set dynamically using tabBarHeight in the component
     left: 0,
     right: 0,
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl, // Keep the original padding from Figma spec
+    paddingBottom: spacing.xl,
     paddingTop: spacing.md,
   },
   viewProductButton: {

@@ -3,12 +3,13 @@ import ArrowRightIcon from '../../../assets/icons/arrow_right_lg.svg';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../_styles/typography';
 import { colors } from '../../_styles/colors';
 import { spacing, radius } from '../../_styles/spacing';
+import { memo } from 'react';
 
 type HomeContentProps = {
   onStorePress: () => void;
 };
 
-export default function HomeContent({ onStorePress }: HomeContentProps) {
+const HomeContent = memo(({ onStorePress }: HomeContentProps) => {
   return (
     <View style={styles.container}>
       <Text style={styles.message}>
@@ -22,7 +23,11 @@ export default function HomeContent({ onStorePress }: HomeContentProps) {
       </View>
     </View>
   );
-}
+});
+
+HomeContent.displayName = 'HomeContent';
+
+export default HomeContent;
 
 const styles = StyleSheet.create({
   container: {

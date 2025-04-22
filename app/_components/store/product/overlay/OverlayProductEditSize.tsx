@@ -40,28 +40,38 @@ export default function OverlayProductEditSize({
   productSizes = [], // Default to empty array
 }: OverlayProductEditSizeProps) {
   // State for selected size
-  const [selectedSize, setSelectedSize] = useState(initialSize);
+  const [selectedSize, setSelectedSize] = useState(''); // Initialize empty
 
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(height));
 
-  // Filter to only available sizes
-  const availableSizes =
-    productSizes.length > 0
-      ? productSizes.filter((size) => size.available)
-      : [
-          { value: 'S', available: true },
-          { value: 'M', available: true },
-          { value: 'L', available: true },
-        ];
+  // Determine available sizes and if it's a single 'Talle Unico'
+  const validProductSizes = productSizes || []; // Ensure productSizes is an array
+  const availableSizes = validProductSizes.filter((size) => size.available);
 
-  // Reset selected size when overlay opens with initialSize
+  // Treat as 'Talle Unico' if no sizes are provided OR exactly one size is available
+  const isTalleUnico = availableSizes.length <= 1;
+  const talleUnicoValue = isTalleUnico
+    ? availableSizes.length === 1
+      ? availableSizes[0].value
+      : 'Talle Único' // Use provided value or default to 'Único'
+    : '';
+
+  // Set initial size, handling 'Talle Unico'
   useEffect(() => {
-    if (isVisible && initialSize) {
-      setSelectedSize(initialSize);
+    if (isVisible) {
+      if (isTalleUnico) {
+        setSelectedSize(talleUnicoValue);
+      } else if (initialSize && availableSizes.some((s) => s.value === initialSize)) {
+        // Set initial size only if it's one of the available ones
+        setSelectedSize(initialSize);
+      } else {
+        // If multiple sizes and no valid initialSize, reset selection
+        setSelectedSize('');
+      }
     }
-  }, [isVisible, initialSize]);
+  }, [isVisible, initialSize, isTalleUnico, talleUnicoValue, productSizes, availableSizes]); // Added availableSizes
 
   useEffect(() => {
     if (isVisible) {
@@ -87,13 +97,17 @@ export default function OverlayProductEditSize({
 
   // Handle size selection
   const handleSelectSize = (size: string) => {
-    setSelectedSize(size);
+    // Do not allow selection change if it's Talle Unico
+    if (!isTalleUnico) {
+      setSelectedSize(size);
+    }
   };
 
   // Handle save action
   const handleSave = () => {
-    onSave(selectedSize);
-    onGoBack(); // Go back to shipping overlay instead of closing completely
+    // Ensure the correct value is saved, especially for Talle Unico
+    onSave(isTalleUnico ? talleUnicoValue : selectedSize);
+    onGoBack();
   };
 
   // Handle size guide press
@@ -122,17 +136,27 @@ export default function OverlayProductEditSize({
 
           {/* Size Selection */}
           <View style={styles.sizeSelectionContainer}>
-            {availableSizes.map((size) => (
-              <TouchableOpacity
-                key={size.value}
-                style={styles.sizeOption}
-                onPress={() => handleSelectSize(size.value)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.sizeOptionText}>{size.value}</Text>
-                <RadioButton selected={selectedSize === size.value} />
-              </TouchableOpacity>
-            ))}
+            {isTalleUnico ? (
+              // Display only 'Talle Unico' (using the determined value)
+              <View style={styles.sizeOption}>
+                <Text style={styles.sizeOptionText}>{talleUnicoValue}</Text>
+                <RadioButton selected={true} />
+              </View>
+            ) : (
+              // Display list of available sizes
+              availableSizes.map((size) => (
+                <TouchableOpacity
+                  key={size.value}
+                  style={styles.sizeOption}
+                  onPress={() => handleSelectSize(size.value)}
+                  activeOpacity={0.7}
+                  disabled={!size.available} // Should always be true due to filter
+                >
+                  <Text style={styles.sizeOptionText}>{size.value}</Text>
+                  <RadioButton selected={selectedSize === size.value} />
+                </TouchableOpacity>
+              ))
+            )}
           </View>
 
           {/* Action Buttons */}

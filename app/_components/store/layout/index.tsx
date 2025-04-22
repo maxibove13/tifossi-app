@@ -4,13 +4,7 @@ import BrandFooter from './Footer';
 import StoreLocations from './Locations';
 import CategoryShowcase from './CategoryShowcase';
 
-export { 
-  StoreHeader,
-  CategoryButtons,
-  BrandFooter,
-  StoreLocations,
-  CategoryShowcase,
-};
+export { StoreHeader, CategoryButtons, BrandFooter, StoreLocations, CategoryShowcase };
 
 const StoreLayout = {
   StoreHeader,
@@ -24,7 +18,8 @@ const StoreLayout = {
 export default StoreLayout;
 
 // Add metadata to help router identification
+// eslint-disable-next-line unused-imports/no-unused-vars
 const metadata = {
   isRoute: false,
-  componentType: 'Component'
+  componentType: 'Component',
 };

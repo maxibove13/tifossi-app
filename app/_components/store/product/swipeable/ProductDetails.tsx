@@ -29,7 +29,7 @@ export default function ProductDetails({
   sku,
   shortDescription,
   longDescription,
-  returnPolicy,
+  returnPolicy, // eslint-disable-line unused-imports/no-unused-vars
 }: ProductDetailsProps) {
   // Only combine dimensions if they exist
   const dimensionsText = dimensions ? Object.values(dimensions).filter(Boolean).join(' | ') : '';

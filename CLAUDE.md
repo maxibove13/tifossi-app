@@ -7,17 +7,17 @@
 - Follow the code style guidelines below
 - ALWAYS follow rules in /.cursor/rules if they exist
 - ALWAYS refer to README.md and the /docs folder to understand project structure and guidelines
-- don't run npx expo start yourself
+- NEVER execute de application yourself 
 
 ## Build Commands
 - `npm install` - Install dependencies
-- `npx expo start` - Start development server
-- `npm run ios` - Run on iOS simulator
-- `npm run android` - Run on Android emulator
-- `npm run web` - Run on web browser
 - `npm run lint` - Run ESLint
+- `npm run typecheck` - Run TypeScript type checking
+- `npm run check-all` - Run all checks (prettier, eslint, typecheck, tests)
+- `npm run fix-imports` - Automatically fix unused imports
 - `npm test` - Run all tests
 - `npm test -- -t "test name"` - Run specific test
+- `npx expo run:ios` - This is how we usually run the app
 
 ## Code Style
 - **TypeScript**: Use strict mode with proper type annotations
@@ -41,6 +41,7 @@
 - **Simplicity**: Prioritize simplicity over complexity
 - **Component Alignment**: Ensure components align with both reference screenshots and JSX
 - **Debugging**: Always read app_structure.md before searching the codebase
+- **Proactive Investigation**: When debugging, actively investigate potential related issues or conflicts beyond the initially reported problem.
 - **Performance Optimization**: For animation-heavy components, implement performance optimizations like:
   - Replacing expensive components (LinearGradient) with simpler alternatives when visually equivalent
   - Implementing device-based dimension caching to avoid repeated measurements
@@ -85,3 +86,34 @@ The app uses a combination of approaches to prevent utility files from being tre
 After making changes:
 - Clean the build cache: `npx expo start --clear`
 - Verify TypeScript still works: `npm run typecheck`
+
+## Cleaning iOS Build
+If you encounter iOS build issues, use this command to clean everything:
+```
+cd ios && pod deintegrate && pod cache clean --all && rm -rf Pods Podfile.lock ~/Library/Developer/Xcode/DerivedData && cd .. && npm install && cd ios && pod install && cd ..
+```
+
+## Linting and Code Quality
+The project uses a comprehensive code quality setup:
+
+1. **ESLint Configuration**:
+   - Uses Expo recommended config with Prettier integration
+   - Special plugin for detecting and removing unused imports
+   - Custom rules for variable naming and React imports
+
+2. **Pre-commit Hooks**:
+   - Husky runs lint-staged before each commit
+   - Prettier formatting on all TS/TSX files
+   - ESLint checks on modified files
+   - Jest tests on related test files
+
+3. **Manual Quality Checks**:
+   - `npm run lint`: Run ESLint on all files
+   - `npm run typecheck`: Run TypeScript type checking
+   - `npm run check-all`: Run all checks (prettier, eslint, typecheck, tests)
+   - `npm run fix-imports`: Fix unused imports automatically
+
+Always run both linting and type checking before submitting changes:
+```
+npm run lint && npm run typecheck
+```

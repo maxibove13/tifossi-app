@@ -17,6 +17,9 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 ├── assets/             # Static assets (images, fonts, icons)
 ├── docs/               # Documentation files
 ├── hooks/              # Custom React hooks
+│   ├── useProducts.ts  # Product data fetching hooks
+│   ├── useSearch.ts    # Search functionality hook
+│   └── useThemeColor.ts # Theme color selection
 ├── scripts/            # Project utility scripts
 ├── ios/                # iOS specific configuration
 ├── android/            # Android specific configuration
@@ -57,6 +60,12 @@ app/
 │   │   ├── dataLoader.ts      # Data loading utilities
 │   │   ├── homeAssets.ts      # Home screen asset loader
 │   │   └── types.ts           # Preload type definitions
+│   └── api/            # API service and mock implementations
+│       └── mockApi.ts  # Mock API for development
+├── _stores/            # Global state stores
+│   ├── cartStore.ts    # Shopping cart state management
+│   ├── favoritesStore.ts # Favorites state management
+│   └── authStore.ts    # Authentication state management
 ├── _types/             # TypeScript type definitions
 ├── _styles/            # Global styles and themes
 ├── _data/              # Mock data and content
@@ -337,36 +346,27 @@ interface CardDimensions {
 - Navigation Structure
 - Type System
 - Store Layout
-
-🟡 **Partially Implemented**
-- Form Components
-- Review System
-- User Authentication
-
-✅ **Fully Implemented**
-- Core UI Components
-- Product Card System
-- Navigation Structure
-- Type System
-- Store Layout
 - Swipeable Interfaces (Performance Optimized)
-
-🟡 **Partially Implemented**
-- Form Components
-- Review System
-- User Authentication
-
-✅ **Fully Implemented**
 - Advanced Animations
 - Loading States
 - Asset Preloading
 - Progressive Loading System
+- Local State Management (Cart, Favorites)
+
+🟡 **Partially Implemented**
+- Form Components
+- Review System
+- User Authentication
+- Server State Integration
 
 ## Additional Resources
 
 - Check [components.md](./components.md) for detailed component specifications
 - See [product_card.md](./product_card.md) for product card implementation details
 - See [loading_system.md](./loading_system.md) for details on the preloading and progressive loading system
+- See [state_management.md](./state_management.md) for overall state management strategy
+- See [local_state_management.md](./local_state_management.md) for client-side state implementation details
+- See [state_management_client_side.md](./state_management_client_side.md) for the full client-side state implementation plan
 
 ## Notes
 

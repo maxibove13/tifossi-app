@@ -1,26 +1,22 @@
-import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  FlatList,
-  TouchableOpacity,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, View, Text, ScrollView, FlatList, ViewStyle, TextStyle } from 'react-native';
 import { spacing, radius } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
-import { fonts, fontSizes, lineHeights } from '../_styles/typography';
+import { fonts, fontSizes } from '../_styles/typography';
 import { router } from 'expo-router';
 import EmptyFavorites from '../_components/store/favorites/EmptyFavorites';
 import Subheader from '../_components/common/Subheader';
 import PromotionCard from '../_components/store/product/promotion/PromotionCard';
 import { Product } from '../_types/product';
-import { getProductById, products } from '../_data/products';
 import DefaultLargeCard from '../_components/store/product/default/large';
+import { useFavoritesStore } from '../_stores/favoritesStore';
+import { useProducts } from '../../hooks/useProducts';
+import { getProductById, products } from '../_data/products';
+import FavoritesSkeleton from '../_components/skeletons/FavoritesSkeleton';
+import ScreenHeader from '../_components/common/ScreenHeader';
 
-// Dummy data for recently viewed products - use actual products from data file
+// Keeping recentlyViewedProducts based on static data for now
+// Consider fetching/deriving this differently if needed
 const recentlyViewedProducts: Product[] = [
   getProductById('neceser-ball') || products[0],
   getProductById('mochila-classic') || products[1],
@@ -29,20 +25,9 @@ const recentlyViewedProducts: Product[] = [
   getProductById('cap-v3') || products[4],
 ].filter((p): p is Product => p !== undefined);
 
-// Mock favorite product IDs
-const mockFavoriteIds = ['neceser-ball', 'mochila-sq', 'socks-v2', 'media-fast', 'buzo-oversize'];
-
-// Get mock favorite products from data
-const mockFavoriteProducts: Product[] = mockFavoriteIds
-  .map((id) => getProductById(id))
-  .filter((p): p is Product => p !== undefined);
-
 // Define Styles type
 type Styles = {
   container: ViewStyle;
-  header: ViewStyle;
-  headerTopSpace: ViewStyle;
-  title: TextStyle;
   toggleButton: ViewStyle;
   toggleButtonText: TextStyle;
   scrollContent: ViewStyle;
@@ -52,14 +37,30 @@ type Styles = {
   cardWrapper: ViewStyle;
   section: ViewStyle;
   horizontalScrollContent: ViewStyle;
+  centeredStatus: ViewStyle;
+  errorText: TextStyle;
 };
 
 export default function FavoritesScreen() {
-  // TEMPORARY FOR TESTING - START
-  const [showMockItems, setShowMockItems] = useState(true);
-  const [favorites, setFavorites] = useState<Product[]>(showMockItems ? mockFavoriteProducts : []);
-  const isEmpty = favorites.length === 0;
-  // TEMPORARY FOR TESTING - END
+  // Get all products with loading/error states
+  const { data: allProducts = [], isLoading, isError } = useProducts();
+
+  // Get favorites state
+  const favoriteIds = useFavoritesStore((state) => state.productIds);
+
+  // Convert favorite IDs to actual product objects
+  const favorites = useMemo<Product[]>(() => {
+    // Handle case where products are loading or empty
+    if (!allProducts || allProducts.length === 0) {
+      return [];
+    }
+    return favoriteIds
+      .map((id) => allProducts.find((product) => product.id === id))
+      .filter((product): product is Product => product !== undefined);
+  }, [favoriteIds, allProducts]);
+
+  // isEmpty should reflect the calculated favorites AFTER loading/filtering
+  const isEmpty = !isLoading && !isError && favorites.length === 0;
 
   const handleGoToStore = () => {
     router.replace('/');
@@ -73,41 +74,41 @@ export default function FavoritesScreen() {
     console.log('View all recently viewed products');
   };
 
-  // TEMPORARY FOR TESTING - START
-  const toggleFavoritesView = () => {
-    const nextShowMockItems = !showMockItems;
-    setShowMockItems(nextShowMockItems);
-    setFavorites(nextShowMockItems ? mockFavoriteProducts : []);
-  };
-  // TEMPORARY FOR TESTING - END
-
   const renderFavoriteItem = ({ item }: { item: Product }) => {
     return (
       <View style={styles.cardWrapper}>
-        <DefaultLargeCard
-          product={item}
-          onPress={() => handleProductPress(item.id)}
-          isFavorite={true} // All items in this list are favorites
-        />
+        <DefaultLargeCard product={item} onPress={() => handleProductPress(item.id)} />
       </View>
     );
   };
 
+  // Loading State - Use Skeleton
+  if (isLoading) {
+    return <FavoritesSkeleton />;
+  }
+
+  // Error State
+  if (isError) {
+    return (
+      <View style={styles.container}>
+        <ScreenHeader title="Favorites" />
+        <View style={styles.centeredStatus}>
+          <Text style={styles.errorText}>Failed to load products. Please try again later.</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Main Content (Favorites or Empty State)
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTopSpace} />
-        <Text style={styles.title}>Favorites</Text>
-        {/* TEMPORARY FOR TESTING - START */}
-        <TouchableOpacity onPress={toggleFavoritesView} style={styles.toggleButton}>
-          <Text style={styles.toggleButtonText}>{showMockItems ? 'Ver Vacío' : 'Ver Items'}</Text>
-        </TouchableOpacity>
-        {/* TEMPORARY FOR TESTING - END */}
-      </View>
-
+      <ScreenHeader title="Favorites" />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, isEmpty && styles.scrollContentEmpty]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isEmpty && styles.scrollContentEmpty, // Apply empty style only when truly empty
+        ]}
       >
         {isEmpty ? (
           <>
@@ -160,22 +161,6 @@ const styles = StyleSheet.create<Styles>({
     flex: 1,
     backgroundColor: colors.background.light,
   },
-  header: {
-    backgroundColor: colors.background.light,
-    paddingTop: spacing.xxxl,
-    paddingBottom: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-  },
-  headerTopSpace: {
-    height: spacing.xxxl,
-  },
-  title: {
-    fontSize: fontSizes.xxxl,
-    lineHeight: lineHeights.xxxl,
-    color: colors.primary,
-    fontFamily: fonts.primary,
-  },
   toggleButton: {
     backgroundColor: colors.secondary,
     paddingVertical: spacing.xs,
@@ -192,7 +177,8 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: colors.background.light,
   },
   scrollContentEmpty: {
-    backgroundColor: colors.background.light,
+    // No specific style needed here now, handled by isEmpty logic structure
+    // Keeping for potential future use
   },
   gridContainer: {
     padding: spacing.md,
@@ -212,5 +198,18 @@ const styles = StyleSheet.create<Styles>({
   horizontalScrollContent: {
     paddingHorizontal: spacing.lg,
     gap: spacing.md,
+  },
+  // Added styles for loading/error states
+  centeredStatus: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  errorText: {
+    color: colors.error,
+    textAlign: 'center',
+    fontSize: fontSizes.md,
+    fontFamily: fonts.primary,
   },
 });

@@ -37,26 +37,17 @@ interface SizeableProductCardProps<T extends CardVariant> extends BaseProductCar
   size?: CardSizeByVariant<T>
 }
 
-export const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensions>>> = {
+// Note: The CARD_DIMENSIONS constant itself might not be directly exported.
+// Use the getCardDimensions helper function (see Type Safety section) for reliable access.
+/* Example internal structure:
+const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensions>>> = {
   default: {
     small: { width: 132, height: 196, imageSize: 132 },
     large: { width: 160, height: 272, imageSize: 160 }
   },
-  featured: {
-    small: { width: 'full', height: 420, imageSize: 220 },
-    large: { width: 'full', height: 160, imageSize: 160 }
-  },
-  horizontal: {
-    large: { width: 'full', height: 142, imageSize: 119 }
-  },
-  minicard: {
-    large: { width: 128, height: 304, imageSize: 256 }
-  },
-  'image-only': {
-    small: { width: 132, height: 132, imageSize: 132 },
-    large: { width: 160, height: 264, imageSize: 160 }
-  }
+  // ... other variants ...
 }
+*/
 ```
 
 ### Card Variants
@@ -294,6 +285,8 @@ import { Default as DefaultCard } from '../_components/store/product';
 ### 5. Type Safety
 - Use proper type guards for validation:
 ```typescript
+// Located in: app/_types/product-card.ts (or similar utility location)
+
 export function isValidSize(size: unknown): size is CardSize {
   return typeof size === 'string' && (size === 'small' || size === 'large')
 }
@@ -302,17 +295,30 @@ export function isValidCardSize<T extends CardVariant>(
   variant: T,
   size: unknown
 ): size is CardSizeByVariant<T> {
-  return isValidSize(size) && size in CARD_DIMENSIONS[variant]
+  // Assumes CARD_DIMENSIONS is accessible within this scope or imported
+  // const internalCardDimensions = ...
+  return isValidSize(size) && size in internalCardDimensions[variant]
 }
 ```
 - Use dimension helpers:
 ```typescript
+// Located in: app/_types/product-card.ts (or similar utility location)
+
+// This is the preferred way to access card dimensions:
 export function getCardDimensions<T extends CardVariant>(
   variant: T,
   size: CardSizeByVariant<T>
 ): CardDimensions {
-  return CARD_DIMENSIONS[variant][size] as CardDimensions
+  // Assumes CARD_DIMENSIONS is accessible within this scope or imported
+  // const internalCardDimensions = ...
+  return internalCardDimensions[variant][size] as CardDimensions
 }
+
+// Example Usage:
+import { getCardDimensions } from '../../_types/product-card';
+
+const defaultLargeDims = getCardDimensions('default', 'large');
+console.log(defaultLargeDims.width); // 160
 ```
 - Keep types in sync with implementation
 - Document type constraints

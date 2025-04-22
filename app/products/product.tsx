@@ -8,17 +8,30 @@ import { colors } from '../_styles/colors';
 import { isProduct, Product } from '../_types/product';
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { useCartStore } from '../_stores/cartStore';
+import { useFavoritesStore } from '../_stores/favoritesStore';
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+
+  // We keep the direct data fetch for now, but in the future we could replace with TanStack Query
   const product = ProductData.getProductById(id as string);
+  // const { data: product, isLoading } = useProduct(id as string);
 
   // State for selected color and quantity
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product?.colors && product.colors.length > 0 ? product.colors[0].colorName : undefined
   );
-  const [selectedQuantity, _setSelectedQuantity] = useState(1);
+  const [selectedSize, _setSelectedSize] = useState<string | undefined>(
+    product?.sizes && product.sizes.length > 0 ? product.sizes[0].value : undefined
+  );
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+
+  // Cart and favorites global state
+  const addItemToCart = useCartStore((state) => state.addItem);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+  const isFavorite = useFavoritesStore((state) => (product ? state.isFavorite(product.id) : false));
 
   // Get recommended products data
   const recommendedProducts = ProductData.getRecommendedProducts().filter((p) => p.id !== id);
@@ -30,13 +43,39 @@ export default function ProductScreen() {
   const trendingProducts = ProductData.getTrendingProducts().filter((p) => p.id !== id);
 
   const handleAddToCart = async (product: Product, quantity: number = selectedQuantity) => {
-    // Add to cart logic with quantity
-    console.log('Added to cart', {
-      product: product.id,
-      quantity,
-    });
+    if (!product) return Promise.resolve();
 
-    return Promise.resolve(); // Return a resolved promise for the async function
+    try {
+      await addItemToCart({
+        productId: product.id,
+        quantity,
+        color: selectedColor,
+        size: selectedSize,
+      });
+
+      console.log('Added to cart', {
+        product: product.id,
+        quantity,
+        color: selectedColor,
+        size: selectedSize,
+      });
+
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      return Promise.reject(error);
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!product) return;
+
+    try {
+      await toggleFavorite(product.id);
+      console.log(isFavorite ? 'Removed from favorites' : 'Added to favorites', product.id);
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+    }
   };
 
   const handleProductPress = (productId: string) => {
@@ -94,6 +133,7 @@ export default function ProductScreen() {
             warranty: product.warranty,
             returnPolicy: product.returnPolicy,
             dimensions: product.dimensions,
+            isFavorite: isFavorite, // Pass favorite state
           }}
           relatedProducts={relatedProducts}
           recommendedProducts={recommendedProducts}
@@ -102,7 +142,10 @@ export default function ProductScreen() {
           onViewMore={handleViewMore}
           onSupportAction={handleSupportAction}
           onProductPress={handleProductPress}
+          onToggleFavorite={handleToggleFavorite} // Pass favorite toggle handler
           onExpandedChange={(expanded) => console.log('Panel expanded:', expanded)}
+          quantity={selectedQuantity}
+          onQuantityChange={setSelectedQuantity}
         />
       </View>
     </View>
@@ -128,6 +171,7 @@ export const screenExport = {
 };
 
 // Add metadata to help router identification
+// eslint-disable-next-line unused-imports/no-unused-vars
 const metadata = {
   isRoute: false,
   componentType: 'Component',

@@ -1,24 +1,20 @@
-import { View, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
-import Animated, {
-  useAnimatedStyle,
-  withSpring,
-  useSharedValue,
-} from 'react-native-reanimated'
+import { View, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-native-reanimated';
 
-type SelectionType = 'radio' | 'checkbox'
+type SelectionType = 'radio' | 'checkbox';
 
 interface SelectionControlProps {
-  type?: SelectionType
-  label: string
-  selected?: boolean
-  disabled?: boolean
-  error?: string
-  onSelect?: () => void
-  containerStyle?: StyleProp<ViewStyle>
+  type?: SelectionType;
+  label: string;
+  selected?: boolean;
+  disabled?: boolean;
+  error?: string;
+  onSelect?: () => void;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
-const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons)
+const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
 export function SelectionControl({
   type = 'checkbox',
@@ -29,21 +25,21 @@ export function SelectionControl({
   onSelect,
   containerStyle,
 }: SelectionControlProps) {
-  const scale = useSharedValue(1)
+  const scale = useSharedValue(1);
 
   function handlePress() {
-    if (disabled) return
+    if (disabled) return;
 
     scale.value = withSpring(0.8, {}, () => {
       scale.value = withSpring(1, {}, () => {
-        onSelect?.()
-      })
-    })
+        onSelect?.();
+      });
+    });
   }
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-  }))
+  }));
 
   function renderIcon() {
     if (type === 'radio') {
@@ -58,51 +54,34 @@ export function SelectionControl({
         >
           {selected && <View style={styles.radioInner} />}
         </View>
-      )
+      );
     }
 
     return (
       <AnimatedIonicons
         name={selected ? 'checkbox' : 'square-outline'}
         size={24}
-        color={
-          disabled
-            ? '#DCDCDC'
-            : error
-            ? '#AD3026'
-            : selected
-            ? '#0C0C0C'
-            : '#707070'
-        }
+        color={disabled ? '#DCDCDC' : error ? '#AD3026' : selected ? '#0C0C0C' : '#707070'}
         style={animatedStyle}
       />
-    )
+    );
   }
 
   return (
     <View style={[styles.container, containerStyle]}>
       <TouchableOpacity
-        style={[
-          styles.control,
-          disabled && styles.controlDisabled,
-        ]}
+        style={[styles.control, disabled && styles.controlDisabled]}
         onPress={handlePress}
         disabled={disabled}
       >
         {renderIcon()}
-        <Text
-          style={[
-            styles.label,
-            disabled && styles.labelDisabled,
-            error && styles.labelError,
-          ]}
-        >
+        <Text style={[styles.label, disabled && styles.labelDisabled, error && styles.labelError]}>
           {label}
         </Text>
       </TouchableOpacity>
       {error && <Text style={styles.error}>{error}</Text>}
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -160,13 +139,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 32,
   },
-})
+});
 
 // Ensure this component is not treated as a route
 export default SelectionControl;
 
 // Add metadata to help router identification
+// eslint-disable-next-line unused-imports/no-unused-vars
 const metadata = {
   isRoute: false,
-  componentType: 'Component'
+  componentType: 'Component',
 };

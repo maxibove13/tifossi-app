@@ -4,3 +4,10 @@ export interface Category {
   slug: string; // e.g., "medias" (for URLs/keys)
   displayOrder?: number; // Optional: for sorting in the UI
 }
+
+const utilityExport = {
+  name: 'CategoryType',
+  version: '1.0.0',
+};
+
+export default utilityExport;

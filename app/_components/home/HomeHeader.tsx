@@ -1,6 +1,7 @@
 import { StyleSheet, View, Image } from 'react-native';
+import { memo } from 'react';
 
-export default function HomeHeader() {
+const HomeHeader = memo(() => {
   return (
     <View style={styles.container}>
       <Image
@@ -10,7 +11,9 @@ export default function HomeHeader() {
       />
     </View>
   );
-}
+});
+
+export default HomeHeader;
 
 const styles = StyleSheet.create({
   container: {
@@ -20,4 +23,4 @@ const styles = StyleSheet.create({
     width: 50.7,
     height: 48,
   },
-}); 
+});

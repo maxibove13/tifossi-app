@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { colors } from '../../../../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../_styles/typography';
 import { Product } from '../../../../_types/product';
-import { Ionicons } from '@expo/vector-icons';
 import ProductImage from '../image/ProductImage';
-import HeartActiveIcon from '../../../ui/icons/HeartActiveIcon';
 import { ProductLabel } from '../../../../_types/product-status';
+import { useFavoriteStatus } from '../../../../../hooks/useFavoriteStatus';
+
+// Import SVG icons
+import HeartActive from '../../../../../assets/icons/heart_active.svg';
+import HeartInactive from '../../../../../assets/icons/heart_inactive.svg';
 
 type ProductCardSize = 's' | 'm' | 'l';
 
@@ -16,7 +19,6 @@ type PromotionCardProps = {
   onPress?: () => void;
   darkMode?: boolean;
   invertTextColor?: boolean;
-  isFavorite?: boolean;
 };
 
 const PromotionCard = ({
@@ -25,21 +27,11 @@ const PromotionCard = ({
   onPress,
   darkMode = false,
   invertTextColor = false,
-  isFavorite = false,
 }: PromotionCardProps) => {
-  const [isCurrentlyFavorite, setIsCurrentlyFavorite] = useState(isFavorite);
+  const { isFavorite, toggle: toggleFavorite } = useFavoriteStatus(product.id);
   const _isSmall = size === 's';
   const { title, price, discountedPrice, frontImage, label } = product;
 
-  const handleWishlistPress = () => {
-    setIsCurrentlyFavorite((prev) => !prev);
-    console.log('Wishlist button pressed for product:', product.id);
-  };
-
-  const iconColor = darkMode ? colors.background.light : colors.primary;
-  const inactiveIconColor = darkMode ? colors.background.light : '#DCDCDC';
-
-  // Determine label color based on discount
   const hasDiscount = discountedPrice !== undefined && discountedPrice < price;
   const labelColor = hasDiscount ? colors.error : colors.tag.new;
 
@@ -49,14 +41,14 @@ const PromotionCard = ({
         <ProductImage source={frontImage} size={132} />
         <Pressable
           style={styles.wishlistButton}
-          onPress={handleWishlistPress}
+          onPress={toggleFavorite}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          aria-label={isCurrentlyFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
-          {isCurrentlyFavorite ? (
-            <HeartActiveIcon size={24} color={iconColor} />
+          {isFavorite ? (
+            <HeartActive width={24} height={24} />
           ) : (
-            <Ionicons name="heart-outline" size={24} color={inactiveIconColor} />
+            <HeartInactive width={24} height={24} />
           )}
         </Pressable>
       </View>

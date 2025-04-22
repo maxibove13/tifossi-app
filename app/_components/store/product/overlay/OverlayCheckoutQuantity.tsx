@@ -10,10 +10,10 @@ import {
   TextStyle,
   Dimensions,
   Animated,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
 } from 'react-native';
 // SVG components for quantity control
-// @ts-ignore - Import SVG components 
+// @ts-ignore - Import SVG components
 import MinusIcon from '../../../../../assets/icons/quantity/minus.svg';
 // @ts-ignore - Import SVG components
 import PlusIcon from '../../../../../assets/icons/quantity/plus.svg';
@@ -28,7 +28,7 @@ const { height } = Dimensions.get('window');
 
 // Constants
 const MAX_QUANTITY = 16;
-const MIN_QUANTITY = 0;
+const MIN_QUANTITY = 1;
 const ITEM_HEIGHT = 44; // Height of each number item in the wheel
 
 interface OverlayCheckoutQuantityProps {
@@ -44,11 +44,11 @@ export default function OverlayCheckoutQuantity({
   onClose,
   onGoBack,
   onSave,
-  initialQuantity = 1
+  initialQuantity = 1,
 }: OverlayCheckoutQuantityProps) {
   // State for quantity
   const [quantity, setQuantity] = useState(initialQuantity);
-  
+
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(height));
@@ -76,7 +76,7 @@ export default function OverlayCheckoutQuantity({
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
-        })
+        }),
       ]).start();
     } else {
       // Reset animation values when overlay is hidden
@@ -90,12 +90,12 @@ export default function OverlayCheckoutQuantity({
     if (quantity > MIN_QUANTITY) {
       const newQuantity = quantity - 1;
       setQuantity(newQuantity);
-      
+
       // Animate wheel position
       Animated.timing(wheelPosition, {
         toValue: -ITEM_HEIGHT * newQuantity,
         duration: 200,
-        useNativeDriver: true
+        useNativeDriver: true,
       }).start();
     }
   };
@@ -104,12 +104,12 @@ export default function OverlayCheckoutQuantity({
     if (quantity < MAX_QUANTITY) {
       const newQuantity = quantity + 1;
       setQuantity(newQuantity);
-      
+
       // Animate wheel position
       Animated.timing(wheelPosition, {
         toValue: -ITEM_HEIGHT * newQuantity,
         duration: 200,
-        useNativeDriver: true
+        useNativeDriver: true,
       }).start();
     }
   };
@@ -121,30 +121,15 @@ export default function OverlayCheckoutQuantity({
   };
 
   return (
-    <Modal
-      transparent
-      visible={isVisible}
-      onRequestClose={onClose}
-      animationType="none"
-    >
+    <Modal transparent visible={isVisible} onRequestClose={onClose} animationType="none">
       <View style={styles.modalContainer}>
         {/* Animated overlay background that can be tapped to close */}
         <TouchableWithoutFeedback onPress={onClose}>
-          <Animated.View 
-            style={[
-              styles.overlay, 
-              { opacity: fadeAnim }
-            ]} 
-          />
+          <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />
         </TouchableWithoutFeedback>
 
         {/* Animated container that slides up */}
-        <Animated.View 
-          style={[
-            styles.container, 
-            { transform: [{ translateY: slideAnim }] }
-          ]}
-        >
+        <Animated.View style={[styles.container, { transform: [{ translateY: slideAnim }] }]}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Modificar cantidad</Text>
@@ -164,26 +149,25 @@ export default function OverlayCheckoutQuantity({
                   <MinusIcon width={16} height={2} stroke="#0C0C0C" strokeWidth={1.6} />
                 </View>
               </TouchableOpacity>
-              
+
               {/* Display quantity with wheel effect */}
               <View style={styles.quantityDisplay}>
                 {/* Selection indicator overlay */}
                 <View style={styles.selectionIndicator} />
-                
+
                 {/* Animated wheel of numbers */}
                 <View style={styles.wheelContainer}>
-                  <Animated.View 
-                    style={[
-                      styles.wheel,
-                      { transform: [{ translateY: wheelPosition }] }
-                    ]}
+                  <Animated.View
+                    style={[styles.wheel, { transform: [{ translateY: wheelPosition }] }]}
                   >
-                    {Array.from({ length: MAX_QUANTITY + 1 }, (_, i) => i).map(num => (
+                    {Array.from({ length: MAX_QUANTITY + 1 }, (_, i) => i).map((num) => (
                       <View key={num} style={styles.wheelItem}>
-                        <Text style={[
-                          styles.wheelItemText,
-                          num === quantity && styles.activeWheelItemText
-                        ]}>
+                        <Text
+                          style={[
+                            styles.wheelItemText,
+                            num === quantity && styles.activeWheelItemText,
+                          ]}
+                        >
                           {num}
                         </Text>
                       </View>
@@ -191,7 +175,7 @@ export default function OverlayCheckoutQuantity({
                   </Animated.View>
                 </View>
               </View>
-              
+
               {/* Increase button */}
               <TouchableOpacity
                 style={styles.counterButton}
@@ -209,20 +193,12 @@ export default function OverlayCheckoutQuantity({
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
             {/* Back button */}
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={onGoBack}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.backButton} onPress={onGoBack} activeOpacity={0.7}>
               <Text style={styles.backButtonText}>Atrás</Text>
             </TouchableOpacity>
-            
+
             {/* Save button */}
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleSave}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave} activeOpacity={0.7}>
               <Text style={styles.saveButtonText}>Guardar</Text>
             </TouchableOpacity>
           </View>
@@ -271,12 +247,12 @@ const styles = StyleSheet.create<Styles>({
     borderTopRightRadius: radius.lg,
     padding: spacing.xxl,
     paddingBottom: spacing.xxl + 2,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: -4,
     },
-    shadowOpacity: 0.10,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 10,
     width: '100%',
@@ -402,4 +378,4 @@ const styles = StyleSheet.create<Styles>({
     lineHeight: 20,
     color: '#FBFBFB',
   },
-}); 
+});

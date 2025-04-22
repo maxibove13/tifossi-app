@@ -224,7 +224,6 @@ function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Home Header - Static, always shown */}
         <StoreHeader />
 
         {/* Horizontal Scroll - Highlighted Products with Progressive Loading */}
@@ -535,7 +534,8 @@ const styles = StyleSheet.create({
 export default HomeScreen;
 
 // Add metadata to help router identification
-const _metadata = {
+// eslint-disable-next-line unused-imports/no-unused-vars
+const metadata = {
   isRoute: false,
   componentType: 'Component',
 };

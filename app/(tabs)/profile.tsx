@@ -16,6 +16,7 @@ import { Feather } from '@expo/vector-icons';
 import { spacing, radius } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights } from '../_styles/typography';
+import ScreenHeader from '../_components/common/ScreenHeader';
 
 // Import SVGs as React components
 import MapPinIcon from '../../assets/icons/map-pin.svg';
@@ -101,10 +102,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTopSpace} />
-        <Text style={styles.title}>Perfil</Text>
-      </View>
+      <ScreenHeader title="Perfil" />
 
       {/* --- TEMPORARY BUTTON --- */}
       <Button
@@ -149,9 +147,6 @@ export default function ProfileScreen() {
 
 type Styles = {
   container: ViewStyle;
-  header: ViewStyle;
-  headerTopSpace: ViewStyle;
-  title: TextStyle;
   profileCardBackground: ViewStyle;
   backgroundImageStyle: ImageStyle;
   backgroundOverlay: ViewStyle;
@@ -179,22 +174,6 @@ const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
     backgroundColor: colors.background.light,
-  },
-  header: {
-    backgroundColor: colors.background.light,
-    paddingTop: spacing.xxxl,
-    paddingBottom: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-  },
-  headerTopSpace: {
-    height: spacing.xxxl,
-  },
-  title: {
-    fontSize: fontSizes.xxxl,
-    lineHeight: lineHeights.xxxl,
-    color: colors.primary,
-    fontFamily: fonts.primary,
   },
   profileCardBackground: {
     paddingVertical: spacing.lg, // Adjusted padding for logged out view

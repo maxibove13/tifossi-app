@@ -1,6 +1,7 @@
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useState } from 'react';
 import ToggleSport from '../../ui/toggle/ToggleSport';
+import { colors } from '../../../_styles/colors';
 
 // Import SVG icon
 import SearchIcon from '../../../../assets/icons/search_glass.svg';
@@ -11,15 +12,8 @@ function StoreHeader() {
   return (
     <View style={styles.header}>
       <View style={styles.toggleParent}>
-        <ToggleSport 
-          mode={mode}
-          onToggle={setMode}
-          size="l"
-          style={styles.toggle}
-        />
-        <Pressable
-          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-        >
+        <ToggleSport mode={mode} onToggle={setMode} size="l" style={styles.toggle} />
+        <Pressable hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}>
           <SearchIcon width={24} height={24} />
         </Pressable>
       </View>
@@ -35,6 +29,8 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     paddingHorizontal: 16,
     gap: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   toggleParent: {
     flexDirection: 'row',
@@ -62,9 +58,3 @@ const styles = StyleSheet.create({
 
 // Ensure this component is not treated as a route
 export default StoreHeader;
-
-// Add metadata to help router identification
-const metadata = {
-  isRoute: false,
-  componentType: 'Layout'
-}; 

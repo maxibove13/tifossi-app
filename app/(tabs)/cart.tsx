@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import { spacing, radius } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights } from '../_styles/typography';
@@ -12,6 +12,10 @@ import CartProductCard from '../_components/store/product/cart/CartProductCard';
 import Button from '../_components/ui/buttons/Button';
 import Dropdown from '../_components/ui/form/Dropdown';
 import { getProductById, products } from '../_data/products';
+import { useCartStore } from '../_stores/cartStore';
+import { useProducts } from '../../hooks/useProducts';
+import ScreenHeader from '../_components/common/ScreenHeader';
+import OverlayProductEdit from '../_components/store/product/overlay/OverlayProductEdit';
 
 // Dummy data for recently viewed products - use actual products from data file
 const recentlyViewedProducts: Product[] = [
@@ -23,46 +27,46 @@ const recentlyViewedProducts: Product[] = [
 ].filter((p): p is Product => p !== undefined);
 
 // Cart item interface - simply extends Product with quantity
-interface CartItem extends Product {
+interface CartDisplayItem extends Product {
   quantity: number;
   selectedSize?: string;
   color?: string; // Override color display in cart
 }
 
-// Dummy data for cart items - use actual products from data file
-const mockCartItems: CartItem[] = [
-  {
-    ...getProductById('socks-v2')!,
-    quantity: 1,
-    selectedSize: 'M',
-    color: 'Blanco',
-  },
-  {
-    ...getProductById('mochila-classic')!,
-    quantity: 2,
-    color: 'Gris',
-    // No selected size yet, will use sizes array from the product
-  },
-  {
-    ...getProductById('mochila-sq')!, // Product has price: 1190, discountedPrice: 890
-    quantity: 1,
-    color: 'Gris',
-  },
-].filter(Boolean) as CartItem[];
-
 export default function CartScreen() {
-  // ---- TEMPORARY FOR TESTING - START ----
-  // State to track which view to show (for testing)
-  const [showMockItems, setShowMockItems] = useState(true);
+  // Get all products
+  const { data: allProducts = [] } = useProducts();
 
-  // Initialize cartItems based on the test state
-  const [cartItems, setCartItems] = useState<CartItem[]>(showMockItems ? mockCartItems : []);
+  // Get cart state
+  const cartStoreItems = useCartStore((state) => state.items);
+  const updateItemQuantity = useCartStore((state) => state.updateItemQuantity);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const addItem = useCartStore((state) => state.addItem);
+
+  // State for edit overlay
+  const [isEditOverlayVisible, setIsEditOverlayVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<CartDisplayItem | null>(null);
+
+  // Convert cart items to CartDisplayItem format with full product details
+  const cartItems = useMemo(() => {
+    const result: CartDisplayItem[] = [];
+
+    for (const item of cartStoreItems) {
+      const product = allProducts.find((p) => p.id === item.productId);
+      if (product) {
+        result.push({
+          ...product,
+          quantity: item.quantity,
+          selectedSize: item.size,
+          color: item.color,
+        });
+      }
+    }
+
+    return result;
+  }, [cartStoreItems, allProducts]);
+
   const isEmpty = cartItems.length === 0;
-  // ---- TEMPORARY FOR TESTING - END ----
-
-  // In a real implementation, this would come from a cart context or store
-  // const [cartItems, setCartItems] = useState<CartItem[]>([]); // Replace temporary state with this later
-  // const isEmpty = cartItems.length === 0; // Use this later
 
   const handleGoToStore = () => {
     router.replace('/');
@@ -76,17 +80,39 @@ export default function CartScreen() {
     console.log('View all recently viewed products');
   };
 
-  const handleQuantityChange = (id: string, quantity: number) => {
-    setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity } : item)));
+  const handleQuantityChange = (id: string, newQuantity: number, color?: string, size?: string) => {
+    updateItemQuantity(id, color, size, newQuantity);
   };
 
-  const handleRemoveItem = (id: string) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
+  const handleRemoveItem = (id: string, color?: string, size?: string) => {
+    removeItem(id, color, size);
   };
 
-  const handleEditItem = (id: string) => {
-    console.log('Edit item', id);
-    // In a real implementation, navigate to product edit page or show modal
+  const handleEditItem = (item: CartDisplayItem) => {
+    setEditingItem(item);
+    setIsEditOverlayVisible(true);
+  };
+
+  const handleSaveEdit = (newSize: string, newQuantity: number) => {
+    if (editingItem) {
+      removeItem(editingItem.id, editingItem.color, editingItem.selectedSize);
+      addItem({
+        productId: editingItem.id,
+        quantity: newQuantity,
+        size: newSize,
+        color: editingItem.color,
+      });
+    }
+    setIsEditOverlayVisible(false);
+    setEditingItem(null);
+  };
+
+  const handleRemoveFromEdit = () => {
+    if (editingItem) {
+      removeItem(editingItem.id, editingItem.color, editingItem.selectedSize);
+    }
+    setIsEditOverlayVisible(false);
+    setEditingItem(null);
   };
 
   const calculateTotal = () => {
@@ -119,27 +145,9 @@ export default function CartScreen() {
     // Logic to show gift card options
   };
 
-  // ---- TEMPORARY FOR TESTING - START ----
-  // Handler to toggle the view
-  const toggleCartView = () => {
-    const nextShowMockItems = !showMockItems;
-    setShowMockItems(nextShowMockItems);
-    setCartItems(nextShowMockItems ? mockCartItems : []);
-  };
-  // ---- TEMPORARY FOR TESTING - END ----
-
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTopSpace} />
-        <Text style={styles.title}>Carrito</Text>
-        {/* ---- TEMPORARY FOR TESTING - START ---- */}
-        {/* Temporary Toggle Button for Dev - REMOVE LATER */}
-        <TouchableOpacity onPress={toggleCartView} style={styles.toggleButton}>
-          <Text style={styles.toggleButtonText}>{showMockItems ? 'Ver Vacío' : 'Ver Items'}</Text>
-        </TouchableOpacity>
-        {/* ---- TEMPORARY FOR TESTING - END ---- */}
-      </View>
+      <ScreenHeader title="Carrito" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -156,12 +164,14 @@ export default function CartScreen() {
             <View style={styles.cartItemsContainer}>
               {cartItems.map((item) => (
                 <CartProductCard
-                  key={item.id}
+                  key={`${item.id}-${item.color}-${item.selectedSize}`}
                   product={item}
                   quantity={item.quantity}
-                  onQuantityChange={(quantity) => handleQuantityChange(item.id, quantity)}
-                  onRemove={() => handleRemoveItem(item.id)}
-                  onEdit={() => handleEditItem(item.id)}
+                  onQuantityChange={(quantity) =>
+                    handleQuantityChange(item.id, quantity, item.color, item.selectedSize)
+                  }
+                  onRemove={() => handleRemoveItem(item.id, item.color, item.selectedSize)}
+                  onEdit={() => handleEditItem(item)}
                 />
               ))}
             </View>
@@ -263,6 +273,22 @@ export default function CartScreen() {
           />
         </View>
       )}
+
+      {/* Edit Overlay - Render conditionally */}
+      {editingItem && (
+        <OverlayProductEdit
+          isVisible={isEditOverlayVisible}
+          onClose={() => {
+            setIsEditOverlayVisible(false);
+            setEditingItem(null);
+          }}
+          onSave={handleSaveEdit}
+          onRemove={handleRemoveFromEdit}
+          initialQuantity={editingItem.quantity}
+          initialSize={editingItem.selectedSize || ''}
+          product={editingItem}
+        />
+      )}
     </View>
   );
 }
@@ -270,37 +296,8 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.medium, // Light gray background for the main container
+    backgroundColor: colors.background.medium, // Adjusted background for Cart
   },
-  header: {
-    backgroundColor: colors.background.light,
-    paddingTop: spacing.xxxl,
-    paddingBottom: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-  },
-  headerTopSpace: {
-    height: spacing.xxxl, // Match the height that the toggle/search takes in the Tienda tab
-  },
-  title: {
-    fontSize: fontSizes.xxxl,
-    lineHeight: lineHeights.xxxl,
-    color: colors.primary,
-    fontFamily: fonts.primary,
-  },
-  // ---- TEMPORARY FOR TESTING - START ----
-  // Styles for the toggle button - REMOVE LATER
-  toggleButton: {
-    backgroundColor: colors.secondary,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.xs,
-  },
-  toggleButtonText: {
-    color: colors.background.light,
-    fontSize: fontSizes.sm,
-  },
-  // ---- TEMPORARY FOR TESTING - END ----
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 100, // Adjusted padding for checkout button

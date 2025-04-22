@@ -44,6 +44,7 @@ export default function OverlayCheckoutShipping({
   isVisible,
   onClose,
   onSelectSize,
+  onSelectQuantity,
   onBuyNow: _onBuyNow = () => {},
   onAddToCart = () => {},
   initialQuantity = 1,
@@ -88,6 +89,8 @@ export default function OverlayCheckoutShipping({
 
   const handleQuantitySave = (quantity: number) => {
     setSelectedQuantity(quantity);
+    // Call the prop function to update the state in the parent (SwipeableEdge)
+    onSelectQuantity(quantity);
     // Just update the quantity state without calling onSelectQuantity yet
     // User will return to this overlay after selecting a quantity
   };

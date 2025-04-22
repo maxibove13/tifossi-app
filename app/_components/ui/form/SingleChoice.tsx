@@ -1,18 +1,18 @@
-import { View, StyleSheet, StyleProp, ViewStyle } from 'react-native'
-import { SelectionControl } from './SelectionControl'
+import { View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { SelectionControl } from './SelectionControl';
 
 interface Option {
-  value: string
-  label: string
-  disabled?: boolean
+  value: string;
+  label: string;
+  disabled?: boolean;
 }
 
 interface SingleChoiceProps {
-  options: Option[]
-  value?: string
-  error?: string
-  onChange: (value: string) => void
-  containerStyle?: StyleProp<ViewStyle>
+  options: Option[];
+  value?: string;
+  error?: string;
+  onChange: (value: string) => void;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 export function SingleChoice({
@@ -37,7 +37,7 @@ export function SingleChoice({
         />
       ))}
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -47,13 +47,14 @@ const styles = StyleSheet.create({
   option: {
     marginTop: 8,
   },
-})
+});
 
 // Ensure this component is not treated as a route
 export default SingleChoice;
 
 // Add metadata to help router identification
+// eslint-disable-next-line unused-imports/no-unused-vars
 const metadata = {
   isRoute: false,
-  componentType: 'Component'
+  componentType: 'Component',
 };

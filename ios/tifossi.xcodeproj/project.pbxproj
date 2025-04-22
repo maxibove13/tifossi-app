@@ -11,11 +11,11 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		503896AD732F31DF39572521 /* libPods-tifossi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 61EA0B81413A7EA6D20821DB /* libPods-tifossi.a */; };
-		8B1E27AD6CCA562CDA6C3652 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B84C3A7EB543E1084B5CD0CC /* PrivacyInfo.xcprivacy */; };
-		AFB56F961B3F496782C5617F /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F6CEB06A894C71BDF5C108 /* noop-file.swift */; };
+		3F1663CFAD04215B65F0AB5B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F4CA73CB194F45C4D88AE4FC /* PrivacyInfo.xcprivacy */; };
+		41C0DEC413B217FC09B0D796 /* libPods-tifossi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 65809299E9AC7D7E6A7CA937 /* libPods-tifossi.a */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		BD00A8D9903643E0B3F1BCEC /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = C232EAAAA1A64424865AD64F /* noop-file.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,15 +25,15 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = tifossi/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = tifossi/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = tifossi/main.m; sourceTree = "<group>"; };
-		14F6CEB06A894C71BDF5C108 /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "tifossi/noop-file.swift"; sourceTree = "<group>"; };
-		1F1A5D0E8D0BC036E6C39DF4 /* Pods-tifossi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-tifossi.debug.xcconfig"; path = "Target Support Files/Pods-tifossi/Pods-tifossi.debug.xcconfig"; sourceTree = "<group>"; };
-		2777284BF602409A9CF060BD /* tifossi-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "tifossi-Bridging-Header.h"; path = "tifossi/tifossi-Bridging-Header.h"; sourceTree = "<group>"; };
-		61EA0B81413A7EA6D20821DB /* libPods-tifossi.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-tifossi.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		332D5976E81538FD1DD3093C /* Pods-tifossi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-tifossi.debug.xcconfig"; path = "Target Support Files/Pods-tifossi/Pods-tifossi.debug.xcconfig"; sourceTree = "<group>"; };
+		65809299E9AC7D7E6A7CA937 /* libPods-tifossi.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-tifossi.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6EF6E74D8A924A6AAB5BE3BD /* tifossi-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "tifossi-Bridging-Header.h"; path = "tifossi/tifossi-Bridging-Header.h"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = tifossi/SplashScreen.storyboard; sourceTree = "<group>"; };
-		B84C3A7EB543E1084B5CD0CC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = tifossi/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		C4F21D80FDAD0BF49AE2DE69 /* Pods-tifossi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-tifossi.release.xcconfig"; path = "Target Support Files/Pods-tifossi/Pods-tifossi.release.xcconfig"; sourceTree = "<group>"; };
+		C232EAAAA1A64424865AD64F /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "tifossi/noop-file.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F4CA73CB194F45C4D88AE4FC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = tifossi/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		F80C45EA160DCBC55C21C7A7 /* Pods-tifossi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-tifossi.release.xcconfig"; path = "Target Support Files/Pods-tifossi/Pods-tifossi.release.xcconfig"; sourceTree = "<group>"; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-tifossi/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -42,7 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				503896AD732F31DF39572521 /* libPods-tifossi.a in Frameworks */,
+				41C0DEC413B217FC09B0D796 /* libPods-tifossi.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,9 +59,9 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				14F6CEB06A894C71BDF5C108 /* noop-file.swift */,
-				2777284BF602409A9CF060BD /* tifossi-Bridging-Header.h */,
-				B84C3A7EB543E1084B5CD0CC /* PrivacyInfo.xcprivacy */,
+				C232EAAAA1A64424865AD64F /* noop-file.swift */,
+				6EF6E74D8A924A6AAB5BE3BD /* tifossi-Bridging-Header.h */,
+				F4CA73CB194F45C4D88AE4FC /* PrivacyInfo.xcprivacy */,
 			);
 			name = tifossi;
 			sourceTree = "<group>";
@@ -70,7 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				61EA0B81413A7EA6D20821DB /* libPods-tifossi.a */,
+				65809299E9AC7D7E6A7CA937 /* libPods-tifossi.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -125,8 +125,8 @@
 		D65327D7A22EEC0BE12398D9 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				1F1A5D0E8D0BC036E6C39DF4 /* Pods-tifossi.debug.xcconfig */,
-				C4F21D80FDAD0BF49AE2DE69 /* Pods-tifossi.release.xcconfig */,
+				332D5976E81538FD1DD3093C /* Pods-tifossi.debug.xcconfig */,
+				F80C45EA160DCBC55C21C7A7 /* Pods-tifossi.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -146,14 +146,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "tifossi" */;
 			buildPhases = (
-				7D2C6F3069471B94B6565961 /* [CP] Check Pods Manifest.lock */,
-				24F7DF2C2B43DFCE350C1465 /* [Expo] Configure project */,
+				5359A7C1BF23F0000A4AF5B0 /* [CP] Check Pods Manifest.lock */,
+				82AA51FAFF97417583BD836A /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				9DF9609BA09CF7183D15A37E /* [CP] Embed Pods Frameworks */,
-				6E62DBCDDFC128A3E3F4D299 /* [CP] Copy Pods Resources */,
+				7E99BEC6CE57929082D87A82 /* [CP] Embed Pods Frameworks */,
+				3A516611E4BDE1825778A514 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -203,7 +203,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				8B1E27AD6CCA562CDA6C3652 /* PrivacyInfo.xcprivacy in Resources */,
+				3F1663CFAD04215B65F0AB5B /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,26 +225,7 @@
 			shellPath = /bin/sh;
 			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n# Source .xcode.env.updates if it exists to allow\n# SKIP_BUNDLING to be unset if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.updates\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.updates\"\nfi\n# Source local changes to allow overrides\n# if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n\n";
 		};
-		24F7DF2C2B43DFCE350C1465 /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-tifossi/expo-configure-project.sh\"\n";
-		};
-		6E62DBCDDFC128A3E3F4D299 /* [CP] Copy Pods Resources */ = {
+		3A516611E4BDE1825778A514 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -256,6 +237,7 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoSystemUI/ExpoSystemUI_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImage/SDWebImage.bundle",
@@ -271,6 +253,7 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoSystemUI_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCT-Folly_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCAsyncStorage_resources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImage.bundle",
@@ -284,7 +267,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-tifossi/Pods-tifossi-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		7D2C6F3069471B94B6565961 /* [CP] Check Pods Manifest.lock */ = {
+		5359A7C1BF23F0000A4AF5B0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -306,7 +289,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		9DF9609BA09CF7183D15A37E /* [CP] Embed Pods Frameworks */ = {
+		7E99BEC6CE57929082D87A82 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -324,6 +307,25 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-tifossi/Pods-tifossi-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		82AA51FAFF97417583BD836A /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-tifossi/expo-configure-project.sh\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -334,7 +336,7 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
-				AFB56F961B3F496782C5617F /* noop-file.swift in Sources */,
+				BD00A8D9903643E0B3F1BCEC /* noop-file.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,7 +345,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1F1A5D0E8D0BC036E6C39DF4 /* Pods-tifossi.debug.xcconfig */;
+			baseConfigurationReference = 332D5976E81538FD1DD3093C /* Pods-tifossi.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -376,7 +378,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C4F21D80FDAD0BF49AE2DE69 /* Pods-tifossi.release.xcconfig */;
+			baseConfigurationReference = F80C45EA160DCBC55C21C7A7 /* Pods-tifossi.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
