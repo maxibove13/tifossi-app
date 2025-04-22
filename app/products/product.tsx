@@ -109,7 +109,7 @@ export default function ProductScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      <Header title={product.title} variant="product" />
+      <Header title={product.title} variant="product" productId={product.id} />
 
       <View style={styles.mainContent}>
         <EnhancedProductGallery
@@ -133,7 +133,7 @@ export default function ProductScreen() {
             warranty: product.warranty,
             returnPolicy: product.returnPolicy,
             dimensions: product.dimensions,
-            isFavorite: isFavorite, // Pass favorite state
+            isFavorite: isFavorite,
           }}
           relatedProducts={relatedProducts}
           recommendedProducts={recommendedProducts}

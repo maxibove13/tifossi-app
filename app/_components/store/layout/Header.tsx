@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../_styles/colors';
 import { fonts, fontSizes, lineHeights } from '../../../_styles/typography';
+import { useFavoriteStatus } from '../../../../hooks/useFavoriteStatus';
 
 // Import SVG icon
 import SearchIcon from '../../../../assets/icons/search_glass.svg';
@@ -13,16 +14,26 @@ import TiffosiLogo from '../../../../assets/images/logo/tiffosi.png';
 // Import the search overlay component
 import OverlayProductSearch from '../product/overlay/OverlayProductSearch';
 
+// Import heart icons
+import HeartActive from '../../../../assets/icons/heart_active.svg';
+import HeartInactiveHeader from '../../../../assets/icons/heart_inactive_header.svg';
+
 type HeaderVariant = 'store' | 'product' | 'catalog';
 
 interface HeaderProps {
   title: string;
   variant?: HeaderVariant;
+  productId?: string;
 }
 
-function Header({ title, variant = 'store' }: HeaderProps) {
+function Header({ title, variant = 'store', productId }: HeaderProps) {
   const router = useRouter();
   const [isSearchOverlayVisible, setIsSearchOverlayVisible] = useState(false);
+
+  // Get favorite status only if productId is provided and variant is 'product'
+  const { isFavorite, toggle: toggleFavorite } = useFavoriteStatus(
+    variant === 'product' ? productId : undefined
+  );
 
   const handleSearchPress = () => {
     setIsSearchOverlayVisible(true);
@@ -80,8 +91,16 @@ function Header({ title, variant = 'store' }: HeaderProps) {
               <Pressable hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                 <Ionicons name="share-outline" size={24} color={colors.primary} />
               </Pressable>
-              <Pressable hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}>
-                <Ionicons name="heart-outline" size={24} color={colors.primary} />
+              <Pressable
+                hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                onPress={toggleFavorite}
+                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                {isFavorite ? (
+                  <HeartActive width={24} height={24} />
+                ) : (
+                  <HeartInactiveHeader width={24} height={24} />
+                )}
               </Pressable>
             </>
           )}
@@ -111,7 +130,7 @@ function Header({ title, variant = 'store' }: HeaderProps) {
 const styles = StyleSheet.create({
   header: {
     width: '100%',
-    height: 84, // Standard height from ProductHeader
+    height: 104, // Standard height from ProductHeader
     paddingTop: 64, // Adjusted padding for safe area
     paddingBottom: 8,
     paddingHorizontal: 16,

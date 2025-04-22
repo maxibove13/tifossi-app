@@ -7,7 +7,8 @@
 - Follow the code style guidelines below
 - ALWAYS follow rules in /.cursor/rules if they exist
 - ALWAYS refer to README.md and the /docs folder to understand project structure and guidelines
-- NEVER execute de application yourself 
+- NEVER execute de application yourself
+- ALWAYS check related components or how components are used before finishing
 
 ## Build Commands
 - `npm install` - Install dependencies

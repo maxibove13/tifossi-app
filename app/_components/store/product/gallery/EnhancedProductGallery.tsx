@@ -18,9 +18,6 @@ interface EnhancedProductGalleryProps {
   onColorChange?: (color: string) => void;
 }
 
-// Define placeholder for backward compatibility
-// This will be removed when all products are migrated to the new format
-
 // Size constants
 const COLOR_OPTION_SIZE = 96;
 
