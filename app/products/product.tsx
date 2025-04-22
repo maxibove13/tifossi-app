@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import ProductHeader from '../_components/store/layout/ProductHeader';
+import Header from '../_components/store/layout/Header';
 import EnhancedProductGallery from '../_components/store/product/gallery/EnhancedProductGallery';
 import SwipeableEdge from '../_components/store/product/swipeable/SwipeableEdge';
 import ProductData from '../_data/products';
@@ -95,7 +95,7 @@ export default function ProductScreen() {
   if (!product || !isProduct(product)) {
     return (
       <View style={styles.container}>
-        <ProductHeader title="Product not found" />
+        <Header title="Product not found" variant="product" />
       </View>
     );
   }
@@ -109,7 +109,7 @@ export default function ProductScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      <ProductHeader title={product.title} />
+      <Header title={product.title} variant="product" />
 
       <View style={styles.mainContent}>
         <EnhancedProductGallery

@@ -250,6 +250,8 @@ Modal overlay components for the checkout process.
 
 1. **OverlayCheckoutShipping** (`/product/overlay/OverlayCheckoutShipping.tsx`): Shipping information overlay
 2. **OverlayCheckoutQuantity** (`/product/overlay/OverlayCheckoutQuantity.tsx`): Product quantity selection overlay
+3. **OverlayShippingSelection** (`/product/overlay/OverlayShippingSelection.tsx`): Shipping method selection overlay
+4. **OverlayProductSearch** (`/product/overlay/OverlayProductSearch.tsx`): Search overlay triggered from the header, using `useSearch` hook for client-side product searching.
 
 #### Layout Components (`/store/layout/`)
 
@@ -578,9 +580,9 @@ const styles = StyleSheet.create<Styles>({
 | **Store** | ProductDetails | ✅ | Fully implemented |
 | **Store** | ColorSlider | ✅ | Fully implemented |
 | **Store** | Swipeable components | ✅ | All variants implemented |
-| **Store** | Overlay checkout components | ✅ | Shipping and quantity selection implemented |
+| **Store** | Overlay checkout components | ✅ | Shipping, quantity selection, and search implemented |
 | **Store** | Categories | ✅ | Fully implemented |
-| **Store** | Header | ✅ | Fully implemented |
+| **Store** | Header | ✅ | Fully implemented with search integration |
 | **Store** | Footer | ✅ | Fully implemented |
 | **Store** | Locations | ✅ | Fully implemented |
 | **Common** | Background Solutions | ✅ | Optimized for performance |

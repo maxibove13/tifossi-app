@@ -12,7 +12,7 @@ import { Product } from '../_types/product';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import { spacing } from '../_styles/spacing';
-import ProductHeader from '../_components/store/layout/ProductHeader';
+import Header from '../_components/store/layout/Header';
 import ProductGridSkeleton from '../_components/skeletons/ProductGridSkeleton';
 
 // Generic TabBar component with auto-scrolling to active tab
@@ -300,7 +300,7 @@ export default function CatalogScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <ProductHeader title={displayTitle} variant="catalog" />
+      <Header title={displayTitle} variant="catalog" />
 
       <TabBar<Category>
         items={CategoryData.mainCategories}

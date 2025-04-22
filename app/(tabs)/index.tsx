@@ -2,7 +2,8 @@ import { StyleSheet, View, ScrollView, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../_styles/colors';
 import { spacing } from '../_styles/spacing';
-import { StoreHeader, CategoryShowcase } from '../_components/store/layout';
+import Header from '../_components/store/layout/Header';
+import CategoryShowcase from '../_components/store/layout/CategoryShowcase';
 import HighlightedCard from '../_components/store/product/horizontal/HighlightedCard';
 import FeaturedCard from '../_components/store/product/featured/FeaturedCard';
 import Button from '../_components/ui/buttons/Button';
@@ -224,7 +225,7 @@ function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <StoreHeader />
+        <Header title="Tienda" variant="store" />
 
         {/* Horizontal Scroll - Highlighted Products with Progressive Loading */}
         <ProgressiveLoadingSection

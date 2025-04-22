@@ -112,6 +112,12 @@ _components/
 │   │   ├── swipeable/      # Swipeable product details (performance optimized)
 │   │   ├── gallery/        # Product gallery components
 │   │   ├── overlay/        # Overlay components
+│   │   │   ├── OverlayCheckoutQuantity.tsx
+│   │   │   ├── OverlayCheckoutShipping.tsx
+│   │   │   ├── OverlayProductEditSize.tsx
+│   │   │   ├── OverlayShippingAddress.tsx
+│   │   │   ├── OverlayShippingSelection.tsx
+│   │   │   └── OverlayProductSearch.tsx # Product search overlay
 │   │   ├── cart/           # Cart product cards
 │   │   ├── details/        # Product details components
 │   │   ├── header/         # Product header components
@@ -358,6 +364,7 @@ interface CardDimensions {
 - Review System
 - User Authentication
 - Server State Integration
+- Search Functionality (Initial client-side implementation)
 
 ## Additional Resources
 
