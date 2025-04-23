@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -46,32 +46,39 @@ export default function OverlayProductEditSize({
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(height));
 
-  // Determine available sizes and if it's a single 'Talle Unico'
-  const validProductSizes = productSizes || []; // Ensure productSizes is an array
-  const availableSizes = validProductSizes.filter((size) => size.available);
+  // Determine available sizes and if it's a single 'Talle Unico' using useMemo
+  const availableSizes = useMemo(() => {
+    const validProductSizes = productSizes || []; // Ensure productSizes is an array
+    return validProductSizes.filter((size) => size.available);
+  }, [productSizes]);
 
-  // Treat as 'Talle Unico' if no sizes are provided OR exactly one size is available
-  const isTalleUnico = availableSizes.length <= 1;
-  const talleUnicoValue = isTalleUnico
-    ? availableSizes.length === 1
-      ? availableSizes[0].value
-      : 'Talle Único' // Use provided value or default to 'Único'
-    : '';
+  const isTalleUnico = useMemo(() => availableSizes.length <= 1, [availableSizes]);
 
-  // Set initial size, handling 'Talle Unico'
+  const talleUnicoValue = useMemo(() => {
+    if (!isTalleUnico) return '';
+    // Use provided value or default to 'Talle Único'
+    return availableSizes.length === 1 ? availableSizes[0].value : 'Talle Único';
+  }, [isTalleUnico, availableSizes]);
+
+  // Effect to set the *initial* selected size when the modal becomes visible
+  // or if the underlying product/initial data changes while it's open.
   useEffect(() => {
     if (isVisible) {
+      let newInitialSelection = '';
       if (isTalleUnico) {
-        setSelectedSize(talleUnicoValue);
+        newInitialSelection = talleUnicoValue;
       } else if (initialSize && availableSizes.some((s) => s.value === initialSize)) {
         // Set initial size only if it's one of the available ones
-        setSelectedSize(initialSize);
-      } else {
-        // If multiple sizes and no valid initialSize, reset selection
-        setSelectedSize('');
+        newInitialSelection = initialSize;
+      }
+      if (selectedSize !== newInitialSelection) {
+        setSelectedSize(newInitialSelection);
       }
     }
-  }, [isVisible, initialSize, isTalleUnico, talleUnicoValue, productSizes, availableSizes]); // Added availableSizes
+    // Dependencies ensure this runs when modal opens, or if key props change
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedSize is intentionally omitted
+    // We only want to set the *initial* state based on props, not reset on every selection change.
+  }, [isVisible, initialSize, isTalleUnico, talleUnicoValue, availableSizes]);
 
   useEffect(() => {
     if (isVisible) {
@@ -105,8 +112,8 @@ export default function OverlayProductEditSize({
 
   // Handle save action
   const handleSave = () => {
-    // Ensure the correct value is saved, especially for Talle Unico
-    onSave(isTalleUnico ? talleUnicoValue : selectedSize);
+    // Ensure the correct value is saved, using the current selectedSize
+    onSave(selectedSize);
     onGoBack();
   };
 
@@ -171,7 +178,7 @@ export default function OverlayProductEditSize({
               style={styles.saveButton}
               onPress={handleSave}
               activeOpacity={0.7}
-              disabled={!selectedSize}
+              disabled={!selectedSize && !isTalleUnico} // Allow save if TalleUnico even if selectedSize is initial empty string briefly
             >
               <Text style={styles.saveButtonText}>Guardar</Text>
             </TouchableOpacity>
