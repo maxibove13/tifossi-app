@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 // import { Default as DefaultLargeCard } from '../_components/store/product';
@@ -8,7 +8,9 @@ import CategoryData from '../_data/categories';
 import TagData from '../_data/tags';
 import { Category } from '../_types/category';
 import { Tag } from '../_types/tag';
-import { Product } from '../_types/product';
+import { Product, ProductColor, ProductSize } from '../_types/product';
+import { ProductFilters } from '../_components/store/product/overlay/OverlayProductFilters';
+import { useProductFilters } from '../../hooks/useProductFilters';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import { spacing } from '../_styles/spacing';
@@ -133,8 +135,9 @@ export default function CatalogScreen() {
   const [activeCategoryId, setActiveCategoryId] = useState(initialCategoryId);
   const [activeTagId, setActiveTagId] = useState(initialTagId);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [categoryTagProducts, setCategoryTagProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [appliedFilters, setAppliedFilters] = useState<ProductFilters>({});
 
   // Use the original title or default to 'Tienda'
   const rawPageTitle = params.title || 'Tienda';
@@ -152,27 +155,72 @@ export default function CatalogScreen() {
     if (!params.tag) {
       setActiveTagId('all');
     }
-  }, [activeCategoryId, params.tag]); // Depends on category and URL tag param
+
+    // Reset applied filters when category changes
+    setAppliedFilters({});
+  }, [activeCategoryId, params.tag]);
 
   useEffect(() => {
-    // This effect handles fetching products whenever category or tag changes.
+    // This effect fetches products based on category/tag only.
     setLoading(true);
     setTimeout(() => {
       let products;
-
-      // If initial load with a specific tag from URL params
       if (params.tag && params.tag !== 'all' && activeTagId === params.tag) {
-        // Find products across all categories with this tag
         products = ProductData.products.filter((p) => p.tagIds.includes(params.tag as string));
       } else {
-        // Normal filtering by active category and tag
         products = ProductData.getProductsByCategoryAndTag(activeCategoryId, activeTagId);
       }
-
-      setFilteredProducts(products);
+      setCategoryTagProducts(products);
       setLoading(false);
     }, 150);
-  }, [activeCategoryId, activeTagId, params.tag]); // Depends on category, tag and URL param
+    // Explicitly depend only on category/tag change for fetching base products
+  }, [activeCategoryId, activeTagId, params.tag]);
+
+  // Apply overlay filters using the custom hook
+  const productsToDisplay = useProductFilters(categoryTagProducts, appliedFilters);
+
+  // Calculate available filter options based on category/tag products
+  const filterOptions = useMemo(() => {
+    const sizes = new Map<string, ProductSize>();
+    const colors = new Map<string, ProductColor>();
+    let min = Infinity;
+    let max = -Infinity;
+
+    categoryTagProducts.forEach((product) => {
+      // Aggregate sizes
+      product.sizes?.forEach((size) => {
+        if (size.available && !sizes.has(size.value)) {
+          sizes.set(size.value, size);
+        }
+      });
+      // Aggregate colors
+      product.colors?.forEach((color) => {
+        if (color.hex && !colors.has(color.hex)) {
+          colors.set(color.hex, color);
+        }
+      });
+      // Find min/max price
+      const price = product.discountedPrice ?? product.price;
+      if (price < min) min = price;
+      if (price > max) max = price;
+    });
+
+    // Handle case with no products
+    if (min === Infinity) min = 0;
+    if (max === -Infinity) max = 5000;
+
+    return {
+      availableSizes: Array.from(sizes.values()),
+      availableColors: Array.from(colors.values()),
+      minPrice: Math.floor(min),
+      maxPrice: Math.ceil(max),
+    };
+  }, [categoryTagProducts]);
+
+  // Handler to update applied filters from the overlay
+  const handleApplyFilters = (filters: ProductFilters) => {
+    setAppliedFilters(filters);
+  };
 
   // Update URL params when category changes to maintain browsing state
   const handleCategoryChange = (categoryId: string) => {
@@ -197,7 +245,10 @@ export default function CatalogScreen() {
       newParams.append('tag', activeTagId);
     }
 
-    // Update URL without triggering a navigation (just update the params)
+    // Also clear applied overlay filters when changing category
+    setAppliedFilters({});
+
+    // Update URL without triggering a navigation
     router.setParams(Object.fromEntries(newParams));
   };
 
@@ -220,6 +271,9 @@ export default function CatalogScreen() {
     if (tagId !== 'all') {
       newParams.append('tag', tagId);
     }
+
+    // Also clear applied overlay filters when changing tags
+    setAppliedFilters({});
 
     // Update URL without triggering a navigation
     router.setParams(Object.fromEntries(newParams));
@@ -300,7 +354,16 @@ export default function CatalogScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <Header title={displayTitle} variant="catalog" />
+      <Header
+        title={displayTitle}
+        variant="catalog"
+        availableSizes={filterOptions.availableSizes}
+        availableColors={filterOptions.availableColors}
+        minPrice={filterOptions.minPrice}
+        maxPrice={filterOptions.maxPrice}
+        initialFilters={appliedFilters}
+        onApplyFilters={handleApplyFilters}
+      />
 
       <TabBar<Category>
         items={CategoryData.mainCategories}
@@ -328,15 +391,17 @@ export default function CatalogScreen() {
           <ProductGridSkeleton />
         ) : (
           <View style={styles.gridContainer}>
-            {filteredProducts.reduce((acc, product, index) => {
+            {productsToDisplay.reduce((acc, product, index) => {
               if (index % 2 === 0) {
-                const pair = filteredProducts.slice(index, index + 2);
+                const pair = productsToDisplay.slice(index, index + 2);
                 acc.push(renderProductPair(pair, index));
               }
               return acc;
             }, [] as JSX.Element[])}
-            {filteredProducts.length === 0 && !loading && (
-              <Text style={styles.noResultsText}>No hay productos en esta categoría.</Text>
+            {productsToDisplay.length === 0 && !loading && (
+              <Text style={styles.noResultsText}>
+                No hay productos que coincidan con los filtros seleccionados.
+              </Text>
             )}
           </View>
         )}

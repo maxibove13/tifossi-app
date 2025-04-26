@@ -56,16 +56,31 @@ export default function OverlayProductSearch({ isVisible, onClose }: OverlayProd
         }),
       ]).start();
     } else {
-      // Reset animation values when overlay is hidden
-      fadeAnim.setValue(0);
-      slideAnim.setValue(height);
-      // Clear search term when closing
+      // Clear search term when closing, but animation handles visibility
       setSearchTerm('');
     }
   }, [isVisible, fadeAnim, slideAnim, setSearchTerm]);
 
+  const handleClose = () => {
+    // Start fade-out and slide-down animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: height, // Slide down to the bottom
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onClose(); // Call original onClose after animation completes
+    });
+  };
+
   const handleProductPress = (productId: string) => {
-    onClose();
+    handleClose(); // Use handleClose to trigger animation
     // Navigate to the product screen with the ID as a query parameter
     router.navigate({
       pathname: '/products/product', // Correct route path
@@ -111,10 +126,10 @@ export default function OverlayProductSearch({ isVisible, onClose }: OverlayProd
   );
 
   return (
-    <Modal transparent visible={isVisible} onRequestClose={onClose} animationType="none">
+    <Modal transparent visible={isVisible} onRequestClose={handleClose} animationType="none">
       <View style={styles.modalContainer}>
         {/* Animated overlay background that can be tapped to close */}
-        <TouchableWithoutFeedback onPress={onClose}>
+        <TouchableWithoutFeedback onPress={handleClose}>
           <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />
         </TouchableWithoutFeedback>
 
@@ -123,7 +138,7 @@ export default function OverlayProductSearch({ isVisible, onClose }: OverlayProd
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Buscar productos</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
               <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
             </TouchableOpacity>
           </View>

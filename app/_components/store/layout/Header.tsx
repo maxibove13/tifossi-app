@@ -13,10 +13,18 @@ import TiffosiLogo from '../../../../assets/images/logo/tiffosi.png';
 
 // Import the search overlay component
 import OverlayProductSearch from '../product/overlay/OverlayProductSearch';
+// Import the filter overlay component
+import OverlayProductFilters, { ProductFilters } from '../product/overlay/OverlayProductFilters';
 
 // Import heart icons
 import HeartActive from '../../../../assets/icons/heart_active.svg';
 import HeartInactiveHeader from '../../../../assets/icons/heart_inactive_header.svg';
+
+// Import SliderIcon
+import SliderIcon from '../../../../assets/icons/slider.svg';
+
+// Types needed for filter props
+import { ProductColor, ProductSize } from '../../../_types/product';
 
 type HeaderVariant = 'store' | 'product' | 'catalog';
 
@@ -24,11 +32,30 @@ interface HeaderProps {
   title: string;
   variant?: HeaderVariant;
   productId?: string;
+  // Filter-related props (optional, primarily for catalog)
+  availableSizes?: ProductSize[];
+  availableColors?: ProductColor[];
+  minPrice?: number;
+  maxPrice?: number;
+  initialFilters?: ProductFilters;
+  onApplyFilters?: (filters: ProductFilters) => void;
 }
 
-function Header({ title, variant = 'store', productId }: HeaderProps) {
+function Header({
+  title,
+  variant = 'store',
+  productId,
+  // Destructure filter props with defaults
+  availableSizes = [],
+  availableColors = [],
+  minPrice = 0,
+  maxPrice = 5000,
+  initialFilters = {},
+  onApplyFilters = () => {},
+}: HeaderProps) {
   const router = useRouter();
   const [isSearchOverlayVisible, setIsSearchOverlayVisible] = useState(false);
+  const [isFilterOverlayVisible, setIsFilterOverlayVisible] = useState(false);
 
   // Get favorite status only if productId is provided and variant is 'product'
   const { isFavorite, toggle: toggleFavorite } = useFavoriteStatus(
@@ -41,6 +68,21 @@ function Header({ title, variant = 'store', productId }: HeaderProps) {
 
   const handleCloseSearch = () => {
     setIsSearchOverlayVisible(false);
+  };
+
+  // New handlers for filter overlay
+  const handleFilterPress = () => {
+    setIsFilterOverlayVisible(true);
+  };
+
+  const handleCloseFilter = () => {
+    setIsFilterOverlayVisible(false);
+  };
+
+  // Use the passed onApplyFilters prop
+  const handleApplyFiltersInternal = (filters: ProductFilters) => {
+    onApplyFilters(filters); // Call the function passed from parent
+    handleCloseFilter(); // Close the overlay
   };
 
   const showBackButton = variant === 'product' || variant === 'catalog';
@@ -106,8 +148,11 @@ function Header({ title, variant = 'store', productId }: HeaderProps) {
           )}
           {variant === 'catalog' && (
             <>
-              <Pressable hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}>
-                <Ionicons name="filter-outline" size={24} color={colors.primary} />
+              <Pressable
+                hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                onPress={handleFilterPress}
+              >
+                <SliderIcon width={24} height={24} stroke={colors.primary} strokeWidth={1.2} />
               </Pressable>
               <Pressable
                 hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
@@ -123,6 +168,18 @@ function Header({ title, variant = 'store', productId }: HeaderProps) {
 
       {/* Render the search overlay */}
       <OverlayProductSearch isVisible={isSearchOverlayVisible} onClose={handleCloseSearch} />
+
+      {/* Render the filter overlay */}
+      <OverlayProductFilters
+        isVisible={isFilterOverlayVisible}
+        onClose={handleCloseFilter}
+        onApplyFilters={handleApplyFiltersInternal}
+        availableSizes={availableSizes}
+        availableColors={availableColors}
+        minPrice={minPrice}
+        maxPrice={maxPrice}
+        initialFilters={initialFilters}
+      />
     </View>
   );
 }
