@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -18,12 +18,17 @@ import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.s
 import OverlayCheckoutQuantity from './OverlayCheckoutQuantity';
 import OverlayProductEditSize from './OverlayProductEditSize';
 import OverlayDeleteConfirmation from './OverlayDeleteConfirmation';
+import OverlayProductRemoving from './OverlayProductRemoving';
 import { Product } from '../../../../_types/product';
+import { useRouter } from 'expo-router';
 
 // Import style tokens
 import { colors } from '../../../../_styles/colors';
 import { spacing, radius } from '../../../../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../_styles/typography';
+
+// Define the duration for the removing process
+const REMOVAL_DURATION_MS = 1000; // Set desired duration (e.g., 1.5 seconds)
 
 // Get screen dimensions
 const { height } = Dimensions.get('window');
@@ -49,14 +54,19 @@ function OverlayProductEdit({
   initialSize,
   product,
 }: OverlayProductEditProps) {
+  const router = useRouter();
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(height));
   const [isQuantityOverlayVisible, setIsQuantityOverlayVisible] = useState(false);
   const [isSizeOverlayVisible, setIsSizeOverlayVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
+  const [isRemovingOverlayVisible, setIsRemovingOverlayVisible] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(initialQuantity);
   const [selectedSize, setSelectedSize] = useState(initialSize);
+
+  // Ref to track if removal is in progress and not cancelled
+  const isRemovingProcessActive = useRef(false);
 
   // Update local state if initial props change while overlay is open
   useEffect(() => {
@@ -90,6 +100,8 @@ function OverlayProductEdit({
       setIsQuantityOverlayVisible(false);
       setIsSizeOverlayVisible(false);
       setIsDeleteConfirmationVisible(false);
+      setIsRemovingOverlayVisible(false);
+      isRemovingProcessActive.current = false;
     }
   }, [isVisible, fadeAnim, slideAnim, initialQuantity, initialSize]);
 
@@ -127,17 +139,34 @@ function OverlayProductEdit({
   };
 
   const handleConfirmDelete = () => {
-    // This will first close the delete confirmation overlay
     setIsDeleteConfirmationVisible(false);
-    // Then call the onRemove prop passed from parent
-    onRemove();
-    // Finally close the edit overlay
-    onClose();
+    setIsRemovingOverlayVisible(true);
+    isRemovingProcessActive.current = true;
+
+    // Use the defined constant for the timeout
+    setTimeout(() => {
+      if (isRemovingProcessActive.current) {
+        isRemovingProcessActive.current = false;
+        onRemove();
+        setIsRemovingOverlayVisible(false);
+        onClose();
+        router.push('/cart/deleted');
+      }
+    }, REMOVAL_DURATION_MS); // Use the constant here
+  };
+
+  const handleCancelRemove = () => {
+    isRemovingProcessActive.current = false;
+    setIsRemovingOverlayVisible(false);
   };
 
   // Determine if main overlay should be visible
   const isMainOverlayVisible =
-    isVisible && !isQuantityOverlayVisible && !isSizeOverlayVisible && !isDeleteConfirmationVisible;
+    isVisible &&
+    !isQuantityOverlayVisible &&
+    !isSizeOverlayVisible &&
+    !isDeleteConfirmationVisible &&
+    !isRemovingOverlayVisible;
 
   // Flags to check if size or quantity has been changed from initial
   const hasSizeChanged = selectedSize !== initialSize;
@@ -253,6 +282,13 @@ function OverlayProductEdit({
         isVisible={isDeleteConfirmationVisible}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
+      />
+
+      {/* Removing Overlay - pass the duration */}
+      <OverlayProductRemoving
+        isVisible={isRemovingOverlayVisible}
+        onCancel={handleCancelRemove}
+        duration={REMOVAL_DURATION_MS} // Pass the constant here
       />
     </>
   );
