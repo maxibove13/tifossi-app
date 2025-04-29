@@ -6,7 +6,7 @@
 // Add default export to fix router warnings
 const productsModuleExport = {
   name: 'ProductsModule',
-  version: '1.0.0'
+  version: '1.0.0',
 };
 
-export default productsModuleExport; 
+export default productsModuleExport;

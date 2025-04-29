@@ -7,7 +7,7 @@ import { mapProductToCardData } from '../../../../_types/product';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../_styles/typography';
 import { spacing, radius } from '../../../../_styles/spacing';
 import { colors } from '../../../../_styles/colors';
-import { ProductLabel } from '../../../../_types/product-status';
+import { ProductStatus, hasStatus } from '../../../../_types/product-status';
 
 // Helper component for the button gradient to handle state logic
 const ButtonGradient = ({ pressed, disabled }: { pressed: boolean; disabled: boolean }) => {
@@ -42,7 +42,7 @@ export default function FeaturedCard({ product, onBuyPress, size = 'small' }: Fe
   };
 
   const isBuyDisabled = !cardData.price;
-  const isNew = product.label === ProductLabel.NEW;
+  const isNew = hasStatus(product.statuses, ProductStatus.NEW);
 
   return (
     <LinearGradient

@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-// import { Default as DefaultLargeCard } from '../_components/store/product';
 import DefaultLargeCard from '../_components/store/product/default/large';
 import ProductData from '../_data/products';
 import CategoryData from '../_data/categories';
-import TagData from '../_data/tags';
+import ModelsData from '../_data/models';
 import { Category } from '../_types/category';
-import { Tag } from '../_types/tag';
-import { Product, ProductColor, ProductSize } from '../_types/product';
+import { ProductModel } from '../_types/model';
+import { Product } from '../_types/product';
 import { ProductFilters } from '../_components/store/product/overlay/OverlayProductFilters';
 import { useProductFilters } from '../../hooks/useProductFilters';
 import { colors } from '../_styles/colors';
@@ -16,6 +15,7 @@ import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typograph
 import { spacing } from '../_styles/spacing';
 import Header from '../_components/store/layout/Header';
 import ProductGridSkeleton from '../_components/skeletons/ProductGridSkeleton';
+import { CATEGORY_IDS, MODEL_IDS } from '../_types/constants';
 
 // Generic TabBar component with auto-scrolling to active tab
 const TabBar = <T extends { id: string; name: string }>({
@@ -118,24 +118,25 @@ const TabBar = <T extends { id: string; name: string }>({
   );
 };
 
-// Define mapping between section names, tags, and display titles
-const SECTION_TO_TAG_MAP: Record<string, { tagId: string; title: string }> = {
-  Tienda: { tagId: 'recommended', title: 'Productos Recomendados' },
-  Destacados: { tagId: 'featured', title: 'Productos Destacados' },
-  Tendencias: { tagId: 'popular', title: 'Tendencias' },
-  'Lanzamientos & Oportunidades': { tagId: 'opportunity', title: 'Lanzamientos & Oportunidades' },
+// Define mapping between section names and their corresponding titles
+const SECTION_TO_TITLE_MAP: Record<string, string> = {
+  Tienda: 'Productos Recomendados',
+  Destacados: 'Productos Destacados',
+  Tendencias: 'Tendencias',
+  'Lanzamientos & Oportunidades': 'Lanzamientos & Oportunidades',
 };
 
 export default function CatalogScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ category?: string; title?: string; tag?: string }>();
+  const params = useLocalSearchParams<{ category?: string; title?: string; model?: string }>();
   const initialCategoryId = params.category || CategoryData.mainCategories[0].id;
-  const initialTagId = params.tag || 'all';
+  const initialModelId = params.model || MODEL_IDS.ALL;
 
   const [activeCategoryId, setActiveCategoryId] = useState(initialCategoryId);
-  const [activeTagId, setActiveTagId] = useState(initialTagId);
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-  const [categoryTagProducts, setCategoryTagProducts] = useState<Product[]>([]);
+  // Switch from tag-based to model-based
+  const [activeModelId, setActiveModelId] = useState(initialModelId);
+  const [availableModels, setAvailableModels] = useState<ProductModel[]>([]);
+  const [categoryModelProducts, setCategoryModelProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [appliedFilters, setAppliedFilters] = useState<ProductFilters>({});
 
@@ -143,50 +144,54 @@ export default function CatalogScreen() {
   const rawPageTitle = params.title || 'Tienda';
 
   useEffect(() => {
-    // This effect handles category changes: update available tags
+    // This effect handles category changes: update available models
     setLoading(true);
 
-    // Fetch tags for the newly selected category
-    const tagsForCategory = ProductData.getTagsForCategory(activeCategoryId);
-    setAvailableTags(tagsForCategory);
+    // Check if the selected category is a regular product category or a label-based category
+    const selectedCategory = CategoryData.mainCategories.find((cat) => cat.id === activeCategoryId);
+    const isCategoryLabel = selectedCategory?.isLabel || activeCategoryId === CATEGORY_IDS.ALL;
 
-    // Only reset the tag if we're changing categories and there's no specific tag in the URL
-    // Otherwise keep the selected tag from URL params if it exists
-    if (!params.tag) {
-      setActiveTagId('all');
+    // Don't show secondary tabs for "Todo" or label-based categories
+    if (isCategoryLabel) {
+      setAvailableModels([]);
+    } else {
+      // Get models for the selected category
+      const modelsForCategory = ModelsData.getModelsByCategory(activeCategoryId);
+      setAvailableModels(modelsForCategory);
+    }
+
+    // Only reset the model if we're changing categories and there's no specific model in the URL
+    if (!params.model) {
+      setActiveModelId(MODEL_IDS.ALL);
     }
 
     // Reset applied filters when category changes
     setAppliedFilters({});
-  }, [activeCategoryId, params.tag]);
+  }, [activeCategoryId, params.model]);
 
   useEffect(() => {
-    // This effect fetches products based on category/tag only.
+    // This effect fetches products based on category/model only.
     setLoading(true);
     setTimeout(() => {
-      let products;
-      if (params.tag && params.tag !== 'all' && activeTagId === params.tag) {
-        products = ProductData.products.filter((p) => p.tagIds.includes(params.tag as string));
-      } else {
-        products = ProductData.getProductsByCategoryAndTag(activeCategoryId, activeTagId);
-      }
-      setCategoryTagProducts(products);
+      // Use the model-based filtering
+      const products = ProductData.getProductsByCategoryAndModel(activeCategoryId, activeModelId);
+      setCategoryModelProducts(products);
       setLoading(false);
     }, 150);
-    // Explicitly depend only on category/tag change for fetching base products
-  }, [activeCategoryId, activeTagId, params.tag]);
+    // Explicitly depend only on category/model change for fetching base products
+  }, [activeCategoryId, activeModelId]);
 
   // Apply overlay filters using the custom hook
-  const productsToDisplay = useProductFilters(categoryTagProducts, appliedFilters);
+  const productsToDisplay = useProductFilters(categoryModelProducts, appliedFilters);
 
-  // Calculate available filter options based on category/tag products
+  // Calculate available filter options based on category/model products
   const filterOptions = useMemo(() => {
-    const sizes = new Map<string, ProductSize>();
-    const colors = new Map<string, ProductColor>();
+    const sizes = new Map();
+    const colors = new Map();
     let min = Infinity;
     let max = -Infinity;
 
-    categoryTagProducts.forEach((product) => {
+    categoryModelProducts.forEach((product) => {
       // Aggregate sizes
       product.sizes?.forEach((size) => {
         if (size.available && !sizes.has(size.value)) {
@@ -215,7 +220,7 @@ export default function CatalogScreen() {
       minPrice: Math.floor(min),
       maxPrice: Math.ceil(max),
     };
-  }, [categoryTagProducts]);
+  }, [categoryModelProducts]);
 
   // Handler to update applied filters from the overlay
   const handleApplyFilters = (filters: ProductFilters) => {
@@ -225,6 +230,10 @@ export default function CatalogScreen() {
   // Update URL params when category changes to maintain browsing state
   const handleCategoryChange = (categoryId: string) => {
     setActiveCategoryId(categoryId);
+    // Reset model selection when switching to the "Todo" category
+    if (categoryId === CATEGORY_IDS.ALL) {
+      setActiveModelId(MODEL_IDS.ALL);
+    }
 
     // Update URL to reflect the current filtering state
     // This helps with browser history and sharing links
@@ -232,17 +241,20 @@ export default function CatalogScreen() {
 
     // Always omit the title param when switching to 'todo' category
     // to ensure we reset to the default 'Tienda' title
-    if (categoryId !== 'todo' && params.title) {
+    if (categoryId !== CATEGORY_IDS.ALL && params.title) {
       newParams.append('title', params.title as string);
     }
 
     // Update category
     newParams.append('category', categoryId);
 
-    // Keep the tag if it exists and we're not switching to 'todo'
-    // Reset tags when switching to 'todo' for a clean state
-    if (categoryId !== 'todo' && activeTagId && activeTagId !== 'all') {
-      newParams.append('tag', activeTagId);
+    // Reset models when switching to 'todo' for a clean state
+    if (categoryId !== CATEGORY_IDS.ALL && activeModelId && activeModelId !== MODEL_IDS.ALL) {
+      newParams.append('model', activeModelId);
+    } else {
+      // Explicitly remove model param if switching to 'todo' or if model is 'all'
+      // This ensures the URL doesn't retain an invalid model for the 'todo' category
+      // No need to append 'model' if it's already MODEL_IDS.ALL
     }
 
     // Also clear applied overlay filters when changing category
@@ -252,11 +264,11 @@ export default function CatalogScreen() {
     router.setParams(Object.fromEntries(newParams));
   };
 
-  // Update URL params when tag changes
-  const handleTagChange = (tagId: string) => {
-    setActiveTagId(tagId);
+  // Update URL params when model changes
+  const handleModelChange = (modelId: string) => {
+    setActiveModelId(modelId);
 
-    // Update URL to reflect tag changes
+    // Update URL to reflect model changes
     const newParams = new URLSearchParams();
 
     // Keep the title as is
@@ -267,12 +279,12 @@ export default function CatalogScreen() {
     // Keep the category
     newParams.append('category', activeCategoryId);
 
-    // Only add tag if not 'all'
-    if (tagId !== 'all') {
-      newParams.append('tag', tagId);
+    // Only add model if not the ALL model
+    if (modelId !== MODEL_IDS.ALL) {
+      newParams.append('model', modelId);
     }
 
-    // Also clear applied overlay filters when changing tags
+    // Also clear applied overlay filters when changing models
     setAppliedFilters({});
 
     // Update URL without triggering a navigation
@@ -297,57 +309,54 @@ export default function CatalogScreen() {
 
   // Function to get the display title based on context
   const getDisplayTitle = () => {
-    // Special case: if category is 'todo', always use default title
-    if (activeCategoryId === 'todo') {
+    // Special case: if category is the ALL/todo category, always use default title
+    if (activeCategoryId === CATEGORY_IDS.ALL) {
       return 'Tienda';
     }
 
-    // When the activeTagId is 'all', we should show category title or default title
-    if (activeTagId === 'all') {
-      // If it's a category, show category name
-      if (activeCategoryId && activeCategoryId !== 'todo') {
-        const categoryName = CategoryData.mainCategories.find(
-          (c) => c.id === activeCategoryId
-        )?.name;
+    // Get the current category info
+    const selectedCategory = CategoryData.mainCategories.find((c) => c.id === activeCategoryId);
+
+    // First priority: Label categories should just show their label name
+    if (selectedCategory?.isLabel) {
+      return selectedCategory.name;
+    }
+
+    // When the activeModelId is the ALL model, we should show category title or default title
+    if (activeModelId === MODEL_IDS.ALL) {
+      // If it's a regular category, show category name
+      if (activeCategoryId && activeCategoryId !== CATEGORY_IDS.ALL) {
+        const categoryName = selectedCategory?.name;
         if (categoryName) {
           return categoryName;
         }
       }
 
-      // Default title without tag suffix
+      // Default title without model suffix
       return rawPageTitle;
     }
 
-    // If coming from a section with a specific tag
-    if (params.tag && params.tag !== 'all') {
-      // Look for a matching section mapping first
-      for (const [section, details] of Object.entries(SECTION_TO_TAG_MAP)) {
-        if (details.tagId === params.tag && rawPageTitle === section) {
-          return details.title;
-        }
-      }
+    // If regular category and model selected, show "Category - Model"
+    if (!selectedCategory?.isLabel && activeModelId !== MODEL_IDS.ALL) {
+      const categoryName = selectedCategory?.name;
 
-      // If no direct section match but we have a tag, show tag name
-      const tagName = TagData.tags.find((t) => t.id === params.tag)?.name;
-      if (tagName) {
-        // If we also have a category, combine them
-        if (params.category && params.category !== 'todo') {
-          const categoryName = CategoryData.mainCategories.find(
-            (c) => c.id === params.category
-          )?.name;
-          if (categoryName) {
-            return `${categoryName} - ${tagName}`;
-          }
-        }
-        return `${rawPageTitle} - ${tagName}`;
+      const modelName = availableModels.find((m) => m.id === activeModelId)?.name;
+
+      if (categoryName && modelName) {
+        return `${categoryName} - ${modelName}`;
       }
+    }
+
+    // For section titles, use the mapping
+    if (SECTION_TO_TITLE_MAP[rawPageTitle]) {
+      return SECTION_TO_TITLE_MAP[rawPageTitle];
     }
 
     // Default back to original title
     return rawPageTitle;
   };
 
-  // Calculate display title and update whenever category or tag changes
+  // Calculate display title and update whenever category or model changes
   const displayTitle = getDisplayTitle();
 
   return (
@@ -371,15 +380,15 @@ export default function CatalogScreen() {
         onSelectItem={handleCategoryChange}
       />
 
-      {availableTags.length > 1 && (
-        <TabBar<Tag>
-          items={availableTags}
-          activeItemId={activeTagId}
-          onSelectItem={handleTagChange}
-          style={styles.tagsTabBar}
-          itemStyle={styles.tagItem}
-          activeItemStyle={styles.activeTagItem}
-          activeUnderlineStyle={styles.activeTagUnderline}
+      {availableModels.length > 1 && (
+        <TabBar<ProductModel>
+          items={availableModels}
+          activeItemId={activeModelId}
+          onSelectItem={handleModelChange}
+          style={styles.modelsTabBar}
+          itemStyle={styles.modelItem}
+          activeItemStyle={styles.activeModelItem}
+          activeUnderlineStyle={styles.activeModelUnderline}
         />
       )}
 
@@ -482,20 +491,24 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.md,
     color: colors.secondary,
   },
-  tagsTabBar: {
+  // Renamed from tagsTabBar to modelsTabBar
+  modelsTabBar: {
     paddingHorizontal: spacing.md,
     gap: spacing.lg,
     height: 36,
   },
-  tagItem: {
+  // Renamed from tagItem to modelItem
+  modelItem: {
     fontSize: fontSizes.sm,
     color: colors.secondary,
   },
-  activeTagItem: {
+  // Renamed from activeTagItem to activeModelItem
+  activeModelItem: {
     color: colors.primary,
     fontWeight: fontWeights.semibold,
   },
-  activeTagUnderline: {
+  // Renamed from activeTagUnderline to activeModelUnderline
+  activeModelUnderline: {
     backgroundColor: colors.primary,
     height: 1.5,
   },

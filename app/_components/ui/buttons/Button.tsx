@@ -1,18 +1,18 @@
-import { useState } from 'react'
-import { StyleSheet, Text, Pressable, ViewStyle } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
-import { LinearGradient } from 'expo-linear-gradient'
+import { useState } from 'react';
+import { StyleSheet, Text, Pressable, ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
-type ButtonVariant = 'primary' | 'secondary' | 'icon' | 'solo-icon'
+type ButtonVariant = 'primary' | 'secondary' | 'icon' | 'solo-icon';
 
 type ButtonProps = {
-  onPress?: () => void
-  text?: string
-  variant?: ButtonVariant
-  icon?: keyof typeof Ionicons.glyphMap
-  disabled?: boolean
-  style?: ViewStyle
-}
+  onPress?: () => void;
+  text?: string;
+  variant?: ButtonVariant;
+  icon?: keyof typeof Ionicons.glyphMap;
+  disabled?: boolean;
+  style?: ViewStyle;
+};
 
 export default function Button({
   onPress,
@@ -22,13 +22,13 @@ export default function Button({
   disabled = false,
   style,
 }: ButtonProps) {
-  const [isPressed, setIsPressed] = useState(false)
-  const isPrimary = variant === 'primary'
-  const isIcon = variant === 'icon'
+  const [isPressed, setIsPressed] = useState(false);
+  const isPrimary = variant === 'primary';
+  const isIcon = variant === 'icon';
 
   if (isPrimary || isIcon) {
     return (
-      <Pressable 
+      <Pressable
         onPress={onPress}
         disabled={disabled}
         onPressIn={() => setIsPressed(true)}
@@ -42,28 +42,19 @@ export default function Button({
         ]}
       >
         <LinearGradient
-          colors={disabled ? ['#DCDCDC', '#DCDCDC'] : 
-                 isPressed ? ['#424242', '#424242'] : 
-                 ['#373737', '#0C0C0C']}
+          colors={
+            disabled
+              ? ['#DCDCDC', '#DCDCDC']
+              : isPressed
+                ? ['#424242', '#424242']
+                : ['#373737', '#0C0C0C']
+          }
           style={StyleSheet.absoluteFill}
         />
-        {icon && (
-          <Ionicons
-            name={icon}
-            size={24}
-            color={disabled ? '#B1B1B1' : '#FBFBFB'}
-          />
-        )}
-        {text && (
-          <Text style={[
-            styles.text,
-            disabled && styles.textDisabled
-          ]}>
-            {text}
-          </Text>
-        )}
+        {icon && <Ionicons name={icon} size={24} color={disabled ? '#B1B1B1' : '#FBFBFB'} />}
+        {text && <Text style={[styles.text, disabled && styles.textDisabled]}>{text}</Text>}
       </Pressable>
-    )
+    );
   }
 
   return (
@@ -76,16 +67,10 @@ export default function Button({
         style,
       ]}
     >
-      {icon && (
-        <Ionicons
-          name={icon}
-          size={24}
-          color="#0C0C0C"
-        />
-      )}
+      {icon && <Ionicons name={icon} size={24} color="#0C0C0C" />}
       {text && <Text style={styles.text}>{text}</Text>}
     </Pressable>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -137,4 +122,4 @@ const styles = StyleSheet.create({
   textDisabled: {
     color: '#B1B1B1',
   },
-}) 
+});

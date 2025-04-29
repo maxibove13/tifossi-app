@@ -1,5 +1,5 @@
 import { ImageSourcePropType } from 'react-native';
-import { ProductStatus, ProductLabel, isValidStatus, isValidLabel } from './product-status';
+import { ProductStatus, isValidStatus } from './product-status';
 
 export interface ProductColorImages {
   main: string | ImageSourcePropType;
@@ -18,12 +18,11 @@ export interface Product {
   title: string;
   price: number;
   categoryId: string; // Added category reference
-  tagIds: string[]; // Added tags reference
+  modelId: string; // Model identifier for grouping similar products
   images?: (string | ImageSourcePropType)[]; // Array of product images
   frontImage: string | ImageSourcePropType; // Main/front image to display (REQUIRED)
   videoSource?: number | string; // Video source for product displays
-  label?: ProductLabel;
-  status?: ProductStatus;
+  statuses: ProductStatus[]; // Array of product statuses (NEW, FEATURED, etc.)
   /** @deprecated Use shortDescription or longDescription instead */
   description?: string | string[];
   shortDescription?: {
@@ -105,8 +104,8 @@ export function isProduct(value: unknown): value is Product {
     typeof p.title === 'string' &&
     typeof p.price === 'number' &&
     p.frontImage !== undefined &&
-    (!p.status || isValidStatus(p.status)) &&
-    (!p.label || isValidLabel(p.label))
+    Array.isArray(p.statuses) &&
+    p.statuses.every((status) => isValidStatus(status))
   );
 }
 
@@ -123,7 +122,7 @@ export function mapProductToCardData(product: Product): ProductCardData {
     name: product.title,
     price: finalPrice,
     image: product.frontImage,
-    isNew: product.label === ProductLabel.NEW,
+    isNew: product.statuses.includes(ProductStatus.NEW),
     description:
       product.shortDescription ||
       (product.longDescription
@@ -143,5 +142,7 @@ export interface ProductSize {
   value: string;
   available: boolean;
 }
+
+// Moving to model.ts
 
 export default { isProduct, mapProductToCardData };

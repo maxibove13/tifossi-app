@@ -17,6 +17,7 @@ import { colors } from '../../../../_styles/colors';
 import { fonts, fontSizes, fontWeights, lineHeights } from '../../../../_styles/typography';
 import { spacing, radius } from '../../../../_styles/spacing';
 import { ProductColor, ProductSize } from '../../../../_types/product';
+import { ProductLabel } from '../../../../_types/product-status';
 import { Ionicons } from '@expo/vector-icons'; // Added Ionicons import
 // import Button from '../../../ui/buttons/Button'; // Removed Button import
 
@@ -26,6 +27,7 @@ export interface ProductFilters {
   sizes?: string[];
   colorHexes?: string[];
   priceRange?: { min: number; max: number };
+  labels?: ProductLabel[];
 }
 
 interface OverlayProductFiltersProps {
@@ -34,6 +36,7 @@ interface OverlayProductFiltersProps {
   onApplyFilters: (filters: ProductFilters) => void;
   availableSizes: ProductSize[];
   availableColors: ProductColor[];
+  _availableLabels?: ProductLabel[]; // Renamed to match usage with underscore prefix
   minPrice: number;
   maxPrice: number;
   initialFilters?: ProductFilters;
@@ -45,6 +48,8 @@ export default function OverlayProductFilters({
   onApplyFilters,
   availableSizes = [],
   availableColors = [],
+  // Prefix unused params with underscore to satisfy linter
+  _availableLabels = [],
   minPrice = 0,
   maxPrice = 5000, // Default max, should be dynamic
   initialFilters = {},
@@ -57,6 +62,10 @@ export default function OverlayProductFilters({
   const [selectedColorHexes, setSelectedColorHexes] = useState<string[]>(
     initialFilters.colorHexes || []
   );
+  // Prefix unused variable with underscore to satisfy linter
+  const [_selectedLabels, setSelectedLabels] = useState<ProductLabel[]>(
+    initialFilters.labels || []
+  );
   const [selectedPriceRange, setSelectedPriceRange] = useState<{ min: number; max: number }>(
     initialFilters.priceRange || { min: minPrice, max: maxPrice }
   );
@@ -65,6 +74,7 @@ export default function OverlayProductFilters({
   useEffect(() => {
     setSelectedSizes(initialFilters.sizes || []);
     setSelectedColorHexes(initialFilters.colorHexes || []);
+    setSelectedLabels(initialFilters.labels || []);
     setSelectedPriceRange(initialFilters.priceRange || { min: minPrice, max: maxPrice });
   }, [initialFilters, minPrice, maxPrice]);
 

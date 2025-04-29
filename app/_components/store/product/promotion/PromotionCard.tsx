@@ -4,7 +4,7 @@ import { colors } from '../../../../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../_styles/typography';
 import { Product } from '../../../../_types/product';
 import ProductImage from '../image/ProductImage';
-import { ProductLabel } from '../../../../_types/product-status';
+import { ProductStatus, hasStatus } from '../../../../_types/product-status';
 import { useFavoriteStatus } from '../../../../../hooks/useFavoriteStatus';
 
 // Import SVG icons
@@ -30,7 +30,7 @@ const PromotionCard = ({
 }: PromotionCardProps) => {
   const { isFavorite, toggle: toggleFavorite } = useFavoriteStatus(product.id);
   const _isSmall = size === 's';
-  const { title, price, discountedPrice, frontImage, label } = product;
+  const { title, price, discountedPrice, frontImage, statuses } = product;
 
   const hasDiscount = discountedPrice !== undefined && discountedPrice < price;
   const labelColor = hasDiscount ? colors.error : colors.tag.new;
@@ -53,7 +53,7 @@ const PromotionCard = ({
         </Pressable>
       </View>
       <View style={styles.content}>
-        {label === ProductLabel.NEW && (
+        {hasStatus(statuses, ProductStatus.NEW) && (
           <Text style={[styles.label, { color: labelColor }]}>Nuevo</Text>
         )}
         <Text

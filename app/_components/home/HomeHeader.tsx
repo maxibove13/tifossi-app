@@ -13,6 +13,8 @@ const HomeHeader = memo(() => {
   );
 });
 
+HomeHeader.displayName = 'HomeHeader';
+
 export default HomeHeader;
 
 const styles = StyleSheet.create({

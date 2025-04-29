@@ -71,14 +71,14 @@ export default function OverlayProductEditSize({
         // Set initial size only if it's one of the available ones
         newInitialSelection = initialSize;
       }
-      if (selectedSize !== newInitialSelection) {
-        setSelectedSize(newInitialSelection);
-      }
+      // Only update if the calculated initial selection differs from the current selection
+      // Use functional update to avoid adding selectedSize to dependencies
+      setSelectedSize((currentSelection) =>
+        currentSelection !== newInitialSelection ? newInitialSelection : currentSelection
+      );
     }
-    // Dependencies ensure this runs when modal opens, or if key props change
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedSize is intentionally omitted
-    // We only want to set the *initial* state based on props, not reset on every selection change.
-  }, [isVisible, initialSize, isTalleUnico, talleUnicoValue, availableSizes]);
+    // selectedSize is intentionally omitted from dependencies to prevent resetting user selection
+  }, [isVisible, initialSize, availableSizes, isTalleUnico, talleUnicoValue]);
 
   useEffect(() => {
     if (isVisible) {

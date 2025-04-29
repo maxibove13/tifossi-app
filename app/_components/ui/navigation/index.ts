@@ -3,5 +3,5 @@
 // Add default export to fix router warnings
 export default {
   name: 'NavigationModule',
-  version: '1.0.0'
+  version: '1.0.0',
 };

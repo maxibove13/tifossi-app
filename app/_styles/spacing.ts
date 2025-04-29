@@ -29,4 +29,4 @@ export const layout = {
   },
 };
 
-export default spacing; 
+export default spacing;

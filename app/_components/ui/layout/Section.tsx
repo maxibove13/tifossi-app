@@ -37,4 +37,4 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     marginBottom: spacing.lg,
   },
-}); 
+});

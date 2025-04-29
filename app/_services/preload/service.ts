@@ -135,11 +135,11 @@ class PreloadService {
   }
 
   /**
-   * Get pre-computed category-tag relationships
-   * This provides optimized access to tag filters for each category
+   * Get pre-computed category-model relationships
+   * This provides optimized access to model filters for each category
    */
-  public getCategoryTagMap(): Record<string, any> | undefined {
-    return this.criticalData?.categoryTagMap;
+  public getCategoryModelMap(): Record<string, any> | undefined {
+    return this.criticalData?.categoryModelMap;
   }
 
   /**

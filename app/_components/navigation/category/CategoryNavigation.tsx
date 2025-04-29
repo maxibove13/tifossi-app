@@ -1,14 +1,14 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
-import { LinearGradient } from 'expo-linear-gradient'
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface CategoryNavigationProps {
   categories: {
-    id: string
-    name: string
-    itemCount?: number
-  }[]
-  onSelectCategory: (id: string) => void
+    id: string;
+    name: string;
+    itemCount?: number;
+  }[];
+  onSelectCategory: (id: string) => void;
 }
 
 export const CategoryNavigation = ({ categories, onSelectCategory }: CategoryNavigationProps) => {
@@ -41,8 +41,8 @@ export const CategoryNavigation = ({ categories, onSelectCategory }: CategoryNav
         </TouchableOpacity>
       ))}
     </ScrollView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -79,6 +79,6 @@ const styles = StyleSheet.create({
     color: '#909090',
     marginTop: 4,
   },
-})
+});
 
-export default CategoryNavigation 
+export default CategoryNavigation;

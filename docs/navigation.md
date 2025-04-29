@@ -28,11 +28,17 @@ app/
 │   ├── favorites.tsx       # Favorites tab
 │   ├── profile.tsx         # Profile tab
 │   └── tiffosiExplore.tsx  # Explore tab
+├── cart/                   # Cart specific screens
+│   └── deleted.tsx         # Cart item deleted confirmation
 ├── checkout/               # Checkout process screens
 │   ├── _layout.tsx         # Checkout layout
 │   ├── shipping-address.tsx # Shipping address form
 │   ├── payment-selection.tsx # Payment method selection
 │   └── new-address.tsx     # New address entry form
+├── locations/              # Store location screens
+│   └── [cityId]/           # Dynamic city routes
+│       ├── index.tsx       # Store zone selection screen
+│       └── [zoneId].tsx    # Store details screen
 ├── products/               # Product-related screens
 │   ├── _layout.tsx         # Products layout
 │   ├── product.tsx         # Product details screen
@@ -318,6 +324,8 @@ The app supports deep linking to specific screens:
 - Product details: `app://products/product?id=123`
 - Cart: `app://cart`
 - Favorites: `app://favorites`
+- Location stores: `app://locations/{cityId}`
+- Location store details: `app://locations/{cityId}/{zoneId}`
 
 ## Navigation Best Practices
 

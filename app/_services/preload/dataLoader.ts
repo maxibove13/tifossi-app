@@ -1,8 +1,8 @@
 import { CriticalData } from './types';
 import ProductData, { getFeaturedProduct } from '../../_data/products';
-import TagData, { CATEGORY_TAGS_MAP } from '../../_data/tags';
+import ModelsData from '../../_data/models';
 import { Product } from '../../_types/product';
-import { Tag } from '../../_types/tag';
+import { ProductModel } from '../../_types/model';
 
 /**
  * Loads critical product data from local data sources
@@ -26,23 +26,37 @@ export const loadCriticalData = async (
     const featuredProducts = [getFeaturedProduct()].filter(Boolean) as Product[];
     progressCallback(40);
 
-    // Pre-compute category-tag map for all categories
+    // Pre-compute category-model map for all categories
     // This dramatically improves performance of the catalog filter system
-    const categoryTagMap: Record<string, Tag[]> = {};
+    const categoryModelMap: Record<string, ProductModel[]> = {};
 
-    // For each category in our pre-computed map, convert tag IDs to full Tag objects
-    Object.keys(CATEGORY_TAGS_MAP).forEach((categoryId) => {
-      categoryTagMap[categoryId] = TagData.getTagsForCategory(categoryId);
+    // For each category with products, get available models
+    // Get all categories with products
+    const categories = ProductData.products.reduce((acc, product) => {
+      if (!acc.includes(product.categoryId)) {
+        acc.push(product.categoryId);
+      }
+      return acc;
+    }, [] as string[]);
+
+    // Add 'todo' category
+    if (!categories.includes('todo')) {
+      categories.push('todo');
+    }
+
+    // For each category, get available models
+    categories.forEach((categoryId) => {
+      categoryModelMap[categoryId] = ModelsData.getModelsByCategory(categoryId);
     });
 
     progressCallback(100);
 
-    // Return data including the pre-computed category-tag map
+    // Return data including the pre-computed category-model map
     return {
       featuredProducts,
       exploreProducts: [], // Will be loaded when TiffosiExplore screen is accessed
       trendingProducts: [], // Will be loaded when needed
-      categoryTagMap, // Pre-computed category-tag relationships
+      categoryModelMap, // Pre-computed category-model relationships
     };
   } catch (error) {
     console.error('Error loading critical data:', error);

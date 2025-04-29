@@ -11,7 +11,7 @@ import {
   Animated,
   TouchableWithoutFeedback,
   Image,
-  ImageStyle
+  ImageStyle,
 } from 'react-native';
 import CloseIcon from '../../../../../assets/icons/close.svg';
 import HouseIcon from '../../../../../assets/icons/house.svg';
@@ -37,7 +37,7 @@ export default function OverlayShippingSelection({
   isVisible,
   onClose,
   onSelectShipping,
-  initialMethod = ''
+  initialMethod = '',
 }: OverlayShippingSelectionProps) {
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -57,7 +57,7 @@ export default function OverlayShippingSelection({
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
-        })
+        }),
       ]).start();
     } else {
       // Reset animation values when overlay is hidden
@@ -73,38 +73,19 @@ export default function OverlayShippingSelection({
   };
 
   return (
-    <Modal
-      transparent
-      visible={isVisible}
-      onRequestClose={onClose}
-      animationType="none"
-    >
+    <Modal transparent visible={isVisible} onRequestClose={onClose} animationType="none">
       <View style={styles.modalContainer}>
         {/* Animated overlay background that can be tapped to close */}
         <TouchableWithoutFeedback onPress={onClose}>
-          <Animated.View 
-            style={[
-              styles.overlay, 
-              { opacity: fadeAnim }
-            ]} 
-          />
+          <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />
         </TouchableWithoutFeedback>
 
         {/* Animated container that slides up */}
-        <Animated.View 
-          style={[
-            styles.container, 
-            { transform: [{ translateY: slideAnim }] }
-          ]}
-        >
+        <Animated.View style={[styles.container, { transform: [{ translateY: slideAnim }] }]}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Seleccionar entrega</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
               <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
             </TouchableOpacity>
           </View>
@@ -134,8 +115,8 @@ export default function OverlayShippingSelection({
                 <Text style={styles.optionTitle}>Recoger en tienda</Text>
                 <Text style={styles.optionDescription}>Retira en tu local Tiffosi preferido.</Text>
               </View>
-              <Image 
-                source={require('../../../../../assets/images/logo/tiffosi.png')} 
+              <Image
+                source={require('../../../../../assets/images/logo/tiffosi.png')}
                 style={styles.logoImage}
               />
             </TouchableOpacity>
@@ -237,6 +218,6 @@ const styles = StyleSheet.create<Styles>({
   logoImage: {
     width: 24,
     height: 24,
-    resizeMode: 'contain'
+    resizeMode: 'contain',
   },
-}); 
+});

@@ -1,38 +1,35 @@
-import { StyleSheet, View, ScrollView, Pressable } from 'react-native'
-import { useState } from 'react'
-import ProductImage from './image/ProductImage'
-import { Product } from '../../../_types/product'
+import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
+import { useState } from 'react';
+import ProductImage from './image/ProductImage';
+import { Product } from '../../../_types/product';
 
 type Props = {
-  product: Product
-}
+  product: Product;
+};
 
 export default function ColorSlider({ product: _product }: Props) {
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   // For demo purposes, create an array of the same image
   const images = [
     require('../../../../assets/images/products/product_socks_0.png'),
     require('../../../../assets/images/products/product_socks_1.png'),
     require('../../../../assets/images/products/product_socks_2.png'),
-  ]
+  ];
 
   return (
     <View style={styles.container}>
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
         contentContainerStyle={styles.content}
       >
         {images.map((image, index) => (
-          <Pressable 
+          <Pressable
             key={`${image}-${index}`}
             onPress={() => setSelectedIndex(index)}
-            style={[
-              styles.colorButton,
-              selectedIndex === index && styles.selectedColor
-            ]}
+            style={[styles.colorButton, selectedIndex === index && styles.selectedColor]}
           >
             <ProductImage
               source={image}
@@ -44,7 +41,7 @@ export default function ColorSlider({ product: _product }: Props) {
         ))}
       </ScrollView>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -73,4 +70,4 @@ const styles = StyleSheet.create({
   selectedColor: {
     borderColor: '#0C0C0C',
   },
-}) 
+});

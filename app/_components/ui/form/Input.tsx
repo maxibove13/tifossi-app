@@ -1,15 +1,23 @@
-import { View, TextInput, Text, StyleSheet, TextInputProps, ViewStyle, StyleProp } from 'react-native'
-import { useState } from 'react'
-import { Ionicons } from '@expo/vector-icons'
+import {
+  View,
+  TextInput,
+  Text,
+  StyleSheet,
+  TextInputProps,
+  ViewStyle,
+  StyleProp,
+} from 'react-native';
+import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
-  label?: string
-  error?: string
-  helper?: string
-  startIcon?: keyof typeof Ionicons.glyphMap
-  endIcon?: keyof typeof Ionicons.glyphMap
-  onEndIconPress?: () => void
-  containerStyle?: StyleProp<ViewStyle>
+  label?: string;
+  error?: string;
+  helper?: string;
+  startIcon?: keyof typeof Ionicons.glyphMap;
+  endIcon?: keyof typeof Ionicons.glyphMap;
+  onEndIconPress?: () => void;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 export const Input = ({
@@ -24,25 +32,21 @@ export const Input = ({
   onBlur,
   ...props
 }: InputProps) => {
-  const [isFocused, setIsFocused] = useState(false)
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleFocus = (e: any) => {
-    setIsFocused(true)
-    onFocus?.(e)
-  }
+    setIsFocused(true);
+    onFocus?.(e);
+  };
 
   const handleBlur = (e: any) => {
-    setIsFocused(false)
-    onBlur?.(e)
-  }
+    setIsFocused(false);
+    onBlur?.(e);
+  };
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && (
-        <Text style={[styles.label, error && styles.labelError]}>
-          {label}
-        </Text>
-      )}
+      {label && <Text style={[styles.label, error && styles.labelError]}>{label}</Text>}
 
       <View
         style={[
@@ -84,13 +88,11 @@ export const Input = ({
       </View>
 
       {(error || helper) && (
-        <Text style={[styles.helper, error && styles.error]}>
-          {error || helper}
-        </Text>
+        <Text style={[styles.helper, error && styles.error]}>{error || helper}</Text>
       )}
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -152,6 +154,6 @@ const styles = StyleSheet.create({
   error: {
     color: '#AD3026',
   },
-})
+});
 
-export default Input 
+export default Input;

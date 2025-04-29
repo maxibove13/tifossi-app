@@ -11,7 +11,10 @@ interface TabBarBackgroundProps {
  */
 export function TabBarBackground({ style }: TabBarBackgroundProps) {
   const backgroundColor = useThemeColor({ light: '#ffffff', dark: '#121212' }, 'background');
-  const shadowColor = useThemeColor({ light: 'rgba(0, 0, 0, 0.1)', dark: 'rgba(0, 0, 0, 0.5)' }, 'shadow');
+  const shadowColor = useThemeColor(
+    { light: 'rgba(0, 0, 0, 0.1)', dark: 'rgba(0, 0, 0, 0.5)' },
+    'shadow'
+  );
 
   return (
     <View

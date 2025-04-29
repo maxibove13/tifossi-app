@@ -17,10 +17,13 @@ import VideoBackground from '../_components/common/VideoBackground';
 import { Product } from '../_types/product';
 import { getTiffosiExploreProducts } from '../_data/products';
 import preloadService from '../_services/preload/service';
+import { getPrimaryLabelFromStatuses } from '../_types/product-status';
 import { useState, useEffect, memo } from 'react';
 
-// Get explore products from our dedicated function in products.ts
-// This function returns products in specific order with mochila-gold first (has video)
+// Get app-exclusive products from our dedicated function in products.ts
+// This function only returns products with the APP_EXCLUSIVE label
+// IMPORTANT: To add products to this screen, they must be marked with ProductLabel.APP_EXCLUSIVE
+// Products with video content are ideal candidates for this special section
 const exploreProducts: Product[] = getTiffosiExploreProducts();
 
 // Placeholder Icon - Replace with actual SVG Icon component if available
@@ -55,9 +58,9 @@ const ExploreProductCard = memo(({ product }: { product: Product }) => {
 
         {/* Product Details aligned to the left */}
         <View style={styles.detailsContainer}>
-          {product.label && (
+          {product.statuses.length > 0 && (
             <View style={styles.labelBadge}>
-              <Text style={styles.labelText}>{product.label}</Text>
+              <Text style={styles.labelText}>{getPrimaryLabelFromStatuses(product.statuses)}</Text>
             </View>
           )}
           <View style={styles.titleContainer}>

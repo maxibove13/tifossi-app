@@ -3,7 +3,11 @@ import type { Product } from '../../../../_types/product';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../_styles/typography';
 import ProductImage from '../image/ProductImage';
 import { colors } from '../../../../_styles/colors';
-import { ProductLabel } from '../../../../_types/product-status';
+import {
+  ProductStatus,
+  hasStatus,
+  getPrimaryLabelFromStatuses,
+} from '../../../../_types/product-status';
 
 type HighlightedCardProps = {
   product: Product;
@@ -11,23 +15,26 @@ type HighlightedCardProps = {
 };
 
 export default function HighlightedCard({ product, onPress }: HighlightedCardProps) {
-  const { label, shortDescription, frontImage, title } = product;
+  const { statuses, shortDescription, frontImage, title } = product;
 
-  // Determine label text and color based on ProductLabel enum
+  // Determine label text and color based on product statuses
   let labelText: string | null = null;
   let labelColor: string | undefined;
 
-  if (label === ProductLabel.NEW) {
+  // We could use getPrimaryLabelFromStatuses here but we're handling custom display logic
+  const _primaryLabel = getPrimaryLabelFromStatuses(statuses);
+
+  if (hasStatus(statuses, ProductStatus.NEW)) {
     labelText = 'Nuevo';
     labelColor = colors.tag.new;
-  } else if (label === ProductLabel.OPPORTUNITY) {
-    labelText = 'Oportunidad'; // Assuming this is the text for opportunity
-    labelColor = colors.tag.opportunity; // Use opportunity tag color
-  } else if (label === ProductLabel.SALE) {
-    labelText = 'Sale'; // Assuming this is the text for SALE
-    labelColor = colors.tag.opportunity; // Reuse opportunity color for sale? Adjust if needed.
+  } else if (hasStatus(statuses, ProductStatus.OPPORTUNITY)) {
+    labelText = 'Oportunidad';
+    labelColor = colors.tag.opportunity;
+  } else if (hasStatus(statuses, ProductStatus.SALE)) {
+    labelText = 'Sale';
+    labelColor = colors.tag.opportunity;
   }
-  // Add more conditions for other labels if necessary
+  // Add more conditions for other statuses if necessary
 
   // Only use shortDescription
   const displayDescription = shortDescription;

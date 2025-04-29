@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
+import {
   StyleSheet,
-  ScrollView, 
+  ScrollView,
   Pressable,
   ImageSourcePropType,
   Animated,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import { colors } from '../../../../../_styles/colors';
 
@@ -26,14 +26,14 @@ interface ProductViewGalleryProps {
 function ProductViewGallery({ images, onImagePress }: ProductViewGalleryProps) {
   // Track which image is being zoomed
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
-  
+
   // Get window width for responsive image sizing
   const { width } = Dimensions.get('window');
-  
+
   // Handle image press
   const handleImagePress = (index: number) => {
     setActiveImageIndex(index === activeImageIndex ? null : index);
-    
+
     // Call the provided callback if any
     if (onImagePress) {
       onImagePress(index);
@@ -48,20 +48,14 @@ function ProductViewGallery({ images, onImagePress }: ProductViewGalleryProps) {
     >
       {/* Display each product image in sequence */}
       {images.map((image, index) => (
-        <Pressable 
+        <Pressable
           key={`product-view-${index}`}
-          style={[
-            styles.imageWrapper,
-            { width, height: width }
-          ]}
+          style={[styles.imageWrapper, { width, height: width }]}
           onPress={() => handleImagePress(index)}
         >
           <Animated.Image
             source={image}
-            style={[
-              styles.image,
-              activeImageIndex === index && styles.activeImage
-            ]}
+            style={[styles.image, activeImageIndex === index && styles.activeImage]}
             resizeMode="cover"
           />
         </Pressable>
@@ -99,5 +93,5 @@ export default ProductViewGallery;
 // Metadata for the router (export to satisfy the linter)
 export const componentExport = {
   name: 'ProductViewGallery',
-  version: '1.0.0'
+  version: '1.0.0',
 };

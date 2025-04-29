@@ -1,17 +1,17 @@
-import { memo } from 'react'
-import { StyleSheet, View, ImageSourcePropType } from 'react-native'
-import { Image } from 'expo-image'
+import { memo } from 'react';
+import { StyleSheet, View, ImageSourcePropType } from 'react-native';
+import { Image } from 'expo-image';
 
 const blurhash =
-  '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj['
+  '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
 
 type ProductImageProps = {
-  source: string | ImageSourcePropType
-  size?: number
-  overlay?: boolean
-  overlayColor?: string
-  overlayOpacity?: number
-}
+  source: string | ImageSourcePropType;
+  size?: number;
+  overlay?: boolean;
+  overlayColor?: string;
+  overlayOpacity?: number;
+};
 
 function ProductImage({
   source,
@@ -43,7 +43,7 @@ function ProductImage({
         />
       )}
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -63,6 +63,6 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
   },
-})
+});
 
-export default memo(ProductImage) 
+export default memo(ProductImage);

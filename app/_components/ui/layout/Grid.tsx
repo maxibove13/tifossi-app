@@ -7,20 +7,24 @@ type GridProps = {
 };
 
 export default function Grid({ children, style }: GridProps) {
-  return (
-    <View style={[styles.grid, style]}>
-      {children}
-    </View>
-  );
+  return <View style={[styles.grid, style]}>{children}</View>;
 }
 
-export function GridItem({ children, index, total }: { children: React.ReactNode; index: number; total: number }) {
+export function GridItem({
+  children,
+  index,
+  total,
+}: {
+  children: React.ReactNode;
+  index: number;
+  total: number;
+}) {
   return (
-    <View 
+    <View
       style={[
         styles.gridItem,
         index % 2 === 0 ? styles.gridItemLeft : styles.gridItemRight,
-        index < total - 2 ? styles.gridItemBottom : null
+        index < total - 2 ? styles.gridItemBottom : null,
       ]}
     >
       {children}
@@ -46,4 +50,4 @@ const styles = StyleSheet.create({
   gridItemBottom: {
     marginBottom: layout.gridGap,
   },
-}); 
+});

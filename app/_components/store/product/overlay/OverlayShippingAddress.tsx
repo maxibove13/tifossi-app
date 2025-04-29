@@ -9,7 +9,7 @@ import {
   TextStyle,
   Animated,
   TouchableWithoutFeedback,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import CloseIcon from '../../../../../assets/icons/close.svg';
 import PlusCircle from '../../../../../assets/icons/plus_circle.svg';
@@ -43,8 +43,8 @@ export default function OverlayShippingAddress({
   onNext,
   addresses = [
     { id: '1', name: 'Luis A. de Herrera  - Pando' },
-    { id: '2', name: 'Calle 13 - Las Toscas' }
-  ]
+    { id: '2', name: 'Calle 13 - Las Toscas' },
+  ],
 }: OverlayShippingAddressProps) {
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -64,7 +64,7 @@ export default function OverlayShippingAddress({
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
-        })
+        }),
       ]).start();
     } else {
       // Reset animation values when overlay is hidden
@@ -89,38 +89,19 @@ export default function OverlayShippingAddress({
   };
 
   return (
-    <Modal
-      transparent
-      visible={isVisible}
-      onRequestClose={onClose}
-      animationType="none"
-    >
+    <Modal transparent visible={isVisible} onRequestClose={onClose} animationType="none">
       <View style={styles.modalContainer}>
         {/* Animated overlay background that can be tapped to close */}
         <TouchableWithoutFeedback onPress={onClose}>
-          <Animated.View 
-            style={[
-              styles.overlay, 
-              { opacity: fadeAnim }
-            ]} 
-          />
+          <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />
         </TouchableWithoutFeedback>
 
         {/* Animated container that slides up */}
-        <Animated.View 
-          style={[
-            styles.container, 
-            { transform: [{ translateY: slideAnim }] }
-          ]}
-        >
+        <Animated.View style={[styles.container, { transform: [{ translateY: slideAnim }] }]}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Direcciones de envío</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
               <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
             </TouchableOpacity>
           </View>
@@ -129,7 +110,7 @@ export default function OverlayShippingAddress({
           <View style={styles.content}>
             <View style={styles.addressesContainer}>
               <Text style={styles.sectionTitle}>Mis direcciones</Text>
-              
+
               <View style={styles.addressList}>
                 {addresses.map((address) => (
                   <TouchableOpacity
@@ -167,12 +148,8 @@ export default function OverlayShippingAddress({
             >
               <Text style={styles.primaryButtonText}>Siguiente</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={onBack}
-              activeOpacity={0.7}
-            >
+
+            <TouchableOpacity style={styles.secondaryButton} onPress={onBack} activeOpacity={0.7}>
               <Text style={styles.secondaryButtonText}>Atrás</Text>
             </TouchableOpacity>
           </View>
@@ -220,12 +197,12 @@ const styles = StyleSheet.create<Styles>({
     borderTopRightRadius: radius.lg,
     paddingTop: 54,
     paddingBottom: 34,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: -4,
     },
-    shadowOpacity: 0.10,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 10,
     width: '100%',
@@ -341,4 +318,4 @@ const styles = StyleSheet.create<Styles>({
     lineHeight: 24,
     color: '#0C0C0C',
   },
-}); 
+});

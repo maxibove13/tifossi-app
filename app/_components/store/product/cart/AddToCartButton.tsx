@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator, Animated, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  ActivityIndicator,
+  Animated,
+  TouchableOpacity,
+} from 'react-native';
 import { colors } from '../../../../_styles/colors';
 import { spacing, radius } from '../../../../_styles/spacing';
 import { fonts, fontSizes, fontWeights } from '../../../../_styles/typography';
@@ -15,24 +22,24 @@ interface AddToCartButtonProps {
   quantity?: number;
 }
 
-export default function AddToCartButton({ 
-  onPress, 
+export default function AddToCartButton({
+  onPress,
   disabled = false,
   inCart = false,
   price,
   darkMode = false,
   isLoading: externalLoading,
-  quantity = 1
+  quantity = 1,
 }: AddToCartButtonProps) {
   const [internalLoading, setInternalLoading] = useState(false);
   const loading = externalLoading !== undefined ? externalLoading : internalLoading;
   const scaleAnim = useState(new Animated.Value(1))[0];
-  
+
   const handlePress = async () => {
     if (disabled || loading) return;
-    
+
     setInternalLoading(true);
-    
+
     // Animation on press
     Animated.sequence([
       Animated.timing(scaleAnim, {
@@ -46,7 +53,7 @@ export default function AddToCartButton({
         useNativeDriver: true,
       }),
     ]).start();
-    
+
     try {
       await onPress();
     } catch (error) {
@@ -55,15 +62,12 @@ export default function AddToCartButton({
       setInternalLoading(false);
     }
   };
-  
+
   const buttonText = inCart ? 'In Cart' : 'Agregar al carrito';
-  
+
   return (
     <View style={[styles.container, darkMode && styles.containerDark]}>
-      <Animated.View style={[
-        styles.buttonWrapper,
-        { transform: [{ scale: scaleAnim }] }
-      ]}>
+      <Animated.View style={[styles.buttonWrapper, { transform: [{ scale: scaleAnim }] }]}>
         <TouchableOpacity
           style={[
             styles.button,
@@ -188,4 +192,4 @@ const styles = StyleSheet.create({
   helperTextDark: {
     color: '#F6695E', // Red color from Figma
   },
-}); 
+});

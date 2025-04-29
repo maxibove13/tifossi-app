@@ -59,20 +59,23 @@ function HomeScreen() {
     router.push(`/products/product?id=${productId}`);
   }
 
-  function handleViewMore(title: string) {
-    // Navigate to catalog page with title and tag filter
-    switch (title) {
-      case 'Tienda':
-        router.push('/catalog?title=Tienda&tag=recommended');
+  function handleViewMore(section: string) {
+    // Navigate to catalog page with the appropriate label-based category
+    switch (section) {
+      case 'recommended':
+        router.push('/catalog?title=Recomendados&category=recommended');
         break;
       case 'featured':
-        router.push('/catalog?title=Destacados&tag=featured');
+        router.push('/catalog?title=Destacados&category=featured');
         break;
-      case 'Tendencias':
-        router.push('/catalog?title=Tendencias&tag=popular');
+      case 'popular':
+        router.push('/catalog?title=Tendencias&category=popular');
         break;
-      case 'launch':
-        router.push('/catalog?title=Lanzamientos & Oportunidades&tag=opportunity');
+      case 'opportunity':
+        router.push('/catalog?title=Oportunidades&category=opportunity');
+        break;
+      case 'new':
+        router.push('/catalog?title=Nuevos&category=new');
         break;
       default:
         router.push('/catalog');
@@ -279,11 +282,11 @@ function HomeScreen() {
           })}
         >
           <ProductSections
-            title="Productos Recomendados"
+            title="Recomendados"
             products={data.recommendedProducts}
             CardComponent={PromotionCard}
             onProductPress={handleProductPress}
-            onViewMore={() => handleViewMore('Tienda')}
+            onViewMore={() => handleViewMore('recommended')}
           />
         </ProgressiveLoadingSection>
 
@@ -320,7 +323,7 @@ function HomeScreen() {
             products={data.trendingProducts}
             CardComponent={MinicardLarge}
             onProductPress={handleProductPress}
-            onViewMore={handleViewMore}
+            onViewMore={() => handleViewMore('popular')}
           />
         </ProgressiveLoadingSection>
 
@@ -400,8 +403,8 @@ function HomeScreen() {
         >
           <View style={styles.launchSection}>
             <View style={styles.launchHeader}>
-              <Text style={styles.launchTitle}>Lanzamientos & Oportunidades</Text>
-              <Pressable onPress={() => handleViewMore('launch')}>
+              <Text style={styles.launchTitle}>Oportunidades</Text>
+              <Pressable onPress={() => handleViewMore('opportunity')}>
                 <Text style={styles.launchViewMore}>Ver Más</Text>
               </Pressable>
             </View>

@@ -78,12 +78,20 @@ The following components now use the state management:
    - Fully integrated with cart store
    - Shows cart items with proper details
    - Allows updating quantity and removing items
+   - Implements cart item removal with undo capability
+   - Shows deletion confirmation screen
 
 3. **Favorites Screen**:
    - Fully integrated with favorites store
    - Shows favorited products with toggle functionality
 
-4. **Global Layout**:
+4. **Product Filters**:
+   - Implements a filtering system for products
+   - Uses the `useProductFilters` hook for filtering logic
+   - Multi-selection capability for sizes and colors
+   - Price range filtering with dual-thumb slider
+
+5. **Global Layout**:
    - TanStack Query provider set up
    - Auth initialization on app load
 

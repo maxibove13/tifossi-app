@@ -43,11 +43,17 @@ app/
 │   └── tiffosiExplore.tsx # Explore screen
 ├── (home)/             # Home-specific screens
 │   └── index.tsx       # Home entry point
+├── cart/               # Cart specific screens
+│   └── deleted.tsx     # Cart item deleted confirmation
 ├── checkout/           # Checkout process screens
 │   ├── _layout.tsx     # Checkout layout
 │   ├── shipping-address.tsx # Shipping address form
 │   ├── payment-selection.tsx # Payment method selection
 │   └── new-address.tsx # New address entry form
+├── locations/          # Store location screens
+│   └── [cityId]/       # Dynamic city routes
+│       ├── index.tsx   # Store zone selection screen
+│       └── [zoneId].tsx # Store details screen
 ├── products/           # Product-related screens
 │   ├── _layout.tsx     # Products layout
 │   ├── product.tsx     # Product details screen
@@ -115,6 +121,8 @@ _components/
 │   │   │   ├── OverlayCheckoutQuantity.tsx
 │   │   │   ├── OverlayCheckoutShipping.tsx
 │   │   │   ├── OverlayProductEditSize.tsx
+│   │   │   ├── OverlayProductFilters.tsx  # Product filters overlay
+│   │   │   ├── OverlayProductRemoving.tsx # Cart item removal with undo
 │   │   │   ├── OverlayShippingAddress.tsx
 │   │   │   ├── OverlayShippingSelection.tsx
 │   │   │   └── OverlayProductSearch.tsx # Product search overlay
@@ -358,6 +366,9 @@ interface CardDimensions {
 - Asset Preloading
 - Progressive Loading System
 - Local State Management (Cart, Favorites)
+- Product Filtering System
+- Cart Item Removal with Undo
+- Store Location Screens
 
 🟡 **Partially Implemented**
 - Form Components
@@ -371,9 +382,14 @@ interface CardDimensions {
 - Check [components.md](./components.md) for detailed component specifications
 - See [product_card.md](./product_card.md) for product card implementation details
 - See [loading_system.md](./loading_system.md) for details on the preloading and progressive loading system
+- See [navigation.md](./navigation.md) for details on the navigation system
+- See [locations.md](./locations.md) for store location screen implementation
+- See [cart_undo.md](./cart_undo.md) for cart item removal with undo feature
+- See [product_filters.md](./product_filters.md) for product filtering implementation
 - See [state_management.md](./state_management.md) for overall state management strategy
 - See [local_state_management.md](./local_state_management.md) for client-side state implementation details
 - See [state_management_client_side.md](./state_management_client_side.md) for the full client-side state implementation plan
+- See [state_management_implementation.md](./state_management_implementation.md) for implementation status of state management
 
 ## Notes
 

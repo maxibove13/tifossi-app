@@ -1,21 +1,21 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface ReviewCardProps {
   review: {
-    id: string
-    rating: number
-    comment: string
+    id: string;
+    rating: number;
+    comment: string;
     user: {
-      name: string
-      image?: string
-    }
-    date: string
-    helpfulCount: number
-    isHelpful?: boolean
-  }
-  onHelpfulPress?: (id: string) => void
-  onReportPress?: (id: string) => void
+      name: string;
+      image?: string;
+    };
+    date: string;
+    helpfulCount: number;
+    isHelpful?: boolean;
+  };
+  onHelpfulPress?: (id: string) => void;
+  onReportPress?: (id: string) => void;
 }
 
 export const ReviewCard = ({ review, onHelpfulPress, onReportPress }: ReviewCardProps) => {
@@ -31,8 +31,8 @@ export const ReviewCard = ({ review, onHelpfulPress, onReportPress }: ReviewCard
           />
         ))}
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -41,21 +41,17 @@ export const ReviewCard = ({ review, onHelpfulPress, onReportPress }: ReviewCard
           <Image source={{ uri: review.user.image }} style={styles.userImage} />
         ) : (
           <View style={styles.userImagePlaceholder}>
-            <Text style={styles.userInitial}>
-              {review.user.name.charAt(0).toUpperCase()}
-            </Text>
+            <Text style={styles.userInitial}>{review.user.name.charAt(0).toUpperCase()}</Text>
           </View>
         )}
-        
+
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{review.user.name}</Text>
           <Text style={styles.date}>{review.date}</Text>
         </View>
       </View>
 
-      <View style={styles.ratingContainer}>
-        {renderStars()}
-      </View>
+      <View style={styles.ratingContainer}>{renderStars()}</View>
 
       <Text style={styles.comment}>{review.comment}</Text>
 
@@ -69,24 +65,19 @@ export const ReviewCard = ({ review, onHelpfulPress, onReportPress }: ReviewCard
             size={16}
             color={review.isHelpful ? '#0C0C0C' : '#707070'}
           />
-          <Text
-            style={[styles.actionText, review.isHelpful && styles.actionTextActive]}
-          >
+          <Text style={[styles.actionText, review.isHelpful && styles.actionTextActive]}>
             Helpful ({review.helpfulCount})
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => onReportPress?.(review.id)}
-        >
+        <TouchableOpacity style={styles.actionButton} onPress={() => onReportPress?.(review.id)}>
           <Ionicons name="flag-outline" size={16} color="#707070" />
           <Text style={styles.actionText}>Report</Text>
         </TouchableOpacity>
       </View>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -172,6 +163,6 @@ const styles = StyleSheet.create({
   actionTextActive: {
     color: '#0C0C0C',
   },
-})
+});
 
-export default ReviewCard 
+export default ReviewCard;

@@ -10,11 +10,7 @@ type TextProps = {
 };
 
 export default function Text({ variant = 'body', children, style }: TextProps) {
-  return (
-    <RNText style={[styles[variant], style]}>
-      {children}
-    </RNText>
-  );
+  return <RNText style={[styles[variant], style]}>{children}</RNText>;
 }
 
 const styles = StyleSheet.create({
@@ -43,4 +39,4 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     fontFamily: 'Inter',
   },
-}); 
+});

@@ -1,22 +1,19 @@
 import { Product } from '../_types/product';
-import { ProductLabel } from '../_types/product-status';
-import TagData from './tags';
+import { ProductStatus, isLabelCategory, hasStatus } from '../_types/product-status';
+import { CATEGORY_IDS, MODEL_IDS, DEFAULTS } from '../_types/constants';
 
-// TODO: Update ALL products below to include categoryId and tagIds fields.
+export const defaultReturnPolicy = DEFAULTS.RETURN_POLICY;
 
-// Define the default return policy
-export const defaultReturnPolicy =
-  'Si no estás satisfecho con tu compra, puedes devolver el producto sin usar dentro de los 30 días posteriores a la compra con el ticket original y el embalaje intacto.';
-
+// Products data with explicit model IDs
 export const products: Product[] = [
   {
     id: 'tiffosi-fast',
     frontImage: require('../../assets/images/products/product_socks_1.png'),
     title: 'Tiffosi Fast',
     categoryId: 'medias',
-    tagIds: ['new_arrival', 'fast_dry', 'non_slip', 'sport'],
+    modelId: 'fast',
     price: 590,
-    label: ProductLabel.NEW,
+    statuses: [ProductStatus.NEW, ProductStatus.HIGHLIGHTED],
     shortDescription: {
       line1: 'Tecnología de secado rápido.',
       line2: 'Tejido suelto de alta confortabilidad.',
@@ -96,9 +93,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_socks_2.png'),
     title: 'Classic Socks',
     categoryId: 'medias',
-    tagIds: ['featured', 'cotton', 'sport'],
+    modelId: 'classic',
     price: 590,
-    label: ProductLabel.FEATURED,
+    statuses: [ProductStatus.FEATURED, ProductStatus.HIGHLIGHTED],
     shortDescription: {
       line1: 'Tecnología de secado rápido.',
       line2: 'Máxima comodidad y durabilidad.',
@@ -129,9 +126,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_socks_0.png'),
     title: 'Socks V2',
     categoryId: 'medias',
-    tagIds: ['new_arrival', 'customizable', 'fast_dry', 'sport'],
+    modelId: 'sport',
     price: 590,
-    label: ProductLabel.NEW,
+    statuses: [ProductStatus.NEW, ProductStatus.HIGHLIGHTED],
     isCustomizable: true,
     shortDescription: {
       line1: 'Calcetines versátiles y personalizables.',
@@ -174,9 +171,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_bag_0.png'),
     title: 'Regular Black',
     categoryId: 'bolsos',
-    tagIds: ['featured', 'urban', 'popular'],
+    modelId: 'regular_bag',
     price: 990,
-    label: ProductLabel.FEATURED,
+    statuses: [ProductStatus.FEATURED],
     shortDescription: {
       line1: 'Diseño moderno y versátil.',
       line2: 'Material resistente al uso diario.',
@@ -248,10 +245,10 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_bag_1.png'),
     title: 'Mochila SQ',
     categoryId: 'mochilas',
-    tagIds: ['opportunity', 'customizable', 'travel', 'urban'],
+    modelId: 'standard',
     price: 1190,
     discountedPrice: 890,
-    label: ProductLabel.OPPORTUNITY,
+    statuses: [ProductStatus.OPPORTUNITY],
     isCustomizable: true,
     shortDescription: {
       line1: 'Mochila espaciosa y personalizable.',
@@ -279,9 +276,10 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_sweater.png'),
     title: 'Buzo Oversize',
     categoryId: 'buzos',
-    tagIds: ['customizable', 'oversize', 'urban', 'popular'],
+    modelId: 'oversize_buzo',
     price: 1590,
     discountedPrice: 1190,
+    statuses: [ProductStatus.OPPORTUNITY],
     isCustomizable: true,
     shortDescription: {
       line1: 'Sudadera estilo oversize con máxima comodidad.',
@@ -324,10 +322,10 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_bag_2.png'),
     title: 'Neceser Ball',
     categoryId: 'neceser',
-    tagIds: ['new_arrival', 'travel'],
+    modelId: 'ball',
     price: 590,
     discountedPrice: 390,
-    label: ProductLabel.NEW,
+    statuses: [ProductStatus.NEW],
     shortDescription: {
       line1: 'Neceser redondo compacto en oferta.',
       line2: 'Pequeño por fuera, espacioso por dentro.',
@@ -354,8 +352,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_bag_3.png'),
     title: 'Mochila Classic',
     categoryId: 'mochilas',
-    tagIds: ['urban', 'travel'],
+    modelId: 'standard',
     price: 590,
+    statuses: [ProductStatus.RECOMMENDED],
     shortDescription: {
       line1: 'Mochila clásica de diseño atemporal.',
       line2: 'Fabricada con materiales resistentes y duraderos.',
@@ -382,8 +381,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_cap_black.png'),
     title: 'Cap V3',
     categoryId: 'gorros',
-    tagIds: ['urban', 'popular'],
+    modelId: 'cap',
     price: 590,
+    statuses: [ProductStatus.POPULAR],
     shortDescription: {
       line1: 'Gorra urbana de estilo contemporáneo.',
       line2: 'Material transpirable para máxima comodidad.',
@@ -410,8 +410,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_shirt_black_relaxed.png'),
     title: 'Relaxed Classic',
     categoryId: 'remeras',
-    tagIds: ['relaxed_fit', 'urban'],
+    modelId: 'relaxed',
     price: 590,
+    statuses: [ProductStatus.POPULAR],
     shortDescription: {
       line1: 'Camisa de corte relajado para máximo confort.',
       line2: 'Tejido de alta calidad que mantiene su forma.',
@@ -444,8 +445,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_shirt_black_regular.png'),
     title: 'Regular Shirt',
     categoryId: 'remeras',
-    tagIds: ['regular_fit', 'urban', 'popular'],
+    modelId: 'regular',
     price: 790,
+    statuses: [ProductStatus.POPULAR],
     shortDescription: {
       line1: 'Camisa de corte regular para uso diario.',
       line2: 'Un básico imprescindible en cualquier armario.',
@@ -478,8 +480,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_shirt_white.png'),
     title: 'White Shirt',
     categoryId: 'remeras',
-    tagIds: ['regular_fit', 'urban'],
+    modelId: 'regular',
     price: 790,
+    statuses: [ProductStatus.POPULAR],
     shortDescription: {
       line1: 'Camisa blanca elegante y versátil.',
       line2: 'Perfecta para ocasiones formales e informales.',
@@ -513,8 +516,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_t_shirt_black.png'),
     title: 'T-Shirt Black',
     categoryId: 'remeras',
-    tagIds: ['regular_fit', 'organic_cotton', 'urban', 'popular'],
+    modelId: 'tshirt',
     price: 690,
+    statuses: [ProductStatus.RECOMMENDED],
     shortDescription: {
       line1: 'Camiseta negra esencial para todo guardarropa.',
       line2: 'Confeccionada con algodón orgánico de alta densidad.',
@@ -547,8 +551,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_bag_4.png'),
     title: 'Backpack Pro',
     categoryId: 'mochilas',
-    tagIds: ['premium', 'travel', 'urban', 'water_resistant'],
+    modelId: 'premium',
     price: 1290,
+    statuses: [ProductStatus.OPPORTUNITY],
     shortDescription: {
       line1: 'Mochila premium con características profesionales.',
       line2: 'Compartimentos especiales para dispositivos electrónicos.',
@@ -576,10 +581,10 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_bag_5.png'),
     title: 'Neceser Globo',
     categoryId: 'neceser',
-    tagIds: ['new_arrival', 'customizable', 'travel', 'water_resistant'],
+    modelId: 'globo',
     price: 590,
     discountedPrice: 390,
-    label: ProductLabel.NEW,
+    statuses: [ProductStatus.NEW],
     isCustomizable: true,
     shortDescription: {
       line1: 'Neceser compacto y funcional para todos tus viajes.',
@@ -620,8 +625,9 @@ export const products: Product[] = [
     frontImage: require('../../assets/images/products/product_bag_6.png'),
     title: 'Backpack Travel',
     categoryId: 'mochilas',
-    tagIds: ['travel', 'water_resistant'],
+    modelId: 'travel',
     price: 1490,
+    statuses: [ProductStatus.OPPORTUNITY],
     shortDescription: {
       line1: 'Mochila espaciosa diseñada para viajes largos.',
       line2: 'Sistema ergonómico para máxima comodidad en travesías.',
@@ -650,9 +656,9 @@ export const products: Product[] = [
     videoSource: require('../../assets/videos/mochila-gold.mov'),
     title: 'Mochila Gold',
     categoryId: 'mochilas',
-    tagIds: ['app_exclusive', 'premium', 'urban', 'water_resistant'],
+    modelId: 'premium',
     price: 1890,
-    label: ProductLabel.APP_EXCLUSIVE,
+    statuses: [ProductStatus.APP_EXCLUSIVE, ProductStatus.HIGHLIGHTED],
     shortDescription: {
       line1: 'Mochila premium con detalles dorados.',
       line2: 'Diseño elegante para destacar en cualquier ocasión.',
@@ -689,9 +695,9 @@ export const products: Product[] = [
     videoSource: require('../../assets/videos/mochila-black.mov'),
     title: 'Mochila Black',
     categoryId: 'mochilas',
-    tagIds: ['popular', 'urban', 'travel', 'water_resistant'],
+    modelId: 'premium',
     price: 1690,
-    label: ProductLabel.POPULAR,
+    statuses: [ProductStatus.APP_EXCLUSIVE],
     shortDescription: {
       line1: 'Mochila negra de diseño minimalista y versátil.',
       line2: 'Perfecta para uso diario y viajes cortos.',
@@ -727,9 +733,9 @@ export const products: Product[] = [
     id: 'explore-campera-deportiva',
     title: 'Campera Deportiva',
     categoryId: 'buzos',
-    tagIds: ['new_arrival', 'sport', 'thermal', 'high_performance', 'water_resistant'],
+    modelId: 'campera',
     price: 1890,
-    label: ProductLabel.NEW,
+    statuses: [ProductStatus.NEW, ProductStatus.APP_EXCLUSIVE],
     frontImage: require('../../assets/images/products/campera-deportiva.png'),
     shortDescription: {
       line1: 'Campera deportiva de alto rendimiento.',
@@ -763,8 +769,9 @@ export const products: Product[] = [
     id: 'explore-antideslizantes-1',
     title: 'Antideslizantes',
     categoryId: 'medias',
-    tagIds: ['non_slip', 'sport', 'high_performance'],
+    modelId: 'antideslizante',
     price: 490,
+    statuses: [ProductStatus.RECOMMENDED],
     frontImage: require('../../assets/images/products/antideslizantes-1.png'),
     shortDescription: {
       line1: 'Calcetines antideslizantes para mayor agarre.',
@@ -797,8 +804,9 @@ export const products: Product[] = [
     id: 'explore-antideslizantes-2',
     title: 'Antideslizantes V2',
     categoryId: 'medias',
-    tagIds: ['non_slip', 'sport', 'high_performance'],
+    modelId: 'antideslizante',
     price: 490,
+    statuses: [ProductStatus.RECOMMENDED],
     frontImage: require('../../assets/images/products/antideslizantes-2.png'),
     shortDescription: {
       line1: 'Segunda generación de calcetines con mejor agarre.',
@@ -831,9 +839,9 @@ export const products: Product[] = [
     id: 'explore-tiffosi-antideslizante-1',
     title: 'Tiffosi Antideslizante',
     categoryId: 'medias',
-    tagIds: ['recommended', 'non_slip', 'sport', 'premium', 'high_performance'],
+    modelId: 'antideslizante',
     price: 550,
-    label: ProductLabel.RECOMMENDED,
+    statuses: [ProductStatus.RECOMMENDED],
     frontImage: require('../../assets/images/products/tiffosi-antideslizante-1.png'),
     shortDescription: {
       line1: 'Calcetines premium con tecnología antideslizante.',
@@ -866,9 +874,10 @@ export const products: Product[] = [
     id: 'explore-shinguards-1',
     title: 'Shinguards Pro',
     categoryId: 'canilleras',
-    tagIds: ['customizable', 'sport', 'premium', 'high_performance'],
+    modelId: 'pro',
     price: 790,
     isCustomizable: true,
+    statuses: [ProductStatus.NEW],
     frontImage: require('../../assets/images/products/shinguards-1.png'),
     shortDescription: {
       line1: 'Espinilleras profesionales con protección avanzada.',
@@ -901,8 +910,9 @@ export const products: Product[] = [
     id: 'explore-shinguards-2',
     title: 'Shinguards Lite',
     categoryId: 'canilleras',
-    tagIds: ['sport', 'lightweight', 'high_performance'],
+    modelId: 'lite',
     price: 690,
+    statuses: [ProductStatus.FEATURED],
     frontImage: require('../../assets/images/products/shinguards-2.png'),
     shortDescription: {
       line1: 'Espinilleras ultraligeras para máxima velocidad.',
@@ -935,9 +945,9 @@ export const products: Product[] = [
     id: 'explore-shirt-os-black-1',
     title: 'Shirt OS Black',
     categoryId: 'remeras',
-    tagIds: ['featured', 'oversize', 'urban', 'cotton'],
+    modelId: 'oversize',
     price: 890,
-    label: ProductLabel.FEATURED,
+    statuses: [ProductStatus.FEATURED],
     frontImage: require('../../assets/images/products/shirt-os-black-1.png'),
     shortDescription: {
       line1: 'Camisa oversize de corte moderno.',
@@ -973,81 +983,117 @@ export const products: Product[] = [
   },
 ];
 
-export const getHighlightedProducts = () => products.slice(0, 3);
-export const getFeaturedProduct = () => products[products.length - 2];
-export const getRecommendedProducts = () => products.slice(3, 9);
+export const getHighlightedProducts = () => {
+  // First try to find products specifically marked with HIGHLIGHTED status
+  const highlightedProducts = products.filter((product) =>
+    hasStatus(product.statuses, ProductStatus.HIGHLIGHTED)
+  );
+
+  // If we find any highlighted products, return those
+  if (highlightedProducts.length > 0) {
+    return highlightedProducts;
+  }
+
+  // Otherwise, fall back to the original behavior of returning the first 3 products
+  return products.slice(0, 3);
+};
+export const getFeaturedProduct = () => {
+  const featuredProducts = products.filter((product) =>
+    hasStatus(product.statuses, ProductStatus.FEATURED)
+  );
+  return featuredProducts.length > 0 ? featuredProducts[0] : null;
+};
+export const getRecommendedProducts = () =>
+  products.filter((product) => hasStatus(product.statuses, ProductStatus.RECOMMENDED));
 export const getRelatedProducts = () => products.slice(9, 15);
 export const getTrendingProducts = () =>
-  [
-    products.find((p) => p.id === 'regular-shirt'),
-    products.find((p) => p.id === 'relaxed-classic'),
-    products.find((p) => p.id === 'white-shirt'),
-    products.find((p) => p.id === 'cap-v3'),
-  ].filter((p): p is Product => p !== undefined);
-export const getNewReleases = () => products.slice(0, 4);
+  products.filter((product) => hasStatus(product.statuses, ProductStatus.POPULAR));
+export const getNewReleases = () =>
+  products.filter((product) => hasStatus(product.statuses, ProductStatus.NEW));
 export const getProductById = (id: string) => products.find((p) => p.id === id);
 
-// Add the function for Lanzamientos & Oportunidades
+// Get products with the OPPORTUNITY status
 export const getLaunchAndOpportunityProducts = (): Product[] => {
-  const ids = ['socks-v2', 'regular-black', 'mochila-sq', 'buzo-oversize'];
-  return ids
-    .map((id) => products.find((p) => p.id === id))
-    .filter((p): p is Product => p !== undefined);
+  return products.filter((product) => hasStatus(product.statuses, ProductStatus.OPPORTUNITY));
 };
 
-// Function to get products for TiffosiExplore screen - prioritizing products with videos
+/**
+ * Get products for TiffosiExplore screen - exclusively showing products with the APP_EXCLUSIVE status
+ * @returns Array of products with the APP_EXCLUSIVE status
+ */
 export const getTiffosiExploreProducts = (): Product[] => {
-  // IDs of products to include in the explore section, with mochila-gold first
-  const ids = [
-    'mochila-gold', // First item (has video)
-    'mochila-black', // Second item (has video)
-    'explore-campera-deportiva',
-    'explore-antideslizantes-1',
-    'tiffosi-fast',
-    'explore-antideslizantes-2',
-    'explore-tiffosi-antideslizante-1',
-    'socks-v2',
-    'explore-shinguards-1',
-    'explore-shinguards-2',
-    'explore-shirt-os-black-1',
-    't-shirt-black',
-    'buzo-oversize',
-    'regular-black',
-    'backpack-pro',
-    'neceserr',
-    'cap-v3',
-  ];
-
-  return ids
-    .map((id) => products.find((p) => p.id === id))
-    .filter((p): p is Product => p !== undefined);
+  // Only return products marked with the APP_EXCLUSIVE status
+  return products.filter((p) => hasStatus(p.statuses, ProductStatus.APP_EXCLUSIVE));
 };
 
-// Function to get products by category
+/**
+ * Get products by category ID or by label-based category
+ * @param categoryId The category ID to filter by
+ * @returns Array of products matching the category
+ */
 export const getProductsByCategory = (categoryId: string): Product[] => {
-  if (categoryId === 'todo') {
+  // Return all products for the "todo" category
+  if (categoryId === CATEGORY_IDS.ALL) {
     return products;
   }
+
+  // Check if this categoryId represents a status-based category
+  if (isLabelCategory(categoryId)) {
+    // This is a status category - filter products that have this status
+    const status = categoryId as ProductStatus;
+    return products.filter((product) => hasStatus(product.statuses, status));
+  }
+
+  // Regular product categories
   return products.filter((product) => product.categoryId === categoryId);
 };
 
-// Function to get products by category and tag
-export const getProductsByCategoryAndTag = (categoryId: string, tagId: string): Product[] => {
-  let categoryProducts = getProductsByCategory(categoryId);
+// Removed getProductsByCategoryAndTag - replaced by getProductsByCategoryAndModel
 
-  if (tagId === 'all') {
+// Removed getTagsForCategory - replaced by model-based functions
+
+// No need for model assignment anymore since we explicitly define models for each product
+
+/**
+ * Get products filtered by both category and model
+ * @param categoryId The category ID to filter by
+ * @param modelId The model ID to filter by
+ * @returns Array of products matching both category and model
+ */
+export const getProductsByCategoryAndModel = (categoryId: string, modelId: string): Product[] => {
+  // First get products by category
+  const categoryProducts = getProductsByCategory(categoryId);
+
+  // Return all category products if model is 'all'
+  if (modelId === MODEL_IDS.ALL) {
     return categoryProducts;
   }
 
-  return categoryProducts.filter((product) => product.tagIds.includes(tagId));
+  // Further filter by model
+  return categoryProducts.filter((product) => product.modelId === modelId);
 };
 
-// Function to get relevant tags for a category - now uses pre-computed map from TagData
-export const getTagsForCategory = (
-  categoryId: string
-): { id: string; name: string; slug: string }[] => {
-  // Use the more efficient pre-computed tag data
-  return TagData.getTagsForCategory(categoryId);
+/**
+ * Get all unique model IDs used by products in a category
+ * @param categoryId The category ID to get models for
+ * @returns Array of unique model IDs used in the category
+ * @deprecated Use ModelsData.getModelsByCategory instead which returns full model objects
+ */
+export const getModelsForCategory = (categoryId: string): string[] => {
+  if (categoryId === CATEGORY_IDS.ALL) {
+    return []; // No models for 'todo' category
+  }
+
+  const categoryProducts = getProductsByCategory(categoryId);
+  const uniqueModels = new Set<string>();
+
+  categoryProducts.forEach((product) => {
+    if (product.modelId) {
+      uniqueModels.add(product.modelId);
+    }
+  });
+
+  return Array.from(uniqueModels);
 };
 
 const ProductData = {
@@ -1062,8 +1108,8 @@ const ProductData = {
   getLaunchAndOpportunityProducts,
   getTiffosiExploreProducts,
   getProductsByCategory,
-  getProductsByCategoryAndTag,
-  getTagsForCategory,
+  getProductsByCategoryAndModel,
+  getModelsForCategory,
 };
 
 export default ProductData;
