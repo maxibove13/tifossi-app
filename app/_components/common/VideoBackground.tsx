@@ -29,7 +29,6 @@ export const VideoBackground = ({
   shouldAutoPlay = true,
   preloadPriority = 'medium',
 }: VideoBackgroundProps) => {
-  console.log('[VideoBackground] Mounting with source:', source, 'Fallback:', fallbackImage);
   const [isError, setIsError] = useState(false);
   const [isPreloaded, setIsPreloaded] = useState(false);
   const { width, height } = useWindowDimensions();
@@ -39,17 +38,16 @@ export const VideoBackground = ({
     if (typeof source === 'number') {
       const asset = Asset.fromModule(source);
       if (!asset.localUri) {
-        asset.downloadAsync().catch((e) => console.error('Failed to download asset:', e));
+        asset.downloadAsync().catch(() => {
+          setIsError(true);
+        });
       }
-      console.log('[VideoBackground] Resolved local asset:', asset.localUri ?? asset.uri);
       return { uri: asset.localUri ?? asset.uri };
     }
-    console.log('[VideoBackground] Using remote source:', source);
     return { uri: source as string };
   }, [source]);
 
   useEffect(() => {
-    console.log('[VideoBackground] Preload effect - Source:', source, 'Is Preloaded:', isPreloaded);
     if (source && !isPreloaded) {
       const assetKey =
         typeof source === 'number'
@@ -64,9 +62,6 @@ export const VideoBackground = ({
           priority: preloadPriority,
         },
       ]);
-      console.log(
-        `[VideoBackground] Added ${assetKey} to preload service with priority ${preloadPriority}`
-      );
 
       setIsPreloaded(true);
     }
@@ -91,35 +86,21 @@ export const VideoBackground = ({
   const hasValidSource = !!memoSource?.uri && memoSource.uri !== '';
 
   const player = useVideoPlayer(memoSource, (player) => {
-    console.log(
-      `[VideoBackground] Player Initialized with resolved source ${memoSource?.uri}`,
-      player ? 'successfully' : 'failed'
-    );
     if (!player) return;
     player.loop = shouldLoop;
     player.muted = shouldMute;
     player.staysActiveInBackground = false;
-    // Auto-play if requested
+
     if (shouldAutoPlay) {
-      console.log('[VideoBackground] Attempting auto-play in initializer.');
       player.play();
     }
   });
 
   useEffect(() => {
     if (!hasValidSource) {
-      console.log('[VideoBackground] Invalid source detected, setting error state.');
       setIsError(true);
     }
   }, [hasValidSource]);
-
-  if (!fallbackImage && (isError || !hasValidSource)) {
-    console.warn(
-      '[VideoBackground] Rendering null: No fallback provided and video failed/invalid.'
-    );
-  }
-
-  console.log('[VideoBackground] Rendering - IsError:', isError, 'HasValidSource:', hasValidSource);
 
   return (
     <View style={[styles.container, style, { width, height }]}>

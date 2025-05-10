@@ -18,7 +18,7 @@ import { Product } from '../_types/product';
 import { getTiffosiExploreProducts } from '../_data/products';
 import preloadService from '../_services/preload/service';
 import { getPrimaryLabelFromStatuses } from '../_types/product-status';
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useCallback, useMemo } from 'react';
 
 // Get app-exclusive products from our dedicated function in products.ts
 // This function only returns products with the APP_EXCLUSIVE label
@@ -35,51 +35,73 @@ const ExploreProductCard = memo(({ product }: { product: Product }) => {
   const { height: screenHeight } = useWindowDimensions();
   const tabBarHeight = useBottomTabBarHeight();
 
-  const handleViewProduct = () => {
+  const handleViewProduct = useCallback(() => {
     router.push(`/products/product?id=${product.id}`);
-  };
+  }, [product.id, router]);
+
+  // Memoize the primary label to avoid recalculation
+  const primaryLabel = useMemo(() => {
+    return product.statuses.length > 0 ? getPrimaryLabelFromStatuses(product.statuses) : null;
+  }, [product.statuses]);
 
   // Common content layout to avoid repetition
-  const cardContent = (
-    <>
-      {/* Added Gradient for bottom fade-to-black effect */}
-      <LinearGradient
-        colors={['rgba(12, 12, 12, 0)', colors.background.dark]}
-        style={styles.bottomGradient}
-      />
+  const cardContent = useMemo(
+    () => (
+      <>
+        {/* Added Gradient for bottom fade-to-black effect */}
+        <LinearGradient
+          colors={['rgba(12, 12, 12, 0)', colors.background.dark]}
+          style={styles.bottomGradient}
+        />
 
-      {/* Content Section - Renders on top of the new gradient */}
-      <View style={[styles.contentContainer, { bottom: tabBarHeight }]}>
-        {/* Button aligned to the right */}
-        <TouchableOpacity style={styles.viewProductButton} onPress={handleViewProduct}>
-          <ArrowUpRightIcon />
-          <Text style={styles.viewProductButtonText}>Ver Producto</Text>
-        </TouchableOpacity>
+        {/* Content Section - Renders on top of the new gradient */}
+        <View style={[styles.contentContainer, { bottom: tabBarHeight }]}>
+          {/* Button aligned to the right */}
+          <TouchableOpacity style={styles.viewProductButton} onPress={handleViewProduct}>
+            <ArrowUpRightIcon />
+            <Text style={styles.viewProductButtonText}>Ver Producto</Text>
+          </TouchableOpacity>
 
-        {/* Product Details aligned to the left */}
-        <View style={styles.detailsContainer}>
-          {product.statuses.length > 0 && (
-            <View style={styles.labelBadge}>
-              <Text style={styles.labelText}>{getPrimaryLabelFromStatuses(product.statuses)}</Text>
-            </View>
-          )}
-          <View style={styles.titleContainer}>
-            <Text style={styles.productTitle}>{product.title}</Text>
-          </View>
-          <View style={styles.tagsContainer}>
-            {product.isCustomizable && (
-              <View style={styles.tagPersonalizable}>
-                <Text style={styles.tagTextPersonalizable}>Personalizable</Text>
+          {/* Product Details aligned to the left */}
+          <View style={styles.detailsContainer}>
+            {primaryLabel && (
+              <View style={styles.labelBadge}>
+                <Text style={styles.labelText}>{primaryLabel}</Text>
               </View>
             )}
-            <View style={styles.tagPrice}>
-              <Text style={styles.tagTextPrice}>${product.price.toFixed(2)}</Text>
+            <View style={styles.titleContainer}>
+              <Text style={styles.productTitle}>{product.title}</Text>
+            </View>
+            <View style={styles.tagsContainer}>
+              {product.isCustomizable && (
+                <View style={styles.tagPersonalizable}>
+                  <Text style={styles.tagTextPersonalizable}>Personalizable</Text>
+                </View>
+              )}
+              <View style={styles.tagPrice}>
+                <Text style={styles.tagTextPrice}>${product.price.toFixed(2)}</Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </>
+      </>
+    ),
+    [
+      tabBarHeight,
+      handleViewProduct,
+      primaryLabel,
+      product.title,
+      product.isCustomizable,
+      product.price,
+    ]
   );
+
+  // Memoize the image source to prevent unnecessary recreations
+  const imageSource = useMemo(() => {
+    return typeof product.frontImage === 'string'
+      ? { uri: product.frontImage }
+      : product.frontImage;
+  }, [product.frontImage]);
 
   return (
     <View style={[styles.cardContainer, { height: screenHeight }]}>
@@ -94,15 +116,7 @@ const ExploreProductCard = memo(({ product }: { product: Product }) => {
           {cardContent}
         </VideoBackground>
       ) : (
-        <ImageBackground
-          source={
-            typeof product.frontImage === 'string'
-              ? { uri: product.frontImage }
-              : product.frontImage
-          }
-          style={styles.videoBackground}
-          resizeMode="cover"
-        >
+        <ImageBackground source={imageSource} style={styles.videoBackground} resizeMode="cover">
           {cardContent}
         </ImageBackground>
       )}
@@ -124,44 +138,29 @@ export default function TiffosiExploreScreen() {
     // This function preloads all assets for products in TiffosiExplore
     async function preloadExploreProducts() {
       try {
-        // First, preload all video sources (high priority for the first 2)
+        // First, preload all video sources with high priority
         const videoProducts = exploreProducts.filter((p) => p.videoSource);
 
         if (videoProducts.length > 0) {
-          console.log(`Preloading ${videoProducts.length} videos for TiffosiExplore`);
-
-          // Log each video source to help with debugging
-          videoProducts.forEach((product, index) => {
-            console.log(
-              `Video ${index + 1}: ${product.id}, source type: ${typeof product.videoSource}`
-            );
-          });
-
-          // Create preload assets array for videos with proper priorities
-          const videoAssets = videoProducts.map((product) => {
-            // Always set HIGH priority for videos to ensure they load
-            const priority: 'high' | 'medium' | 'low' = 'high';
-            return {
-              key: `video_${product.id}`,
-              asset: product.videoSource,
-              type: 'video' as const,
-              priority,
-            };
-          });
+          // Create preload assets array for videos with high priority
+          const videoAssets = videoProducts.map((product) => ({
+            key: `video_${product.id}`,
+            asset: product.videoSource,
+            type: 'video' as const,
+            priority: 'high' as const,
+          }));
 
           // Update preload service with these assets
           preloadService.updateAssetList(videoAssets);
         }
 
         // Then, preload all product images (medium priority)
-        const imageAssets = exploreProducts.map((product) => {
-          return {
-            key: `image_${product.id}`,
-            asset: product.frontImage,
-            type: 'image' as const,
-            priority: 'medium' as const,
-          };
-        });
+        const imageAssets = exploreProducts.map((product) => ({
+          key: `image_${product.id}`,
+          asset: product.frontImage,
+          type: 'image' as const,
+          priority: 'medium' as const,
+        }));
 
         // Update preload service with image assets
         preloadService.updateAssetList(imageAssets);
