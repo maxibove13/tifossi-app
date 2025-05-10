@@ -49,6 +49,7 @@ export interface ProductFilters {
     min: number;             // Minimum price
     max: number;             // Maximum price
   };
+  labels?: ProductLabel[];   // Product labels (e.g., [ProductLabel.NEW, ProductLabel.FEATURED])
 }
 ```
 

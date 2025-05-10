@@ -15,39 +15,49 @@ All product card variants share these common characteristics:
 
 ### Core Types
 ```typescript
-type CardVariant = 'default' | 'featured' | 'horizontal' | 'minicard' | 'image-only'
-type CardSize = 'small' | 'large'
+type CardVariant = 'default' | 'featured' | 'horizontal' | 'minicard' | 'image-only';
+type CardSize = 'small' | 'large';
 
 interface CardDimensions {
-  width: number | 'full'
-  height: number
-  imageSize: number
-  aspectRatio?: number
+  width: number | 'full';
+  height: number;
+  imageSize: number;
+  aspectRatio?: number;
 }
 
 interface BaseProductCardProps {
-  product: Product
-  onPress?: () => void
-  isDark?: boolean
-  isLoading?: boolean
-  style?: StyleProp<ViewStyle>
+  product: Product;
+  onPress?: () => void;
+  isDark?: boolean;
+  isLoading?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 interface SizeableProductCardProps<T extends CardVariant> extends BaseProductCardProps {
-  size?: CardSizeByVariant<T>
+  size?: CardSizeByVariant<T>;
 }
 
-// Note: The CARD_DIMENSIONS constant itself might not be directly exported.
-// Use the getCardDimensions helper function (see Type Safety section) for reliable access.
-/* Example internal structure:
+// The actual CARD_DIMENSIONS constant structure
 const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensions>>> = {
   default: {
     small: { width: 132, height: 196, imageSize: 132 },
     large: { width: 160, height: 272, imageSize: 160 }
   },
-  // ... other variants ...
-}
-*/
+  featured: {
+    small: { width: 'full', height: 420, imageSize: 220 },
+    large: { width: 'full', height: 160, imageSize: 160 }
+  },
+  horizontal: {
+    large: { width: 'full', height: 142, imageSize: 119 }
+  },
+  minicard: {
+    large: { width: 128, height: 304, imageSize: 256 }
+  },
+  'image-only': {
+    small: { width: 132, height: 132, imageSize: 132 },
+    large: { width: 160, height: 264, imageSize: 160 }
+  }
+} as const;
 ```
 
 ### Card Variants
@@ -55,6 +65,7 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 #### 1. Default Card
 **Variants**: Small (132x196), Large (160x272)  
 **Props**: `DefaultCardProps extends SizeableProductCardProps<'default'>`  
+**Implementation**: `/app/_components/store/product/default/small.tsx` and `/app/_components/store/product/default/large.tsx`  
 **Features**:
 - Product image (132x132 or 160x160)
 - New tag (optional)
@@ -65,8 +76,9 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 - Customizable indicator (large variant only)
 
 #### 1B. Promotion Card
-**Variants**: Small (132x132) by default  
-**Props**: `PromotionCardProps extends { product: Product, size?: 's'|'m'|'l', onPress?: () => void, darkMode?: boolean, invertTextColor?: boolean, isFavorite?: boolean }`  
+**Variants**: Uses a custom size  
+**Props**: `PromotionProductCardProps extends { product: Product, onPress?: () => void, style?: StyleProp<ViewStyle> }`  
+**Implementation**: `/app/_components/store/product/promotion/PromotionCard.tsx`  
 **Features**:
 - Product image (132x132)
 - New tag or discount label
@@ -78,7 +90,8 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 
 #### 2. Featured Card
 **Variants**: Small (Full Width x 420), Large (Full Width x 160)  
-**Props**: `FeaturedCardProps extends SizeableProductCardProps<'featured'> & { onBuyPress?: () => void; onPress?: () => void; }`  
+**Props**: `FeaturedCardProps extends SizeableProductCardProps<'featured'> & { onBuyPress?: () => void; }`  
+**Implementation**: `/app/_components/store/product/featured/FeaturedCard.tsx`  
 **Features**:
 - Dark gradient background (#373737 to #0C0C0C)
 - New tag (optional)
@@ -95,6 +108,7 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 #### 3. Horizontal Card (HighlightedCard)
 **Variants**: Large only (Full Width x 142)  
 **Props**: `HorizontalCardProps extends BaseProductCardProps & { aspectRatio?: number }`  
+**Implementation**: `/app/_components/store/product/horizontal/HighlightedCard.tsx`  
 **Features**:
 - Horizontal layout
 - Fixed image width (119px)  
@@ -107,6 +121,7 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 #### 4. Minicard
 **Variants**: Large only (128x304)  
 **Props**: `MinicardProps extends BaseProductCardProps`  
+**Implementation**: `/app/_components/store/product/minicard/index.tsx` and `/app/_components/store/product/minicard/large.tsx`  
 **Features**:
 - Tall image format (256px)
 - Minimal product info
@@ -116,6 +131,7 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 #### 5. Image Only Card
 **Variants**: Small (132x132), Large (160x264)  
 **Props**: `ImageOnlyCardProps extends SizeableProductCardProps<'image-only'>`  
+**Implementation**: `/app/_components/store/product/image/ImageOnlyCard.tsx`  
 **Features**:
 - Pure image display
 - Optional name display

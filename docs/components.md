@@ -9,11 +9,11 @@ The Tifossi component system follows a modular, domain-driven organization with 
 ### Directory Structure
 
 ```
-app/components/
+app/_components/
 ├── common/           # Shared utility components
 │   ├── animation/    # Animation utilities
 │   ├── ErrorBoundary.tsx
-│   ├── GradientBackground.tsx
+│   ├── ScreenHeader.tsx
 │   ├── Subheader.tsx
 │   ├── VideoBackground.tsx
 │   └── share/        # Sharing functionality
@@ -51,11 +51,12 @@ app/components/
     ├── buttons/      # Button components
     │   └── Button.tsx
     ├── cards/        # Card components
-    │   └── ProfileCard.tsx
+    ├── badges/       # Badge components
+    │   └── DiscountBadge.tsx
     ├── form/         # Form controls
-    │   ├── Counter.tsx
-    │   ├── CountrySelect.tsx
     │   ├── Input.tsx
+    │   ├── Dropdown.tsx
+    │   ├── RadioButton.tsx
     │   ├── SelectionControl.tsx
     │   └── SingleChoice.tsx
     ├── layout/       # Layout primitives
@@ -63,22 +64,29 @@ app/components/
     │   └── Section.tsx
     ├── toggle/       # Toggle components
     │   └── ToggleSport.tsx
+    ├── icons/        # Icon components
+    │   ├── HeartActiveIcon.tsx
+    │   └── index.ts   
+    ├── links/        # Link components
+    │   └── index.ts
+    ├── navigation/   # Navigation UI
+    │   └── index.ts
     └── typography/   # Text components
         └── Text.tsx
 ```
 
 ## Component Categories
 
-### Core UI Components (`/app/components/ui/`)
+### Core UI Components (`/app/_components/ui/`)
 
 These are the fundamental building blocks that form the foundation of the UI system.
 
-#### Typography (`/typography/Text.tsx`)
+#### Typography (`/_components/ui/typography/Text.tsx`)
 
 The Text component provides consistent typography across the app with support for various styles.
 
 ```tsx
-import { Text } from '../components/ui/typography/Text';
+import { Text } from '../_components/ui/typography/Text';
 
 <Text variant="heading">Product Title</Text>
 <Text variant="body">Product description text goes here</Text>
@@ -94,7 +102,7 @@ Props:
 - `numberOfLines`: number - Truncates text with ellipsis
 - `style`: StyleProp<TextStyle> - Additional styling
 
-#### Buttons (`/buttons/Button.tsx`)
+#### Buttons (`/_components/ui/buttons/Button.tsx`)
 
 The Button component provides consistent button styling with multiple variants.
 
@@ -115,13 +123,13 @@ Props:
 - `icon`: ReactNode - Optional icon
 - `style`: StyleProp<ViewStyle> - Additional styling
 
-#### Layout Components (`/layout/`)
+#### Layout Components (`/_components/ui/layout/`)
 
 Layout components provide consistent structure for content:
 
-1. **Grid** (`/layout/Grid.tsx`): Flexible grid layout for items
+1. **Grid** (`/_components/ui/layout/Grid.tsx`): Flexible grid layout for items
    ```tsx
-   import { Grid } from '../components/ui/layout/Grid';
+   import { Grid } from '../_components/ui/layout/Grid';
    
    <Grid columns={2} spacing={spacing.md}>
      {products.map(product => (
@@ -130,9 +138,9 @@ Layout components provide consistent structure for content:
    </Grid>
    ```
 
-2. **Section** (`/layout/Section.tsx`): Consistent section with optional header
+2. **Section** (`/_components/ui/layout/Section.tsx`): Consistent section with optional header
    ```tsx
-   import { Section } from '../components/ui/layout/Section';
+   import { Section } from '../_components/ui/layout/Section';
    
    <Section 
      title="Featured Products" 
@@ -142,16 +150,16 @@ Layout components provide consistent structure for content:
    </Section>
    ```
 
-### Form Components (`/app/components/ui/form/`)
+### Form Components (`/app/_components/ui/form/`)
 
 Form components handle user input with consistent styling and behavior.
 
-#### Input (`/form/Input.tsx`)
+#### Input (`/_components/ui/form/Input.tsx`)
 
 Text input with label and error handling.
 
 ```tsx
-import { Input } from '../components/ui/form/Input';
+import { Input } from '../_components/ui/form/Input';
 
 <Input
   label="Email"
@@ -163,41 +171,41 @@ import { Input } from '../components/ui/form/Input';
 />
 ```
 
-#### Counter (`/form/Counter.tsx`)
+#### Dropdown (`/_components/ui/form/Dropdown.tsx`)
 
-Quantity selector with increment/decrement.
+Dropdown selector for options.
 
 ```tsx
-import { Counter } from '../components/ui/form/Counter';
+import { Dropdown } from '../_components/ui/form/Dropdown';
 
-<Counter 
-  value={quantity} 
-  onChange={setQuantity} 
-  min={1} 
-  max={10} 
+<Dropdown 
+  label="Select Option"
+  options={options}
+  selectedOption={selectedOption}
+  onSelect={setSelectedOption}
 />
 ```
 
-#### CountrySelect (`/form/CountrySelect.tsx`)
+#### RadioButton (`/_components/ui/form/RadioButton.tsx`)
 
-Country selection with flag display.
+Radio button selection component.
 
 ```tsx
-import { CountrySelect } from '../components/ui/form/CountrySelect';
+import { RadioButton } from '../_components/ui/form/RadioButton';
 
-<CountrySelect
-  value={country}
-  onChange={setCountry}
-  countries={availableCountries}
+<RadioButton
+  value={selected}
+  onChange={setSelected}
+  label="Option"
 />
 ```
 
-#### SingleChoice (`/form/SingleChoice.tsx`)
+#### SingleChoice (`/_components/ui/form/SingleChoice.tsx`)
 
 Single selection from multiple options.
 
 ```tsx
-import { SingleChoice } from '../components/ui/form/SingleChoice';
+import { SingleChoice } from '../_components/ui/form/SingleChoice';
 
 <SingleChoice
   options={sizes}
@@ -207,22 +215,22 @@ import { SingleChoice } from '../components/ui/form/SingleChoice';
 />
 ```
 
-### Store Components (`/app/components/store/`)
+### Store Components (`/app/_components/store/`)
 
 Components specific to the e-commerce store functionality.
 
-#### Product Components (`/store/product/`)
+#### Product Components (`/_components/store/product/`)
 
-1. **ProductDetails** (`/product/ProductDetails.tsx`): Comprehensive product display
+1. **ProductDetails** (`/_components/store/product/swipeable/ProductDetails.tsx`): Comprehensive product display
    ```tsx
-   import { ProductDetails } from '../components/store/product/ProductDetails';
+   import { ProductDetails } from '../_components/store/product/swipeable/ProductDetails';
    
    <ProductDetails product={product} />
    ```
 
-2. **ColorSlider** (`/product/ColorSlider.tsx`): Color selection for products
+2. **ColorSlider** (`/_components/store/product/ColorSlider.tsx`): Color selection for products
    ```tsx
-   import { ColorSlider } from '../components/store/product/ColorSlider';
+   import { ColorSlider } from '../_components/store/product/ColorSlider';
    
    <ColorSlider 
      colors={product.colors} 
@@ -231,59 +239,80 @@ Components specific to the e-commerce store functionality.
    />
    ```
 
-#### Swipeable Components (`/store/product/swipeable/`)
+#### Swipeable Components (`/_components/store/product/swipeable/`)
 
 Components that support swipe gestures for interactive product displays.
 
-1. **ProductDetails** (`/product/swipeable/ProductDetails.tsx`): Swipeable product view
-2. **ProductInfoHeader** (`/product/swipeable/ProductInfoHeader.tsx`): Product header
-3. **SectionHeader** (`/product/swipeable/SectionHeader.tsx`): Section header
-4. **SupportOption** (`/product/swipeable/SupportOption.tsx`): Support options
-5. **SwipeableEdge** (`/product/swipeable/SwipeableEdge.tsx`): Main swipeable panel component for product details
+1. **ProductDetails** (`/_components/store/product/swipeable/ProductDetails.tsx`): Swipeable product view
+2. **ProductInfoHeader** (`/_components/store/product/swipeable/ProductInfoHeader.tsx`): Product header
+3. **SectionHeader** (`/_components/store/product/swipeable/SectionHeader.tsx`): Section header
+4. **SupportOption** (`/_components/store/product/swipeable/SupportOption.tsx`): Support options
+5. **SwipeableEdge** (`/_components/store/product/swipeable/SwipeableEdge.tsx`): Main swipeable panel component for product details
    - Performance-optimized with device-width based height caching
    - Uses lightweight View component for background instead of LinearGradient
    - Implements efficient memory usage techniques for smooth animations
 
-#### Overlay Components (`/store/product/overlay/`)
+#### Overlay Components (`/_components/store/product/overlay/`)
 
 Modal overlay components for the checkout process.
 
-1. **OverlayCheckoutShipping** (`/product/overlay/OverlayCheckoutShipping.tsx`): Shipping information overlay
-2. **OverlayCheckoutQuantity** (`/product/overlay/OverlayCheckoutQuantity.tsx`): Product quantity selection overlay
-3. **OverlayShippingSelection** (`/product/overlay/OverlayShippingSelection.tsx`): Shipping method selection overlay
-4. **OverlayProductSearch** (`/product/overlay/OverlayProductSearch.tsx`): Search overlay triggered from the header, using `useSearch` hook for client-side product searching.
+1. **OverlayCheckoutShipping** (`/_components/store/product/overlay/OverlayCheckoutShipping.tsx`): Shipping information overlay
+2. **OverlayCheckoutQuantity** (`/_components/store/product/overlay/OverlayCheckoutQuantity.tsx`): Product quantity selection overlay
+3. **OverlayDeleteConfirmation** (`/_components/store/product/overlay/OverlayDeleteConfirmation.tsx`): Delete confirmation overlay
+4. **OverlayProductEdit** (`/_components/store/product/overlay/OverlayProductEdit.tsx`): Product editing overlay
+5. **OverlayProductEditSize** (`/_components/store/product/overlay/OverlayProductEditSize.tsx`): Size selection overlay
+6. **OverlayProductFilters** (`/_components/store/product/overlay/OverlayProductFilters.tsx`): Product filters overlay
+7. **OverlayProductRemoving** (`/_components/store/product/overlay/OverlayProductRemoving.tsx`): Cart item removal with undo
+8. **OverlayProductSearch** (`/_components/store/product/overlay/OverlayProductSearch.tsx`): Search overlay triggered from the header, using `useSearch` hook for client-side product searching
+9. **OverlayShippingAddress** (`/_components/store/product/overlay/OverlayShippingAddress.tsx`): Shipping address overlay
+10. **OverlayShippingSelection** (`/_components/store/product/overlay/OverlayShippingSelection.tsx`): Shipping method selection overlay
 
-#### Layout Components (`/store/layout/`)
+#### Layout Components (`/_components/store/layout/`)
 
-Components for store layout structure.
+Store layout components define the overall structure of the store screens.
 
-1. **Categories** (`/layout/Categories.tsx`): Category navigation
-   ```tsx
-   import { Categories } from '../components/store/layout/Categories';
-   
-   <Categories categories={categories} onSelect={handleCategorySelect} />
-   ```
+1. **Header (`/_components/store/layout/Header.tsx`):**
+   * Provides the top navigation bar for different contexts (store, product details, catalog).
+   * Displays the screen title or the Tiffosi logo.
+   * Includes action icons relevant to the context:
+       * **Store:** Search icon.
+       * **Product Details:** Back button, Share icon (triggers native share sheet with product title and description), Favorite icon.
+       * **Catalog:** Back button, Filter icon, Search icon.
+   * Manages visibility of search and filter overlays.
 
-2. **Header** (`/layout/Header.tsx`): Store header with search and actions
-   ```tsx
-   import { Header } from '../components/store/layout/Header';
-   
-   <Header title="Products" onSearch={handleSearch} />
-   ```
+2. **Footer (`/_components/store/layout/Footer.tsx`):**
+   * Displays branding and copyright information.
+   * (Add more details if implemented)
 
-3. **Footer** (`/layout/Footer.tsx`): Store footer with branding
-   ```tsx
-   import { Footer } from '../components/store/layout/Footer';
-   
-   <Footer />
-   ```
+3. **Categories (`/_components/store/layout/Categories.tsx`):**
+   * Horizontal scrolling list of product categories.
+   * (Add more details if implemented)
 
-4. **Locations** (`/layout/Locations.tsx`): Store locations display
-   ```tsx
-   import { Locations } from '../components/store/layout/Locations';
-   
-   <Locations locations={storeLocations} />
-   ```
+4. **Locations (`/_components/store/layout/Locations.tsx`):**
+   * Component for displaying store location information.
+   * (Add more details if implemented)
+
+5. **CategoryShowcase (`/_components/store/layout/CategoryShowcase.tsx`):**
+   * Component for showcasing product categories.
+   * Displays category information in a visually appealing format.
+
+#### Cart Components (`/store/cart/`)
+
+Components related to the shopping cart view.
+
+1. **EmptyCart (`/cart/EmptyCart.tsx`):** Placeholder shown when the cart is empty.
+
+#### Favorites Components (`/store/favorites/`)
+
+Components related to the user's favorite products.
+
+1. **EmptyFavorites (`/favorites/EmptyFavorites.tsx`):** Placeholder shown when no favorites exist.
+
+#### Review Components (`/store/review/`)
+
+Components for displaying product reviews.
+
+1. **ReviewCard (`/review/ReviewCard.tsx`):** Displays a single customer review.
 
 ### Common Components (`/app/components/common/`)
 
@@ -612,10 +641,10 @@ const styles = StyleSheet.create<Styles>({
 1. **Import from index**: Import components from feature directories when possible
    ```tsx
    // Good
-   import { Button } from '../components/ui';
+   import { Button } from '../_components/ui';
    
    // Avoid direct imports unless necessary
-   import { Button } from '../components/ui/buttons/Button';
+   import { Button } from '../_components/ui/buttons/Button';
    ```
 
 2. **Consistent styling**: Use style tokens from styles directory

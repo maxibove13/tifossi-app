@@ -1,5 +1,5 @@
-import { StyleSheet, View, Text, Pressable, Image } from 'react-native';
-import { useState } from 'react';
+import { StyleSheet, View, Text, Pressable, Image, Share } from 'react-native';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../_styles/colors';
@@ -24,9 +24,12 @@ import HeartInactiveHeader from '../../../../assets/icons/heart_inactive_header.
 import SliderIcon from '../../../../assets/icons/slider.svg';
 
 // Types needed for filter props
-import { ProductColor, ProductSize } from '../../../_types/product';
+import { ProductColor, ProductSize, Product } from '../../../_types/product';
 
-type HeaderVariant = 'store' | 'product' | 'catalog';
+// Import Product type and fetch function from mock API
+import { mockFetchProductById } from '../../../_services/api/mockApi';
+
+type HeaderVariant = 'store' | 'product' | 'catalog' | 'auth';
 
 interface HeaderProps {
   title: string;
@@ -39,6 +42,7 @@ interface HeaderProps {
   maxPrice?: number;
   initialFilters?: ProductFilters;
   onApplyFilters?: (filters: ProductFilters) => void;
+  invisible?: boolean;
 }
 
 function Header({
@@ -52,10 +56,30 @@ function Header({
   maxPrice = 5000,
   initialFilters = {},
   onApplyFilters = () => {},
+  invisible = false,
 }: HeaderProps) {
   const router = useRouter();
   const [isSearchOverlayVisible, setIsSearchOverlayVisible] = useState(false);
   const [isFilterOverlayVisible, setIsFilterOverlayVisible] = useState(false);
+  const [productForShare, setProductForShare] = useState<Product | null>(null);
+
+  // --- Fetch Product Data for Sharing ---
+  useEffect(() => {
+    if (variant === 'product' && productId) {
+      const fetchProduct = async () => {
+        try {
+          // Assuming mockFetchProductById returns a Promise<Product | undefined>
+          const fetchedProduct = await mockFetchProductById(productId);
+          setProductForShare(fetchedProduct || null); // Convert undefined to null
+        } catch (error) {
+          console.error('Error fetching product for sharing:', error);
+          setProductForShare(null); // Ensure state is null on error
+        }
+      };
+      fetchProduct();
+    }
+  }, [variant, productId]);
+  // --- End Fetch Product Data ---
 
   // Get favorite status only if productId is provided and variant is 'product'
   const { isFavorite, toggle: toggleFavorite } = useFavoriteStatus(
@@ -79,13 +103,44 @@ function Header({
     setIsFilterOverlayVisible(false);
   };
 
+  // --- Share Function ---
+  const onShare = async () => {
+    if (!productForShare) {
+      console.warn('Product data not available for sharing.');
+      // Optionally show an alert to the user
+      return;
+    }
+    try {
+      const result = await Share.share({
+        message: `${productForShare.title} - ${productForShare.shortDescription?.line1 || ''}`,
+        // Removed URL as it's not in the Product type
+        // Optional: title: productForShare.title (for Android)
+      });
+      if (result.action === Share.sharedAction) {
+        console.log('Product shared successfully');
+        // Handle success if needed (e.g., analytics)
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share action dismissed');
+      }
+    } catch (error) {
+      console.error('Error sharing product:', error);
+      // Optionally show an alert to the user
+    }
+  };
+  // --- End Share Function ---
+
   // Use the passed onApplyFilters prop
   const handleApplyFiltersInternal = (filters: ProductFilters) => {
     onApplyFilters(filters); // Call the function passed from parent
     handleCloseFilter(); // Close the overlay
   };
 
-  const showBackButton = variant === 'product' || variant === 'catalog';
+  const showBackButton = variant === 'product' || variant === 'catalog' || variant === 'auth';
+
+  // If invisible, render a placeholder view that occupies space but shows nothing
+  if (invisible) {
+    return <View style={styles.header} />;
+  }
 
   return (
     <View style={styles.header}>
@@ -112,7 +167,7 @@ function Header({
         {/* Title (Conditional) */}
         <View style={styles.titleContainer}>
           {variant !== 'store' && (
-            <Text style={styles.title} numberOfLines={1}>
+            <Text style={[styles.title, variant === 'auth' && styles.authTitle]} numberOfLines={1}>
               {title}
             </Text>
           )}
@@ -130,7 +185,7 @@ function Header({
           )}
           {variant === 'product' && (
             <>
-              <Pressable hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+              <Pressable hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} onPress={onShare}>
                 <Ionicons name="share-outline" size={24} color={colors.primary} />
               </Pressable>
               <Pressable
@@ -238,6 +293,13 @@ const styles = StyleSheet.create({
     lineHeight: lineHeights.md,
     color: colors.primary,
     fontFamily: fonts.secondary,
+  },
+  authTitle: {
+    fontSize: fontSizes.xxxl,
+    lineHeight: lineHeights.xxxl,
+    fontFamily: fonts.primary,
+    fontWeight: 'bold',
+    color: colors.primary,
   },
   actions: {
     flexDirection: 'row',

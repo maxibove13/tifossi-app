@@ -16,7 +16,7 @@ This modal overlay provides visual feedback during the item removal process:
 - **Props**: 
   - `isVisible`: Controls whether the overlay is shown
   - `onCancel`: Function to call when user cancels the removal
-  - `duration`: Configurable duration of the removal process (defaults to 1000ms)
+  - `duration`: Configurable duration of the removal process (defaults to 3000ms)
 
 ### 2. Cart Item Deleted Screen (`app/cart/deleted.tsx`)
 
@@ -31,7 +31,7 @@ Confirmation screen shown after an item is removed from the cart:
 
 1. **Initiate Removal**: User triggers item removal from cart
 2. **Show Removal Progress**: `OverlayProductRemoving` appears with animated progress bar
-3. **Undo Window**: User has a brief window (default 1000ms) to cancel the removal
+3. **Undo Window**: User has a brief window (default 3000ms) to cancel the removal
 4. **Complete or Cancel**:
    - If canceled: Overlay dismisses, item remains in cart
    - If completed: Item is removed from cart, user is redirected to deletion confirmation

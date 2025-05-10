@@ -10,14 +10,16 @@ type ScreenHeaderProps = {
 
 type Styles = {
   header: ViewStyle;
-  headerTopSpace: ViewStyle;
+  // Removed headerTopSpace from Styles type as it might not be needed when stacked
   title: TextStyle;
 };
 
 const ScreenHeader: React.FC<ScreenHeaderProps> = ({ title }) => {
   return (
     <View style={styles.header}>
-      <View style={styles.headerTopSpace} />
+      {/* Removed headerTopSpace View as its padding might be redundant if this header is always below another one 
+          that already accounts for safe area / status bar. 
+          The paddingTop on styles.header itself will handle spacing from the component above it. */}
       <Text style={styles.title}>{title}</Text>
     </View>
   );
@@ -26,15 +28,15 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({ title }) => {
 const styles = StyleSheet.create<Styles>({
   header: {
     backgroundColor: colors.background.light,
-    paddingTop: spacing.xxxl + spacing.sm,
+    // Adjusted paddingTop, assuming the main Header above handles safe area.
+    // If this ScreenHeader is used standalone, this padding might need to be larger.
+    paddingTop: spacing.md,
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
-    gap: spacing.md,
+    // Removed gap as headerTopSpace is gone, direct padding used for title spacing.
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-  },
-  headerTopSpace: {
-    height: spacing.xxxl,
+    alignItems: 'flex-start', // Align title to the left
   },
   title: {
     fontSize: fontSizes.xxxl,

@@ -27,7 +27,7 @@ interface OverlayProductRemovingProps {
 }
 
 // Default removal duration (matches timeout in OverlayProductEdit)
-const DEFAULT_DURATION = 1000;
+const DEFAULT_DURATION = 3000;
 
 function OverlayProductRemoving({
   isVisible,

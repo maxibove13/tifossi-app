@@ -31,7 +31,6 @@ export default HomeContent;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: 'flex-end',
     gap: spacing.xxl,
   },

@@ -13,21 +13,22 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 ```
 /
 ├── app/                # Main application code (Expo Router)
-├── app-example/        # Example application code/templates
 ├── assets/             # Static assets (images, fonts, icons)
 ├── docs/               # Documentation files
 ├── hooks/              # Custom React hooks
 │   ├── useProducts.ts  # Product data fetching hooks
 │   ├── useSearch.ts    # Search functionality hook
+│   ├── useFavoriteStatus.ts # Favorite status hooks
+│   ├── useProductFilters.ts # Product filtering hooks
 │   └── useThemeColor.ts # Theme color selection
 ├── scripts/            # Project utility scripts
 ├── ios/                # iOS specific configuration
 ├── android/            # Android specific configuration
 ├── types/              # Global type definitions
 ├── __tests__/          # Test files and utilities
-├── .husky/             # Git hooks configuration
+├── run/                # Husky scripts and hooks
 ├── .vscode/            # VSCode configuration
-└── .cursor/            # Project guidelines and rules
+└── .cursor/            # Project guidelines and rules (if exists)
 ```
 
 ### App Directory Structure (Expo Router)
@@ -42,13 +43,27 @@ app/
 │   ├── profile.tsx     # User profile screen
 │   └── tiffosiExplore.tsx # Explore screen
 ├── (home)/             # Home-specific screens
+│   ├── _layout.tsx     # Home layout
 │   └── index.tsx       # Home entry point
+├── auth/               # Authentication screens
+│   ├── _layout.tsx     # Auth screens layout
+│   ├── login.tsx       # User login screen
+│   ├── signup.tsx      # User registration screen
+│   ├── forgot-password.tsx # Password reset request
+│   ├── verify-email.tsx    # Email verification screen
+│   ├── verify-success.tsx  # Verification success screen
+│   └── verification-code.tsx # Verification code input
 ├── cart/               # Cart specific screens
 │   └── deleted.tsx     # Cart item deleted confirmation
+├── catalog/            # Catalog screens
+│   └── index.tsx       # Catalog listing
 ├── checkout/           # Checkout process screens
 │   ├── _layout.tsx     # Checkout layout
 │   ├── shipping-address.tsx # Shipping address form
 │   ├── payment-selection.tsx # Payment method selection
+│   ├── shipping-pickup.tsx   # Pickup shipping option
+│   ├── shipping-pickup-zone.tsx # Pickup zone selection
+│   ├── store-selection.tsx   # Store selection screen
 │   └── new-address.tsx # New address entry form
 ├── locations/          # Store location screens
 │   └── [cityId]/       # Dynamic city routes
@@ -58,23 +73,54 @@ app/
 │   ├── _layout.tsx     # Products layout
 │   ├── product.tsx     # Product details screen
 │   └── index.ts        # Product exports
-├── _components/        # All React components
+├── profile/            # Profile-related screens
+│   └── change-password.tsx # Password change screen
+├── legal/              # Legal screens
+│   ├── terms.tsx       # Terms and conditions screen
+│   └── privacy.tsx     # Privacy policy screen
+├── _components/        # All React components (organized sections below)
 ├── _services/          # Application services
 │   ├── preload/        # Asset preloading system
 │   │   ├── service.ts         # Preload service singleton
 │   │   ├── assetLoader.ts     # Asset loading utilities
 │   │   ├── dataLoader.ts      # Data loading utilities
 │   │   ├── homeAssets.ts      # Home screen asset loader
+│   │   ├── hoc.tsx            # High order components for preloading
+│   │   ├── hooks.ts           # Preloading hooks
+│   │   ├── index.ts           # Entry point exports
 │   │   └── types.ts           # Preload type definitions
-│   └── api/            # API service and mock implementations
-│       └── mockApi.ts  # Mock API for development
+│   ├── api/            # API service and mock implementations
+│   │   └── mockApi.ts  # Mock API for development
+│   └── mmkvTest.ts     # MMKV testing/implementation
 ├── _stores/            # Global state stores
 │   ├── cartStore.ts    # Shopping cart state management
 │   ├── favoritesStore.ts # Favorites state management
-│   └── authStore.ts    # Authentication state management
+│   ├── authStore.ts    # Authentication state management
+│   └── localStorageAdapter.ts # Storage adapter for state persistence
 ├── _types/             # TypeScript type definitions
+│   ├── README.md       # Type system documentation
+│   ├── STYLE_GUIDE.md  # Style system guidelines
+│   ├── auth.ts         # Authentication types and interfaces
+│   ├── product.ts      # Product interfaces and types
+│   ├── product-status.ts # Product status enums
+│   ├── product-card.ts # Product card types
+│   ├── category.ts     # Category types
+│   ├── model.ts        # Model types
+│   ├── navigation.ts   # Navigation types
+│   ├── constants.ts    # Constants
+│   └── ui.ts           # UI component types
 ├── _styles/            # Global styles and themes
+│   ├── colors.ts       # Color definitions
+│   ├── spacing.ts      # Spacing constants
+│   ├── typography.ts   # Typography styles
+│   ├── shadows.ts      # Shadow definitions
+│   └── tokens/         # Design tokens by feature
+│       └── featured.ts # Featured section tokens
 ├── _data/              # Mock data and content
+│   ├── products.ts     # Mock product data
+│   ├── categories.ts   # Category definitions
+│   ├── models.ts       # Model definitions 
+│   └── stores.ts       # Store location data
 ├── not-found.tsx       # 404 error page
 ├── _layout.tsx         # Root layout component
 └── index.tsx           # Entry point
@@ -84,6 +130,9 @@ app/
 
 ```
 _components/
+├── auth/               # Authentication components
+│   ├── AuthPrompt.tsx     # Reusable auth prompt component
+│   └── ProfilePictureEditor.tsx # Profile picture upload/edit component
 ├── ui/                 # Core UI components
 │   ├── layout/         # Layout primitives
 │   │   ├── Grid.tsx    # Grid system
@@ -98,48 +147,81 @@ _components/
 │   ├── toggle/         # Toggle components
 │   │   └── ToggleSport.tsx # Sport toggle
 │   ├── form/           # Form components
-│   │   ├── Counter.tsx      # Quantity counter
 │   │   ├── Input.tsx        # Text input
 │   │   ├── Dropdown.tsx     # Dropdown selector
 │   │   ├── RadioButton.tsx  # Radio button
+│   │   ├── SelectionControl.tsx # Base selection control
 │   │   └── SingleChoice.tsx # Option selector
 │   ├── icons/          # Icon components
 │   │   ├── HeartActiveIcon.tsx # Active heart icon
 │   │   └── index.ts      # Icon exports
 │   ├── links/          # Link components
+│   │   └── index.ts      # Link exports
+│   ├── navigation/     # Navigation UI elements
+│   │   └── index.ts      # Navigation exports
 │   └── README.md       # UI component guidelines
 ├── store/              # Store-specific components
 │   ├── product/        # Product card variants
 │   │   ├── types.ts        # Product component types
+│   │   ├── ColorSlider.tsx # Color selection slider
 │   │   ├── default/        # Default product cards
+│   │   │   ├── small.tsx     # Small card variant
+│   │   │   ├── large.tsx     # Large card variant
+│   │   │   └── index.tsx     # Exports
 │   │   ├── featured/       # Featured product cards
+│   │   │   └── FeaturedCard.tsx # Featured card implementation
 │   │   ├── horizontal/     # Horizontal product cards
+│   │   │   └── HighlightedCard.tsx # Highlighted card impl
 │   │   ├── promotion/      # Promotion product cards
+│   │   │   └── PromotionCard.tsx # Promotion card impl
+│   │   ├── minicard/       # Mini card variants
+│   │   │   ├── index.tsx     # Exports
+│   │   │   └── large.tsx     # Large minicard impl
+│   │   ├── image/          # Image-only cards
+│   │   │   ├── ImageOnlyCard.tsx # Image card impl
+│   │   │   └── ProductImage.tsx  # Product image component
 │   │   ├── swipeable/      # Swipeable product details (performance optimized)
+│   │   │   ├── ProductDetails.tsx  # Product details
+│   │   │   ├── ProductInfoHeader.tsx # Info header
+│   │   │   ├── SectionHeader.tsx # Section header
+│   │   │   ├── SupportOption.tsx # Support option
+│   │   │   ├── SwipeableEdge.tsx # Swipeable edge component
+│   │   │   └── styles.ts         # Swipeable styles
 │   │   ├── gallery/        # Product gallery components
+│   │   │   ├── EnhancedProductGallery.tsx # Gallery component
+│   │   │   └── views/      # Gallery views
+│   │   │       └── ProductViewGallery.tsx # Gallery view
 │   │   ├── overlay/        # Overlay components
-│   │   │   ├── OverlayCheckoutQuantity.tsx
-│   │   │   ├── OverlayCheckoutShipping.tsx
-│   │   │   ├── OverlayProductEditSize.tsx
-│   │   │   ├── OverlayProductFilters.tsx  # Product filters overlay
-│   │   │   ├── OverlayProductRemoving.tsx # Cart item removal with undo
-│   │   │   ├── OverlayShippingAddress.tsx
-│   │   │   ├── OverlayShippingSelection.tsx
-│   │   │   └── OverlayProductSearch.tsx # Product search overlay
+│   │   │   ├── OverlayCheckoutQuantity.tsx # Quantity selection
+│   │   │   ├── OverlayCheckoutShipping.tsx # Shipping selection
+│   │   │   ├── OverlayDeleteConfirmation.tsx # Delete confirmation
+│   │   │   ├── OverlayProductEdit.tsx      # Product editing
+│   │   │   ├── OverlayProductEditSize.tsx  # Size selection
+│   │   │   ├── OverlayProductFilters.tsx   # Product filters
+│   │   │   ├── OverlayProductRemoving.tsx  # Cart item removal with undo
+│   │   │   ├── OverlayProductSearch.tsx    # Product search
+│   │   │   ├── OverlayShippingAddress.tsx  # Shipping address
+│   │   │   └── OverlayShippingSelection.tsx # Shipping method
 │   │   ├── cart/           # Cart product cards
+│   │   │   ├── AddToCartButton.tsx # Add to cart button
+│   │   │   └── CartProductCard.tsx # Cart product card
 │   │   ├── details/        # Product details components
-│   │   ├── header/         # Product header components
-│   │   ├── lists/          # Product list components
-│   │   ├── size/           # Size selector components
+│   │   │   └── ExpandableSection.tsx # Expandable section
+│   │   ├── info/           # Product info components
+│   │   ├── information/    # Product information components
+│   │   ├── related/        # Related products components
+│   │   │   └── RelatedProducts.tsx # Related products
+│   │   ├── sections/       # Product sections
+│   │   │   └── ProductSections.tsx # Product sections component
 │   │   ├── support/        # Support components
 │   │   └── index.tsx       # Product component exports
 │   ├── layout/         # Store layout components
 │   │   ├── Header.tsx       # Store header
 │   │   ├── Footer.tsx       # Store footer
 │   │   ├── Categories.tsx   # Category navigation
+│   │   ├── CategoryShowcase.tsx # Category showcase
 │   │   ├── Locations.tsx    # Store locations
-│   │   ├── ProductHeader.tsx # Product detail header
-│   │   └── index.tsx         # Layout exports
+│   │   └── index.tsx        # Layout exports
 │   ├── cart/           # Cart components
 │   │   └── EmptyCart.tsx    # Empty cart state
 │   ├── favorites/      # Favorites components
@@ -150,15 +232,19 @@ _components/
 │   ├── HomeContent.tsx # Home content
 │   └── HomeHeader.tsx  # Home header
 ├── skeletons/          # Loading state components
-│   └── HomeScreenSkeleton.tsx # Loading skeleton
+│   ├── FavoritesSkeleton.tsx # Favorites loading skeleton
+│   ├── HomeScreenSkeleton.tsx # Home screen loading skeleton
+│   ├── ProductGridSkeleton.tsx # Product grid loading skeleton
+│   └── ProgressiveLoadingSection.tsx # Progressive loading
+├── checkout/           # Checkout components
+│   └── SelectionListScreen.tsx # Selection list for checkout
 ├── common/             # Shared utility components
 │   ├── ErrorBoundary.tsx   # Error handler
-│   ├── Subheader.tsx        # Subheader component
-│   ├── VideoBackground.tsx  # Video background
-│   ├── animation/           # Animation components
-│   │   └── AdvancedAnimation.tsx # Animation component
-│   └── share/               # Sharing functionality
-│       └── ShareButton.tsx  # Share button
+│   ├── ScreenHeader.tsx    # Screen header
+│   ├── Subheader.tsx       # Subheader component
+│   ├── VideoBackground.tsx # Video background
+│   ├── animation/          # Animation components
+│   └── share/              # Sharing functionality
 ├── navigation/         # Navigation components
 │   ├── TabBar.tsx          # Bottom tab bar
 │   ├── TabBarBackground.tsx # Tab bar background
@@ -172,14 +258,11 @@ _components/
 
 ```
 types/
-├── index.ts           # Central type exports
-├── ui.ts              # UI component types
-├── navigation.ts      # Navigation types
-├── product.ts         # Product interface and related types
-├── product-status.ts  # Product status and label enums
-├── product-card.ts    # Product card type system
-└── declarations/svg.d.ts  # SVG type definitions (excluded from routing)
-└── README.md          # Type system documentation
+├── declarations/      # Type declarations
+│   ├── images.d.ts    # Image module declarations
+│   └── svg.d.ts       # SVG module declarations
+├── svg.d.ts           # SVG type definitions
+└── quantity-icons.d.ts # Quantity icons type definitions
 ```
 
 ### Tests Directory Structure
@@ -326,7 +409,7 @@ interface CardDimensions {
 ### Debugging and Problem Solving
 - **Always read this document first** before searching the codebase
 - Refer to the component hierarchy for understanding relationships
-- Check raw-components for visual reference when debugging UI issues
+- Use the style system documentation for visual styling guidance
 - Look at the imports to understand dependencies
 
 ### Mobile-First iOS Development
@@ -337,7 +420,7 @@ interface CardDimensions {
 
 ### Visual Verification
 - Always check that components match both JSX reference and screenshots
-- Use the raw-components directory for visual guidance
+- Refer to design tokens in the styles directory for accurate styling
 - Verify spacing, typography, and colors match the Figma specs
 
 ### Code Organization Principles
@@ -365,15 +448,17 @@ interface CardDimensions {
 - Loading States
 - Asset Preloading
 - Progressive Loading System
-- Local State Management (Cart, Favorites)
+- Local State Management (Cart, Favorites, Auth)
 - Product Filtering System
 - Cart Item Removal with Undo
 - Store Location Screens
+- Product Sharing (via Native Share Sheet)
+- Authentication System (Complete with mock API integration)
+- Profile Management (Password change, profile picture)
 
 🟡 **Partially Implemented**
 - Form Components
 - Review System
-- User Authentication
 - Server State Integration
 - Search Functionality (Initial client-side implementation)
 
@@ -386,6 +471,7 @@ interface CardDimensions {
 - See [locations.md](./locations.md) for store location screen implementation
 - See [cart_undo.md](./cart_undo.md) for cart item removal with undo feature
 - See [product_filters.md](./product_filters.md) for product filtering implementation
+- See [authentication.md](./authentication.md) for details on the authentication system
 - See [state_management.md](./state_management.md) for overall state management strategy
 - See [local_state_management.md](./local_state_management.md) for client-side state implementation details
 - See [state_management_client_side.md](./state_management_client_side.md) for the full client-side state implementation plan
@@ -393,4 +479,3 @@ interface CardDimensions {
 
 ## Notes
 
-- The `raw-components` directory mentioned in this document and README.md does not currently exist in the codebase, though it's referenced as a place for Figma reference components.

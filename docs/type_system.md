@@ -6,7 +6,7 @@ The Tifossi Expo app uses TypeScript for type safety throughout the codebase. Th
 
 ## Type Organization
 
-All types are organized in the `app/types` directory, with the following structure:
+All types are organized in the `app/_types` directory, with the following structure:
 
 - `index.ts`: Central export point for all types (import from here)
 - `product.ts`: Product data models and utility functions
@@ -28,9 +28,12 @@ interface Product {
   id: string;
   title: string;
   price: number;
-  image: string | ImageSourcePropType;
-  label?: ProductLabel;
-  status?: ProductStatus;
+  categoryId: string; // Category reference
+  modelId: string; // Model identifier for grouping similar products
+  images?: (string | ImageSourcePropType)[]; // Array of product images
+  frontImage: string | ImageSourcePropType; // Main/front image to display (REQUIRED)
+  videoSource?: number | string; // Video source for product displays
+  statuses: ProductStatus[]; // Array of product statuses (NEW, FEATURED, etc.)
   /** @deprecated Use shortDescription or longDescription instead */
   description?: string | string[];
   shortDescription?: {
@@ -40,7 +43,7 @@ interface Product {
   longDescription?: string | string[];
   discountedPrice?: number;
   isCustomizable?: boolean;
-  colors?: ProductColor[];
+  colors: ProductColor[]; // Required array of product colors
   size?: string;
   sizes?: ProductSize[];
   warranty?: string;
@@ -54,9 +57,10 @@ interface Product {
 
 // Product color with images
 interface ProductColor {
-  color: string;
+  colorName: string; // Human-readable name like "Negro", "Blanco"
   quantity: number;
   images: ProductColorImages;
+  hex?: string; // Hex color code like "#FFFFFF" for display in UI
 }
 
 interface ProductColorImages {
@@ -94,6 +98,10 @@ enum ProductStatus {
   SALE = 'sale',
   FEATURED = 'featured',
   OPPORTUNITY = 'opportunity',
+  RECOMMENDED = 'recommended',
+  POPULAR = 'popular',
+  APP_EXCLUSIVE = 'app_exclusive',
+  HIGHLIGHTED = 'highlighted',
 }
 
 enum ProductLabel {
@@ -101,6 +109,10 @@ enum ProductLabel {
   FEATURED = 'Destacado',
   OPPORTUNITY = 'Oportunidad',
   SALE = 'Descuento',
+  RECOMMENDED = 'Recomendado',
+  POPULAR = 'Popular',
+  APP_EXCLUSIVE = 'Exclusivo in-app',
+  HIGHLIGHTED = 'Destacado Home',
 }
 ```
 
@@ -231,8 +243,9 @@ function isProduct(value: unknown): value is Product {
     typeof p.id === 'string' &&
     typeof p.title === 'string' &&
     typeof p.price === 'number' &&
-    (!p.status || isValidStatus(p.status)) &&
-    (!p.label || isValidLabel(p.label))
+    p.frontImage !== undefined &&
+    Array.isArray(p.statuses) &&
+    p.statuses.every((status) => isValidStatus(status))
   );
 }
 ```

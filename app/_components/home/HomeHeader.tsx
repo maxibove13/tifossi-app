@@ -5,7 +5,7 @@ const HomeHeader = memo(() => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../../../assets/images/logo/tiffosi.png')}
+        source={require('../../../assets/images/logo/tiffosi-light.png')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -24,5 +24,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 50.7,
     height: 48,
+    marginTop: 16,
   },
 });

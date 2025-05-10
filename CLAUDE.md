@@ -42,6 +42,7 @@
 - **Simplicity**: Prioritize simplicity over complexity
 - **Component Alignment**: Ensure components align with both reference screenshots and JSX
 - **Debugging**: Always read app_structure.md before searching the codebase
+  - When troubleshooting complex layout issues, if parent component styles appear correct but the desired layout is not achieved, inspect the styling of child components for unexpected flex properties (e.g., `flex: 1`) or other layout-influencing styles that might conflict with or override the parent's intended layout.
 - **Proactive Investigation**: When debugging, actively investigate potential related issues or conflicts beyond the initially reported problem.
 - **Performance Optimization**: For animation-heavy components, implement performance optimizations like:
   - Replacing expensive components (LinearGradient) with simpler alternatives when visually equivalent
