@@ -243,7 +243,7 @@ const styles = StyleSheet.create<Styles>({
     shadowRadius: 8,
     elevation: 10,
     width: '100%',
-    height: '90%',
+    height: '80%',
   },
   header: {
     flexDirection: 'row',

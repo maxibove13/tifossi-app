@@ -1,28 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   ImageBackground,
-  Image,
   TouchableOpacity,
   StyleProp,
   ViewStyle,
   TextStyle,
   ImageStyle,
-  Button,
+  Button as ReactNativeButton,
+  Alert,
+  Modal,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { spacing, radius } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
-import { fonts, fontSizes, lineHeights } from '../_styles/typography';
-import ScreenHeader from '../_components/common/ScreenHeader';
+import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 
 // Import SVGs as React components
 import MapPinIcon from '../../assets/icons/map-pin.svg';
 import CarAutoIcon from '../../assets/icons/car-auto.svg';
 import CreditCardIcon from '../../assets/icons/credit-card.svg';
-import PencilIcon from '../../assets/icons/pencil.svg';
+
+// Import authStore and custom components
+import { useAuthStore } from '../_stores/authStore';
+import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
+import ProfilePictureEditor from '../_components/auth/ProfilePictureEditor';
+import SplashScreen from '../_components/splash/SplashScreen';
 
 const backgroundImage = require('../../assets/images/background_image_profile.png');
 
@@ -60,66 +66,139 @@ const ProfileListItem: React.FC<ProfileListItemProps> = ({
 );
 
 // Logged-in Profile Card Content
-const LoggedInProfileCard = () => (
-  <View style={styles.profileCard}>
-    <View style={styles.profilePictureContainer}>
-      {user.profilePicture ? (
-        <Image source={{ uri: user.profilePicture }} style={styles.profilePicture} />
-      ) : (
-        <View style={styles.profileIconContainer}>
-          <Feather name="user" size={32} color={colors.primary} />
-        </View>
-      )}
-      <TouchableOpacity style={styles.editIconContainer}>
-        <PencilIcon width={12} height={12} stroke={colors.background.light} strokeWidth={1.2} />
-      </TouchableOpacity>
-    </View>
-    <Text style={styles.userName}>{user.name}</Text>
-    <Text style={styles.userEmail}>{user.email}</Text>
-  </View>
-);
+const LogoutButton = () => {
+  const logout = useAuthStore((state) => state.logout);
+  const [showSplashScreen, setShowSplashScreen] = useState(false);
 
-// Logged-out Profile Card Content
-const LoggedOutProfileCard = () => (
-  <View style={[styles.profileCard, styles.loggedOutCard]}>
-    <Text style={styles.loggedOutText}>Aún no iniciaste sesión.</Text>
-    <View style={styles.authButtonsContainer}>
-      <TouchableOpacity style={styles.loginButton}>
-        <Text style={styles.loginButtonText}>Iniciar sesión</Text>
+  // This will handle the logout process after the splash screen appears
+  useEffect(() => {
+    const performLogout = async () => {
+      if (showSplashScreen) {
+        try {
+          // Give the splash screen some time to appear
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          // Perform logout
+          await logout();
+          // Navigate to the home screen
+          router.replace('/(home)');
+        } catch (error) {
+          console.error('Error during logout:', error);
+          // Hide splash screen and show error
+          setShowSplashScreen(false);
+          Alert.alert('Error', 'No se pudo cerrar sesión. Intenta nuevamente.');
+        }
+      }
+    };
+
+    if (showSplashScreen) {
+      performLogout();
+    }
+  }, [showSplashScreen, logout]);
+
+  const handleLogout = () => {
+    Alert.alert('Cerrar Sesión', '¿Estás seguro que deseas cerrar sesión?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Cerrar Sesión',
+        style: 'destructive',
+        onPress: () => {
+          // Show the splash screen and trigger the logout process
+          setShowSplashScreen(true);
+        },
+      },
+    ]);
+  };
+
+  return (
+    <>
+      <TouchableOpacity
+        style={styles.logoutButtonContainer}
+        onPress={handleLogout}
+        disabled={showSplashScreen}
+      >
+        <View style={styles.logoutButton}>
+          <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+          <Feather name="log-out" size={24} color={colors.error} />
+        </View>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.registerButton}>
-        <Text style={styles.registerButtonText}>Registrarse</Text>
-      </TouchableOpacity>
+
+      {/* Show the splash screen as a modal during logout */}
+      {showSplashScreen && (
+        <Modal transparent={false} visible={true} animationType="fade">
+          <SplashScreen onComplete={() => {}} />
+        </Modal>
+      )}
+    </>
+  );
+};
+
+const LoggedInProfileCard = () => {
+  const currentUser = useAuthStore((state) => state.user);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  // Fallback to a default/mock user if currentUser is null/undefined, or handle appropriately
+  const displayName = currentUser?.name || user.name;
+  const displayEmail = currentUser?.email || user.email;
+  // Get profile picture either from state, user object, or fallback
+  const displayProfilePicture = profileImage || currentUser?.profilePicture || user.profilePicture;
+
+  const handleProfilePictureChange = (imageUri: string | null) => {
+    setProfileImage(imageUri);
+
+    // In a real implementation, we would also update the auth store:
+    // updateProfilePicture(imageUri);
+  };
+
+  return (
+    <View style={styles.profileCard}>
+      <ProfilePictureEditor
+        currentImage={displayProfilePicture}
+        size={80}
+        onImageChange={handleProfilePictureChange}
+      />
+      <Text style={styles.userName}>{displayName}</Text>
+      <Text style={styles.userEmail}>{displayEmail}</Text>
     </View>
-  </View>
-);
+  );
+};
 
 export default function ProfileScreen() {
-  // --- TEMPORARY STATE FOR TESTING --- Remove when auth is implemented
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const toggleLogin = () => setIsLoggedIn(!isLoggedIn);
-  // --- END TEMPORARY STATE ---
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn); // Ensure isLoggedIn is part of authStore state
+  const devToggleLogin = useAuthStore((state) => state.dev_toggleLogin);
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Perfil" />
+      {isLoggedIn ? (
+        <ImageBackground
+          source={backgroundImage}
+          style={styles.profileCardBackground}
+          imageStyle={styles.backgroundImageStyle}
+        >
+          <View style={styles.backgroundOverlay} />
+          <LoggedInProfileCard />
 
-      {/* --- TEMPORARY BUTTON --- */}
-      <Button
-        title={isLoggedIn ? 'Log Out (Test)' : 'Log In (Test)'}
-        onPress={toggleLogin}
-        color={colors.error}
-      />
-      {/* --- END TEMPORARY BUTTON --- */}
-
-      <ImageBackground
-        source={backgroundImage}
-        style={styles.profileCardBackground}
-        imageStyle={styles.backgroundImageStyle}
-      >
-        <View style={styles.backgroundOverlay} />
-        {isLoggedIn ? <LoggedInProfileCard /> : <LoggedOutProfileCard />}
-      </ImageBackground>
+          {/* DEV ONLY: Toggle Login Button */}
+          <View style={styles.devButtonContainer}>
+            <ReactNativeButton
+              title="DEV: Toggle Login"
+              onPress={devToggleLogin}
+              color={colors.secondary}
+            />
+          </View>
+        </ImageBackground>
+      ) : (
+        <>
+          <ReusableAuthPrompt message="Aún no iniciaste sesión." style={styles.authPromptStyle} />
+          {/* DEV ONLY: Toggle Login Button */}
+          <View style={styles.devButtonContainer}>
+            <ReactNativeButton
+              title="DEV: Toggle Login"
+              onPress={devToggleLogin}
+              color={colors.secondary}
+            />
+          </View>
+        </>
+      )}
 
       {/* Render action buttons only if logged in */}
       {isLoggedIn && (
@@ -139,6 +218,14 @@ export default function ProfileScreen() {
             text="Métodos de pago"
             onPress={() => {}}
           />
+          <ProfileListItem
+            IconComponent={() => <Feather name="lock" size={24} color={colors.primary} />}
+            text="Cambiar Contraseña"
+            onPress={() => router.push('/profile/change-password')}
+          />
+
+          {/* Logout Button */}
+          <LogoutButton />
         </View>
       )}
     </View>
@@ -160,14 +247,11 @@ type Styles = {
   actionButtonsContainer: ViewStyle;
   listItemContainer: ViewStyle;
   listItemText: TextStyle;
-  // Logged out styles
-  loggedOutCard: ViewStyle;
-  loggedOutText: TextStyle;
-  authButtonsContainer: ViewStyle;
-  loginButton: ViewStyle;
-  loginButtonText: TextStyle;
-  registerButton: ViewStyle;
-  registerButtonText: TextStyle;
+  devButtonContainer: ViewStyle;
+  authPromptStyle: ViewStyle;
+  logoutButtonContainer: ViewStyle;
+  logoutButton: ViewStyle;
+  logoutButtonText: TextStyle;
 };
 
 const styles = StyleSheet.create<Styles>({
@@ -179,6 +263,7 @@ const styles = StyleSheet.create<Styles>({
     paddingVertical: spacing.lg, // Adjusted padding for logged out view
     paddingHorizontal: spacing.lg,
     position: 'relative',
+    paddingBottom: spacing.xxl, // Add more padding at the bottom for the dev button
   },
   backgroundImageStyle: {
     resizeMode: 'cover',
@@ -260,56 +345,32 @@ const styles = StyleSheet.create<Styles>({
     color: colors.primary,
     textAlign: 'left',
   },
-  // Logged out styles
-  loggedOutCard: {
-    height: 128 + 2 * spacing.lg, // Figma height 128 + vertical padding 16*2
-    justifyContent: 'space-between', // Figma: space-between
-    gap: spacing.xl, // Figma: 24px
-    paddingVertical: spacing.lg, // Keep consistent padding
+  devButtonContainer: {
+    marginTop: spacing.lg,
+    zIndex: 2, // Ensure it's above the overlay but respects card content
+    alignSelf: 'center',
   },
-  loggedOutText: {
-    fontFamily: fonts.secondary, // Figma: Inter
-    fontWeight: '400', // Figma: 400
-    fontSize: fontSizes.md, // Figma: 14
-    lineHeight: lineHeights.md, // Figma: 1.428em (20)
-    color: colors.background.light, // Figma: #FBFBFB
-    textAlign: 'center',
-    width: '100%', // Ensure text fills width
+  authPromptStyle: {
+    marginVertical: spacing.lg,
   },
-  authButtonsContainer: {
-    width: '100%', // Ensure buttons fill width
-    gap: spacing.sm, // Figma: 8px
+  logoutButtonContainer: {
+    marginTop: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  loginButton: {
-    backgroundColor: 'rgba(251, 251, 251, 0.25)', // Figma: rgba(251, 251, 251, 0.25)
-    paddingVertical: spacing.md, // Figma: 12px
-    paddingHorizontal: spacing.xl, // Figma: 24px
-    borderRadius: 22, // Figma: 22px (approximated radius.xxl or circle)
+  logoutButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
-  loginButtonText: {
-    fontFamily: fonts.secondary, // Figma: Inter
-    fontWeight: '500', // Figma: 500
-    fontSize: fontSizes.md, // Figma: 14
-    lineHeight: lineHeights.md, // Figma: 1.428em (20)
-    color: colors.background.light, // Figma: #FBFBFB
-    textAlign: 'center',
-  },
-  registerButton: {
-    paddingVertical: spacing.sm, // Figma: 8px
-    paddingHorizontal: spacing.lg, // Figma: 16px
-    // No background color specified, assume transparent
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  registerButtonText: {
-    fontFamily: fonts.secondary, // Figma: Inter
-    fontWeight: '400', // Figma: 400
-    fontSize: fontSizes.md, // Figma: 14
-    lineHeight: lineHeights.md, // Figma: 1.428em (20)
-    color: colors.background.light, // Figma: #FBFBFB
-    textAlign: 'center',
-    textDecorationLine: 'underline',
+  logoutButtonText: {
+    fontFamily: fonts.secondary,
+    fontWeight: fontWeights.medium,
+    fontSize: fontSizes.lg,
+    lineHeight: lineHeights.lg,
+    color: colors.error,
+    textAlign: 'left',
   },
 });

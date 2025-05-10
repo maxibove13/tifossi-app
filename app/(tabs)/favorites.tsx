@@ -1,11 +1,10 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, View, Text, ScrollView, FlatList, ViewStyle, TextStyle } from 'react-native';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes } from '../_styles/typography';
 import { router } from 'expo-router';
 import EmptyFavorites from '../_components/store/favorites/EmptyFavorites';
-import Subheader from '../_components/common/Subheader';
 import PromotionCard from '../_components/store/product/promotion/PromotionCard';
 import { Product } from '../_types/product';
 import DefaultLargeCard from '../_components/store/product/default/large';
@@ -13,11 +12,12 @@ import { useFavoritesStore } from '../_stores/favoritesStore';
 import { useProducts } from '../../hooks/useProducts';
 import { getProductById, products } from '../_data/products';
 import FavoritesSkeleton from '../_components/skeletons/FavoritesSkeleton';
-import ScreenHeader from '../_components/common/ScreenHeader';
+import { useAuthStore } from '../_stores/authStore';
+import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
+import ProductSections from '../_components/store/product/sections/ProductSections';
 
-// Keeping recentlyViewedProducts based on static data for now
-// Consider fetching/deriving this differently if needed
-const recentlyViewedProducts: Product[] = [
+// Using recentlyViewedProducts as a placeholder for recommendedProducts data
+const recommendedProductsData: Product[] = [
   getProductById('neceser-ball') || products[0],
   getProductById('mochila-classic') || products[1],
   getProductById('mochila-sq') || products[2],
@@ -28,29 +28,28 @@ const recentlyViewedProducts: Product[] = [
 // Define Styles type
 type Styles = {
   container: ViewStyle;
-  toggleButton: ViewStyle;
-  toggleButtonText: TextStyle;
   scrollContent: ViewStyle;
   scrollContentEmpty: ViewStyle;
   gridContainer: ViewStyle;
   columnWrapper: ViewStyle;
   cardWrapper: ViewStyle;
-  section: ViewStyle;
-  horizontalScrollContent: ViewStyle;
   centeredStatus: ViewStyle;
   errorText: TextStyle;
+  authPromptContainer: ViewStyle;
+  loadingFavoritesText: TextStyle;
+  localFavoritesHeader: TextStyle;
 };
 
 export default function FavoritesScreen() {
-  // Get all products with loading/error states
-  const { data: allProducts = [], isLoading, isError } = useProducts();
-
-  // Get favorites state
+  const {
+    data: allProducts = [],
+    isLoading: productsLoading,
+    isError: productsError,
+  } = useProducts();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const favoriteIds = useFavoritesStore((state) => state.productIds);
 
-  // Convert favorite IDs to actual product objects
-  const favorites = useMemo<Product[]>(() => {
-    // Handle case where products are loading or empty
+  const localOrSyncedFavorites = useMemo<Product[]>(() => {
     if (!allProducts || allProducts.length === 0) {
       return [];
     }
@@ -58,9 +57,6 @@ export default function FavoritesScreen() {
       .map((id) => allProducts.find((product) => product.id === id))
       .filter((product): product is Product => product !== undefined);
   }, [favoriteIds, allProducts]);
-
-  // isEmpty should reflect the calculated favorites AFTER loading/filtering
-  const isEmpty = !isLoading && !isError && favorites.length === 0;
 
   const handleGoToStore = () => {
     router.replace('/');
@@ -70,8 +66,13 @@ export default function FavoritesScreen() {
     router.push(`/products/product?id=${productId}`);
   };
 
-  const handleViewMoreRecentlyViewed = () => {
-    console.log('View all recently viewed products');
+  const handleViewMore = (sectionTitle: string) => {
+    if (sectionTitle.toLowerCase() === 'recomendados') {
+      router.push('/catalog?title=Recomendados&category=recommended');
+    } else {
+      console.log(`View more for ${sectionTitle} - navigation not yet defined`);
+      router.push('/catalog');
+    }
   };
 
   const renderFavoriteItem = ({ item }: { item: Product }) => {
@@ -82,72 +83,102 @@ export default function FavoritesScreen() {
     );
   };
 
-  // Loading State - Use Skeleton
-  if (isLoading) {
+  // Full screen skeleton if products are loading AND we have no local favorite IDs to even attempt to display
+  if (productsLoading && favoriteIds.length === 0) {
     return <FavoritesSkeleton />;
   }
 
-  // Error State
-  if (isError) {
+  // Full screen error if products errored AND we have no local favorite IDs
+  if (productsError && favoriteIds.length === 0) {
     return (
       <View style={styles.container}>
-        <ScreenHeader title="Favorites" />
         <View style={styles.centeredStatus}>
-          <Text style={styles.errorText}>Failed to load products. Please try again later.</Text>
+          <Text style={styles.errorText}>Error al cargar productos. Intenta de nuevo.</Text>
         </View>
       </View>
     );
   }
 
-  // Main Content (Favorites or Empty State)
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Favorites" />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scrollContent,
-          isEmpty && styles.scrollContentEmpty, // Apply empty style only when truly empty
-        ]}
-      >
-        {isEmpty ? (
-          <>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        {/* Section 1: Main Favorites Content (List or Empty State) */}
+        {isLoggedIn ? (
+          // LOGGED IN STATE
+          localOrSyncedFavorites.length === 0 && !productsLoading ? (
             <EmptyFavorites onGoToStore={handleGoToStore} />
-            {/* Recently viewed products section - Show only when favorites IS empty */}
-            {recentlyViewedProducts.length > 0 && (
-              <View style={styles.section}>
-                <Subheader
-                  title="Vistos recientemente"
-                  buttonText="Ver Todo"
-                  onButtonPress={handleViewMoreRecentlyViewed}
+          ) : (
+            <FlatList
+              data={localOrSyncedFavorites}
+              renderItem={renderFavoriteItem}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              columnWrapperStyle={styles.columnWrapper}
+              contentContainerStyle={styles.gridContainer}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false} // Important for ScrollView parent
+              ListEmptyComponent={
+                productsLoading ? (
+                  <Text style={styles.loadingFavoritesText}>Cargando tus favoritos...</Text>
+                ) : null
+              }
+            />
+          )
+        ) : (
+          // LOGGED OUT STATE
+          <>
+            {favoriteIds.length === 0 ? (
+              <EmptyFavorites onGoToStore={handleGoToStore} />
+            ) : (
+              <>
+                <FlatList
+                  data={localOrSyncedFavorites}
+                  renderItem={renderFavoriteItem}
+                  keyExtractor={(item) => item.id}
+                  numColumns={2}
+                  columnWrapperStyle={styles.columnWrapper}
+                  contentContainerStyle={styles.gridContainer}
+                  showsVerticalScrollIndicator={false}
+                  scrollEnabled={false} // Important for ScrollView parent
+                  ListEmptyComponent={
+                    productsLoading ? (
+                      <Text style={styles.loadingFavoritesText}>
+                        Cargando detalles de favoritos...
+                      </Text>
+                    ) : (
+                      // If not loading and list is still empty, it implies product details for some IDs were not found
+                      // This case might not need a message if favoriteIds.length > 0 implies we expect *some* items.
+                      // Or, it could be an error state for specific items not found.
+                      <Text style={styles.loadingFavoritesText}>
+                        Algunos favoritos no pudieron ser cargados.
+                      </Text>
+                    )
+                  }
                 />
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.horizontalScrollContent}
-                >
-                  {recentlyViewedProducts.map((product) => (
-                    <PromotionCard
-                      key={product.id}
-                      product={product}
-                      size="s"
-                      onPress={() => handleProductPress(product.id)}
-                    />
-                  ))}
-                </ScrollView>
-              </View>
+              </>
             )}
           </>
-        ) : (
-          <FlatList
-            data={favorites}
-            renderItem={renderFavoriteItem}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            columnWrapperStyle={styles.columnWrapper}
-            contentContainerStyle={styles.gridContainer}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={false} // Disable FlatList scrolling, use ScrollView
+        )}
+
+        {/* Section 2: Auth Prompt for Logged OUT users */}
+        {!isLoggedIn && (
+          <View style={styles.authPromptContainer}>
+            {favoriteIds.length === 0 ? (
+              <ReusableAuthPrompt message="Crea una cuenta para guardar y sincronizar tus productos favoritos en todos tus dispositivos." />
+            ) : (
+              <ReusableAuthPrompt message="¡Tus favoritos se guardan aquí! Inicia sesión para verlos en todos tus dispositivos y mantenerlos seguros." />
+            )}
+          </View>
+        )}
+
+        {/* Section 3: Recommended Products */}
+        {localOrSyncedFavorites.length === 0 && recommendedProductsData.length > 0 && (
+          <ProductSections
+            title="Recomendados"
+            products={recommendedProductsData}
+            CardComponent={PromotionCard}
+            onProductPress={handleProductPress}
+            onViewMore={() => handleViewMore('Recomendados')}
           />
         )}
       </ScrollView>
@@ -155,34 +186,22 @@ export default function FavoritesScreen() {
   );
 }
 
-// Use typed StyleSheet.create
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
     backgroundColor: colors.background.light,
   },
-  toggleButton: {
-    backgroundColor: colors.secondary,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.sm, // Use radius token
-    alignSelf: 'flex-start',
-  },
-  toggleButtonText: {
-    color: colors.background.light,
-    fontSize: fontSizes.sm,
-  },
   scrollContent: {
     flexGrow: 1,
     backgroundColor: colors.background.light,
+    paddingBottom: spacing.xxl,
   },
   scrollContentEmpty: {
-    // No specific style needed here now, handled by isEmpty logic structure
-    // Keeping for potential future use
+    // Styles for when the cart is empty - might make sense to center EmptyFavorites
+    // justifyContent: 'center', // Example: if EmptyFavorites should be centered
   },
   gridContainer: {
     padding: spacing.md,
-    paddingBottom: spacing.xxl,
   },
   columnWrapper: {
     justifyContent: 'space-between',
@@ -191,15 +210,6 @@ const styles = StyleSheet.create<Styles>({
   cardWrapper: {
     width: '48.5%',
   },
-  section: {
-    paddingVertical: spacing.xl,
-    backgroundColor: colors.background.light,
-  },
-  horizontalScrollContent: {
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-  },
-  // Added styles for loading/error states
   centeredStatus: {
     flex: 1,
     alignItems: 'center',
@@ -211,5 +221,25 @@ const styles = StyleSheet.create<Styles>({
     textAlign: 'center',
     fontSize: fontSizes.md,
     fontFamily: fonts.primary,
+  },
+  authPromptContainer: {
+    paddingVertical: spacing.lg,
+    marginTop: spacing.md,
+  },
+  loadingFavoritesText: {
+    textAlign: 'center',
+    paddingVertical: spacing.xl,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    color: colors.secondary,
+  },
+  localFavoritesHeader: {
+    fontFamily: fonts.primary,
+    fontSize: fontSizes.lg,
+    fontWeight: '500',
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
+    color: colors.primary,
   },
 });

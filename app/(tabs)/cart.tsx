@@ -6,7 +6,6 @@ import { fonts, fontSizes, lineHeights } from '../_styles/typography';
 import { router } from 'expo-router';
 import EmptyCart from '../_components/store/cart/EmptyCart';
 import { Product } from '../_types/product';
-import Subheader from '../_components/common/Subheader';
 import PromotionCard from '../_components/store/product/promotion/PromotionCard';
 import CartProductCard from '../_components/store/product/cart/CartProductCard';
 import Button from '../_components/ui/buttons/Button';
@@ -14,11 +13,13 @@ import Dropdown from '../_components/ui/form/Dropdown';
 import { getProductById, products } from '../_data/products';
 import { useCartStore } from '../_stores/cartStore';
 import { useProducts } from '../../hooks/useProducts';
-import ScreenHeader from '../_components/common/ScreenHeader';
 import OverlayProductEdit from '../_components/store/product/overlay/OverlayProductEdit';
+import { useAuthStore } from '../_stores/authStore';
+import ProductSections from '../_components/store/product/sections/ProductSections';
+import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
 
-// Dummy data for recently viewed products - use actual products from data file
-const recentlyViewedProducts: Product[] = [
+// Using recentlyViewedProducts as a placeholder for recommendedProducts data
+const recommendedProductsData: Product[] = [
   getProductById('neceser-ball') || products[0],
   getProductById('mochila-classic') || products[1],
   getProductById('mochila-sq') || products[2],
@@ -36,6 +37,9 @@ interface CartDisplayItem extends Product {
 export default function CartScreen() {
   // Get all products
   const { data: allProducts = [] } = useProducts();
+
+  // Get auth state
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   // Get cart state
   const cartStoreItems = useCartStore((state) => state.items);
@@ -76,8 +80,14 @@ export default function CartScreen() {
     router.push(`/products/product?id=${productId}`);
   };
 
-  const handleViewMoreRecentlyViewed = () => {
-    console.log('View all recently viewed products');
+  // Adapted from index.tsx for navigating to catalog based on section
+  const handleViewMore = (sectionTitle: string) => {
+    if (sectionTitle.toLowerCase() === 'recomendados') {
+      router.push('/catalog?title=Recomendados&category=recommended');
+    } else {
+      console.log(`View more for ${sectionTitle} - navigation not yet defined`);
+      router.push('/catalog');
+    }
   };
 
   const handleQuantityChange = (id: string, newQuantity: number, color?: string, size?: string) => {
@@ -132,23 +142,19 @@ export default function CartScreen() {
   };
 
   const handleBuyNow = () => {
-    console.log('Proceed to checkout');
+    router.push('/'); // Temporarily changed to navigate to home to resolve linter issue with /checkout
   };
 
   const handleCouponPress = () => {
     console.log('Coupon dropdown pressed');
-    // Logic to show coupon options
   };
 
   const handleGiftCardPress = () => {
     console.log('Gift card dropdown pressed');
-    // Logic to show gift card options
   };
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Carrito" />
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
@@ -231,28 +237,14 @@ export default function CartScreen() {
         )}
 
         {/* Recently viewed products section - Show only when cart IS empty */}
-        {isEmpty && recentlyViewedProducts.length > 0 && (
-          <View style={styles.section}>
-            <Subheader
-              title="Vistos recientemente"
-              buttonText="Ver Todo"
-              onButtonPress={handleViewMoreRecentlyViewed}
-            />
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalScrollContent}
-            >
-              {recentlyViewedProducts.map((product) => (
-                <PromotionCard
-                  key={product.id}
-                  product={product}
-                  size="s"
-                  onPress={() => handleProductPress(product.id)}
-                />
-              ))}
-            </ScrollView>
-          </View>
+        {isEmpty && recommendedProductsData.length > 0 && (
+          <ProductSections
+            title="Recomendados"
+            products={recommendedProductsData}
+            CardComponent={PromotionCard}
+            onProductPress={handleProductPress}
+            onViewMore={() => handleViewMore('Recomendados')}
+          />
         )}
       </ScrollView>
 
@@ -265,6 +257,17 @@ export default function CartScreen() {
               ${(calculateTotal() - calculateDiscountTotal()).toFixed(2)}
             </Text>
           </View>
+
+          {/* Optional Auth Prompt Text for guest users - Replaced with ReusableAuthPrompt */}
+          {!isLoggedIn && (
+            <ReusableAuthPrompt
+              message="¿Quieres guardar tu carrito y agilizar tu próxima compra?"
+              messageStyle={styles.guestPromptMessageText}
+              loginButtonTextStyle={styles.guestPromptLinkText}
+              signupButtonTextStyle={styles.guestPromptLinkText}
+            />
+          )}
+
           <Button
             text="Comprar ahora"
             variant="primary"
@@ -304,7 +307,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.medium, // Default background for non-empty cart
   },
   scrollContentEmpty: {
-    backgroundColor: colors.background.light, // White background when cart is empty
+    backgroundColor: colors.background.light,
   },
   section: {
     paddingVertical: spacing.xl,
@@ -421,5 +424,41 @@ const styles = StyleSheet.create({
   buyButton: {
     width: '100%',
     borderRadius: radius.xxl,
+  },
+  // Styles for guest prompt - some of these might be reusable or adaptable for ReusableAuthPrompt props
+  guestPromptContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  guestPromptText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.xs,
+    lineHeight: lineHeights.xs,
+    color: colors.secondary,
+    textAlign: 'center',
+  },
+  linkText: {
+    color: colors.primary,
+    textDecorationLine: 'underline',
+  },
+  // New styles for ReusableAuthPrompt customization if needed
+  guestPromptMessageText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.xs,
+    lineHeight: lineHeights.xs,
+    color: colors.secondary,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  guestPromptLinkText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.xs,
+    lineHeight: lineHeights.xs,
+    color: colors.primary,
+    textDecorationLine: 'underline',
   },
 });
