@@ -1,42 +1,90 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import { router, Stack } from 'expo-router';
 import { colors } from '../_styles/colors';
 import { spacing, radius } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
 import CloseIcon from '../../assets/icons/close.svg';
+import { useAuthStore } from '../_stores/authStore';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // const login = useAuthStore((state) => state.login); // Placeholder
+  const {
+    login,
+    loginWithGoogle,
+    isLoading,
+    error: authError,
+  } = useAuthStore((state) => ({
+    login: state.login,
+    loginWithGoogle: state.loginWithGoogle,
+    isLoading: state.isLoading,
+    error: state.error,
+  }));
 
   const validateEmail = (text: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(text);
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setError(null);
+    setIsSubmitting(true);
+
+    // Validate input fields
     if (!email.trim() || !password.trim()) {
       setError('Por favor, completa todos los campos.');
+      setIsSubmitting(false);
       return;
     }
     if (!validateEmail(email)) {
       setError('Por favor, ingresa un correo electrónico válido.');
+      setIsSubmitting(false);
       return;
     }
 
-    // Placeholder for actual login logic
-    console.log('Login attempt with:', email, password);
-    // login(email, password);
-    // If successful:
-    router.replace('/(tabs)/profile');
-    // If error from backend:
-    // setError("Credenciales incorrectas o error del servidor.");
+    try {
+      // Attempt login with Firebase-integrated auth service
+      await login({ email, password });
+
+      // If successful, navigate to profile
+      router.replace('/(tabs)/profile');
+    } catch (error: any) {
+      // Handle login error
+      setError(error.message || 'Error al iniciar sesión. Verifica tus credenciales.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      // Attempt Google login
+      await loginWithGoogle();
+
+      // If successful, navigate to profile
+      router.replace('/(tabs)/profile');
+    } catch (error: any) {
+      // Handle Google login error
+      setError(error.message || 'Error al iniciar sesión con Google.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -72,8 +120,9 @@ export default function LoginScreen() {
                 if (error) setError(null);
               }}
               error={
-                error && (error.includes('correo') || error.includes('Por favor, completa'))
-                  ? error
+                (error && (error.includes('correo') || error.includes('Por favor, completa'))) ||
+                (authError && authError.includes('email'))
+                  ? (error ?? authError ?? undefined)
                   : undefined
               }
               containerStyle={styles.inputSpacing}
@@ -87,29 +136,51 @@ export default function LoginScreen() {
                 if (error) setError(null);
               }}
               error={
-                error && (error.includes('contraseña') || error.includes('Por favor, completa'))
-                  ? error
+                (error &&
+                  (error.includes('contraseña') || error.includes('Por favor, completa'))) ||
+                (authError && authError.includes('password'))
+                  ? (error ?? authError ?? undefined)
                   : undefined
               }
               containerStyle={styles.inputSpacing}
             />
-            {error &&
+            {(error &&
               !error.includes('correo') &&
               !error.includes('contraseña') &&
-              !error.includes('Por favor, completa') && (
-                <Text style={styles.errorText}>{error}</Text>
-              )}
+              !error.includes('Por favor, completa')) ||
+            (authError && !authError.includes('email') && !authError.includes('password')) ? (
+              <Text style={styles.errorText}>{error || authError}</Text>
+            ) : null}
           </View>
         </ScrollView>
       </View>
       <View style={styles.actionButtonsContainer}>
-        <TouchableOpacity style={styles.primaryButton} onPress={handleLogin} activeOpacity={0.7}>
-          <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
+        <TouchableOpacity
+          style={[styles.primaryButton, (isSubmitting || isLoading) && styles.disabledButton]}
+          onPress={handleLogin}
+          activeOpacity={0.7}
+          disabled={isSubmitting || isLoading}
+        >
+          {isSubmitting || isLoading ? (
+            <ActivityIndicator size="small" color={colors.background.light} />
+          ) : (
+            <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.googleButton, (isSubmitting || isLoading) && styles.disabledButton]}
+          onPress={handleGoogleLogin}
+          activeOpacity={0.7}
+          disabled={isSubmitting || isLoading}
+        >
+          <Text style={styles.googleButtonText}>Continuar con Google</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() => router.push('/auth/signup')}
           activeOpacity={0.7}
+          disabled={isSubmitting || isLoading}
         >
           <Text style={styles.secondaryButtonText}>¿No tienes cuenta? Regístrate</Text>
         </TouchableOpacity>
@@ -117,6 +188,7 @@ export default function LoginScreen() {
           style={styles.secondaryButton}
           onPress={() => router.push('/auth/forgot-password')}
           activeOpacity={0.7}
+          disabled={isSubmitting || isLoading}
         >
           <Text style={styles.secondaryButtonText}>¿Olvidaste tu contraseña?</Text>
         </TouchableOpacity>
@@ -188,6 +260,28 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.md,
     color: colors.background.light,
+  },
+  disabledButton: {
+    opacity: 0.7,
+    backgroundColor: colors.background.medium,
+  },
+  googleButton: {
+    width: '100%',
+    height: 48,
+    borderRadius: radius.xxl,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background.light,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.xl,
+  },
+  googleButtonText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.md,
+    color: colors.primary,
   },
   secondaryButton: {
     width: '100%',

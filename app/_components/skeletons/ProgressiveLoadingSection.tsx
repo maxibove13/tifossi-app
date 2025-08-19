@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { ShimmerPlaceholder } from './HomeScreenSkeleton';
+import { SkeletonPlaceholder } from '../common/SkeletonLoader';
 
 interface ProgressiveLoadingSectionProps {
   /**
@@ -63,17 +63,20 @@ export function createSectionSkeleton(options: {
     <View style={style}>
       {title && (
         <View style={styles.sectionHeader}>
-          <ShimmerPlaceholder style={styles.sectionTitle} />
-          {viewMore && <ShimmerPlaceholder style={styles.sectionViewMore} />}
+          <SkeletonPlaceholder style={styles.sectionTitle} animationType="shimmer" />
+          {viewMore && (
+            <SkeletonPlaceholder style={styles.sectionViewMore} animationType="shimmer" />
+          )}
         </View>
       )}
       <View style={horizontal ? styles.horizontalContent : styles.verticalContent}>
         {Array.from({ length: count }).map((_, i) => (
-          <ShimmerPlaceholder
+          <SkeletonPlaceholder
             key={i}
+            animationType="shimmer"
             style={{
               height,
-              width,
+              width: width as any,
               borderRadius,
             }}
           />

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import DefaultLargeCard from '../_components/store/product/default/large';
-import ProductData from '../_data/products';
 import CategoryData from '../_data/categories';
 import ModelsData from '../_data/models';
 import { Category } from '../_types/category';
@@ -10,12 +9,14 @@ import { ProductModel } from '../_types/model';
 import { Product } from '../_types/product';
 import { ProductFilters } from '../_components/store/product/overlay/OverlayProductFilters';
 import { useProductFilters } from '../../hooks/useProductFilters';
+import { useProducts } from '../_services/api/queryHooks';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import { spacing } from '../_styles/spacing';
 import Header from '../_components/store/layout/Header';
-import ProductGridSkeleton from '../_components/skeletons/ProductGridSkeleton';
+import { SkeletonLoader } from '../_components/common/SkeletonLoader';
 import { CATEGORY_IDS, MODEL_IDS } from '../_types/constants';
+import { hasStatus } from '../_types/product-status';
 
 // Generic TabBar component with auto-scrolling to active tab
 const TabBar = <T extends { id: string; name: string }>({
@@ -138,6 +139,9 @@ export default function CatalogScreen() {
   const [availableModels, setAvailableModels] = useState<ProductModel[]>([]);
   const [categoryModelProducts, setCategoryModelProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Fetch products using TanStack Query
+  const { data: allProducts, isLoading: isLoadingProducts, error: productsError } = useProducts();
   const [appliedFilters, setAppliedFilters] = useState<ProductFilters>({});
 
   // Use the original title or default to 'Tienda'
@@ -169,17 +173,59 @@ export default function CatalogScreen() {
     setAppliedFilters({});
   }, [activeCategoryId, params.model]);
 
+  // Function to filter products by category and model using API data
+  const filterProductsByCategoryAndModel = (
+    products: Product[],
+    categoryId: string,
+    modelId: string
+  ) => {
+    let filteredProducts = products;
+
+    // Filter by category
+    if (categoryId !== CATEGORY_IDS.ALL) {
+      // Check if this is a label-based category (status-based)
+      const selectedCategory = CategoryData.mainCategories.find((cat) => cat.id === categoryId);
+
+      if (selectedCategory?.isLabel) {
+        // Filter by status for label categories
+        filteredProducts = products.filter((product) =>
+          hasStatus(product.statuses, categoryId as any)
+        );
+      } else {
+        // Regular category filtering
+        filteredProducts = products.filter((product) => product.categoryId === categoryId);
+      }
+    }
+
+    // Filter by model
+    if (modelId !== MODEL_IDS.ALL) {
+      filteredProducts = filteredProducts.filter((product) => product.modelId === modelId);
+    }
+
+    return filteredProducts;
+  };
+
   useEffect(() => {
-    // This effect fetches products based on category/model only.
-    setLoading(true);
-    setTimeout(() => {
-      // Use the model-based filtering
-      const products = ProductData.getProductsByCategoryAndModel(activeCategoryId, activeModelId);
-      setCategoryModelProducts(products);
+    // This effect processes products based on category/model when API data is available
+    if (allProducts) {
+      setLoading(true);
+
+      // Use a small delay to show loading states
+      setTimeout(() => {
+        const products = filterProductsByCategoryAndModel(
+          allProducts,
+          activeCategoryId,
+          activeModelId
+        );
+        setCategoryModelProducts(products);
+        setLoading(false);
+      }, 150);
+    } else if (!isLoadingProducts && !allProducts) {
+      // If no products and not loading, set empty state
+      setCategoryModelProducts([]);
       setLoading(false);
-    }, 150);
-    // Explicitly depend only on category/model change for fetching base products
-  }, [activeCategoryId, activeModelId]);
+    }
+  }, [allProducts, activeCategoryId, activeModelId, isLoadingProducts]);
 
   // Apply overlay filters using the custom hook
   const productsToDisplay = useProductFilters(categoryModelProducts, appliedFilters);
@@ -396,8 +442,13 @@ export default function CatalogScreen() {
         style={styles.productsContainer}
         contentContainerStyle={styles.scrollContentContainer}
       >
-        {loading ? (
-          <ProductGridSkeleton />
+        {loading || isLoadingProducts ? (
+          <SkeletonLoader type="productGrid" rows={3} />
+        ) : productsError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error al cargar productos. Intenta de nuevo.</Text>
+            <Text style={styles.errorDetailText}>{productsError}</Text>
+          </View>
         ) : (
           <View style={styles.gridContainer}>
             {productsToDisplay.reduce((acc, product, index) => {
@@ -407,7 +458,7 @@ export default function CatalogScreen() {
               }
               return acc;
             }, [] as JSX.Element[])}
-            {productsToDisplay.length === 0 && !loading && (
+            {productsToDisplay.length === 0 && !loading && !isLoadingProducts && (
               <Text style={styles.noResultsText}>
                 No hay productos que coincidan con los filtros seleccionados.
               </Text>
@@ -489,6 +540,26 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
     fontFamily: fonts.secondary,
     fontSize: fontSizes.md,
+    color: colors.secondary,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xxl,
+  },
+  errorText: {
+    textAlign: 'center',
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
+    color: colors.error || colors.secondary,
+    marginBottom: spacing.md,
+  },
+  errorDetailText: {
+    textAlign: 'center',
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
     color: colors.secondary,
   },
   // Renamed from tagsTabBar to modelsTabBar

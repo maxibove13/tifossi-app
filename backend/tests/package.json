@@ -1,0 +1,108 @@
+{
+  "name": "tifossi-backend-tests",
+  "version": "1.0.0",
+  "description": "Comprehensive testing suite for Tifossi backend migration",
+  "main": "jest-integration-setup.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:e2e": "jest --testPathPattern=e2e",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:performance": "jest --testPathPattern=performance",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "generate-data": "node test-data-generator.js",
+    "load-test": "node load-test-config.js",
+    "load-test:baseline": "node load-test-config.js baseline",
+    "load-test:normal": "node load-test-config.js normalLoad",
+    "load-test:peak": "node load-test-config.js peakLoad",
+    "load-test:stress": "node load-test-config.js stressTest",
+    "load-test:black-friday": "node load-test-config.js blackFridaySimulation",
+    "artillery:install": "npm install -g artillery",
+    "artillery:run": "artillery run artillery-baseline.yml --output reports/baseline-results.json",
+    "artillery:report": "artillery report reports/baseline-results.json --output reports/baseline-report.html",
+    "mock-services:start": "node -e \"require('./jest-integration-setup').globalTestEnvironment.initialize().then(() => console.log('Mock services started'))\"",
+    "validate-setup": "node -e \"console.log('Running validation...'); require('./example-integration-test.js'); console.log('Validation complete')\"",
+    "clean-reports": "rm -rf reports/* && mkdir -p reports",
+    "setup-test-env": "mkdir -p fixtures/csv && mkdir -p reports && npm run generate-data"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.0.0",
+    "artillery": "^2.0.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.2.1",
+    "@testing-library/jest-dom": "^6.0.0",
+    "supertest": "^6.3.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": ["./jest-integration-setup.js"],
+    "testMatch": [
+      "**/__tests__/**/*.(test|spec).js",
+      "**/*.(test|spec).js"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/fixtures/",
+      "/reports/"
+    ],
+    "collectCoverageFrom": [
+      "**/*.js",
+      "!**/node_modules/**",
+      "!**/fixtures/**",
+      "!**/reports/**",
+      "!jest.config.js",
+      "!artillery-*.yml"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"],
+    "verbose": true,
+    "testTimeout": 30000
+  },
+  "keywords": [
+    "testing",
+    "backend",
+    "tifossi",
+    "strapi",
+    "mercadopago",
+    "firebase",
+    "e2e",
+    "integration",
+    "load-testing"
+  ],
+  "author": "Tifossi Development Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tifossi/tifossi-expo.git",
+    "directory": "backend/tests"
+  },
+  "config": {
+    "test_environments": {
+      "development": "http://localhost:1337",
+      "staging": "https://staging-api.tifossi.com",
+      "production": "https://api.tifossi.com"
+    },
+    "load_test_scenarios": [
+      "baseline",
+      "normalLoad", 
+      "peakLoad",
+      "stressTest",
+      "enduranceTest",
+      "spikeTest",
+      "blackFridaySimulation",
+      "mobileAppLoad"
+    ]
+  },
+  "directories": {
+    "test": "./",
+    "fixtures": "./fixtures",
+    "reports": "./reports"
+  }
+}

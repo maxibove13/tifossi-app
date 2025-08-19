@@ -1,0 +1,151 @@
+version: '3.8'
+
+services:
+  # Strapi Backend
+  strapi:
+    build:
+      context: ../../
+      dockerfile: infrastructure/templates/Dockerfile
+      target: development
+    container_name: tifossi-strapi
+    ports:
+      - '1337:1337'
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+      - PORT=1337
+      - DATABASE_CLIENT=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=tifossi_dev
+      - DATABASE_USERNAME=strapi
+      - DATABASE_PASSWORD=strapi123
+      - DATABASE_SSL=false
+      - APP_KEYS=dev-key-1,dev-key-2,dev-key-3,dev-key-4
+      - API_TOKEN_SALT=dev-api-token-salt
+      - ADMIN_JWT_SECRET=dev-admin-jwt-secret
+      - TRANSFER_TOKEN_SALT=dev-transfer-token-salt
+      - JWT_SECRET=dev-jwt-secret
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8081,exp://localhost:8081
+      - RATE_LIMIT_ENABLED=false
+      - LOG_LEVEL=debug
+      - FEATURE_PAYMENTS_ENABLED=true
+      - FEATURE_EMAIL_NOTIFICATIONS=true
+      - ADMIN_PANEL_ENABLED=true
+      - STRAPI_TELEMETRY_DISABLED=true
+      - UPLOAD_PROVIDER=local
+      - CLOUDINARY_NAME=${CLOUDINARY_NAME:-}
+      - CLOUDINARY_KEY=${CLOUDINARY_KEY:-}
+      - CLOUDINARY_SECRET=${CLOUDINARY_SECRET:-}
+      - MERCADO_PAGO_ACCESS_TOKEN=${MERCADO_PAGO_ACCESS_TOKEN:-TEST-token}
+      - MERCADO_PAGO_PUBLIC_KEY=${MERCADO_PAGO_PUBLIC_KEY:-TEST-key}
+      - MERCADO_PAGO_WEBHOOK_SECRET=${MERCADO_PAGO_WEBHOOK_SECRET:-dev-webhook}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - EMAIL_FROM=noreply@tifossi.local
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - ./public/uploads:/app/public/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - tifossi-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1337/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: tifossi-postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: tifossi_dev
+      POSTGRES_USER: strapi
+      POSTGRES_PASSWORD: strapi123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - tifossi-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U strapi -d tifossi_dev"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: tifossi-redis
+    ports:
+      - '6379:6379'
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - tifossi-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Adminer (Database Admin Interface)
+  adminer:
+    image: adminer:latest
+    container_name: tifossi-adminer
+    ports:
+      - '8080:8080'
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - tifossi-network
+    restart: unless-stopped
+    profiles:
+      - admin
+
+  # Redis Commander (Redis Admin Interface)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: tifossi-redis-commander
+    ports:
+      - '8081:8081'
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    networks:
+      - tifossi-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+    profiles:
+      - admin
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  tifossi-network:
+    driver: bridge
+    name: tifossi-network
+
+# Development profiles:
+# docker-compose up                     # Start core services
+# docker-compose --profile admin up    # Start with admin interfaces

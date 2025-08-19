@@ -1,23 +1,41 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Header from '../_components/store/layout/Header';
 import EnhancedProductGallery from '../_components/store/product/gallery/EnhancedProductGallery';
 import SwipeableEdge from '../_components/store/product/swipeable/SwipeableEdge';
-import ProductData from '../_data/products';
 import { colors } from '../_styles/colors';
 import { isProduct, Product } from '../_types/product';
+import { hasStatus, ProductStatus } from '../_types/product-status';
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useCartStore } from '../_stores/cartStore';
 import { useFavoritesStore } from '../_stores/favoritesStore';
+import { useProduct, useProducts } from '../_services/api/queryHooks';
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const productId = id as string;
 
-  // We keep the direct data fetch for now, but in the future we could replace with TanStack Query
-  const product = ProductData.getProductById(id as string);
-  // const { data: product, isLoading } = useProduct(id as string);
+  // Use TanStack Query to fetch product data
+  const { data: product, isLoading: isLoadingProduct, error: productError } = useProduct(productId);
+  // Also fetch all products for related/recommended products
+  const { data: allProducts } = useProducts();
+
+  // Helper functions to filter products by status
+  const getProductsByStatus = (products: Product[], status: ProductStatus) => {
+    return products?.filter((p) => hasStatus(p.statuses, status) && p.id !== productId) || [];
+  };
+
+  const getRelatedProductsByCategory = (
+    products: Product[],
+    categoryId: string,
+    excludeId: string
+  ) => {
+    return (
+      products?.filter((p) => p.categoryId === categoryId && p.id !== excludeId).slice(0, 6) || []
+    );
+  };
 
   // State for selected color and quantity
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
@@ -33,14 +51,17 @@ export default function ProductScreen() {
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   const isFavorite = useFavoritesStore((state) => (product ? state.isFavorite(product.id) : false));
 
-  // Get recommended products data
-  const recommendedProducts = ProductData.getRecommendedProducts().filter((p) => p.id !== id);
-
-  // Get related products data using the new function
-  const relatedProducts = ProductData.getRelatedProducts().filter((p) => p.id !== id);
-
-  // Get trending products data
-  const trendingProducts = ProductData.getTrendingProducts().filter((p) => p.id !== id);
+  // Get recommended, related, and trending products from API data
+  const recommendedProducts = allProducts
+    ? getProductsByStatus(allProducts, ProductStatus.RECOMMENDED)
+    : [];
+  const relatedProducts =
+    allProducts && product
+      ? getRelatedProductsByCategory(allProducts, product.categoryId, productId)
+      : [];
+  const trendingProducts = allProducts
+    ? getProductsByStatus(allProducts, ProductStatus.POPULAR)
+    : [];
 
   const handleAddToCart = async (product: Product, quantity: number = selectedQuantity) => {
     if (!product) return Promise.resolve();
@@ -92,10 +113,42 @@ export default function ProductScreen() {
     // Navigate to section view
   };
 
+  // Loading state
+  if (isLoadingProduct) {
+    return (
+      <View style={styles.container}>
+        <StatusBar style="dark" />
+        <Header title="Cargando..." variant="product" />
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Cargando producto...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Error state
+  if (productError) {
+    return (
+      <View style={styles.container}>
+        <StatusBar style="dark" />
+        <Header title="Error" variant="product" />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error al cargar el producto</Text>
+          <Text style={styles.errorDetailText}>{productError}</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Product not found state
   if (!product || !isProduct(product)) {
     return (
       <View style={styles.container}>
-        <Header title="Product not found" variant="product" />
+        <StatusBar style="dark" />
+        <Header title="Producto no encontrado" variant="product" />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>El producto solicitado no existe</Text>
+        </View>
       </View>
     );
   }
@@ -161,6 +214,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.light,
     position: 'relative', // For positioning SwipeableEdge
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: colors.text?.primary || '#000',
+    textAlign: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.error || colors.text?.primary || '#000',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  errorDetailText: {
+    fontSize: 14,
+    color: colors.text?.secondary || '#666',
+    textAlign: 'center',
   },
 });
 

@@ -8,20 +8,66 @@ import { Product } from '../../_types/product';
 import ProductData from '../../_data/products';
 import preloadService from './service';
 import { PreloadAsset } from './types';
+import { hasStatus, ProductStatus } from '../../_types/product-status';
 
 /**
  * Load assets for the home screen while skeleton is displayed
  * Returns the loaded data objects for immediate use
  * IMPORTANT: This is NOT part of the splash screen loading process
+ *
+ * @param allProducts - Optional array of products from API. If not provided, uses static data
  */
-export async function preloadHomeAssets() {
+export async function preloadHomeAssets(allProducts?: Product[]) {
   try {
     // First, gather all the assets we need to preload
     const assetList: PreloadAsset[] = [];
 
+    // Helper functions to get products from API data or fallback to static data
+    const getFeaturedProduct = (products?: Product[]) => {
+      if (products) {
+        return products.find((p) => hasStatus(p.statuses, ProductStatus.FEATURED)) || null;
+      }
+      return ProductData.getFeaturedProduct();
+    };
+
+    const getHighlightedProducts = (products?: Product[]) => {
+      if (products) {
+        return products.filter((p) => hasStatus(p.statuses, ProductStatus.HIGHLIGHTED));
+      }
+      return ProductData.getHighlightedProducts();
+    };
+
+    const getRecommendedProducts = (products?: Product[]) => {
+      if (products) {
+        return products.filter((p) => hasStatus(p.statuses, ProductStatus.RECOMMENDED));
+      }
+      return ProductData.getRecommendedProducts();
+    };
+
+    const getTrendingProducts = (products?: Product[]) => {
+      if (products) {
+        return products.filter((p) => hasStatus(p.statuses, ProductStatus.POPULAR));
+      }
+      return ProductData.getTrendingProducts();
+    };
+
+    const getNewReleases = (products?: Product[]) => {
+      if (products) {
+        return products.filter((p) => hasStatus(p.statuses, ProductStatus.NEW));
+      }
+      return ProductData.getNewReleases();
+    };
+
+    const getLaunchAndOpportunityProducts = (products?: Product[]) => {
+      if (products) {
+        return products.filter((p) => hasStatus(p.statuses, ProductStatus.OPPORTUNITY));
+      }
+      return ProductData.getLaunchAndOpportunityProducts();
+    };
+
     // 1. HIGH PRIORITY - Featured product and highlighted products (visible immediately)
-    const featuredProduct = ProductData.getFeaturedProduct();
-    const highlightedProducts = ProductData.getHighlightedProducts();
+    const featuredProduct = getFeaturedProduct(allProducts);
+    const highlightedProducts = getHighlightedProducts(allProducts);
 
     // Add featured product image with high priority
     if (featuredProduct) {
@@ -44,7 +90,7 @@ export async function preloadHomeAssets() {
     });
 
     // 2. MEDIUM PRIORITY - Products that appear in the middle of the screen
-    const recommendedProducts = ProductData.getRecommendedProducts();
+    const recommendedProducts = getRecommendedProducts(allProducts);
     recommendedProducts.forEach((product) => {
       assetList.push({
         key: `recommended_${product.id}`,
@@ -55,7 +101,7 @@ export async function preloadHomeAssets() {
     });
 
     // Add trending products with medium priority
-    const trendingProducts = ProductData.getTrendingProducts();
+    const trendingProducts = getTrendingProducts(allProducts);
     trendingProducts.forEach((product) => {
       assetList.push({
         key: `trending_${product.id}`,
@@ -66,7 +112,7 @@ export async function preloadHomeAssets() {
     });
 
     // 3. LOW PRIORITY - Products that appear at the bottom of the screen
-    const newReleases = ProductData.getNewReleases();
+    const newReleases = getNewReleases(allProducts);
     newReleases.forEach((product) => {
       assetList.push({
         key: `newRelease_${product.id}`,
@@ -76,7 +122,7 @@ export async function preloadHomeAssets() {
       });
     });
 
-    const launchAndOpportunityProducts = ProductData.getLaunchAndOpportunityProducts();
+    const launchAndOpportunityProducts = getLaunchAndOpportunityProducts(allProducts);
     launchAndOpportunityProducts.forEach((product) => {
       assetList.push({
         key: `launchOpp_${product.id}`,

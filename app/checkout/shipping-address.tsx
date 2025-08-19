@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   ViewStyle,
   TextStyle,
+  ActivityIndicator,
 } from 'react-native';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import CloseIcon from '../../assets/icons/close.svg';
@@ -19,34 +20,51 @@ import { colors } from '../_styles/colors';
 import { spacing, radius } from '../_styles/spacing';
 import { fontWeights } from '../_styles/typography';
 
-interface Address {
-  id: string;
-  name: string;
-}
+// Import services
+import addressService, { Address } from '../_services/address/addressService';
+import { useAuthStore } from '../_stores/authStore';
 
 export default function ShippingAddressScreen() {
   const _params = useLocalSearchParams();
-  // Extract product info from params if needed
+  const { token } = useAuthStore();
 
   const [selectedAddress, setSelectedAddress] = useState<string>('');
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Use useMemo to prevent recreating the array on every render
-  const addresses = useMemo<Address[]>(
-    () => [
-      {
-        id: '1',
-        name: 'Calle Principal 123, Piso 2B, Madrid, España',
-      },
-    ],
-    []
-  );
-
-  // Select the first address by default
+  // Fetch addresses on component mount
   useEffect(() => {
-    if (addresses.length > 0 && !selectedAddress) {
-      setSelectedAddress(addresses[0].id);
-    }
-  }, [addresses, selectedAddress]);
+    const fetchAddresses = async () => {
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        addressService.setAuthToken(token);
+        const userAddresses = await addressService.fetchUserAddresses();
+        setAddresses(userAddresses);
+
+        // Select default address or first address
+        const defaultAddress = userAddresses.find((addr) => addr.isDefault);
+        if (defaultAddress) {
+          setSelectedAddress(defaultAddress.id!);
+        } else if (userAddresses.length > 0) {
+          setSelectedAddress(userAddresses[0].id!);
+        }
+      } catch (err) {
+        console.error('Failed to fetch addresses:', err);
+        setError('Failed to load addresses. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAddresses();
+  }, [token]);
 
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddress(addressId);
@@ -59,9 +77,11 @@ export default function ShippingAddressScreen() {
 
   const handleNext = () => {
     if (selectedAddress) {
-      // In a real app, you would save the selected address
-      // Navigate to payment selection screen
-      router.navigate('/checkout/payment-selection');
+      // Pass selected address to payment selection screen
+      router.push({
+        pathname: '/checkout/payment-selection',
+        params: { selectedAddressId: selectedAddress },
+      });
     }
   };
 
@@ -94,7 +114,39 @@ export default function ShippingAddressScreen() {
       {/* Content */}
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
-          {addresses.length > 0 ? (
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={styles.loadingText}>Cargando direcciones...</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={() => {
+                  // Retry loading addresses
+                  setError(null);
+                  const fetchAddresses = async () => {
+                    if (!token) return;
+                    try {
+                      setIsLoading(true);
+                      addressService.setAuthToken(token);
+                      const userAddresses = await addressService.fetchUserAddresses();
+                      setAddresses(userAddresses);
+                    } catch (err) {
+                      setError('Failed to load addresses. Please try again.');
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  };
+                  fetchAddresses();
+                }}
+              >
+                <Text style={styles.retryButtonText}>Reintentar</Text>
+              </TouchableOpacity>
+            </View>
+          ) : addresses.length > 0 ? (
             <>
               <View style={styles.addressesContainer}>
                 <Text style={styles.sectionTitle}>Mis direcciones</Text>
@@ -104,10 +156,15 @@ export default function ShippingAddressScreen() {
                     <TouchableOpacity
                       key={address.id}
                       style={styles.addressItem}
-                      onPress={() => handleAddressSelect(address.id)}
+                      onPress={() => handleAddressSelect(address.id!)}
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.addressText}>{address.name}</Text>
+                      <View style={styles.addressInfo}>
+                        <Text style={styles.addressText}>
+                          {addressService.formatAddressDisplay(address)}
+                        </Text>
+                        {address.isDefault && <Text style={styles.defaultBadge}>Por defecto</Text>}
+                      </View>
                       <RadioButton selected={selectedAddress === address.id} />
                     </TouchableOpacity>
                   ))}
@@ -180,6 +237,12 @@ type Styles = {
   title: TextStyle;
   closeButton: ViewStyle;
   content: ViewStyle;
+  loadingContainer: ViewStyle;
+  loadingText: TextStyle;
+  errorContainer: ViewStyle;
+  errorText: TextStyle;
+  retryButton: ViewStyle;
+  retryButtonText: TextStyle;
   addressesContainer: ViewStyle;
   noAddressContainer: ViewStyle;
   noAddressTitle: TextStyle;
@@ -187,7 +250,9 @@ type Styles = {
   sectionTitle: TextStyle;
   addressList: ViewStyle;
   addressItem: ViewStyle;
+  addressInfo: ViewStyle;
   addressText: TextStyle;
+  defaultBadge: TextStyle;
   addAddressContainer: ViewStyle;
   addAddressEmptyContainer: ViewStyle;
   addAddressButton: ViewStyle;
@@ -264,6 +329,49 @@ const styles = StyleSheet.create<Styles>({
   addressList: {
     gap: spacing.md,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: spacing.xl * 2,
+  },
+  loadingText: {
+    fontFamily: 'Inter',
+    fontSize: 14,
+    fontWeight: fontWeights.regular,
+    lineHeight: 20,
+    color: colors.secondary,
+    marginTop: spacing.md,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: spacing.xl * 2,
+    paddingHorizontal: spacing.xl,
+  },
+  errorText: {
+    fontFamily: 'Inter',
+    fontSize: 14,
+    fontWeight: fontWeights.regular,
+    lineHeight: 20,
+    color: colors.error,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  retryButton: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.primary,
+  },
+  retryButtonText: {
+    fontFamily: 'Inter',
+    fontSize: 14,
+    fontWeight: fontWeights.medium,
+    lineHeight: 20,
+    color: colors.background.light,
+  },
   addressItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -273,12 +381,24 @@ const styles = StyleSheet.create<Styles>({
     borderBottomWidth: 1,
     borderBottomColor: '#DCDCDC',
   },
+  addressInfo: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
   addressText: {
     fontFamily: 'Inter',
     fontSize: 16,
     fontWeight: fontWeights.regular,
     lineHeight: 24,
     color: '#0C0C0C',
+  },
+  defaultBadge: {
+    fontFamily: 'Inter',
+    fontSize: 12,
+    fontWeight: fontWeights.medium,
+    lineHeight: 16,
+    color: colors.primary,
+    marginTop: spacing.xs / 2,
   },
   addAddressContainer: {
     paddingHorizontal: 48,

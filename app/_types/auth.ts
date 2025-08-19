@@ -4,6 +4,9 @@ export interface User {
   email: string | null;
   profilePicture: string | null;
   isEmailVerified?: boolean;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
   // Add other user-specific fields as needed
 }
 
@@ -23,6 +26,7 @@ export interface AuthState {
   initializeAuth: () => Promise<void>;
   login: (credentials: { email: string; password: string }) => Promise<void>;
   register: (userData: { name: string; email: string; password: string }) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 
   // New methods for additional functionality
@@ -30,6 +34,10 @@ export interface AuthState {
   updateProfilePicture: (imageUri: string) => Promise<void>;
   resendVerificationEmail: () => Promise<void>;
   verifyEmail: (code: string) => Promise<void>;
+
+  // Test utility methods
+  setUser: (user: User | null) => void;
+  setToken: (token: string | null) => void;
 }
 
 export interface PasswordChangeCredentials {

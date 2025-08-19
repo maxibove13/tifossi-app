@@ -1,0 +1,54 @@
+{
+  "collectionName": "components_order_payment_infos",
+  "info": {
+    "displayName": "Payment Information",
+    "description": "Payment details and transaction data"
+  },
+  "options": {},
+  "attributes": {
+    "method": {
+      "type": "enumeration",
+      "enum": ["mercadopago", "cash_on_delivery", "bank_transfer"],
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "approved", "rejected", "cancelled", "refunded"],
+      "default": "pending"
+    },
+    "transactionId": {
+      "type": "string"
+    },
+    "externalReference": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "currency": {
+      "type": "enumeration",
+      "enum": ["UYU", "USD"],
+      "default": "UYU"
+    },
+    "paidAt": {
+      "type": "datetime"
+    },
+    "installments": {
+      "type": "integer",
+      "default": 1,
+      "min": 1
+    },
+    "paymentTypeId": {
+      "type": "string"
+    },
+    "issuerId": {
+      "type": "string"
+    },
+    "lastFourDigits": {
+      "type": "string",
+      "maxLength": 4
+    }
+  }
+}

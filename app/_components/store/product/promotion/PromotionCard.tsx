@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { colors } from '../../../../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../_styles/typography';
@@ -21,19 +21,44 @@ type PromotionCardProps = {
   invertTextColor?: boolean;
 };
 
-const PromotionCard = ({
+const PromotionCard = memo(function PromotionCard({
   product,
   size = 's',
   onPress,
   darkMode = false,
   invertTextColor = false,
-}: PromotionCardProps) => {
+}: PromotionCardProps) {
   const { isFavorite, toggle: toggleFavorite } = useFavoriteStatus(product.id);
-  const _isSmall = size === 's';
   const { title, price, discountedPrice, frontImage, statuses } = product;
 
-  const hasDiscount = discountedPrice !== undefined && discountedPrice < price;
-  const labelColor = hasDiscount ? colors.error : colors.tag.new;
+  // Memoize expensive computations
+  const computedValues = useMemo(() => {
+    const hasDiscount = discountedPrice !== undefined && discountedPrice < price;
+    const labelColor = hasDiscount ? colors.error : colors.tag.new;
+    const hasNewStatus = hasStatus(statuses, ProductStatus.NEW);
+
+    return {
+      hasDiscount,
+      labelColor,
+      hasNewStatus,
+    };
+  }, [discountedPrice, price, statuses]);
+
+  // Memoize style computations
+  const titleStyles = useMemo(
+    () => [styles.title, darkMode && styles.titleDark, invertTextColor && styles.invertedTitle],
+    [darkMode, invertTextColor]
+  );
+
+  const originalPriceStyles = useMemo(
+    () => [styles.originalPrice, darkMode && styles.originalPriceDark],
+    [darkMode]
+  );
+
+  const regularPriceStyles = useMemo(
+    () => [styles.price, darkMode && styles.priceDark],
+    [darkMode]
+  );
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
@@ -53,35 +78,26 @@ const PromotionCard = ({
         </Pressable>
       </View>
       <View style={styles.content}>
-        {hasStatus(statuses, ProductStatus.NEW) && (
-          <Text style={[styles.label, { color: labelColor }]}>Nuevo</Text>
+        {computedValues.hasNewStatus && (
+          <Text style={[styles.label, { color: computedValues.labelColor }]}>Nuevo</Text>
         )}
-        <Text
-          style={[
-            styles.title,
-            darkMode && styles.titleDark,
-            invertTextColor && styles.invertedTitle,
-          ]}
-          numberOfLines={1}
-        >
+        <Text style={titleStyles} numberOfLines={1}>
           {title}
         </Text>
         <View style={styles.priceContainer}>
-          {discountedPrice ? (
+          {computedValues.hasDiscount ? (
             <>
-              <Text style={[styles.originalPrice, darkMode && styles.originalPriceDark]}>
-                ${price.toFixed(2)}
-              </Text>
-              <Text style={styles.salePrice}>${discountedPrice.toFixed(2)}</Text>
+              <Text style={originalPriceStyles}>${price.toFixed(2)}</Text>
+              <Text style={styles.salePrice}>${discountedPrice!.toFixed(2)}</Text>
             </>
           ) : (
-            <Text style={[styles.price, darkMode && styles.priceDark]}>${price.toFixed(2)}</Text>
+            <Text style={regularPriceStyles}>${price.toFixed(2)}</Text>
           )}
         </View>
       </View>
     </Pressable>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

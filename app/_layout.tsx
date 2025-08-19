@@ -7,19 +7,57 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import SplashScreenComponent from './_components/splash/SplashScreen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './_stores/authStore';
+// Removed complex caching and routing dependencies
+
+// Initialize store synchronizer
+import './_stores/storeSynchronizer';
+
+// Simple Error Handling
+import { GlobalErrorBoundary } from './_components/common/UnifiedErrorBoundary';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
-// Create a client
+// Create a client with enhanced error handling and caching
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes default stale time
-      gcTime: 1000 * 60 * 60 * 1, // 1 hour garbage collection time
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes (formerly cacheTime)
+      networkMode: 'online', // Only run when online by default
+      refetchOnWindowFocus: false, // Don't refetch on window focus in mobile
+      refetchOnReconnect: 'always', // Always refetch when reconnecting
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors except 408, 429
+        if (error && typeof error === 'object' && 'status' in error) {
+          const status = (error as any).status;
+          if (status >= 400 && status < 500 && status !== 408 && status !== 429) {
+            return false;
+          }
+        }
+        return failureCount < 3;
+      },
+    },
+    mutations: {
+      retry: 2,
+      networkMode: 'online',
     },
   },
 });
+
+// Main App component
+const AppWithNotifications: React.FC = () => {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
+  );
+};
 
 export default function Layout() {
   const [showSplash, setShowSplash] = useState(true);
@@ -43,6 +81,7 @@ export default function Layout() {
   // Initialize auth when app is ready
   useEffect(() => {
     if (appReady) {
+      // Initialize authentication
       initializeAuth();
     }
   }, [appReady, initializeAuth]);
@@ -61,17 +100,12 @@ export default function Layout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-      </GestureHandlerRootView>
-    </QueryClientProvider>
+    <GlobalErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <AppWithNotifications />
+        </GestureHandlerRootView>
+      </QueryClientProvider>
+    </GlobalErrorBoundary>
   );
 }

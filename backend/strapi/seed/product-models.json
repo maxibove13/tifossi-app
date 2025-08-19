@@ -1,0 +1,162 @@
+[
+  {
+    "name": "Classic",
+    "slug": "classic",
+    "description": "Modelo clásico para uso diario",
+    "displayOrder": 1,
+    "isActive": true,
+    "categorySlug": "medias"
+  },
+  {
+    "name": "Sport",
+    "slug": "sport",
+    "description": "Modelo deportivo de alto rendimiento",
+    "displayOrder": 2,
+    "isActive": true,
+    "categorySlug": "medias"
+  },
+  {
+    "name": "Antideslizante",
+    "slug": "antideslizante",
+    "description": "Modelo con tecnología antideslizante",
+    "displayOrder": 3,
+    "isActive": true,
+    "categorySlug": "medias"
+  },
+  {
+    "name": "Fast",
+    "slug": "fast",
+    "description": "Modelo con secado rápido",
+    "displayOrder": 4,
+    "isActive": true,
+    "categorySlug": "medias"
+  },
+  {
+    "name": "Regular",
+    "slug": "regular",
+    "description": "Corte regular",
+    "displayOrder": 1,
+    "isActive": true,
+    "categorySlug": "remeras"
+  },
+  {
+    "name": "Relaxed",
+    "slug": "relaxed",
+    "description": "Corte relajado y cómodo",
+    "displayOrder": 2,
+    "isActive": true,
+    "categorySlug": "remeras"
+  },
+  {
+    "name": "Oversize",
+    "slug": "oversize",
+    "description": "Corte amplio y moderno",
+    "displayOrder": 3,
+    "isActive": true,
+    "categorySlug": "remeras"
+  },
+  {
+    "name": "T-Shirt",
+    "slug": "tshirt",
+    "description": "Camiseta básica",
+    "displayOrder": 4,
+    "isActive": true,
+    "categorySlug": "remeras"
+  },
+  {
+    "name": "Standard",
+    "slug": "standard",
+    "description": "Mochila estándar",
+    "displayOrder": 1,
+    "isActive": true,
+    "categorySlug": "mochilas"
+  },
+  {
+    "name": "Travel",
+    "slug": "travel",
+    "description": "Mochila para viajes",
+    "displayOrder": 2,
+    "isActive": true,
+    "categorySlug": "mochilas"
+  },
+  {
+    "name": "Premium",
+    "slug": "premium",
+    "description": "Mochila premium con características avanzadas",
+    "displayOrder": 3,
+    "isActive": true,
+    "categorySlug": "mochilas"
+  },
+  {
+    "name": "Regular",
+    "slug": "regular",
+    "description": "Bolso regular",
+    "displayOrder": 1,
+    "isActive": true,
+    "categorySlug": "bolsos"
+  },
+  {
+    "name": "Sport",
+    "slug": "sport",
+    "description": "Bolso deportivo",
+    "displayOrder": 2,
+    "isActive": true,
+    "categorySlug": "bolsos"
+  },
+  {
+    "name": "Oversize",
+    "slug": "oversize",
+    "description": "Buzo oversize",
+    "displayOrder": 1,
+    "isActive": true,
+    "categorySlug": "buzos"
+  },
+  {
+    "name": "Campera",
+    "slug": "campera",
+    "description": "Campera deportiva",
+    "displayOrder": 2,
+    "isActive": true,
+    "categorySlug": "buzos"
+  },
+  {
+    "name": "Cap",
+    "slug": "cap",
+    "description": "Gorra estilo cap",
+    "displayOrder": 1,
+    "isActive": true,
+    "categorySlug": "gorros"
+  },
+  {
+    "name": "Globo",
+    "slug": "globo",
+    "description": "Neceser modelo globo",
+    "displayOrder": 1,
+    "isActive": true,
+    "categorySlug": "neceser"
+  },
+  {
+    "name": "Ball",
+    "slug": "ball",
+    "description": "Neceser modelo ball",
+    "displayOrder": 2,
+    "isActive": true,
+    "categorySlug": "neceser"
+  },
+  {
+    "name": "Pro",
+    "slug": "pro",
+    "description": "Canilleras profesionales",
+    "displayOrder": 1,
+    "isActive": true,
+    "categorySlug": "canilleras"
+  },
+  {
+    "name": "Lite",
+    "slug": "lite",
+    "description": "Canilleras livianas",
+    "displayOrder": 2,
+    "isActive": true,
+    "categorySlug": "canilleras"
+  }
+]

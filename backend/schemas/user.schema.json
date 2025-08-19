@@ -1,0 +1,294 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.tifossi.app/schemas/user.json",
+  "title": "User",
+  "description": "E-commerce user with authentication and profile data",
+  "type": "object",
+  "required": ["id", "email"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique user identifier"
+    },
+    "username": {
+      "type": "string",
+      "description": "Unique username",
+      "minLength": 3,
+      "maxLength": 50,
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "User email address",
+      "maxLength": 255
+    },
+    "firebaseUid": {
+      "type": "string",
+      "description": "Firebase authentication UID",
+      "minLength": 1
+    },
+    "firstName": {
+      "type": "string",
+      "description": "User first name",
+      "maxLength": 50
+    },
+    "lastName": {
+      "type": "string",
+      "description": "User last name",
+      "maxLength": 50
+    },
+    "phoneNumber": {
+      "type": "string",
+      "description": "User phone number",
+      "pattern": "^\\+?[1-9]\\d{1,14}$",
+      "maxLength": 20
+    },
+    "profilePicture": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to profile picture"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "dateOfBirth": {
+      "type": "string",
+      "format": "date",
+      "description": "User date of birth"
+    },
+    "gender": {
+      "type": "string",
+      "enum": ["male", "female", "other", "prefer_not_to_say"],
+      "description": "User gender preference"
+    },
+    "cart": {
+      "type": "array",
+      "description": "User shopping cart items",
+      "items": {
+        "$ref": "#/$defs/CartItem"
+      }
+    },
+    "favorites": {
+      "type": "array",
+      "description": "User favorite product IDs",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "addresses": {
+      "type": "array",
+      "description": "User saved addresses",
+      "items": {
+        "$ref": "#/$defs/Address"
+      }
+    },
+    "defaultShippingAddress": {
+      "$ref": "#/$defs/Address"
+    },
+    "defaultBillingAddress": {
+      "$ref": "#/$defs/Address"
+    },
+    "newsletterSubscribed": {
+      "type": "boolean",
+      "description": "Newsletter subscription status",
+      "default": false
+    },
+    "marketingEmails": {
+      "type": "boolean",
+      "description": "Marketing email preference",
+      "default": false
+    },
+    "preferredLanguage": {
+      "type": "string",
+      "enum": ["es", "en"],
+      "description": "User preferred language",
+      "default": "es"
+    },
+    "currency": {
+      "type": "string",
+      "enum": ["UYU", "USD"],
+      "description": "User preferred currency",
+      "default": "UYU"
+    },
+    "isEmailVerified": {
+      "type": "boolean",
+      "description": "Email verification status",
+      "default": false
+    },
+    "confirmed": {
+      "type": "boolean",
+      "description": "Account confirmation status",
+      "default": false
+    },
+    "blocked": {
+      "type": "boolean",
+      "description": "Account blocked status",
+      "default": false
+    },
+    "lastLoginAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last login timestamp"
+    },
+    "totalOrders": {
+      "type": "integer",
+      "description": "Total number of orders placed",
+      "minimum": 0,
+      "default": 0
+    },
+    "totalSpent": {
+      "type": "number",
+      "description": "Total amount spent",
+      "minimum": 0,
+      "multipleOf": 0.01,
+      "default": 0
+    },
+    "loyaltyPoints": {
+      "type": "integer",
+      "description": "Loyalty program points",
+      "minimum": 0,
+      "default": 0
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Account creation timestamp"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Account last update timestamp"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "CartItem": {
+      "type": "object",
+      "description": "Shopping cart item",
+      "required": ["productId", "quantity"],
+      "properties": {
+        "productId": {
+          "type": "string",
+          "description": "Product identifier"
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Item quantity",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "description": "Selected color variant",
+          "maxLength": 50
+        },
+        "size": {
+          "type": "string",
+          "description": "Selected size variant",
+          "maxLength": 20
+        },
+        "customizations": {
+          "type": "object",
+          "description": "Product customization options"
+        },
+        "addedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When item was added to cart"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Address": {
+      "type": "object",
+      "description": "User address for shipping and billing",
+      "required": ["name", "street", "city", "department", "country"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Address name/label",
+          "maxLength": 100
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Contact phone for this address",
+          "maxLength": 20
+        },
+        "street": {
+          "type": "string",
+          "description": "Street name",
+          "maxLength": 200
+        },
+        "number": {
+          "type": "string",
+          "description": "Street number",
+          "maxLength": 20
+        },
+        "apartment": {
+          "type": "string",
+          "description": "Apartment/unit number",
+          "maxLength": 50
+        },
+        "neighborhood": {
+          "type": "string",
+          "description": "Neighborhood/district",
+          "maxLength": 100
+        },
+        "city": {
+          "type": "string",
+          "description": "City name",
+          "maxLength": 100
+        },
+        "department": {
+          "type": "string",
+          "description": "Department/state name",
+          "maxLength": 100
+        },
+        "postalCode": {
+          "type": "string",
+          "description": "Postal/ZIP code",
+          "maxLength": 20
+        },
+        "country": {
+          "type": "string",
+          "description": "Country name",
+          "maxLength": 100,
+          "default": "Uruguay"
+        },
+        "additionalInfo": {
+          "type": "string",
+          "description": "Additional delivery instructions"
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Whether this is the default address",
+          "default": false
+        },
+        "addressType": {
+          "type": "string",
+          "enum": ["home", "work", "other"],
+          "description": "Type of address",
+          "default": "home"
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Geographic latitude",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Geographic longitude",
+          "minimum": -180,
+          "maximum": 180
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

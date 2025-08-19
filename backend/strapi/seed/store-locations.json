@@ -1,0 +1,138 @@
+[
+  {
+    "name": "Tifossi Centro",
+    "slug": "tifossi-centro",
+    "code": "TC001",
+    "description": "Tienda principal en el centro de Montevideo",
+    "address": {
+      "name": "Tifossi Centro",
+      "phoneNumber": "+598 2XXX XXXX",
+      "street": "18 de Julio",
+      "number": "1234",
+      "neighborhood": "Centro",
+      "city": "Montevideo",
+      "department": "Montevideo",
+      "country": "Uruguay",
+      "isDefault": true,
+      "addressType": "work"
+    },
+    "phoneNumber": "+598 2XXX XXXX",
+    "email": "centro@tifossi.com",
+    "operatingHours": [
+      {
+        "dayOfWeek": "monday",
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "20:00"
+      },
+      {
+        "dayOfWeek": "tuesday",
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "20:00"
+      },
+      {
+        "dayOfWeek": "wednesday",
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "20:00"
+      },
+      {
+        "dayOfWeek": "thursday",
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "20:00"
+      },
+      {
+        "dayOfWeek": "friday",
+        "isOpen": true,
+        "openTime": "09:00",
+        "closeTime": "20:00"
+      },
+      {
+        "dayOfWeek": "saturday",
+        "isOpen": true,
+        "openTime": "10:00",
+        "closeTime": "18:00"
+      },
+      {
+        "dayOfWeek": "sunday",
+        "isOpen": false
+      }
+    ],
+    "hasPickupService": true,
+    "hasParking": false,
+    "isAccessible": true,
+    "maxPickupItems": 50,
+    "isActive": true,
+    "displayOrder": 1
+  },
+  {
+    "name": "Tifossi Pocitos",
+    "slug": "tifossi-pocitos",
+    "code": "TP001",
+    "description": "Sucursal en Pocitos",
+    "address": {
+      "name": "Tifossi Pocitos",
+      "phoneNumber": "+598 2XXX XXXY",
+      "street": "Bulevar Artigas",
+      "number": "5678",
+      "neighborhood": "Pocitos",
+      "city": "Montevideo",
+      "department": "Montevideo",
+      "country": "Uruguay",
+      "isDefault": false,
+      "addressType": "work"
+    },
+    "phoneNumber": "+598 2XXX XXXY",
+    "email": "pocitos@tifossi.com",
+    "operatingHours": [
+      {
+        "dayOfWeek": "monday",
+        "isOpen": true,
+        "openTime": "10:00",
+        "closeTime": "19:00"
+      },
+      {
+        "dayOfWeek": "tuesday",
+        "isOpen": true,
+        "openTime": "10:00",
+        "closeTime": "19:00"
+      },
+      {
+        "dayOfWeek": "wednesday",
+        "isOpen": true,
+        "openTime": "10:00",
+        "closeTime": "19:00"
+      },
+      {
+        "dayOfWeek": "thursday",
+        "isOpen": true,
+        "openTime": "10:00",
+        "closeTime": "19:00"
+      },
+      {
+        "dayOfWeek": "friday",
+        "isOpen": true,
+        "openTime": "10:00",
+        "closeTime": "19:00"
+      },
+      {
+        "dayOfWeek": "saturday",
+        "isOpen": true,
+        "openTime": "10:00",
+        "closeTime": "17:00"
+      },
+      {
+        "dayOfWeek": "sunday",
+        "isOpen": false
+      }
+    ],
+    "hasPickupService": true,
+    "hasParking": true,
+    "isAccessible": true,
+    "maxPickupItems": 30,
+    "isActive": true,
+    "displayOrder": 2
+  }
+]

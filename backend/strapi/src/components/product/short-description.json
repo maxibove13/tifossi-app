@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_product_short_descriptions",
+  "info": {
+    "displayName": "Short Description",
+    "description": "Two-line product description component"
+  },
+  "options": {},
+  "attributes": {
+    "line1": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "line2": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    }
+  }
+}

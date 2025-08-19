@@ -1,0 +1,136 @@
+{
+  "kind": "collectionType",
+  "collectionName": "products",
+  "info": {
+    "singularName": "product",
+    "pluralName": "products",
+    "displayName": "Product",
+    "description": "E-commerce product with variants, media, and status management"
+  },
+  "options": {
+    "draftAndPublish": true,
+    "populateCreatorFields": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": false
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 255
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "price": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "discountedPrice": {
+      "type": "decimal",
+      "min": 0
+    },
+    "shortDescription": {
+      "type": "component",
+      "component": "product.short-description",
+      "required": false
+    },
+    "longDescription": {
+      "type": "richtext"
+    },
+    "frontImage": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images"]
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "videoSource": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["videos", "files"]
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category",
+      "inversedBy": "products"
+    },
+    "model": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product-model.product-model",
+      "inversedBy": "products"
+    },
+    "statuses": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product-status.product-status",
+      "inversedBy": "products"
+    },
+    "isCustomizable": {
+      "type": "boolean",
+      "default": false
+    },
+    "warranty": {
+      "type": "text"
+    },
+    "returnPolicy": {
+      "type": "text"
+    },
+    "colors": {
+      "type": "component",
+      "component": "product.product-color",
+      "repeatable": true,
+      "required": true,
+      "min": 1
+    },
+    "sizes": {
+      "type": "component",
+      "component": "product.product-size",
+      "repeatable": true,
+      "required": false
+    },
+    "dimensions": {
+      "type": "component",
+      "component": "product.dimensions",
+      "required": false
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo",
+      "required": false
+    },
+    "totalStock": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "viewCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "favoriteCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    }
+  }
+}

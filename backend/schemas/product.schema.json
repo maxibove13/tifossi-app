@@ -1,0 +1,268 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.tifossi.app/schemas/product.json",
+  "title": "Product",
+  "description": "E-commerce product with variants, media, and status management",
+  "type": "object",
+  "required": ["id", "title", "price", "frontImage", "categoryId", "modelId", "statuses", "colors"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique product identifier",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "title": {
+      "type": "string",
+      "description": "Product display name",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "price": {
+      "type": "number",
+      "description": "Product price in local currency",
+      "minimum": 0,
+      "multipleOf": 0.01
+    },
+    "discountedPrice": {
+      "type": ["number", "null"],
+      "description": "Discounted price if product is on sale",
+      "minimum": 0,
+      "multipleOf": 0.01
+    },
+    "categoryId": {
+      "type": "string",
+      "description": "Product category identifier",
+      "enum": ["todo", "medias", "bolsos", "mochilas", "remeras", "buzos", "gorros", "neceser", "canilleras", "accesorios", "chanclas", "pantalones"]
+    },
+    "modelId": {
+      "type": "string",
+      "description": "Product model variant identifier"
+    },
+    "frontImage": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to main product image"
+        },
+        {
+          "type": "object",
+          "description": "React Native require() image reference"
+        }
+      ]
+    },
+    "images": {
+      "type": "array",
+      "description": "Additional product images",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "format": "uri"
+          },
+          {
+            "type": "object"
+          }
+        ]
+      }
+    },
+    "videoSource": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to product video"
+        },
+        {
+          "type": "number",
+          "description": "React Native require() video reference"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "statuses": {
+      "type": "array",
+      "description": "Product status labels",
+      "items": {
+        "type": "string",
+        "enum": ["new", "sale", "featured", "opportunity", "recommended", "popular", "app_exclusive", "highlighted"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "shortDescription": {
+      "type": "object",
+      "description": "Two-line product description for cards",
+      "properties": {
+        "line1": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "line2": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": ["line1", "line2"],
+      "additionalProperties": false
+    },
+    "longDescription": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Single long description"
+        },
+        {
+          "type": "array",
+          "description": "Array of description paragraphs",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      ]
+    },
+    "isCustomizable": {
+      "type": "boolean",
+      "description": "Whether product can be customized",
+      "default": false
+    },
+    "colors": {
+      "type": "array",
+      "description": "Product color variants",
+      "items": {
+        "$ref": "#/$defs/ProductColor"
+      },
+      "minItems": 1
+    },
+    "sizes": {
+      "type": "array",
+      "description": "Product size variants",
+      "items": {
+        "$ref": "#/$defs/ProductSize"
+      }
+    },
+    "warranty": {
+      "type": "string",
+      "description": "Product warranty information"
+    },
+    "returnPolicy": {
+      "type": "string",
+      "description": "Product return policy"
+    },
+    "dimensions": {
+      "$ref": "#/$defs/Dimensions"
+    },
+    "description": {
+      "type": "string",
+      "description": "DEPRECATED: Use shortDescription or longDescription instead",
+      "deprecated": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "ProductColor": {
+      "type": "object",
+      "description": "Color variant with images and stock",
+      "required": ["colorName", "quantity", "images"],
+      "properties": {
+        "colorName": {
+          "type": "string",
+          "description": "Human-readable color name",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Available stock for this color",
+          "minimum": 0
+        },
+        "hex": {
+          "type": "string",
+          "description": "Hex color code for UI display",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+        },
+        "images": {
+          "$ref": "#/$defs/ProductColorImages"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProductColorImages": {
+      "type": "object",
+      "description": "Images for a color variant",
+      "required": ["main"],
+      "properties": {
+        "main": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "object"
+            }
+          ],
+          "description": "Main image for this color"
+        },
+        "additional": {
+          "type": "array",
+          "description": "Additional images for this color",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "object"
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProductSize": {
+      "type": "object",
+      "description": "Size variant with availability",
+      "required": ["value", "available"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Size value (S, M, L, XL, etc.)",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "available": {
+          "type": "boolean",
+          "description": "Whether this size is available"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Dimensions": {
+      "type": "object",
+      "description": "Physical product dimensions",
+      "properties": {
+        "height": {
+          "type": "string",
+          "description": "Product height with unit"
+        },
+        "width": {
+          "type": "string", 
+          "description": "Product width with unit"
+        },
+        "depth": {
+          "type": "string",
+          "description": "Product depth with unit"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

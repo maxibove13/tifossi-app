@@ -133,20 +133,35 @@ const LogoutButton = () => {
 };
 
 const LoggedInProfileCard = () => {
-  const currentUser = useAuthStore((state) => state.user);
+  const { currentUser, updateProfilePicture, isUploadingProfilePicture } = useAuthStore(
+    (state) => ({
+      currentUser: state.user,
+      updateProfilePicture: state.updateProfilePicture,
+      isUploadingProfilePicture: state.isUploadingProfilePicture,
+    })
+  );
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  // Fallback to a default/mock user if currentUser is null/undefined, or handle appropriately
+  // Use Firebase auth user data or fallback to mock user
   const displayName = currentUser?.name || user.name;
   const displayEmail = currentUser?.email || user.email;
-  // Get profile picture either from state, user object, or fallback
-  const displayProfilePicture = profileImage || currentUser?.profilePicture || user.profilePicture;
+  // Get profile picture from auth state, local state, or fallback
+  const displayProfilePicture = currentUser?.profilePicture || profileImage || user.profilePicture;
 
-  const handleProfilePictureChange = (imageUri: string | null) => {
-    setProfileImage(imageUri);
+  const handleProfilePictureChange = async (imageUri: string | null) => {
+    if (!imageUri) {
+      setProfileImage(null);
+      return;
+    }
 
-    // In a real implementation, we would also update the auth store:
-    // updateProfilePicture(imageUri);
+    try {
+      // Update profile picture through Firebase auth service
+      await updateProfilePicture(imageUri);
+      setProfileImage(imageUri);
+    } catch (error) {
+      console.error('Failed to update profile picture:', error);
+      Alert.alert('Error', 'No se pudo actualizar la imagen de perfil.');
+    }
   };
 
   return (
@@ -156,6 +171,9 @@ const LoggedInProfileCard = () => {
         size={80}
         onImageChange={handleProfilePictureChange}
       />
+      {isUploadingProfilePicture && (
+        <Text style={styles.uploadingText}>Actualizando imagen...</Text>
+      )}
       <Text style={styles.userName}>{displayName}</Text>
       <Text style={styles.userEmail}>{displayEmail}</Text>
     </View>
@@ -244,6 +262,7 @@ type Styles = {
   editIconContainer: ViewStyle;
   userName: TextStyle;
   userEmail: TextStyle;
+  uploadingText: TextStyle;
   actionButtonsContainer: ViewStyle;
   listItemContainer: ViewStyle;
   listItemText: TextStyle;
@@ -321,6 +340,15 @@ const styles = StyleSheet.create<Styles>({
     lineHeight: lineHeights.md,
     color: '#E1E1E1',
     textAlign: 'center',
+  },
+  uploadingText: {
+    fontFamily: fonts.secondary,
+    fontWeight: '400',
+    fontSize: fontSizes.sm,
+    lineHeight: lineHeights.sm,
+    color: colors.secondary,
+    textAlign: 'center',
+    marginTop: spacing.xs,
   },
   actionButtonsContainer: {
     paddingHorizontal: spacing.lg,

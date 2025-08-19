@@ -10,16 +10,24 @@ import PromotionCard from '../_components/store/product/promotion/PromotionCard'
 import CartProductCard from '../_components/store/product/cart/CartProductCard';
 import Button from '../_components/ui/buttons/Button';
 import Dropdown from '../_components/ui/form/Dropdown';
-import { getProductById, products } from '../_data/products';
+import ProductData, { getProductById, products } from '../_data/products';
 import { useCartStore } from '../_stores/cartStore';
-import { useProducts } from '../../hooks/useProducts';
+import { useProducts } from '../_services/api/queryHooks';
+import { hasStatus, ProductStatus } from '../_types/product-status';
 import OverlayProductEdit from '../_components/store/product/overlay/OverlayProductEdit';
 import { useAuthStore } from '../_stores/authStore';
 import ProductSections from '../_components/store/product/sections/ProductSections';
 import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
 
-// Using recentlyViewedProducts as a placeholder for recommendedProducts data
-const recommendedProductsData: Product[] = [
+// Function to get recommended products from API data
+const getRecommendedProducts = (allProducts: Product[]): Product[] => {
+  return allProducts
+    .filter((product) => hasStatus(product.statuses, ProductStatus.RECOMMENDED))
+    .slice(0, 5);
+};
+
+// Fallback recommended products from static data if API is not available
+const fallbackRecommendedProducts: Product[] = [
   getProductById('neceser-ball') || products[0],
   getProductById('mochila-classic') || products[1],
   getProductById('mochila-sq') || products[2],
@@ -35,11 +43,19 @@ interface CartDisplayItem extends Product {
 }
 
 export default function CartScreen() {
-  // Get all products
-  const { data: allProducts = [] } = useProducts();
+  // Get all products from API
+  const { data: allProducts = [], isLoading: productsLoading } = useProducts();
 
   // Get auth state
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+
+  // Get recommended products from API data or use fallback
+  const recommendedProductsData = useMemo(() => {
+    if (allProducts && allProducts.length > 0) {
+      return getRecommendedProducts(allProducts);
+    }
+    return fallbackRecommendedProducts;
+  }, [allProducts]);
 
   // Get cart state
   const cartStoreItems = useCartStore((state) => state.items);
@@ -56,7 +72,14 @@ export default function CartScreen() {
     const result: CartDisplayItem[] = [];
 
     for (const item of cartStoreItems) {
-      const product = allProducts.find((p) => p.id === item.productId);
+      // Try to find product in API data first, then fallback to static data
+      let product = allProducts?.find((p) => p.id === item.productId);
+
+      // Fallback to static data if API data is not available or product not found
+      if (!product && !productsLoading) {
+        product = ProductData.getProductById(item.productId);
+      }
+
       if (product) {
         result.push({
           ...product,
@@ -68,7 +91,7 @@ export default function CartScreen() {
     }
 
     return result;
-  }, [cartStoreItems, allProducts]);
+  }, [cartStoreItems, allProducts, productsLoading]);
 
   const isEmpty = cartItems.length === 0;
 
@@ -142,7 +165,11 @@ export default function CartScreen() {
   };
 
   const handleBuyNow = () => {
-    router.push('/'); // Temporarily changed to navigate to home to resolve linter issue with /checkout
+    if (isLoggedIn) {
+      router.push('/checkout/shipping-address');
+    } else {
+      router.push('/checkout/store-selection');
+    }
   };
 
   const handleCouponPress = () => {

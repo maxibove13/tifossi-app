@@ -1,0 +1,103 @@
+# Tifossi Backend Development Docker Compose Override
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.development.yml up
+
+version: '3.8'
+
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: tifossi_dev
+      POSTGRES_USER: strapi
+      POSTGRES_PASSWORD: strapi123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./infrastructure/docker/init-scripts:/docker-entrypoint-initdb.d:ro
+
+  redis:
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass redis123
+    volumes:
+      - redis_data_dev:/data
+
+  strapi:
+    build:
+      target: development
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+      - STRAPI_TELEMETRY_DISABLED=true
+      - DEBUG=strapi:*
+      - WATCH_MODE=true
+      - BROWSER_OPEN=false
+      - RATE_LIMIT_ENABLED=false
+      - FEATURE_DEBUG_TOOLBAR=true
+      - FEATURE_PAYMENTS_ENABLED=true
+      - FEATURE_EMAIL_NOTIFICATIONS=false
+      - SEED_DATA_ENABLED=true
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./backend:/app
+      - strapi_uploads_dev:/app/public/uploads
+      - /app/node_modules
+    command: ["npm", "run", "develop"]
+
+  # Database administration interface
+  adminer:
+    image: adminer:4-standalone
+    container_name: tifossi-adminer-dev
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: hydra
+      ADMINER_PLUGINS: tables-filter tinymce
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tifossi-network
+
+  # Redis management interface
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: tifossi-redis-commander-dev
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:redis123
+      - HTTP_USER=admin
+      - HTTP_PASSWORD=admin
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - tifossi-network
+
+  # MailHog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: tifossi-mailhog-dev
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - tifossi-network
+
+volumes:
+  postgres_data_dev:
+    driver: local
+  redis_data_dev:
+    driver: local
+  strapi_uploads_dev:
+    driver: local
+
+networks:
+  tifossi-network:
+    driver: bridge

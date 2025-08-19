@@ -1,0 +1,53 @@
+{
+  "cli": {
+    "version": ">= 0.60.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_ENVIRONMENT": "development"
+      },
+      "ios": {
+        "simulator": true,
+        "bundleIdentifier": "com.tifossi.dev"
+      },
+      "android": {
+        "gradleCommand": ":app:assembleDebug",
+        "applicationId": "com.tifossi.dev"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_ENVIRONMENT": "staging"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_ENVIRONMENT": "production"
+      },
+      "ios": {
+        "bundleIdentifier": "com.tifossi.app"
+      },
+      "android": {
+        "applicationId": "com.tifossi.app"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "YOUR_APPLE_ID",
+        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
+        "appleTeamId": "YOUR_APPLE_TEAM_ID"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./service-account-key.json",
+        "track": "production"
+      }
+    }
+  }
+}

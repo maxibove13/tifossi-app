@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { StyleSheet, Text, Pressable, ViewStyle } from 'react-native';
+import React, { useState, forwardRef } from 'react';
+import { StyleSheet, Text, Pressable, ViewStyle, AccessibilityRole } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -12,66 +12,106 @@ type ButtonProps = {
   icon?: keyof typeof Ionicons.glyphMap;
   disabled?: boolean;
   style?: ViewStyle;
+  // Testing props
+  testID?: string;
+  // Accessibility props
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  accessibilityRole?: AccessibilityRole;
+  accessibilityState?: {
+    selected?: boolean;
+    checked?: boolean;
+    expanded?: boolean;
+  };
+  // Note: accessibilityPositionInSet and accessibilitySetSize are not supported in React Native
 };
 
-export default function Button({
-  onPress,
-  text,
-  variant = 'primary',
-  icon,
-  disabled = false,
-  style,
-}: ButtonProps) {
-  const [isPressed, setIsPressed] = useState(false);
-  const isPrimary = variant === 'primary';
-  const isIcon = variant === 'icon';
+const Button = forwardRef<React.ComponentRef<typeof Pressable>, ButtonProps>(
+  (
+    {
+      onPress,
+      text,
+      variant = 'primary',
+      icon,
+      disabled = false,
+      style,
+      testID,
+      accessibilityLabel,
+      accessibilityHint,
+      accessibilityRole = 'button',
+      accessibilityState,
+    },
+    ref
+  ) => {
+    const [isPressed, setIsPressed] = useState(false);
+    const isPrimary = variant === 'primary';
+    const isIcon = variant === 'icon';
 
-  if (isPrimary || isIcon) {
+    if (isPrimary || isIcon) {
+      return (
+        <Pressable
+          ref={ref}
+          onPress={onPress}
+          disabled={disabled}
+          onPressIn={() => setIsPressed(true)}
+          onPressOut={() => setIsPressed(false)}
+          testID={testID}
+          accessibilityLabel={accessibilityLabel}
+          accessibilityHint={accessibilityHint}
+          accessibilityRole={accessibilityRole}
+          accessibilityState={accessibilityState}
+          style={[
+            styles.base,
+            styles[variant],
+            isPressed && styles.pressed,
+            disabled && styles.disabled,
+            style,
+          ]}
+        >
+          <LinearGradient
+            colors={
+              disabled
+                ? ['#DCDCDC', '#DCDCDC']
+                : isPressed
+                  ? ['#424242', '#424242']
+                  : ['#373737', '#0C0C0C']
+            }
+            style={StyleSheet.absoluteFill}
+          />
+          {icon && <Ionicons name={icon} size={24} color={disabled ? '#B1B1B1' : '#FBFBFB'} />}
+          {text && <Text style={[styles.text, disabled && styles.textDisabled]}>{text}</Text>}
+        </Pressable>
+      );
+    }
+
     return (
       <Pressable
+        ref={ref}
         onPress={onPress}
         disabled={disabled}
-        onPressIn={() => setIsPressed(true)}
-        onPressOut={() => setIsPressed(false)}
-        style={[
+        testID={testID}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
+        accessibilityRole={accessibilityRole}
+        accessibilityState={accessibilityState}
+        style={({ pressed }) => [
           styles.base,
           styles[variant],
-          isPressed && styles.pressed,
+          pressed && styles[`${variant}Pressed`],
           disabled && styles.disabled,
           style,
         ]}
       >
-        <LinearGradient
-          colors={
-            disabled
-              ? ['#DCDCDC', '#DCDCDC']
-              : isPressed
-                ? ['#424242', '#424242']
-                : ['#373737', '#0C0C0C']
-          }
-          style={StyleSheet.absoluteFill}
-        />
-        {icon && <Ionicons name={icon} size={24} color={disabled ? '#B1B1B1' : '#FBFBFB'} />}
+        {icon && <Ionicons name={icon} size={24} color={disabled ? '#B1B1B1' : '#0C0C0C'} />}
         {text && <Text style={[styles.text, disabled && styles.textDisabled]}>{text}</Text>}
       </Pressable>
     );
   }
+);
 
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.base,
-        styles[variant],
-        pressed && styles[`${variant}Pressed`],
-        style,
-      ]}
-    >
-      {icon && <Ionicons name={icon} size={24} color="#0C0C0C" />}
-      {text && <Text style={styles.text}>{text}</Text>}
-    </Pressable>
-  );
-}
+Button.displayName = 'Button';
+
+export default Button;
 
 const styles = StyleSheet.create({
   base: {

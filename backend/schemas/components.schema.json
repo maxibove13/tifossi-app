@@ -1,0 +1,624 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.tifossi.app/schemas/components.json",
+  "title": "Strapi Components",
+  "description": "Reusable component schemas for Tifossi e-commerce",
+  "type": "object",
+  "$defs": {
+    "ProductShortDescription": {
+      "$id": "#/product/short-description",
+      "type": "object",
+      "description": "Two-line product description for cards and previews",
+      "required": ["line1", "line2"],
+      "properties": {
+        "line1": {
+          "type": "string",
+          "description": "First line of description",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "line2": {
+          "type": "string",
+          "description": "Second line of description",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProductColor": {
+      "$id": "#/product/product-color",
+      "type": "object",
+      "description": "Color variant with images and stock information",
+      "required": ["colorName", "quantity", "mainImage"],
+      "properties": {
+        "colorName": {
+          "type": "string",
+          "description": "Human-readable color name",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "hex": {
+          "type": "string",
+          "description": "Hex color code for UI display",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Available stock for this color",
+          "minimum": 0,
+          "default": 0
+        },
+        "mainImage": {
+          "type": "string",
+          "format": "uri",
+          "description": "Main image URL for this color"
+        },
+        "additionalImages": {
+          "type": "array",
+          "description": "Additional image URLs for this color",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "maxItems": 10
+        },
+        "isAvailable": {
+          "type": "boolean",
+          "description": "Whether this color is available",
+          "default": true
+        },
+        "sku": {
+          "type": "string",
+          "description": "SKU for this color variant",
+          "maxLength": 50
+        },
+        "weight": {
+          "type": "number",
+          "description": "Weight for this color variant",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProductSize": {
+      "$id": "#/product/product-size",
+      "type": "object",
+      "description": "Size variant with availability status",
+      "required": ["value", "available"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Size value (S, M, L, XL, etc.)",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "available": {
+          "type": "boolean",
+          "description": "Whether this size is available",
+          "default": true
+        },
+        "displayOrder": {
+          "type": "integer",
+          "description": "Display order for size sorting",
+          "default": 0
+        },
+        "stock": {
+          "type": "integer",
+          "description": "Stock quantity for this size",
+          "minimum": 0,
+          "default": 0
+        },
+        "sku": {
+          "type": "string",
+          "description": "SKU for this size variant",
+          "maxLength": 50
+        }
+      },
+      "additionalProperties": false
+    },
+    "Dimensions": {
+      "$id": "#/product/dimensions",
+      "type": "object",
+      "description": "Physical product dimensions",
+      "properties": {
+        "height": {
+          "type": "string",
+          "description": "Product height with unit",
+          "maxLength": 20
+        },
+        "width": {
+          "type": "string",
+          "description": "Product width with unit",
+          "maxLength": 20
+        },
+        "depth": {
+          "type": "string",
+          "description": "Product depth with unit",
+          "maxLength": 20
+        },
+        "weight": {
+          "type": "string",
+          "description": "Product weight with unit",
+          "maxLength": 20
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["cm", "mm", "m", "in", "ft"],
+          "description": "Unit of measurement",
+          "default": "cm"
+        },
+        "weightUnit": {
+          "type": "string",
+          "enum": ["g", "kg", "lb", "oz"],
+          "description": "Weight unit of measurement",
+          "default": "g"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Address": {
+      "$id": "#/shared/address",
+      "type": "object",
+      "description": "Standardized address format for shipping and billing",
+      "required": ["name", "street", "city", "department", "country"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Address name/label or recipient name",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Contact phone number",
+          "maxLength": 20
+        },
+        "street": {
+          "type": "string",
+          "description": "Street name",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "number": {
+          "type": "string",
+          "description": "Street number",
+          "maxLength": 20
+        },
+        "apartment": {
+          "type": "string",
+          "description": "Apartment/unit number",
+          "maxLength": 50
+        },
+        "neighborhood": {
+          "type": "string",
+          "description": "Neighborhood/district",
+          "maxLength": 100
+        },
+        "city": {
+          "type": "string",
+          "description": "City name",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "department": {
+          "type": "string",
+          "description": "Department/state name",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "postalCode": {
+          "type": "string",
+          "description": "Postal/ZIP code",
+          "maxLength": 20
+        },
+        "country": {
+          "type": "string",
+          "description": "Country name",
+          "minLength": 1,
+          "maxLength": 100,
+          "default": "Uruguay"
+        },
+        "additionalInfo": {
+          "type": "string",
+          "description": "Additional delivery instructions"
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Whether this is the default address",
+          "default": false
+        },
+        "addressType": {
+          "type": "string",
+          "enum": ["home", "work", "other"],
+          "description": "Type of address",
+          "default": "home"
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Geographic latitude",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Geographic longitude",
+          "minimum": -180,
+          "maximum": 180
+        }
+      },
+      "additionalProperties": false
+    },
+    "SEO": {
+      "$id": "#/shared/seo",
+      "type": "object",
+      "description": "Search engine optimization metadata",
+      "properties": {
+        "metaTitle": {
+          "type": "string",
+          "description": "Page title for SEO",
+          "maxLength": 60
+        },
+        "metaDescription": {
+          "type": "string",
+          "description": "Page description for SEO",
+          "maxLength": 160
+        },
+        "keywords": {
+          "type": "string",
+          "description": "SEO keywords",
+          "maxLength": 255
+        },
+        "structuredData": {
+          "type": "object",
+          "description": "JSON-LD structured data"
+        },
+        "preventIndexing": {
+          "type": "boolean",
+          "description": "Prevent search engine indexing",
+          "default": false
+        },
+        "canonicalURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "Canonical URL for this page"
+        },
+        "ogTitle": {
+          "type": "string",
+          "description": "Open Graph title",
+          "maxLength": 60
+        },
+        "ogDescription": {
+          "type": "string",
+          "description": "Open Graph description",
+          "maxLength": 160
+        },
+        "ogImage": {
+          "type": "string",
+          "format": "uri",
+          "description": "Open Graph image URL"
+        },
+        "twitterCard": {
+          "type": "string",
+          "enum": ["summary", "summary_large_image", "app", "player"],
+          "description": "Twitter card type",
+          "default": "summary_large_image"
+        }
+      },
+      "additionalProperties": false
+    },
+    "OrderItem": {
+      "$id": "#/order/order-item",
+      "type": "object",
+      "description": "Individual product item in an order",
+      "required": ["productId", "quantity", "unitPrice", "totalPrice"],
+      "properties": {
+        "productId": {
+          "type": "string",
+          "description": "Product identifier"
+        },
+        "productSnapshot": {
+          "type": "object",
+          "description": "Product data snapshot at time of order"
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Item quantity",
+          "minimum": 1
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "Price per unit at time of order",
+          "minimum": 0,
+          "multipleOf": 0.01
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "Total price for this item",
+          "minimum": 0,
+          "multipleOf": 0.01
+        },
+        "selectedColor": {
+          "type": "string",
+          "description": "Selected color variant",
+          "maxLength": 50
+        },
+        "selectedSize": {
+          "type": "string",
+          "description": "Selected size variant",
+          "maxLength": 20
+        },
+        "customizations": {
+          "type": "object",
+          "description": "Product customization options"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Item-specific notes"
+        },
+        "sku": {
+          "type": "string",
+          "description": "Product SKU at time of order",
+          "maxLength": 100
+        },
+        "isGift": {
+          "type": "boolean",
+          "description": "Whether item is a gift",
+          "default": false
+        },
+        "giftMessage": {
+          "type": "string",
+          "description": "Gift message if applicable"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PaymentInfo": {
+      "$id": "#/order/payment-info",
+      "type": "object",
+      "description": "Payment details and transaction data",
+      "required": ["method", "status", "amount", "currency"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["mercadopago", "cash_on_delivery", "bank_transfer"],
+          "description": "Payment method used"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected", "cancelled", "refunded"],
+          "description": "Payment status",
+          "default": "pending"
+        },
+        "transactionId": {
+          "type": "string",
+          "description": "Payment processor transaction ID"
+        },
+        "externalReference": {
+          "type": "string",
+          "description": "External reference for payment"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Payment amount",
+          "minimum": 0,
+          "multipleOf": 0.01
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["UYU", "USD"],
+          "description": "Payment currency",
+          "default": "UYU"
+        },
+        "paidAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Payment completion timestamp"
+        },
+        "installments": {
+          "type": "integer",
+          "description": "Number of installments",
+          "minimum": 1,
+          "default": 1
+        },
+        "paymentTypeId": {
+          "type": "string",
+          "description": "Payment type identifier"
+        },
+        "issuerId": {
+          "type": "string",
+          "description": "Card issuer identifier"
+        },
+        "lastFourDigits": {
+          "type": "string",
+          "description": "Last four digits of payment method",
+          "pattern": "^\\d{4}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "OperatingHours": {
+      "$id": "#/store/operating-hours",
+      "type": "object",
+      "description": "Store operating hours by day of the week",
+      "required": ["dayOfWeek"],
+      "properties": {
+        "dayOfWeek": {
+          "type": "string",
+          "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+          "description": "Day of the week"
+        },
+        "isOpen": {
+          "type": "boolean",
+          "description": "Whether store is open on this day",
+          "default": true
+        },
+        "openTime": {
+          "type": "string",
+          "pattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$",
+          "description": "Opening time in HH:MM format"
+        },
+        "closeTime": {
+          "type": "string",
+          "pattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$",
+          "description": "Closing time in HH:MM format"
+        },
+        "breakStart": {
+          "type": "string",
+          "pattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$",
+          "description": "Break start time in HH:MM format"
+        },
+        "breakEnd": {
+          "type": "string",
+          "pattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$",
+          "description": "Break end time in HH:MM format"
+        },
+        "isHoliday": {
+          "type": "boolean",
+          "description": "Whether this day is a holiday",
+          "default": false
+        },
+        "holidayNote": {
+          "type": "string",
+          "description": "Holiday note or special hours",
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": false
+    },
+    "StoreContact": {
+      "$id": "#/store/contact",
+      "type": "object",
+      "description": "Store contact information and social media",
+      "properties": {
+        "phoneNumber": {
+          "type": "string",
+          "description": "Store phone number",
+          "maxLength": 20
+        },
+        "whatsappNumber": {
+          "type": "string",
+          "description": "WhatsApp contact number",
+          "maxLength": 20
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Store email address"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri",
+          "description": "Store website URL"
+        },
+        "facebook": {
+          "type": "string",
+          "description": "Facebook profile/page URL"
+        },
+        "instagram": {
+          "type": "string",
+          "description": "Instagram profile URL"
+        },
+        "twitter": {
+          "type": "string",
+          "description": "Twitter profile URL"
+        },
+        "managerName": {
+          "type": "string",
+          "description": "Store manager name",
+          "maxLength": 100
+        },
+        "managerPhone": {
+          "type": "string",
+          "description": "Store manager phone",
+          "maxLength": 20
+        }
+      },
+      "additionalProperties": false
+    },
+    "Promotion": {
+      "$id": "#/marketing/promotion",
+      "type": "object",
+      "description": "Marketing promotions and discount campaigns",
+      "required": ["title", "discountType", "discountValue", "startDate", "endDate"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Promotion title",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "Promotion description"
+        },
+        "discountType": {
+          "type": "string",
+          "enum": ["percentage", "fixed_amount", "buy_x_get_y"],
+          "description": "Type of discount"
+        },
+        "discountValue": {
+          "type": "number",
+          "description": "Discount value",
+          "minimum": 0
+        },
+        "minimumAmount": {
+          "type": "number",
+          "description": "Minimum purchase amount",
+          "minimum": 0
+        },
+        "maximumDiscount": {
+          "type": "number",
+          "description": "Maximum discount amount",
+          "minimum": 0
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Promotion start date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Promotion end date"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether promotion is active",
+          "default": true
+        },
+        "usageLimit": {
+          "type": "integer",
+          "description": "Maximum number of uses",
+          "minimum": 1
+        },
+        "usageCount": {
+          "type": "integer",
+          "description": "Current usage count",
+          "minimum": 0,
+          "default": 0
+        },
+        "promoCode": {
+          "type": "string",
+          "description": "Promotional code",
+          "maxLength": 50
+        },
+        "applicableCategories": {
+          "type": "array",
+          "description": "Categories this promotion applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excludedProducts": {
+          "type": "array",
+          "description": "Products excluded from this promotion",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

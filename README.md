@@ -1,24 +1,26 @@
 # Tifossi - Mobile E-commerce App
 
-Tifossi is a mobile-first iOS e-commerce application built with React Native and Expo. The app provides a seamless shopping experience with a focus on fashion products.
-
-![App Screenshot](./figma-images/product-screen.png)
+Tifossi is a mobile-first iOS e-commerce application built with React Native and Expo. The app provides a seamless shopping experience with a focus on fashion products, featuring Firebase authentication, Strapi backend integration, and MercadoPago payments.
 
 ## Features
 
-- **Product Browsing**: Browse products by category with intuitive navigation
-- **Product Details**: View detailed product information with swipeable interfaces
-- **Shopping Cart**: Add and manage products in your shopping cart
-- **User Profile**: Manage user account and preferences
-- **Favorites**: Save and manage favorite products
+- **User Authentication**: Firebase-powered login/signup with biometric support
+- **Product Catalog**: Browse products by category with search and filters
+- **Shopping Cart**: Add, manage, and sync cart across devices
+- **Favorites**: Save and manage favorite products with persistence
+- **Secure Payments**: MercadoPago integration with deep linking
+- **Offline Support**: Continue shopping with offline queue and sync
 
 ## Technologies
 
-- **React Native**: Core framework for cross-platform mobile development
-- **Expo**: Development platform for building React Native apps
-- **TypeScript**: Type-safe JavaScript for improved development experience
-- **Reanimated**: Advanced animations for smooth user interactions
-- **Expo Router**: File-based routing for seamless navigation
+- **React Native & Expo**: Cross-platform mobile development
+- **TypeScript**: Type-safe development experience
+- **Firebase**: Authentication and user management
+- **Strapi**: Headless CMS for content management
+- **MercadoPago**: Payment processing
+- **Zustand**: State management
+- **TanStack Query**: Server state and caching
+- **MMKV**: Fast, secure data storage
 
 ## Getting Started
 
@@ -40,7 +42,7 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
    npm run ios
    ```
 
-4. **Run on other platforms**
+4. **Run on Android or Web** (optional)
 
    ```bash
    npm run android
@@ -49,10 +51,17 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 
 ## Development
 
+### Quality Assurance
 - **Linting**: `npm run lint`
 - **Type checking**: `npm run typecheck`
 - **Testing**: `npm test`
-- **Reset project**: `npm run reset-project`
+- **All checks**: `npm run check-all`
+- **Fix imports**: `npm run fix-imports`
+
+### Build Management
+- **Version bump**: `./scripts/version-bump.sh [major|minor|patch]`
+- **Environment check**: `./scripts/check-environment.js`
+- **Bundle analysis**: `./scripts/bundle-analyzer.js`
 
 ## Project Structure
 
@@ -61,64 +70,43 @@ The app follows a structured organization pattern. Refer to [app_structure.md](.
 ```
 tifossi/
 ├── app/                   # Main application code
-│   ├── (home)/            # Home routes
 │   ├── (tabs)/            # Tab navigation routes
-│   ├── components/        # React components
+│   ├── auth/              # Authentication screens
+│   ├── checkout/          # Checkout flow screens
+│   ├── _components/       # React components
+│   │   ├── auth/          # Authentication components
 │   │   ├── common/        # Shared components
-│   │   ├── home/          # Home screen components
-│   │   ├── navigation/    # Navigation components
-│   │   ├── skeletons/     # Loading skeletons
-│   │   ├── splash/        # Splash screen
-│   │   ├── store/         # Store components
-│   │   │   ├── layout/    # Store layout components
-│   │   │   ├── product/   # Product components
-│   │   │   │   ├── cart/  # Cart related components
-│   │   │   │   ├── color/ # Color selection
-│   │   │   │   ├── swipeable/ # Swipeable product details
-│   │   │   │   └── ...    # Other product components
-│   │   │   └── review/    # Product reviews
-│   │   └── ui/            # UI components
-│   │       ├── buttons/   # Button components
-│   │       ├── cards/     # Card components
-│   │       ├── form/      # Form components
-│   │       └── ...        # Other UI components
-│   ├── data/              # Data sources
-│   ├── _styles/            # Style definitions
-│   └── _types/             # TypeScript type definitions
-├── assets/                # Static assets
-│   ├── fonts/             # Custom fonts
-│   ├── icons/             # App icons
-│   ├── images/            # Image assets
-│   └── videos/            # Video assets
-├── docs/                  # Documentation
-├── figma-images/          # Screenshots from Figma
+│   │   ├── store/         # Shopping components
+│   │   └── ui/            # Reusable UI components
+│   ├── _services/         # API and business logic
+│   ├── _stores/           # Zustand state stores
+│   ├── _styles/           # Design system and styles
+│   └── _types/            # TypeScript definitions
+├── assets/                # Static assets (images, icons, fonts)
+├── docs/                  # Essential documentation
 ├── hooks/                 # Custom React hooks
-├── raw-components/        # Reference components
-├── android/               # Android specific code
-├── ios/                   # iOS specific code
-├── scripts/               # Utility scripts
-└── types/                 # Global type definitions
+├── scripts/               # Build and utility scripts
+├── android/ & ios/        # Native platform code
+└── backend/               # Strapi backend (separate deployment)
 ```
 
 ## Documentation
 
-- [App Structure](./docs/app_structure.md) - Overview of the application structure
-- [Components](./docs/components.md) - Component specifications and usage
-- [Product Cards](./docs/product_card.md) - Product card implementation details
+Essential documentation is available in the `/docs` folder:
 
-## Design Reference
-
-The implementation is based on Figma designs created by a professional designer. Component references are available in the `/raw-components` directory, including:
-- JSX implementations for reference
-- Screenshot images for visual verification
+- [App Structure](./docs/app_structure.md) - Codebase organization and architecture
+- [Components](./docs/components.md) - Component library and usage
+- [Authentication](./docs/authentication.md) - Firebase auth integration
+- [State Management](./docs/state_management.md) - Zustand stores and patterns
+- [Style System](./docs/style_system.md) - Design tokens and styling approach
 
 ## Development Principles
 
 - **Mobile-First iOS**: Designed primarily for iOS with native-feeling interactions
 - **Design Fidelity**: Follow Figma designs closely for visual consistency
-- **Component Architecture**: Modular components with clear responsibilities
-- **Type Safety**: Comprehensive TypeScript type system
-- **Simplicity Over Complexity**: Prioritize clean, maintainable code
+- **Type Safety**: Comprehensive TypeScript usage throughout the application
+- **Component Architecture**: Modular, reusable components with clear responsibilities
+- **Performance**: Optimized for smooth user experience with offline support
 
 ## License
 

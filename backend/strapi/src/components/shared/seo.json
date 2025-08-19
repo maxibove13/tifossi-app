@@ -1,0 +1,58 @@
+{
+  "collectionName": "components_shared_seos",
+  "info": {
+    "displayName": "SEO",
+    "description": "SEO meta information component"
+  },
+  "options": {},
+  "attributes": {
+    "metaTitle": {
+      "type": "string",
+      "required": false,
+      "maxLength": 60
+    },
+    "metaDescription": {
+      "type": "text",
+      "required": false,
+      "maxLength": 160
+    },
+    "metaKeywords": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
+    },
+    "canonicalURL": {
+      "type": "string",
+      "required": false
+    },
+    "metaRobots": {
+      "type": "enumeration",
+      "enum": ["index,follow", "noindex,follow", "index,nofollow", "noindex,nofollow"],
+      "default": "index,follow"
+    },
+    "structuredData": {
+      "type": "json",
+      "required": false
+    },
+    "metaViewport": {
+      "type": "string",
+      "default": "width=device-width, initial-scale=1"
+    },
+    "ogTitle": {
+      "type": "string",
+      "required": false,
+      "maxLength": 60
+    },
+    "ogDescription": {
+      "type": "text",
+      "required": false,
+      "maxLength": 160
+    },
+    "ogImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    }
+  }
+}

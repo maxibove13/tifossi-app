@@ -17,14 +17,17 @@ import VideoBackground from '../_components/common/VideoBackground';
 import { Product } from '../_types/product';
 import { getTiffosiExploreProducts } from '../_data/products';
 import preloadService from '../_services/preload/service';
-import { getPrimaryLabelFromStatuses } from '../_types/product-status';
+import { getPrimaryLabelFromStatuses, hasStatus, ProductStatus } from '../_types/product-status';
 import { useState, useEffect, memo, useCallback, useMemo } from 'react';
+import { useProducts } from '../_services/api/queryHooks';
 
-// Get app-exclusive products from our dedicated function in products.ts
-// This function only returns products with the APP_EXCLUSIVE label
-// IMPORTANT: To add products to this screen, they must be marked with ProductLabel.APP_EXCLUSIVE
-// Products with video content are ideal candidates for this special section
-const exploreProducts: Product[] = getTiffosiExploreProducts();
+// Function to get app-exclusive products from API data
+const getAppExclusiveProducts = (allProducts: Product[]): Product[] => {
+  return allProducts.filter((product) => hasStatus(product.statuses, ProductStatus.APP_EXCLUSIVE));
+};
+
+// Fallback products from static data
+const fallbackExploreProducts: Product[] = getTiffosiExploreProducts();
 
 // Placeholder Icon - Replace with actual SVG Icon component if available
 const ArrowUpRightIcon = () => <Text style={styles.iconText}>↗</Text>;
@@ -131,6 +134,17 @@ export default function TiffosiExploreScreen() {
   const tabBarHeight = useBottomTabBarHeight(); // Get height for ScrollView padding
   const [preloaded, setPreloaded] = useState(false);
 
+  // Fetch products using TanStack Query
+  const { data: allProducts, isLoading: productsLoading, error: productsError } = useProducts();
+
+  // Get explore products from API data or use fallback
+  const exploreProducts = useMemo(() => {
+    if (allProducts && allProducts.length > 0) {
+      return getAppExclusiveProducts(allProducts);
+    }
+    return fallbackExploreProducts;
+  }, [allProducts]);
+
   // Preload all explore products when the screen is accessed (but only once)
   useEffect(() => {
     if (preloaded) return;
@@ -178,6 +192,25 @@ export default function TiffosiExploreScreen() {
     // Execute the preload function
     preloadExploreProducts();
   }, [preloaded]);
+
+  // Show loading state while fetching products
+  if (productsLoading && exploreProducts.length === 0) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <Text style={styles.loadingText}>Cargando productos exclusivos...</Text>
+      </View>
+    );
+  }
+
+  // Show error state if products failed to load and no fallback
+  if (productsError && exploreProducts.length === 0) {
+    return (
+      <View style={[styles.container, styles.errorContainer]}>
+        <Text style={styles.errorText}>Error al cargar productos</Text>
+        <Text style={styles.errorDetailText}>{productsError}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -308,6 +341,34 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.md,
     lineHeight: lineHeights.md,
     color: colors.primary,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
+    color: colors.background.light,
+    textAlign: 'center',
+  },
+  errorContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  errorText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
+    color: colors.error || colors.background.light,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  errorDetailText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    color: colors.background.light,
     textAlign: 'center',
   },
 });

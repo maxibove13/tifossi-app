@@ -1,0 +1,367 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.tifossi.app/schemas/order.json",
+  "title": "Order",
+  "description": "E-commerce order with payment and shipping management",
+  "type": "object",
+  "required": ["id", "orderNumber", "orderDate", "items", "shippingAddress", "shippingMethod", "paymentMethod", "status", "subtotal", "total"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique order identifier"
+    },
+    "orderNumber": {
+      "type": "string",
+      "description": "Human-readable order number",
+      "pattern": "^TF-\\d{4}-\\d{6}$",
+      "maxLength": 50
+    },
+    "orderDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Order creation timestamp"
+    },
+    "user": {
+      "type": "string",
+      "description": "User ID who placed the order"
+    },
+    "guestEmail": {
+      "type": "string",
+      "format": "email",
+      "description": "Guest email for non-authenticated orders"
+    },
+    "items": {
+      "type": "array",
+      "description": "Order items",
+      "items": {
+        "$ref": "#/$defs/OrderItem"
+      },
+      "minItems": 1
+    },
+    "shippingAddress": {
+      "$ref": "#/$defs/Address"
+    },
+    "shippingMethod": {
+      "type": "string",
+      "enum": ["delivery", "pickup"],
+      "description": "Shipping method selected"
+    },
+    "storeLocation": {
+      "type": "string",
+      "description": "Store location ID for pickup orders"
+    },
+    "paymentMethod": {
+      "type": "string",
+      "enum": ["mercadopago", "cash_on_delivery", "bank_transfer"],
+      "description": "Payment method used"
+    },
+    "paymentInfo": {
+      "$ref": "#/$defs/PaymentInfo"
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "Order subtotal before shipping and taxes",
+      "minimum": 0,
+      "multipleOf": 0.01
+    },
+    "shippingCost": {
+      "type": "number",
+      "description": "Shipping cost",
+      "minimum": 0,
+      "multipleOf": 0.01,
+      "default": 0
+    },
+    "discount": {
+      "type": "number",
+      "description": "Discount amount applied",
+      "minimum": 0,
+      "multipleOf": 0.01,
+      "default": 0
+    },
+    "tax": {
+      "type": "number",
+      "description": "Tax amount",
+      "minimum": 0,
+      "multipleOf": 0.01,
+      "default": 0
+    },
+    "total": {
+      "type": "number",
+      "description": "Final order total",
+      "minimum": 0,
+      "multipleOf": 0.01
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "processing", "paid", "shipped", "delivered", "cancelled", "refunded"],
+      "description": "Current order status",
+      "default": "pending"
+    },
+    "trackingNumber": {
+      "type": "string",
+      "description": "Shipping tracking number"
+    },
+    "estimatedDelivery": {
+      "type": "string",
+      "format": "date",
+      "description": "Estimated delivery date"
+    },
+    "deliveredAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Actual delivery timestamp"
+    },
+    "notes": {
+      "type": "string",
+      "description": "General order notes"
+    },
+    "customerNotes": {
+      "type": "string",
+      "description": "Notes from customer"
+    },
+    "internalNotes": {
+      "type": "string",
+      "description": "Internal staff notes"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Order creation timestamp"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Order last update timestamp"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "OrderItem": {
+      "type": "object",
+      "description": "Individual item in an order",
+      "required": ["productId", "quantity", "unitPrice", "totalPrice"],
+      "properties": {
+        "productId": {
+          "type": "string",
+          "description": "Product identifier"
+        },
+        "productSnapshot": {
+          "type": "object",
+          "description": "Product data snapshot at time of order"
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Item quantity",
+          "minimum": 1
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "Price per unit at time of order",
+          "minimum": 0,
+          "multipleOf": 0.01
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "Total price for this item",
+          "minimum": 0,
+          "multipleOf": 0.01
+        },
+        "selectedColor": {
+          "type": "string",
+          "description": "Selected color variant",
+          "maxLength": 50
+        },
+        "selectedSize": {
+          "type": "string",
+          "description": "Selected size variant",
+          "maxLength": 20
+        },
+        "customizations": {
+          "type": "object",
+          "description": "Product customization options"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Item-specific notes"
+        },
+        "sku": {
+          "type": "string",
+          "description": "Product SKU at time of order",
+          "maxLength": 100
+        },
+        "isGift": {
+          "type": "boolean",
+          "description": "Whether item is a gift",
+          "default": false
+        },
+        "giftMessage": {
+          "type": "string",
+          "description": "Gift message if applicable"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PaymentInfo": {
+      "type": "object",
+      "description": "Payment transaction details",
+      "required": ["method", "status", "amount", "currency"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["mercadopago", "cash_on_delivery", "bank_transfer"],
+          "description": "Payment method used"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected", "cancelled", "refunded"],
+          "description": "Payment status",
+          "default": "pending"
+        },
+        "transactionId": {
+          "type": "string",
+          "description": "Payment processor transaction ID"
+        },
+        "externalReference": {
+          "type": "string",
+          "description": "External reference for payment"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Payment amount",
+          "minimum": 0,
+          "multipleOf": 0.01
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["UYU", "USD"],
+          "description": "Payment currency",
+          "default": "UYU"
+        },
+        "paidAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Payment completion timestamp"
+        },
+        "installments": {
+          "type": "integer",
+          "description": "Number of installments",
+          "minimum": 1,
+          "default": 1
+        },
+        "paymentTypeId": {
+          "type": "string",
+          "description": "Payment type identifier"
+        },
+        "issuerId": {
+          "type": "string",
+          "description": "Card issuer identifier"
+        },
+        "lastFourDigits": {
+          "type": "string",
+          "description": "Last four digits of payment method",
+          "pattern": "^\\d{4}$"
+        },
+        "mpPaymentId": {
+          "type": "string",
+          "description": "MercadoPago payment ID"
+        },
+        "mpPreferenceId": {
+          "type": "string",
+          "description": "MercadoPago preference ID"
+        },
+        "mpCollectionId": {
+          "type": "string",
+          "description": "MercadoPago collection ID"
+        },
+        "mpCollectionStatus": {
+          "type": "string",
+          "description": "MercadoPago collection status"
+        },
+        "mpPaymentType": {
+          "type": "string",
+          "description": "MercadoPago payment type"
+        },
+        "mpExternalReference": {
+          "type": "string",
+          "description": "MercadoPago external reference"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Address": {
+      "type": "object",
+      "description": "Shipping address",
+      "required": ["name", "street", "city", "department", "country"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Recipient name",
+          "maxLength": 100
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Contact phone number",
+          "maxLength": 20
+        },
+        "street": {
+          "type": "string",
+          "description": "Street name",
+          "maxLength": 200
+        },
+        "number": {
+          "type": "string",
+          "description": "Street number",
+          "maxLength": 20
+        },
+        "apartment": {
+          "type": "string",
+          "description": "Apartment/unit number",
+          "maxLength": 50
+        },
+        "neighborhood": {
+          "type": "string",
+          "description": "Neighborhood/district",
+          "maxLength": 100
+        },
+        "city": {
+          "type": "string",
+          "description": "City name",
+          "maxLength": 100
+        },
+        "department": {
+          "type": "string",
+          "description": "Department/state name",
+          "maxLength": 100
+        },
+        "postalCode": {
+          "type": "string",
+          "description": "Postal/ZIP code",
+          "maxLength": 20
+        },
+        "country": {
+          "type": "string",
+          "description": "Country name",
+          "maxLength": 100,
+          "default": "Uruguay"
+        },
+        "additionalInfo": {
+          "type": "string",
+          "description": "Additional delivery instructions"
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Geographic latitude",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Geographic longitude",
+          "minimum": -180,
+          "maximum": 180
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -5,6 +5,10 @@ export const colors = {
   error: '#AD3026',
   success: '#367C39',
   subtleText: '#E9F5FE',
+  text: {
+    primary: '#0C0C0C',
+    secondary: '#707070',
+  },
   button: {
     pressed: '#424242',
     disabledGradient: ['#A0A0A0', '#707070'] as const,

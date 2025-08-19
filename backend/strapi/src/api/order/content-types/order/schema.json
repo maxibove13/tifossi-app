@@ -1,0 +1,129 @@
+{
+  "kind": "collectionType",
+  "collectionName": "orders",
+  "info": {
+    "singularName": "order",
+    "pluralName": "orders",
+    "displayName": "Order",
+    "description": "E-commerce orders with payment and shipping management"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "populateCreatorFields": true
+  },
+  "attributes": {
+    "orderNumber": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "maxLength": 50
+    },
+    "orderDate": {
+      "type": "datetime",
+      "required": true
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "orders"
+    },
+    "guestEmail": {
+      "type": "email"
+    },
+    "items": {
+      "type": "component",
+      "component": "order.order-item",
+      "repeatable": true,
+      "required": true,
+      "min": 1
+    },
+    "shippingAddress": {
+      "type": "component",
+      "component": "shared.address",
+      "required": true
+    },
+    "shippingMethod": {
+      "type": "enumeration",
+      "enum": ["delivery", "pickup"],
+      "required": true
+    },
+    "storeLocation": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::store-location.store-location"
+    },
+    "paymentMethod": {
+      "type": "enumeration",
+      "enum": ["mercadopago", "cash_on_delivery"],
+      "required": true
+    },
+    "mpPaymentId": {
+      "type": "string"
+    },
+    "mpPreferenceId": {
+      "type": "string"
+    },
+    "mpCollectionId": {
+      "type": "string"
+    },
+    "mpCollectionStatus": {
+      "type": "string"
+    },
+    "mpPaymentType": {
+      "type": "string"
+    },
+    "mpExternalReference": {
+      "type": "string"
+    },
+    "subtotal": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "shippingCost": {
+      "type": "decimal",
+      "default": 0,
+      "min": 0
+    },
+    "discount": {
+      "type": "decimal",
+      "default": 0,
+      "min": 0
+    },
+    "tax": {
+      "type": "decimal",
+      "default": 0,
+      "min": 0
+    },
+    "total": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "processing", "paid", "shipped", "delivered", "cancelled", "refunded"],
+      "default": "pending",
+      "required": true
+    },
+    "trackingNumber": {
+      "type": "string"
+    },
+    "estimatedDelivery": {
+      "type": "date"
+    },
+    "deliveredAt": {
+      "type": "datetime"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "customerNotes": {
+      "type": "text"
+    },
+    "internalNotes": {
+      "type": "text"
+    }
+  }
+}

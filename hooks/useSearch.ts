@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import Fuse from 'fuse.js';
-import { useProducts } from './useProducts';
+import { useProductStore } from '../app/_stores/productStore';
 import { Product } from '../app/_types/product';
 import type { IFuseOptions } from 'fuse.js';
 
@@ -19,7 +19,7 @@ const fuseOptions: IFuseOptions<Product> = {
 };
 
 export function useSearch() {
-  const { data: products = [], isLoading: isLoadingProducts } = useProducts();
+  const { products, isLoading: isLoadingProducts, error: productsError } = useProductStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [fuseInstance, setFuseInstance] = useState<Fuse<Product> | null>(null);
 
@@ -44,5 +44,7 @@ export function useSearch() {
     searchResults,
     isLoading: isLoadingProducts, // Indicate if initial product data is loading
     hasSearched: searchTerm.length > 0,
+    error: productsError, // Expose error state
+    totalProducts: products.length, // Useful for empty states
   };
 }

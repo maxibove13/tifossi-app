@@ -1,0 +1,189 @@
+# Tifossi Backend Production Docker Compose Override
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.production.yml up
+
+version: '3.8'
+
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    restart: always
+    # Remove port exposure for security
+    ports: []
+
+  redis:
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data_prod:/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    restart: always
+    # Remove port exposure for security
+    ports: []
+
+  strapi:
+    build:
+      target: production
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=warn
+      - LOG_FORMAT=json
+      - RATE_LIMIT_ENABLED=true
+      - SECURITY_HEADERS_ENABLED=true
+      - HSTS_ENABLED=true
+      - FEATURE_DEBUG_TOOLBAR=false
+      - FEATURE_MAINTENANCE_MODE=${FEATURE_MAINTENANCE_MODE:-false}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=production
+      - APM_ENABLED=true
+      - BACKUP_ENABLED=true
+      - GDPR_ENABLED=true
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        max_attempts: 3
+        window: 120s
+    restart: always
+    # Remove direct port exposure - handled by nginx
+    ports: []
+    volumes:
+      - strapi_uploads_prod:/app/public/uploads
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1337/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Nginx reverse proxy and load balancer
+  nginx:
+    image: nginx:alpine
+    container_name: tifossi-nginx-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./infrastructure/docker/nginx/ssl:/etc/nginx/ssl:ro
+      - strapi_uploads_prod:/var/www/uploads:ro
+      - ./infrastructure/docker/nginx/logs:/var/log/nginx
+    depends_on:
+      strapi:
+        condition: service_healthy
+    networks:
+      - tifossi-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Backup service
+  backup:
+    image: postgres:15-alpine
+    container_name: tifossi-backup-prod
+    restart: "no"
+    environment:
+      PGPASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - backup_data:/backups
+      - ./infrastructure/docker/scripts/backup.sh:/backup.sh:ro
+    depends_on:
+      - postgres
+    networks:
+      - tifossi-network
+    command: ["/backup.sh"]
+    profiles:
+      - backup
+
+  # Log aggregator
+  fluentd:
+    image: fluent/fluentd:v1.16-debian-1
+    container_name: tifossi-fluentd-prod
+    restart: always
+    volumes:
+      - ./infrastructure/docker/fluentd/fluent.conf:/fluentd/etc/fluent.conf:ro
+      - strapi_logs:/var/log/strapi
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - tifossi-network
+    profiles:
+      - logging
+
+volumes:
+  postgres_data_prod:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/docker/volumes/tifossi_postgres_prod/_data
+  
+  redis_data_prod:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/docker/volumes/tifossi_redis_prod/_data
+  
+  strapi_uploads_prod:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/docker/volumes/tifossi_uploads_prod/_data
+  
+  backup_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/docker/volumes/tifossi_backup_prod/_data
+  
+  strapi_logs:
+    driver: local
+
+networks:
+  tifossi-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: tifossi-prod-network

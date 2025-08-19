@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "product_statuses",
+  "info": {
+    "singularName": "product-status",
+    "pluralName": "product-statuses",
+    "displayName": "Product Status",
+    "description": "Product status labels with priorities and localization"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "enumeration",
+      "enum": ["new", "sale", "featured", "opportunity", "recommended", "popular", "app_exclusive", "highlighted"],
+      "required": true,
+      "unique": true
+    },
+    "priority": {
+      "type": "integer",
+      "required": true,
+      "min": 0
+    },
+    "labelEs": {
+      "type": "string",
+      "required": true,
+      "maxLength": 50
+    },
+    "labelEn": {
+      "type": "string",
+      "required": false,
+      "maxLength": 50
+    },
+    "color": {
+      "type": "string",
+      "regex": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+    },
+    "backgroundColor": {
+      "type": "string",
+      "regex": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "products": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product",
+      "mappedBy": "statuses"
+    }
+  }
+}

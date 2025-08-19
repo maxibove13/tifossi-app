@@ -1,18 +1,68 @@
 import { products, getProductById } from '../../_data/products';
 import { Product } from '../../_types/product';
+import { config, safeLog, safeWarn } from '../../_config/environment';
 
-const MOCK_DELAY = 500; // ms
+const MOCK_DELAY = config.mockDelay; // Use environment-specific delay
+
+// Network simulation settings for offline testing
+let SIMULATE_NETWORK_ISSUES = false;
+let NETWORK_FAILURE_RATE = 0.1; // 10% chance of network failure
+let SLOW_NETWORK_RATE = 0.2; // 20% chance of slow network
+let SLOW_NETWORK_DELAY = 5000; // 5 seconds for slow network
+
+// Network simulation controls
+export const networkSimulation = {
+  enable: () => {
+    SIMULATE_NETWORK_ISSUES = true;
+  },
+  disable: () => {
+    SIMULATE_NETWORK_ISSUES = false;
+  },
+  setFailureRate: (rate: number) => {
+    NETWORK_FAILURE_RATE = Math.max(0, Math.min(1, rate));
+  },
+  setSlowNetworkRate: (rate: number) => {
+    SLOW_NETWORK_RATE = Math.max(0, Math.min(1, rate));
+  },
+  setSlowNetworkDelay: (delay: number) => {
+    SLOW_NETWORK_DELAY = delay;
+  },
+  getStatus: () => ({
+    enabled: SIMULATE_NETWORK_ISSUES,
+    failureRate: NETWORK_FAILURE_RATE,
+    slowNetworkRate: SLOW_NETWORK_RATE,
+    slowNetworkDelay: SLOW_NETWORK_DELAY,
+  }),
+};
+
+// Simulate network conditions for testing
+const simulateNetworkConditions = async (): Promise<void> => {
+  if (!SIMULATE_NETWORK_ISSUES) return;
+
+  const random = Math.random();
+
+  // Simulate network failure
+  if (random < NETWORK_FAILURE_RATE) {
+    throw new Error('Network request failed (simulated)');
+  }
+
+  // Simulate slow network
+  if (random < NETWORK_FAILURE_RATE + SLOW_NETWORK_RATE) {
+    safeWarn('[Mock API] Simulating slow network...');
+    await new Promise((resolve) => setTimeout(resolve, SLOW_NETWORK_DELAY));
+  }
+};
 
 // --- Product Mocks ---
 export const mockFetchProducts = async (): Promise<Product[]> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY));
-  console.log('[Mock API] Fetching all products');
+  safeLog('[Mock API] Fetching all products');
   return products;
 };
 
 export const mockFetchProductById = async (id: string): Promise<Product | undefined> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY / 2));
-  console.log(`[Mock API] Fetching product by ID: ${id}`);
+  safeLog(`[Mock API] Fetching product by ID: ${id}`);
   return getProductById(id);
 };
 
@@ -25,15 +75,17 @@ export interface CartItem {
 }
 
 export const mockSyncCart = async (items: CartItem[]): Promise<boolean> => {
+  await simulateNetworkConditions();
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY));
-  console.log('[Mock API] Syncing cart:', items);
+  safeLog('[Mock API] Syncing cart:', items);
   return true;
 };
 
 // --- Favorites Mocks ---
 export const mockSyncFavorites = async (productIds: string[]): Promise<boolean> => {
+  await simulateNetworkConditions();
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY));
-  console.log('[Mock API] Syncing favorites:', productIds);
+  safeLog('[Mock API] Syncing favorites:', productIds);
   return true;
 };
 
@@ -50,8 +102,9 @@ export const mockLogin = async (credentials: {
   email: string;
   password: string;
 }): Promise<{ token: string; user: User }> => {
+  await simulateNetworkConditions();
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY * 1.5));
-  console.log('[Mock API] Attempting login:', credentials.email);
+  safeLog('[Mock API] Attempting login:', credentials.email);
 
   // Simulate login (in a real app, this would verify credentials with a backend)
   if (credentials.email === 'test@tifossi.com' && credentials.password === 'password') {
@@ -68,8 +121,9 @@ export const mockRegister = async (userData: {
   email: string;
   password: string;
 }): Promise<{ token: string; user: User }> => {
+  await simulateNetworkConditions();
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY * 2));
-  console.log('[Mock API] Attempting registration:', userData.email);
+  safeLog('[Mock API] Attempting registration:', userData.email);
 
   // Simulate successful registration
   return {
@@ -80,7 +134,7 @@ export const mockRegister = async (userData: {
 
 export const mockValidateToken = async (token: string): Promise<User> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY));
-  console.log('[Mock API] Validating token:', token);
+  safeLog('[Mock API] Validating token:', token);
 
   if (token.startsWith('mock-jwt-token-')) {
     // Simulate returning user data based on token
@@ -96,7 +150,7 @@ export const mockValidateToken = async (token: string): Promise<User> => {
 
 export const mockLogout = async (token: string | null): Promise<boolean> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY / 2));
-  console.log('[Mock API] Logging out token:', token);
+  safeLog('[Mock API] Logging out token:', token);
   return true;
 };
 
@@ -107,7 +161,7 @@ export const mockChangePassword = async (
   credentials: { currentPassword: string; newPassword: string }
 ): Promise<boolean> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY));
-  console.log('[Mock API] Changing password for token:', token);
+  safeLog('[Mock API] Changing password for token:', token);
 
   // Validate current password (in a real API this would verify against stored hash)
   if (credentials.currentPassword !== 'password') {
@@ -122,7 +176,7 @@ export const mockUpdateProfilePicture = async (
   imageUri: string
 ): Promise<{ profilePictureUrl: string }> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY * 1.5));
-  console.log('[Mock API] Updating profile picture for token:', token);
+  safeLog('[Mock API] Updating profile picture for token:', token);
 
   // Simulate image processing and storage
   // In a real implementation, this would upload to a storage service
@@ -132,7 +186,7 @@ export const mockUpdateProfilePicture = async (
 
 export const mockResendVerificationEmail = async (token: string): Promise<boolean> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY));
-  console.log('[Mock API] Resending verification email/code for token:', token);
+  safeLog('[Mock API] Resending verification email/code for token:', token);
 
   // In a real implementation with a specific auth provider:
   // - With Firebase, this would call sendEmailVerification()
@@ -149,7 +203,7 @@ export const mockResendVerificationEmail = async (token: string): Promise<boolea
 
 export const mockVerifyEmail = async (token: string, code: string): Promise<boolean> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY));
-  console.log('[Mock API] Verifying email with code:', code);
+  safeLog('[Mock API] Verifying email with code:', code);
 
   // In a real implementation, this would validate the code against what was sent in the database
   // For development/mock purposes, accept any 6-digit code
@@ -171,15 +225,59 @@ export const mockVerifyEmail = async (token: string, code: string): Promise<bool
 // --- User Data Sync --- Simulate merging local/server state after login
 export const mockSyncUserData = async (): Promise<boolean> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY * 1.5));
-  console.log('[Mock API] Syncing user data (cart/favorites) after login');
+  safeLog('[Mock API] Syncing user data (cart/favorites) after login');
   return true;
 };
 
+// --- Environment Information Mock ---
+export const mockGetEnvironmentInfo = async (): Promise<{
+  environment: string;
+  version: string;
+  buildNumber: string;
+  useMockApi: boolean;
+  mockDelay: number;
+}> => {
+  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY / 4));
+  safeLog('[Mock API] Getting environment info');
+
+  return {
+    environment: config.name,
+    version: config.version,
+    buildNumber: config.buildNumber,
+    useMockApi: config.useMockApi,
+    mockDelay: MOCK_DELAY,
+  };
+};
+
+// --- Health Check Mock ---
+export const mockHealthCheck = async (): Promise<{
+  status: 'ok' | 'error';
+  timestamp: number;
+  environment: string;
+  uptime: number;
+}> => {
+  await new Promise((resolve) => setTimeout(resolve, 100)); // Quick health check
+  safeLog('[Mock API] Health check');
+
+  // Simulate occasional service issues in development
+  const isHealthy = config.name === 'production' ? true : Math.random() > 0.05;
+
+  return {
+    status: isHealthy ? 'ok' : 'error',
+    timestamp: Date.now(),
+    environment: config.name,
+    uptime: Math.floor(Math.random() * 86400), // Random uptime in seconds
+  };
+};
+
 const mockApi = {
+  // Core product and e-commerce APIs
   fetchProducts: mockFetchProducts,
   fetchProductById: mockFetchProductById,
   syncCart: mockSyncCart,
   syncFavorites: mockSyncFavorites,
+
+  // Authentication APIs
   login: mockLogin,
   register: mockRegister,
   validateToken: mockValidateToken,
@@ -189,6 +287,10 @@ const mockApi = {
   updateProfilePicture: mockUpdateProfilePicture,
   resendVerificationEmail: mockResendVerificationEmail,
   verifyEmail: mockVerifyEmail,
+
+  // System APIs
+  getEnvironmentInfo: mockGetEnvironmentInfo,
+  healthCheck: mockHealthCheck,
 };
 
 export default mockApi;

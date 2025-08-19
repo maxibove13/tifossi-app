@@ -10,7 +10,7 @@ import {
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
-interface InputProps extends Omit<TextInputProps, 'style'> {
+interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
   helper?: string;
@@ -30,6 +30,7 @@ export const Input = ({
   containerStyle,
   onFocus,
   onBlur,
+  style,
   ...props
 }: InputProps) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -69,6 +70,7 @@ export const Input = ({
             styles.input,
             startIcon && styles.inputWithStartIcon,
             endIcon && styles.inputWithEndIcon,
+            style,
           ]}
           placeholderTextColor="#909090"
           onFocus={handleFocus}

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { MMKV } from 'react-native-mmkv';
-import mockApi from '../_services/api/mockApi';
+import apiManager from '../_services/api';
 
 // Setup MMKV storage
 const storage = new MMKV({ id: 'favorites-storage' });
@@ -15,6 +15,9 @@ interface FavoritesState {
   productIds: string[];
   isLoading: boolean;
   error: string | null;
+  lastSyncTimestamp: number | null;
+  actionStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  pendingOperations: string[];
 
   // Actions
   addFavorite: (productId: string) => Promise<void>;
@@ -22,6 +25,8 @@ interface FavoritesState {
   toggleFavorite: (productId: string) => Promise<void>;
   isFavorite: (productId: string) => boolean;
   syncWithServer: () => Promise<void>;
+  clearError: () => void;
+  retryFailedOperations: () => Promise<void>;
 }
 
 export const useFavoritesStore = create<FavoritesState>()(
@@ -30,6 +35,9 @@ export const useFavoritesStore = create<FavoritesState>()(
       productIds: [],
       isLoading: false,
       error: null,
+      lastSyncTimestamp: null,
+      actionStatus: 'idle',
+      pendingOperations: [],
 
       addFavorite: async (productId) => {
         const previousIds = get().productIds;
@@ -40,8 +48,13 @@ export const useFavoritesStore = create<FavoritesState>()(
 
         try {
           set({ isLoading: true, error: null });
-          await mockApi.syncFavorites(get().productIds);
-          set({ isLoading: false });
+
+          const success = await apiManager.syncFavorites(get().productIds);
+          if (success) {
+            set({ isLoading: false });
+          } else {
+            throw new Error('Failed to sync favorites');
+          }
         } catch (e) {
           console.error('Failed to sync favorite add:', e);
           set({
@@ -61,8 +74,13 @@ export const useFavoritesStore = create<FavoritesState>()(
 
         try {
           set({ isLoading: true, error: null });
-          await mockApi.syncFavorites(get().productIds);
-          set({ isLoading: false });
+
+          const success = await apiManager.syncFavorites(get().productIds);
+          if (success) {
+            set({ isLoading: false });
+          } else {
+            throw new Error('Failed to sync favorites');
+          }
         } catch (e) {
           console.error('Failed to sync favorite remove:', e);
           set({
@@ -75,6 +93,7 @@ export const useFavoritesStore = create<FavoritesState>()(
 
       toggleFavorite: async (productId) => {
         const { productIds, addFavorite, removeFavorite } = get();
+
         if (productIds.includes(productId)) {
           await removeFavorite(productId);
         } else {
@@ -87,21 +106,62 @@ export const useFavoritesStore = create<FavoritesState>()(
       },
 
       syncWithServer: async () => {
-        console.log('Attempting to sync favorites post-login');
-        const currentIds = get().productIds;
         try {
           set({ isLoading: true, error: null });
-          await mockApi.syncFavorites(currentIds);
-          set({ isLoading: false });
+
+          // Sync current favorites with server
+          const success = await apiManager.syncFavorites(get().productIds);
+          if (success) {
+            set({ isLoading: false });
+          } else {
+            throw new Error('Failed to sync favorites with server');
+          }
         } catch (e) {
-          console.error('Post-login favorites sync failed:', e);
-          set({ isLoading: false, error: 'Failed to sync favorites after login.' });
+          console.error('Failed to sync favorites with server:', e);
+          set({
+            isLoading: false,
+            error: 'Failed to sync favorites with server.',
+          });
+        }
+      },
+
+      clearError: () => {
+        set({ error: null });
+      },
+
+      retryFailedOperations: async () => {
+        set({ actionStatus: 'loading' });
+        try {
+          // Mock implementation for failed operations retry
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          set({
+            actionStatus: 'succeeded',
+            pendingOperations: [],
+            lastSyncTimestamp: Date.now(),
+          });
+        } catch (_error) {
+          set({ actionStatus: 'failed' });
         }
       },
     }),
     {
       name: 'tifossi-favorites-local',
       storage: mmkvStorage,
+      partialize: (state) => ({
+        productIds: state.productIds,
+        // Don't persist loading states or errors
+      }),
+      onRehydrateStorage: () => (state) => {
+        console.log('[Favorites Store] Hydration completed', {
+          favoriteCount: state?.productIds?.length || 0,
+        });
+
+        // Reset transient state after hydration
+        if (state) {
+          state.isLoading = false;
+          state.error = null;
+        }
+      },
     }
   )
 );

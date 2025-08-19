@@ -9,15 +9,23 @@ import PromotionCard from '../_components/store/product/promotion/PromotionCard'
 import { Product } from '../_types/product';
 import DefaultLargeCard from '../_components/store/product/default/large';
 import { useFavoritesStore } from '../_stores/favoritesStore';
-import { useProducts } from '../../hooks/useProducts';
-import { getProductById, products } from '../_data/products';
-import FavoritesSkeleton from '../_components/skeletons/FavoritesSkeleton';
+import { useProducts } from '../_services/api/queryHooks';
+import ProductData, { getProductById, products } from '../_data/products';
+import { SkeletonLoader } from '../_components/common/SkeletonLoader';
+import { hasStatus, ProductStatus } from '../_types/product-status';
 import { useAuthStore } from '../_stores/authStore';
 import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
 import ProductSections from '../_components/store/product/sections/ProductSections';
 
-// Using recentlyViewedProducts as a placeholder for recommendedProducts data
-const recommendedProductsData: Product[] = [
+// Function to get recommended products from API data
+const getRecommendedProducts = (allProducts: Product[]): Product[] => {
+  return allProducts
+    .filter((product) => hasStatus(product.statuses, ProductStatus.RECOMMENDED))
+    .slice(0, 5);
+};
+
+// Fallback recommended products from static data if API is not available
+const fallbackRecommendedProducts: Product[] = [
   getProductById('neceser-ball') || products[0],
   getProductById('mochila-classic') || products[1],
   getProductById('mochila-sq') || products[2],
@@ -44,19 +52,33 @@ export default function FavoritesScreen() {
   const {
     data: allProducts = [],
     isLoading: productsLoading,
-    isError: productsError,
+    error: productsError,
   } = useProducts();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const favoriteIds = useFavoritesStore((state) => state.productIds);
 
+  // Get recommended products from API data or fallback
+  const recommendedProductsData = useMemo(() => {
+    if (allProducts && allProducts.length > 0) {
+      return getRecommendedProducts(allProducts);
+    }
+    return fallbackRecommendedProducts;
+  }, [allProducts]);
+
   const localOrSyncedFavorites = useMemo<Product[]>(() => {
     if (!allProducts || allProducts.length === 0) {
+      // If API data is not available, try to use static data as fallback
+      if (!productsLoading) {
+        return favoriteIds
+          .map((id) => ProductData.getProductById(id))
+          .filter((product): product is Product => product !== undefined);
+      }
       return [];
     }
     return favoriteIds
       .map((id) => allProducts.find((product) => product.id === id))
       .filter((product): product is Product => product !== undefined);
-  }, [favoriteIds, allProducts]);
+  }, [favoriteIds, allProducts, productsLoading]);
 
   const handleGoToStore = () => {
     router.replace('/');
@@ -85,7 +107,7 @@ export default function FavoritesScreen() {
 
   // Full screen skeleton if products are loading AND we have no local favorite IDs to even attempt to display
   if (productsLoading && favoriteIds.length === 0) {
-    return <FavoritesSkeleton />;
+    return <SkeletonLoader type="favorites" count={6} />;
   }
 
   // Full screen error if products errored AND we have no local favorite IDs

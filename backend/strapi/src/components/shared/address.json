@@ -1,0 +1,70 @@
+{
+  "collectionName": "components_shared_addresses",
+  "info": {
+    "displayName": "Address",
+    "description": "Address component for shipping and billing"
+  },
+  "options": {},
+  "attributes": {
+    "firstName": {
+      "type": "string",
+      "required": true,
+      "maxLength": 50
+    },
+    "lastName": {
+      "type": "string",
+      "required": true,
+      "maxLength": 50
+    },
+    "company": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "addressLine1": {
+      "type": "string",
+      "required": true,
+      "maxLength": 255
+    },
+    "addressLine2": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
+    },
+    "city": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "state": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "postalCode": {
+      "type": "string",
+      "required": false,
+      "maxLength": 20
+    },
+    "country": {
+      "type": "string",
+      "required": true,
+      "default": "UY",
+      "maxLength": 2
+    },
+    "phoneNumber": {
+      "type": "string",
+      "required": false,
+      "maxLength": 20
+    },
+    "isDefault": {
+      "type": "boolean",
+      "default": false
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["shipping", "billing", "both"],
+      "default": "both"
+    }
+  }
+}

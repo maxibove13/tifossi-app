@@ -9,7 +9,7 @@ import Button from '../_components/ui/buttons/Button';
 import StoreLocations from '../_components/store/layout/Locations';
 import Footer from '../_components/store/layout/Footer';
 import { Product } from '../_types/product';
-import HomeScreenSkeleton from '../_components/skeletons/HomeScreenSkeleton';
+import { SkeletonLoader } from '../_components/common/SkeletonLoader';
 import ProgressiveLoadingSection, {
   createSectionSkeleton,
 } from '../_components/skeletons/ProgressiveLoadingSection';
@@ -21,6 +21,7 @@ import PromotionCard from '../_components/store/product/promotion/PromotionCard'
 import MinicardLarge from '../_components/store/product/minicard/large';
 // Import the home assets loader directly
 import homeAssetLoader from '../_services/preload/homeAssets';
+import { useProductStore } from '../_stores/productStore';
 
 interface HomeScreenData {
   highlightedProducts: Product[];
@@ -34,6 +35,13 @@ interface HomeScreenData {
 function HomeScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch products using TanStack Query
+  const {
+    products: allProducts,
+    isLoading: productsLoading,
+    error: productsError,
+  } = useProductStore();
 
   // Track loading state of individual sections for progressive loading
   const [sectionLoadingState, setSectionLoadingState] = useState({
@@ -90,8 +98,14 @@ function HomeScreen() {
         // Start with everything in loading state (shows skeleton)
         setIsLoading(true);
 
+        // Wait for products to be available before proceeding
+        if (productsLoading) {
+          return;
+        }
+
         // Load assets while skeleton is displayed (not preloaded during splash)
-        const loadedAssets = await homeAssetLoader.preloadHomeAssets();
+        // Pass API products to the preloader, fallback to static data if needed
+        const loadedAssets = await homeAssetLoader.preloadHomeAssets(allProducts || undefined);
 
         // Staggered update approach - update each section sequentially with small delays
         // This creates a natural "wave" of content appearing on screen
@@ -196,13 +210,23 @@ function HomeScreen() {
     };
 
     loadData();
-  }, []);
+  }, [allProducts, productsLoading]); // Re-run when products data changes
 
-  // Now we use HomeScreenSkeleton differently:
-  // 1. If fully loading (initial state), show the full skeleton
-  // 2. Otherwise, use section-specific loading states with progressive rendering
-  if (isLoading) {
-    return <HomeScreenSkeleton isLoading={true} />;
+  // Show loading state while fetching products or while processing data
+  if (isLoading || productsLoading) {
+    return <SkeletonLoader type="homeScreen" animationType="shimmer" />;
+  }
+
+  // Show error state if products failed to load
+  if (productsError && !allProducts) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error al cargar productos</Text>
+          <Text style={styles.errorDetailText}>{productsError}</Text>
+        </View>
+      </View>
+    );
   }
 
   // Helper to render product pairs for the grid
@@ -530,6 +554,25 @@ const styles = StyleSheet.create({
     height: 24,
     backgroundColor: '#F5F5F5',
     borderRadius: 4,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  errorText: {
+    fontFamily: fonts.primary,
+    fontSize: fontSizes.lg,
+    color: colors.error || colors.text?.primary || '#000',
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  errorDetailText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    color: colors.text?.secondary || '#666',
+    textAlign: 'center',
   },
 });
 

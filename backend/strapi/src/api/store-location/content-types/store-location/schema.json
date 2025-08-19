@@ -1,0 +1,87 @@
+{
+  "kind": "collectionType",
+  "collectionName": "store_locations",
+  "info": {
+    "singularName": "store-location",
+    "pluralName": "store-locations",
+    "displayName": "Store Location",
+    "description": "Physical store locations for pickup orders"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "code": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "maxLength": 20
+    },
+    "description": {
+      "type": "text"
+    },
+    "address": {
+      "type": "component",
+      "component": "shared.address",
+      "required": true
+    },
+    "phoneNumber": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "email": {
+      "type": "email"
+    },
+    "operatingHours": {
+      "type": "component",
+      "component": "store.operating-hours",
+      "repeatable": true
+    },
+    "hasPickupService": {
+      "type": "boolean",
+      "default": true
+    },
+    "hasParking": {
+      "type": "boolean",
+      "default": false
+    },
+    "isAccessible": {
+      "type": "boolean",
+      "default": true
+    },
+    "maxPickupItems": {
+      "type": "integer",
+      "default": 50,
+      "min": 1
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    },
+    "orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order.order",
+      "mappedBy": "storeLocation"
+    }
+  }
+}

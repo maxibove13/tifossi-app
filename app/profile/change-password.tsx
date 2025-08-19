@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { colors } from '../_styles/colors';
@@ -14,21 +15,24 @@ import { spacing, radius } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
 import CloseIcon from '../../assets/icons/close.svg';
+import { useAuthStore } from '../_stores/authStore';
 
 export default function ChangePasswordScreen() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mock function - will be implemented in authStore
-  const changePassword = async (_currentPassword: string, _newPassword: string) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    // For demo purposes, let's assume this always succeeds
-    return true;
-  };
+  const {
+    changePassword,
+    isChangingPassword,
+    error: authError,
+  } = useAuthStore((state) => ({
+    changePassword: state.changePassword,
+    isChangingPassword: state.isChangingPassword,
+    error: state.error,
+  }));
 
   const validateForm = (): boolean => {
     setError(null);
@@ -63,16 +67,23 @@ export default function ChangePasswordScreen() {
   const handleChangePassword = async () => {
     if (!validateForm()) return;
 
-    setIsLoading(true);
+    setIsSubmitting(true);
+    setError(null);
+
     try {
-      await changePassword(currentPassword, newPassword);
+      // Call the Firebase-integrated changePassword function
+      await changePassword({
+        currentPassword,
+        newPassword,
+      });
+
       Alert.alert('Contraseña Actualizada', 'Tu contraseña ha sido cambiada exitosamente.', [
         { text: 'OK', onPress: () => router.back() },
       ]);
-    } catch {
-      setError('No se pudo cambiar la contraseña. Verifica tu contraseña actual.');
+    } catch (error: any) {
+      setError(error.message || 'No se pudo cambiar la contraseña. Verifica tu contraseña actual.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -106,7 +117,11 @@ export default function ChangePasswordScreen() {
                 setCurrentPassword(text);
                 if (error) setError(null);
               }}
-              error={error && error.includes('actual') ? error : undefined}
+              error={
+                (error && error.includes('actual')) || (authError && authError.includes('current'))
+                  ? (error ?? authError ?? undefined)
+                  : undefined
+              }
               containerStyle={styles.inputSpacing}
             />
             <Input
@@ -135,30 +150,38 @@ export default function ChangePasswordScreen() {
               error={error && error.includes('coinciden') ? error : undefined}
               containerStyle={styles.inputSpacing}
             />
-            {error &&
+            {((error &&
               !error.includes('actual') &&
               !error.includes('nueva') &&
               !error.includes('coinciden') &&
-              !error.includes('8 caracteres') && <Text style={styles.errorText}>{error}</Text>}
+              !error.includes('8 caracteres')) ||
+              (authError && !authError.includes('current') && !authError.includes('password'))) && (
+              <Text style={styles.errorText}>{error || authError}</Text>
+            )}
           </View>
         </ScrollView>
       </View>
       <View style={styles.actionButtonsContainer}>
         <TouchableOpacity
-          style={[styles.primaryButton, isLoading && styles.disabledButton]}
+          style={[
+            styles.primaryButton,
+            (isSubmitting || isChangingPassword) && styles.disabledButton,
+          ]}
           onPress={handleChangePassword}
           activeOpacity={0.7}
-          disabled={isLoading}
+          disabled={isSubmitting || isChangingPassword}
         >
-          <Text style={styles.primaryButtonText}>
-            {isLoading ? 'Guardando...' : 'Guardar Cambios'}
-          </Text>
+          {isSubmitting || isChangingPassword ? (
+            <ActivityIndicator size="small" color={colors.background.light} />
+          ) : (
+            <Text style={styles.primaryButtonText}>Guardar Cambios</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={handleClose}
           activeOpacity={0.7}
-          disabled={isLoading}
+          disabled={isSubmitting || isChangingPassword}
         >
           <Text style={styles.secondaryButtonText}>Cancelar</Text>
         </TouchableOpacity>

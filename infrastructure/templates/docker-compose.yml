@@ -1,0 +1,253 @@
+# Tifossi Backend Docker Compose Configuration
+# This is the main docker-compose file template
+# Copy and customize for your environment
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: tifossi-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-tifossi}
+      POSTGRES_USER: ${DATABASE_USERNAME:-strapi}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-strapi123}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - tifossi-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-strapi} -d ${DATABASE_NAME:-tifossi}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: tifossi-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    volumes:
+      - redis_data:/data
+      - ./infrastructure/docker/redis/redis.conf:/etc/redis/redis.conf:ro
+    networks:
+      - tifossi-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+
+  # Strapi CMS Application
+  strapi:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
+      target: ${NODE_ENV:-development}
+    container_name: tifossi-strapi
+    restart: unless-stopped
+    environment:
+      # Application
+      - NODE_ENV=${NODE_ENV:-development}
+      - HOST=${HOST:-0.0.0.0}
+      - PORT=${PORT:-1337}
+      
+      # Database
+      - DATABASE_CLIENT=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=${DATABASE_NAME:-tifossi}
+      - DATABASE_USERNAME=${DATABASE_USERNAME:-strapi}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-strapi123}
+      - DATABASE_SSL=false
+      
+      # Strapi Configuration
+      - APP_KEYS=${APP_KEYS}
+      - API_TOKEN_SALT=${API_TOKEN_SALT}
+      - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET}
+      - TRANSFER_TOKEN_SALT=${TRANSFER_TOKEN_SALT}
+      - JWT_SECRET=${JWT_SECRET}
+      
+      # Redis
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-redis123}@redis:6379
+      
+      # External Services
+      - MERCADO_PAGO_ACCESS_TOKEN=${MERCADO_PAGO_ACCESS_TOKEN}
+      - MERCADO_PAGO_PUBLIC_KEY=${MERCADO_PAGO_PUBLIC_KEY}
+      - MERCADO_PAGO_WEBHOOK_SECRET=${MERCADO_PAGO_WEBHOOK_SECRET}
+      - CLOUDINARY_NAME=${CLOUDINARY_NAME}
+      - CLOUDINARY_KEY=${CLOUDINARY_KEY}
+      - CLOUDINARY_SECRET=${CLOUDINARY_SECRET}
+      
+      # Security
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - SESSION_SECRET=${SESSION_SECRET}
+      
+      # Email
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - EMAIL_FROM=${EMAIL_FROM}
+      
+      # Feature Flags
+      - FEATURE_PAYMENTS_ENABLED=${FEATURE_PAYMENTS_ENABLED:-true}
+      - FEATURE_EMAIL_NOTIFICATIONS=${FEATURE_EMAIL_NOTIFICATIONS:-false}
+      
+    ports:
+      - "${PORT:-1337}:${PORT:-1337}"
+    volumes:
+      - ./backend:/app
+      - strapi_uploads:/app/public/uploads
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - tifossi-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${PORT:-1337}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    command: ["npm", "run", "${NODE_ENV:-development}"]
+
+  # Database Management (Development only)
+  adminer:
+    image: adminer:4-standalone
+    container_name: tifossi-adminer
+    restart: unless-stopped
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: hydra
+      ADMINER_PLUGINS: tables-filter tinymce
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tifossi-network
+    profiles:
+      - development
+      - staging
+
+  # Nginx Reverse Proxy (Production)
+  nginx:
+    image: nginx:alpine
+    container_name: tifossi-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./infrastructure/docker/nginx/ssl:/etc/nginx/ssl:ro
+      - strapi_uploads:/var/www/uploads:ro
+      - ./infrastructure/docker/nginx/logs:/var/log/nginx
+    depends_on:
+      strapi:
+        condition: service_healthy
+    networks:
+      - tifossi-network
+    profiles:
+      - production
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Commander (Development only)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: tifossi-redis-commander
+    restart: unless-stopped
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8081}:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:${REDIS_PASSWORD:-redis123}
+      - HTTP_USER=${REDIS_COMMANDER_USER:-admin}
+      - HTTP_PASSWORD=${REDIS_COMMANDER_PASSWORD:-admin}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - tifossi-network
+    profiles:
+      - development
+
+# Persistent Volumes
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./infrastructure/data/postgres
+  
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./infrastructure/data/redis
+  
+  strapi_uploads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./backend/public/uploads
+
+# Network Configuration
+networks:
+  tifossi-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: tifossi-network
+
+# Development Override
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.development.yml up
+x-development: &development
+  profiles: [development]
+  environment:
+    NODE_ENV: development
+    LOG_LEVEL: debug
+    STRAPI_TELEMETRY_DISABLED: true
+    WATCH_MODE: true
+
+# Staging Override  
+x-staging: &staging
+  profiles: [staging]
+  environment:
+    NODE_ENV: staging
+    LOG_LEVEL: info
+    RATE_LIMIT_ENABLED: true
+
+# Production Override
+x-production: &production
+  profiles: [production]
+  environment:
+    NODE_ENV: production
+    LOG_LEVEL: warn
+    RATE_LIMIT_ENABLED: true
+    SECURITY_HEADERS_ENABLED: true

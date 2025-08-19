@@ -1,0 +1,74 @@
+[
+  {
+    "name": "new",
+    "priority": 60,
+    "labelEs": "Nuevo",
+    "labelEn": "New",
+    "color": "#FFFFFF",
+    "backgroundColor": "#FF6B35",
+    "isActive": true
+  },
+  {
+    "name": "sale",
+    "priority": 70,
+    "labelEs": "Descuento",
+    "labelEn": "Sale", 
+    "color": "#FFFFFF",
+    "backgroundColor": "#E74C3C",
+    "isActive": true
+  },
+  {
+    "name": "featured",
+    "priority": 50,
+    "labelEs": "Destacado",
+    "labelEn": "Featured",
+    "color": "#FFFFFF", 
+    "backgroundColor": "#3498DB",
+    "isActive": true
+  },
+  {
+    "name": "opportunity",
+    "priority": 65,
+    "labelEs": "Oportunidad",
+    "labelEn": "Opportunity",
+    "color": "#FFFFFF",
+    "backgroundColor": "#F39C12",
+    "isActive": true
+  },
+  {
+    "name": "recommended",
+    "priority": 40,
+    "labelEs": "Recomendado", 
+    "labelEn": "Recommended",
+    "color": "#FFFFFF",
+    "backgroundColor": "#27AE60",
+    "isActive": true
+  },
+  {
+    "name": "popular",
+    "priority": 30,
+    "labelEs": "Popular",
+    "labelEn": "Popular",
+    "color": "#FFFFFF",
+    "backgroundColor": "#9B59B6",
+    "isActive": true
+  },
+  {
+    "name": "app_exclusive",
+    "priority": 80,
+    "labelEs": "Exclusivo in-app",
+    "labelEn": "App Exclusive",
+    "color": "#FFFFFF",
+    "backgroundColor": "#1ABC9C",
+    "isActive": true
+  },
+  {
+    "name": "highlighted",
+    "priority": 90,
+    "labelEs": "Destacado Home",
+    "labelEn": "Highlighted",
+    "color": "#FFFFFF",
+    "backgroundColor": "#E67E22",
+    "isActive": true
+  }
+]

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { Product } from '../../../../_types/product';
 import Subheader from '../../../common/Subheader';
@@ -16,7 +16,7 @@ interface ProductSectionsProps {
   useSwipeableStyle?: boolean;
 }
 
-export default function ProductSections({
+const ProductSections = memo(function ProductSections({
   title,
   products,
   CardComponent,
@@ -26,24 +26,50 @@ export default function ProductSections({
   invertTitleColor = false,
   useSwipeableStyle = false,
 }: ProductSectionsProps) {
-  // Select the appropriate header component based on context
-  const HeaderComponent = useSwipeableStyle ? SectionHeader : Subheader;
+  // Memoize style computations to avoid recalculating on every render
+  const styleComputations = useMemo(() => {
+    const HeaderComponent = useSwipeableStyle ? SectionHeader : Subheader;
+    const sectionStyle = useSwipeableStyle ? styles.swipeableSection : styles.section;
+    const scrollContentStyle = useSwipeableStyle
+      ? styles.swipeableHorizontalScrollContent
+      : styles.horizontalScrollContent;
 
-  // Use different styles for swipeable edge context
-  const sectionStyle = useSwipeableStyle ? styles.swipeableSection : styles.section;
-
-  // Adjust scroll content padding based on context
-  const scrollContentStyle = useSwipeableStyle
-    ? styles.swipeableHorizontalScrollContent
-    : styles.horizontalScrollContent;
+    return {
+      HeaderComponent,
+      sectionStyle,
+      scrollContentStyle,
+    };
+  }, [useSwipeableStyle]);
 
   // Define action text (could also be a prop if needed)
   const actionText = 'Ver Todo';
 
-  // Check if products is undefined or empty before accessing length
-  if (!products || products.length === 0) {
+  // Check if we have products to render
+  const hasProducts = useMemo(() => {
+    return products && products.length > 0;
+  }, [products]);
+
+  // Memoize the product cards to avoid recreating them on unrelated re-renders
+  const productCards = useMemo(() => {
+    if (!products || products.length === 0) {
+      return [];
+    }
+    return products.map((product) => (
+      <CardComponent
+        key={product.id}
+        product={product}
+        invertTextColor={invertTextColors}
+        onPress={() => onProductPress(product.id)}
+      />
+    ));
+  }, [products, CardComponent, invertTextColors, onProductPress]);
+
+  // Early return after all hooks have been called
+  if (!hasProducts) {
     return null;
   }
+
+  const { HeaderComponent, sectionStyle, scrollContentStyle } = styleComputations;
 
   return (
     <View style={sectionStyle}>
@@ -70,18 +96,13 @@ export default function ProductSections({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={scrollContentStyle}
       >
-        {products.map((product) => (
-          <CardComponent
-            key={product.id}
-            product={product}
-            invertTextColor={invertTextColors}
-            onPress={() => onProductPress(product.id)}
-          />
-        ))}
+        {productCards}
       </ScrollView>
     </View>
   );
-}
+});
+
+export default ProductSections;
 
 const styles = StyleSheet.create({
   section: {

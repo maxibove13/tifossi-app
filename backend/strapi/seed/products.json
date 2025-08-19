@@ -1,0 +1,301 @@
+[
+  {
+    "title": "Tiffosi Fast",
+    "slug": "tiffosi-fast",
+    "price": 590,
+    "categorySlug": "medias",
+    "modelSlug": "fast",
+    "statusNames": ["new", "highlighted"],
+    "shortDescription": {
+      "line1": "Tecnología de secado rápido.",
+      "line2": "Tejido suelto de alta confortabilidad."
+    },
+    "longDescription": "Tiffosi Fast es un producto diseñado para el deportista moderno. Tecnología de secado rápido que mantiene tus pies frescos durante toda la actividad. Disponible en múltiples colores para combinar con tu estilo personal. Diseño ergonómico que se adapta perfectamente al pie proporcionando mayor comodidad. Material de alta durabilidad resistente al desgaste por uso frecuente.",
+    "warranty": "6 meses",
+    "returnPolicy": "30 días para devoluciones sin uso",
+    "dimensions": {
+      "height": "12",
+      "width": "8",
+      "unit": "cm"
+    },
+    "colors": [
+      {
+        "colorName": "Blanco",
+        "quantity": 10,
+        "hex": "#FAFAFA",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Negro",
+        "quantity": 8,
+        "hex": "#0C0C0C",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Azul",
+        "quantity": 5,
+        "hex": "#2E5BFF",
+        "isAvailable": true
+      }
+    ],
+    "sizes": [
+      {
+        "value": "S",
+        "available": true,
+        "stock": 15,
+        "displayOrder": 1
+      },
+      {
+        "value": "M",
+        "available": true,
+        "stock": 20,
+        "displayOrder": 2
+      },
+      {
+        "value": "L",
+        "available": true,
+        "stock": 18,
+        "displayOrder": 3
+      },
+      {
+        "value": "XL",
+        "available": true,
+        "stock": 12,
+        "displayOrder": 4
+      }
+    ],
+    "totalStock": 23,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Mochila Premium Sport",
+    "slug": "mochila-premium-sport",
+    "price": 2500,
+    "discountedPrice": 2200,
+    "categorySlug": "mochilas",
+    "modelSlug": "premium",
+    "statusNames": ["sale", "featured"],
+    "shortDescription": {
+      "line1": "Mochila premium con compartimentos.",
+      "line2": "Ideal para deportistas profesionales."
+    },
+    "longDescription": "Mochila Premium Sport diseñada para atletas exigentes. Cuenta con múltiples compartimentos para organizar tu equipamiento deportivo. Material resistente al agua y cremalleras de alta calidad. Correas acolchadas ajustables para máximo confort durante el transporte.",
+    "warranty": "1 año",
+    "returnPolicy": "30 días para devoluciones sin uso",
+    "dimensions": {
+      "height": "45",
+      "width": "30",
+      "depth": "20",
+      "unit": "cm"
+    },
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 12,
+        "hex": "#000000",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Azul Marino",
+        "quantity": 8,
+        "hex": "#1B365D",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Rojo",
+        "quantity": 6,
+        "hex": "#DC143C",
+        "isAvailable": true
+      }
+    ],
+    "totalStock": 26,
+    "isActive": true,
+    "isCustomizable": true
+  },
+  {
+    "title": "Remera Oversize Cotton",
+    "slug": "remera-oversize-cotton",
+    "price": 1200,
+    "categorySlug": "remeras",
+    "modelSlug": "oversize",
+    "statusNames": ["popular", "recommended"],
+    "shortDescription": {
+      "line1": "Remera oversize 100% algodón.",
+      "line2": "Corte moderno y cómodo."
+    },
+    "longDescription": "Remera Oversize Cotton confeccionada en 100% algodón de primera calidad. Corte oversize que brinda comodidad y estilo. Perfecta para uso casual y actividades deportivas ligeras. Tejido suave y transpirable que se adapta a cualquier ocasión.",
+    "warranty": "3 meses",
+    "returnPolicy": "30 días para devoluciones sin uso",
+    "colors": [
+      {
+        "colorName": "Blanco",
+        "quantity": 25,
+        "hex": "#FFFFFF",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Negro",
+        "quantity": 20,
+        "hex": "#000000",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Gris",
+        "quantity": 15,
+        "hex": "#808080",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Verde",
+        "quantity": 10,
+        "hex": "#228B22",
+        "isAvailable": true
+      }
+    ],
+    "sizes": [
+      {
+        "value": "XS",
+        "available": true,
+        "stock": 8,
+        "displayOrder": 1
+      },
+      {
+        "value": "S",
+        "available": true,
+        "stock": 15,
+        "displayOrder": 2
+      },
+      {
+        "value": "M",
+        "available": true,
+        "stock": 25,
+        "displayOrder": 3
+      },
+      {
+        "value": "L",
+        "available": true,
+        "stock": 20,
+        "displayOrder": 4
+      },
+      {
+        "value": "XL",
+        "available": true,
+        "stock": 12,
+        "displayOrder": 5
+      },
+      {
+        "value": "XXL",
+        "available": false,
+        "stock": 0,
+        "displayOrder": 6
+      }
+    ],
+    "totalStock": 70,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Canilleras Pro Protection",
+    "slug": "canilleras-pro-protection",
+    "price": 800,
+    "categorySlug": "canilleras",
+    "modelSlug": "pro",
+    "statusNames": ["app_exclusive"],
+    "shortDescription": {
+      "line1": "Protección profesional para fútbol.",
+      "line2": "Material ultra liviano y resistente."
+    },
+    "longDescription": "Canilleras Pro Protection diseñadas para jugadores profesionales. Material ultra liviano que no compromete la movilidad. Protección superior contra impactos y lesiones. Sistema de ventilación integrado para mantener las piernas frescas durante el juego.",
+    "warranty": "6 meses",
+    "returnPolicy": "30 días para devoluciones sin uso",
+    "dimensions": {
+      "height": "20",
+      "width": "8",
+      "depth": "2",
+      "unit": "cm"
+    },
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 15,
+        "hex": "#000000",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Blanco",
+        "quantity": 12,
+        "hex": "#FFFFFF",
+        "isAvailable": true
+      }
+    ],
+    "sizes": [
+      {
+        "value": "S",
+        "available": true,
+        "stock": 10,
+        "displayOrder": 1
+      },
+      {
+        "value": "M",
+        "available": true,
+        "stock": 12,
+        "displayOrder": 2
+      },
+      {
+        "value": "L",
+        "available": true,
+        "stock": 5,
+        "displayOrder": 3
+      }
+    ],
+    "totalStock": 27,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Gorro Cap Classic",
+    "slug": "gorro-cap-classic",
+    "price": 450,
+    "discountedPrice": 350,
+    "categorySlug": "gorros",
+    "modelSlug": "cap",
+    "statusNames": ["opportunity", "sale"],
+    "shortDescription": {
+      "line1": "Gorra clásica ajustable.",
+      "line2": "Protección UV y comodidad."
+    },
+    "longDescription": "Gorro Cap Classic con diseño atemporal y funcional. Protección UV para actividades al aire libre. Correa ajustable para un ajuste perfecto. Material transpirable y liviano ideal para cualquier deporte.",
+    "warranty": "3 meses",
+    "returnPolicy": "30 días para devoluciones sin uso",
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 20,
+        "hex": "#000000",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Azul",
+        "quantity": 15,
+        "hex": "#0066CC",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Rojo",
+        "quantity": 10,
+        "hex": "#FF0000",
+        "isAvailable": true
+      },
+      {
+        "colorName": "Blanco",
+        "quantity": 8,
+        "hex": "#FFFFFF",
+        "isAvailable": true
+      }
+    ],
+    "totalStock": 53,
+    "isActive": true,
+    "isCustomizable": true
+  }
+]

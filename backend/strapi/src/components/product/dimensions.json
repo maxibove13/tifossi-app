@@ -1,0 +1,40 @@
+{
+  "collectionName": "components_product_dimensions",
+  "info": {
+    "displayName": "Dimensions",
+    "description": "Product physical dimensions"
+  },
+  "options": {},
+  "attributes": {
+    "length": {
+      "type": "decimal",
+      "required": false,
+      "min": 0
+    },
+    "width": {
+      "type": "decimal",
+      "required": false,
+      "min": 0
+    },
+    "height": {
+      "type": "decimal",
+      "required": false,
+      "min": 0
+    },
+    "weight": {
+      "type": "decimal",
+      "required": false,
+      "min": 0
+    },
+    "unit": {
+      "type": "enumeration",
+      "enum": ["cm", "in", "mm"],
+      "default": "cm"
+    },
+    "weightUnit": {
+      "type": "enumeration",
+      "enum": ["g", "kg", "lb", "oz"],
+      "default": "g"
+    }
+  }
+}

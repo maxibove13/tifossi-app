@@ -1,0 +1,170 @@
+[
+  {
+    "name": "Todo",
+    "slug": "todo",
+    "displayOrder": 0,
+    "description": "Todos los productos disponibles",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Nuevos",
+    "slug": "new",
+    "displayOrder": 1,
+    "description": "Productos recién llegados",
+    "isActive": true,
+    "isLabel": true,
+    "labelType": "Nuevo"
+  },
+  {
+    "name": "Descuentos",
+    "slug": "sale", 
+    "displayOrder": 2,
+    "description": "Productos en oferta",
+    "isActive": true,
+    "isLabel": true,
+    "labelType": "Descuento"
+  },
+  {
+    "name": "Destacados",
+    "slug": "featured",
+    "displayOrder": 3,
+    "description": "Productos destacados",
+    "isActive": true,
+    "isLabel": true,
+    "labelType": "Destacado"
+  },
+  {
+    "name": "Oportunidades",
+    "slug": "opportunity",
+    "displayOrder": 4,
+    "description": "Oportunidades especiales",
+    "isActive": true,
+    "isLabel": true,
+    "labelType": "Oportunidad"
+  },
+  {
+    "name": "Recomendados",
+    "slug": "recommended",
+    "displayOrder": 5,
+    "description": "Productos recomendados",
+    "isActive": true,
+    "isLabel": true,
+    "labelType": "Recomendado"
+  },
+  {
+    "name": "Populares",
+    "slug": "popular",
+    "displayOrder": 6,
+    "description": "Productos más populares",
+    "isActive": true,
+    "isLabel": true,
+    "labelType": "Popular"
+  },
+  {
+    "name": "Exclusivos in-app",
+    "slug": "app_exclusive",
+    "displayOrder": 7,
+    "description": "Productos exclusivos de la aplicación",
+    "isActive": true,
+    "isLabel": true,
+    "labelType": "Exclusivo in-app"
+  },
+  {
+    "name": "Destacados Home",
+    "slug": "highlighted",
+    "displayOrder": 8,
+    "description": "Productos destacados en la página principal",
+    "isActive": true,
+    "isLabel": true,
+    "labelType": "Destacado Home"
+  },
+  {
+    "name": "Accesorios",
+    "slug": "accesorios",
+    "displayOrder": 10,
+    "description": "Accesorios deportivos",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Buzos",
+    "slug": "buzos",
+    "displayOrder": 11,
+    "description": "Buzos y camperas",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Bolsos",
+    "slug": "bolsos",
+    "displayOrder": 12,
+    "description": "Bolsos deportivos",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Canilleras",
+    "slug": "canilleras",
+    "displayOrder": 13,
+    "description": "Canilleras y protecciones",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Chanclas",
+    "slug": "chanclas",
+    "displayOrder": 14,
+    "description": "Chanclas y calzado casual",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Gorros",
+    "slug": "gorros",
+    "displayOrder": 15,
+    "description": "Gorros y gorras",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Medias",
+    "slug": "medias",
+    "displayOrder": 16,
+    "description": "Medias deportivas",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Mochilas",
+    "slug": "mochilas",
+    "displayOrder": 17,
+    "description": "Mochilas deportivas",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Neceser",
+    "slug": "neceser",
+    "displayOrder": 18,
+    "description": "Neceseres y organizadores",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Pantalones",
+    "slug": "pantalones",
+    "displayOrder": 19,
+    "description": "Pantalones deportivos",
+    "isActive": true,
+    "isLabel": false
+  },
+  {
+    "name": "Remeras",
+    "slug": "remeras",
+    "displayOrder": 20,
+    "description": "Remeras y camisetas",
+    "isActive": true,
+    "isLabel": false
+  }
+]

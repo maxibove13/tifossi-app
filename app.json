@@ -5,12 +5,18 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "tifossi",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.tifossi"
+      "bundleIdentifier": "com.anonymous.tifossi",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "associatedDomains": [
+        "applinks:tifossi.app",
+        "applinks:auth.tifossi.app",
+        "applinks:pay.tifossi.app"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -34,13 +40,56 @@
         }
       ],
       "expo-font",
-      "expo-video"
+      "expo-video",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.123456789012-placeholder"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "android": {
-      "package": "com.anonymous.tifossi"
+      "package": "com.anonymous.tifossi",
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "tifossi.app"
+            },
+            {
+              "scheme": "https",
+              "host": "auth.tifossi.app"
+            },
+            {
+              "scheme": "https",
+              "host": "pay.tifossi.app"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        },
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "tifossi"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     }
   }
 }

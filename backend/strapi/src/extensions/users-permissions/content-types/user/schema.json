@@ -1,0 +1,162 @@
+{
+  "kind": "collectionType",
+  "collectionName": "up_users",
+  "info": {
+    "name": "user",
+    "description": "",
+    "singularName": "user",
+    "pluralName": "users",
+    "displayName": "User"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "timestamps": true
+  },
+  "attributes": {
+    "username": {
+      "type": "string",
+      "minLength": 3,
+      "unique": true,
+      "configurable": false,
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "minLength": 6,
+      "configurable": false,
+      "required": true
+    },
+    "provider": {
+      "type": "string",
+      "configurable": false
+    },
+    "password": {
+      "type": "password",
+      "minLength": 6,
+      "configurable": false,
+      "private": true,
+      "searchable": false
+    },
+    "resetPasswordToken": {
+      "type": "string",
+      "configurable": false,
+      "private": true,
+      "searchable": false
+    },
+    "confirmationToken": {
+      "type": "string",
+      "configurable": false,
+      "private": true,
+      "searchable": false
+    },
+    "confirmed": {
+      "type": "boolean",
+      "default": false,
+      "configurable": false
+    },
+    "blocked": {
+      "type": "boolean",
+      "default": false,
+      "configurable": false
+    },
+    "role": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.role",
+      "inversedBy": "users",
+      "configurable": false
+    },
+    "firebaseUid": {
+      "type": "string",
+      "unique": true,
+      "required": false
+    },
+    "firstName": {
+      "type": "string",
+      "maxLength": 50
+    },
+    "lastName": {
+      "type": "string",
+      "maxLength": 50
+    },
+    "phoneNumber": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "profilePicture": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "dateOfBirth": {
+      "type": "date"
+    },
+    "gender": {
+      "type": "enumeration",
+      "enum": ["male", "female", "other", "prefer_not_to_say"]
+    },
+    "cart": {
+      "type": "json"
+    },
+    "addresses": {
+      "type": "component",
+      "component": "shared.address",
+      "repeatable": true
+    },
+    "defaultShippingAddress": {
+      "type": "component",
+      "component": "shared.address"
+    },
+    "defaultBillingAddress": {
+      "type": "component",
+      "component": "shared.address"
+    },
+    "newsletterSubscribed": {
+      "type": "boolean",
+      "default": false
+    },
+    "marketingEmails": {
+      "type": "boolean",
+      "default": false
+    },
+    "preferredLanguage": {
+      "type": "enumeration",
+      "enum": ["es", "en"],
+      "default": "es"
+    },
+    "currency": {
+      "type": "enumeration",
+      "enum": ["UYU", "USD"],
+      "default": "UYU"
+    },
+    "favorites": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product"
+    },
+    "orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order.order",
+      "mappedBy": "user"
+    },
+    "lastLoginAt": {
+      "type": "datetime"
+    },
+    "totalOrders": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "totalSpent": {
+      "type": "decimal",
+      "default": 0,
+      "min": 0
+    },
+    "loyaltyPoints": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    }
+  }
+}

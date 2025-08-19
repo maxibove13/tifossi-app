@@ -1,5 +1,30 @@
 # Tifossi Expo Project Guidelines
 
+## PROJECT STATUS & PRIORITIES
+**Current Sprint**: Final delivery preparation (75-80% complete)
+**Target Demo**: August 18-19, 2025
+**Ground Truth Documents**: 
+- FUNCIONALIDADES_APP_TIFOSSI.md (client deliverables)
+- COSTOS_OPERATIVOS_URUGUAY_2025.md (infrastructure costs)
+- TIFOSSI_DELIVERY_PLAN.md (execution roadmap)
+
+## CRITICAL PRIORITIES (Next 72 hours)
+1. Deploy Strapi backend to Render.com
+2. Implement Apple Sign-In (App Store requirement)
+3. Update bundle identifiers to production values
+4. Configure Firebase and MercadoPago production credentials
+5. Remove all TODO/placeholder content
+
+## PROGRESS TRACKING
+**IMPORTANT**: After completing ANY task or making significant changes:
+1. Check alignment with TIFOSSI_DELIVERY_PLAN.md
+2. Update completion percentages in the plan
+3. Mark completed tasks with ✅ in the execution checklist
+4. Update the "Last Updated" timestamp
+5. Adjust estimates if blockers are discovered
+
+Keep TIFOSSI_DELIVERY_PLAN.md as the single source of truth for project progress. All stakeholders should refer to this document for current status.
+
 ## IMPORTANT GUIDELINES
 - NEVER commit changes to git without being expressly asked to do so
 - Always run linters and type checkers before submitting changes
@@ -9,6 +34,13 @@
 - ALWAYS refer to README.md and the /docs folder to understand project structure and guidelines
 - NEVER execute de application yourself
 - ALWAYS check related components or how components are used before finishing
+
+## Client Commitments
+- **Mobile App**: React Native/Expo with Firebase auth, MercadoPago payments
+- **Backend**: Strapi CMS with product/order management
+- **Infrastructure**: $35/month Render hosting + MercadoPago fees (5.23%)
+- **Delivery**: Functional app ready for store submission
+- **NOT Included**: CFE invoice integration (client responsibility)
 
 ## Build Commands
 - `npm install` - Install dependencies
@@ -119,3 +151,14 @@ Always run both linting and type checking before submitting changes:
 ```
 npm run lint && npm run typecheck
 ```
+
+## Backend Commands
+- `cd backend && npm install` - Install Strapi dependencies
+- `npm run develop` - Run Strapi in development mode
+- `npm run build` - Build Strapi for production
+- `npm run start` - Start Strapi in production mode
+
+## Deployment
+- **Backend**: Deploy to Render.com using render.yaml configuration
+- **Frontend**: Build with EAS for App Store and Google Play
+- **Environment**: Use .env files for configuration (never commit secrets)

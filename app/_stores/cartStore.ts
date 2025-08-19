@@ -1,7 +1,14 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { MMKV } from 'react-native-mmkv';
-import mockApi, { CartItem } from '../_services/api/mockApi';
+import httpClient from '../_services/api/httpClient';
+
+export interface CartItem {
+  productId: string;
+  quantity: number;
+  color?: string;
+  size?: string;
+}
 
 // Setup MMKV storage
 const storage = new MMKV({ id: 'cart-storage' });
@@ -15,6 +22,10 @@ interface CartState {
   items: CartItem[];
   isLoading: boolean;
   error: string | null;
+  isGuestCart: boolean;
+  lastSyncTimestamp: number | null;
+  actionStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  pendingOperations: string[];
 
   // Actions
   addItem: (item: CartItem) => Promise<void>;
@@ -35,7 +46,13 @@ interface CartState {
     color: string | undefined,
     size: string | undefined
   ) => number;
-  syncWithServer: () => Promise<void>;
+  migrateGuestCart: (authToken: string) => Promise<void>;
+  setAuthToken: (token: string | null) => void;
+  fetchUserCart: () => Promise<void>;
+  clearError: () => void;
+
+  // Test utility methods
+  setItems: (items: CartItem[]) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -44,6 +61,29 @@ export const useCartStore = create<CartState>()(
       items: [],
       isLoading: false,
       error: null,
+      isGuestCart: true,
+      lastSyncTimestamp: null,
+      actionStatus: 'idle',
+      pendingOperations: [],
+
+      setAuthToken: (token) => {
+        set({ isGuestCart: !token });
+      },
+
+      fetchUserCart: async () => {
+        try {
+          set({ isLoading: true, error: null });
+          const response = await httpClient.get('/cart');
+          const items = response.data || [];
+          set({ items, isLoading: false, isGuestCart: false });
+        } catch (e) {
+          console.error('Failed to fetch user cart:', e);
+          set({
+            isLoading: false,
+            error: 'Failed to fetch cart from server.',
+          });
+        }
+      },
 
       addItem: async (itemToAdd) => {
         const previousItems = get().items;
@@ -73,7 +113,8 @@ export const useCartStore = create<CartState>()(
 
         try {
           set({ isLoading: true, error: null });
-          await mockApi.syncCart(get().items);
+
+          await httpClient.post('/cart/sync', { items: get().items });
           set({ isLoading: false });
         } catch (e) {
           console.error('Failed to sync cart addition:', e);
@@ -112,7 +153,8 @@ export const useCartStore = create<CartState>()(
 
         try {
           set({ isLoading: true, error: null });
-          await mockApi.syncCart(get().items);
+
+          await httpClient.post('/cart/sync', { items: get().items });
           set({ isLoading: false });
         } catch (e) {
           console.error('Failed to sync cart update:', e);
@@ -136,7 +178,7 @@ export const useCartStore = create<CartState>()(
 
         try {
           set({ isLoading: true, error: null });
-          await mockApi.syncCart(get().items);
+          await httpClient.post('/cart/sync', { items: get().items });
           set({ isLoading: false });
         } catch (e) {
           console.error('Failed to sync cart removal:', e);
@@ -154,8 +196,8 @@ export const useCartStore = create<CartState>()(
 
         try {
           set({ isLoading: true, error: null });
-          await mockApi.syncCart([]);
-          set({ isLoading: false });
+          await httpClient.delete('/cart');
+          set({ items: [], isLoading: false });
         } catch (e) {
           console.error('Failed to sync cart clear:', e);
           set({
@@ -173,22 +215,59 @@ export const useCartStore = create<CartState>()(
         return item ? item.quantity : 0;
       },
 
-      syncWithServer: async () => {
-        console.log('Attempting to sync cart post-login');
-        const currentItems = get().items;
+      migrateGuestCart: async (_authToken) => {
+        console.log('Migrating guest cart to authenticated user');
+        const guestItems = get().items;
+
         try {
           set({ isLoading: true, error: null });
-          await mockApi.syncCart(currentItems);
-          set({ isLoading: false });
+          const response = await httpClient.post('/cart/migrate', { guestItems });
+          set({
+            items: response.mergedItems || [],
+            isLoading: false,
+            isGuestCart: false,
+            error: null,
+          });
+          console.log('Guest cart migration completed successfully');
         } catch (e) {
-          console.error('Post-login cart sync failed:', e);
-          set({ isLoading: false, error: 'Failed to sync cart after login.' });
+          console.error('Guest cart migration failed:', e);
+          set({
+            isLoading: false,
+            error: 'Failed to migrate cart after login.',
+            isGuestCart: false, // Still mark as authenticated even if migration failed
+          });
         }
+      },
+
+      clearError: () => {
+        set({ error: null });
+      },
+
+      // Test utility methods
+      setItems: (items: CartItem[]) => {
+        set({ items });
       },
     }),
     {
       name: 'tifossi-cart-local',
       storage: mmkvStorage,
+      partialize: (state) => ({
+        items: state.items,
+        isGuestCart: state.isGuestCart,
+        // Don't persist loading states or errors
+      }),
+      onRehydrateStorage: () => (state) => {
+        console.log('[Cart Store] Hydration completed', {
+          itemCount: state?.items?.length || 0,
+          isGuestCart: state?.isGuestCart,
+        });
+
+        // Reset transient state after hydration
+        if (state) {
+          state.isLoading = false;
+          state.error = null;
+        }
+      },
     }
   )
 );

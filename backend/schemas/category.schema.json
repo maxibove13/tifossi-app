@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.tifossi.app/schemas/category.json",
+  "title": "Category",
+  "description": "Product category with display metadata",
+  "type": "object",
+  "required": ["id", "name", "slug"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique category identifier"
+    },
+    "name": {
+      "type": "string",
+      "description": "Category display name",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly category identifier",
+      "pattern": "^[a-z0-9-]+$",
+      "enum": ["todo", "medias", "bolsos", "mochilas", "remeras", "buzos", "gorros", "neceser", "canilleras", "accesorios", "chanclas", "pantalones"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Category description"
+    },
+    "displayOrder": {
+      "type": "integer",
+      "description": "Display order for sorting",
+      "minimum": 0,
+      "default": 0
+    },
+    "icon": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to category icon"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "Whether category is active and visible",
+      "default": true
+    },
+    "productCount": {
+      "type": "integer",
+      "description": "Number of products in this category",
+      "minimum": 0,
+      "default": 0
+    },
+    "seo": {
+      "$ref": "#/$defs/SEO"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Category creation timestamp"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Category last update timestamp"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "SEO": {
+      "type": "object",
+      "description": "Search engine optimization metadata",
+      "properties": {
+        "metaTitle": {
+          "type": "string",
+          "description": "Page title for SEO",
+          "maxLength": 60
+        },
+        "metaDescription": {
+          "type": "string",
+          "description": "Page description for SEO",
+          "maxLength": 160
+        },
+        "keywords": {
+          "type": "string",
+          "description": "SEO keywords",
+          "maxLength": 255
+        },
+        "structuredData": {
+          "type": "object",
+          "description": "JSON-LD structured data"
+        },
+        "preventIndexing": {
+          "type": "boolean",
+          "description": "Prevent search engine indexing",
+          "default": false
+        },
+        "canonicalURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "Canonical URL for this page"
+        },
+        "ogTitle": {
+          "type": "string",
+          "description": "Open Graph title",
+          "maxLength": 60
+        },
+        "ogDescription": {
+          "type": "string",
+          "description": "Open Graph description",
+          "maxLength": 160
+        },
+        "ogImage": {
+          "type": "string",
+          "format": "uri",
+          "description": "Open Graph image URL"
+        },
+        "twitterCard": {
+          "type": "string",
+          "enum": ["summary", "summary_large_image", "app", "player"],
+          "description": "Twitter card type",
+          "default": "summary_large_image"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "tifossi-backend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Tifossi Expo Backend API",
+  "scripts": {
+    "build": "strapi build",
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi",
+    "seed": "strapi import",
+    "export": "strapi export",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@strapi/strapi": "^4.25.8",
+    "@strapi/plugin-users-permissions": "^4.25.8",
+    "@strapi/plugin-i18n": "^4.25.8",
+    "@strapi/plugin-cloud": "^4.25.8",
+    "@strapi/plugin-graphql": "^4.25.8",
+    "@strapi/plugin-documentation": "^4.25.8",
+    "pg": "^8.11.3",
+    "pg-connection-string": "^2.6.2",
+    "mercadopago": "^2.0.15",
+    "crypto": "^1.0.1",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0 <=20.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "0053b374-53bd-4c88-9791-54525015d81f"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "categories",
+  "info": {
+    "singularName": "category",
+    "pluralName": "categories",
+    "displayName": "Category",
+    "description": "Product categories with display order and metadata"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "description": {
+      "type": "text"
+    },
+    "icon": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "products": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product.product",
+      "mappedBy": "category"
+    },
+    "models": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product-model.product-model",
+      "mappedBy": "category"
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo"
+    }
+  }
+}

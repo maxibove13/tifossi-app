@@ -1,0 +1,132 @@
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  AxiosError,
+  InternalAxiosRequestConfig,
+} from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+
+// Configuration constants
+const API_BASE_URL = __DEV__
+  ? 'http://localhost:1337/api' // Local development
+  : 'https://api.tifossi.app/api'; // Production
+
+const REQUEST_TIMEOUT = 10000; // 10 seconds
+const AUTH_TOKEN_KEY = 'tifossi_auth_token';
+
+class HttpClient {
+  private axiosInstance: AxiosInstance;
+
+  constructor() {
+    this.axiosInstance = axios.create({
+      baseURL: API_BASE_URL,
+      timeout: REQUEST_TIMEOUT,
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'User-Agent': `TifossiApp/${Platform.OS}`,
+      },
+    });
+
+    this.setupInterceptors();
+  }
+
+  private setupInterceptors(): void {
+    // Request interceptor for adding auth token
+    this.axiosInstance.interceptors.request.use(
+      async (config: InternalAxiosRequestConfig) => {
+        // Add auth token if available
+        try {
+          const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
+        } catch (error) {
+          console.warn('[HttpClient] Failed to retrieve auth token:', error);
+        }
+
+        // Log request in development
+        if (__DEV__) {
+          console.log(`[HTTP Request] ${config.method?.toUpperCase()} ${config.url}`);
+        }
+
+        return config;
+      },
+      (error: AxiosError) => {
+        console.error('[HttpClient] Request interceptor error:', error);
+        return Promise.reject(error);
+      }
+    );
+
+    // Response interceptor for basic error handling
+    this.axiosInstance.interceptors.response.use(
+      (response: AxiosResponse) => {
+        // Log response in development
+        if (__DEV__) {
+          console.log(`[HTTP Response] ${response.status} ${response.config.url}`);
+        }
+
+        return response;
+      },
+      async (error: AxiosError) => {
+        // Log error in development
+        if (__DEV__) {
+          console.error('[HTTP Error]', {
+            url: error.config?.url,
+            status: error.response?.status,
+            message: error.message,
+          });
+        }
+
+        // Handle 401 Unauthorized - clear token
+        if (error.response?.status === 401) {
+          await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+        }
+
+        return Promise.reject(error);
+      }
+    );
+  }
+
+  // Public methods for making requests
+  async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.axiosInstance.get<T>(url, config);
+    return response.data;
+  }
+
+  async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.axiosInstance.post<T>(url, data, config);
+    return response.data;
+  }
+
+  async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.axiosInstance.put<T>(url, data, config);
+    return response.data;
+  }
+
+  async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.axiosInstance.patch<T>(url, data, config);
+    return response.data;
+  }
+
+  async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.axiosInstance.delete<T>(url, config);
+    return response.data;
+  }
+
+  // Get axios instance for advanced usage
+  getAxiosInstance(): AxiosInstance {
+    return this.axiosInstance;
+  }
+}
+
+// Create singleton instance
+const httpClient = new HttpClient();
+
+export default httpClient;
+
+// Export types and utilities
+export { httpClient };
+export type { AxiosRequestConfig, AxiosResponse, AxiosError };
