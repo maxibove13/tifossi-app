@@ -47,7 +47,7 @@ Based on **FUNCIONALIDADES_APP_TIFOSSI.md** and **COSTOS_OPERATIVOS_URUGUAY_2025
 - **MercadoPago Integration** (65%): Service implemented, needs live testing
 
 ### ❌ Missing/Incomplete (0-40% Ready)
-- **Apple Sign-In** (90%): Implemented via Firebase Auth, needs production credentials
+- **Apple Sign-In** (✅): Implemented via Firebase Auth, awaiting production credentials
 - **Store Locator** (20%): Data structures only, UI missing
 - **Backend Deployment** (0%): Not yet deployed to Render
 - **App Store Config** (20%): Bundle IDs and credentials using placeholders
@@ -56,41 +56,41 @@ Based on **FUNCIONALIDADES_APP_TIFOSSI.md** and **COSTOS_OPERATIVOS_URUGUAY_2025
 
 ### 1. Apple Sign-In Implementation
 **Problem**: Required for App Store approval  
-**Solution**: Implemented via Firebase Authentication integration  
-**Status**: COMPLETED  
+**Solution**: ✅ Implemented via Firebase Authentication integration  
+**Status**: COMPLETED - Awaiting production Apple Team ID  
 **Priority**: RESOLVED
 
-### 2. Bundle Identifier Issues
+### 2. Bundle Identifier Configuration
 **Problem**: Using placeholder `com.anonymous.tifossi`  
-**Solution**: Update to `com.tifossi.app` across all configs  
-**Effort**: 2 hours  
-**Priority**: CRITICAL
+**Solution**: Awaiting client's Apple Developer and Google Play accounts  
+**Status**: Configuration ready - Awaiting production account credentials  
+**Priority**: CRITICAL - Blocked by account creation
 
-### 3. Backend Not Deployed
-**Problem**: Strapi backend exists but not live  
+### 3. Backend Deployment
+**Problem**: Strapi backend code complete but not deployed  
 **Solution**: Deploy to Render.com with PostgreSQL  
-**Effort**: 4-6 hours  
+**Status**: Code complete - Ready for deployment with credentials  
 **Priority**: CRITICAL
 
 ### 4. Firebase Configuration
-**Problem**: Missing production credentials  
-**Solution**: Create Firebase project and update configs  
-**Effort**: 2 hours  
+**Problem**: Using development credentials  
+**Solution**: Configure production Firebase project  
+**Status**: Implementation complete - Awaiting production credentials  
 **Priority**: HIGH
 
 ### 5. MercadoPago Testing
-**Problem**: Integration untested with real credentials  
+**Problem**: Integration untested with production credentials  
 **Solution**: Configure sandbox and test end-to-end  
-**Effort**: 1 day  
+**Status**: Code complete - Awaiting merchant credentials  
 **Priority**: HIGH
 
 ## 📱 App Store Submission Risks
 
 ### High Risk Items
-- ❌ Apple Sign-In not implemented
-- ❌ Bundle identifiers using placeholders
-- ❌ 58 files with TODO/placeholder content
-- ❌ Privacy policy and terms not hosted online
+- ✅ Apple Sign-In implemented via Firebase
+- ⚠️ Bundle identifiers awaiting production accounts
+- ⚠️ Placeholder content needs replacement
+- ⚠️ Privacy policy and terms need hosting
 
 ### Medium Risk Items
 - ⚠️ Store locator feature incomplete

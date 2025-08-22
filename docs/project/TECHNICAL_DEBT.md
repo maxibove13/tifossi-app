@@ -7,7 +7,7 @@ This document tracks technical debt items identified during code audits that req
 
 ### Agent 5: Overlay Component Refactoring
 **Priority**: Medium
-**Estimated Effort**: 3-4 hours
+**Estimated Effort**: Small
 **Focus**: Eliminate duplication in 9 overlay components
 **Location**: `app/_components/store/product/overlay/**`
 
@@ -82,5 +82,5 @@ _Items will be moved here once resolved_
 
 ## Notes
 - Last audit: August 2025
-- Total estimated debt: 15-20 developer days
+- Total estimated debt: Medium to Large effort required
 - Critical items being addressed in current sprint

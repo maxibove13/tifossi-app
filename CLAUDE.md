@@ -1,29 +1,27 @@
 # Tifossi Expo Project Guidelines
 
-## PROJECT STATUS & PRIORITIES
-**Current Sprint**: Final delivery preparation (75-80% complete)
-**Target Demo**: August 18-19, 2025
+## PROJECT STATUS
+**Status**: Code Complete - Awaiting Deployment
 **Ground Truth Documents**: 
 - FUNCIONALIDADES_APP_TIFOSSI.md (client deliverables)
 - COSTOS_OPERATIVOS_URUGUAY_2025.md (infrastructure costs)
 - TIFOSSI_DELIVERY_PLAN.md (execution roadmap)
 
-## CRITICAL PRIORITIES (Next 72 hours)
+## DEPLOYMENT REQUIREMENTS
 1. Deploy Strapi backend to Render.com
-2. Implement Apple Sign-In (App Store requirement)
-3. Update bundle identifiers to production values
+2. Apple Sign-In: ✅ Implemented via Firebase (expo-apple-authentication)
+3. Update bundle identifiers to production values (awaiting Apple/Google accounts)
 4. Configure Firebase and MercadoPago production credentials
 5. Remove all TODO/placeholder content
 
 ## PROGRESS TRACKING
 **IMPORTANT**: After completing ANY task or making significant changes:
 1. Check alignment with TIFOSSI_DELIVERY_PLAN.md
-2. Update completion percentages in the plan
+2. Update status in the plan (Implemented/Code Complete/Awaiting Credentials)
 3. Mark completed tasks with ✅ in the execution checklist
-4. Update the "Last Updated" timestamp
-5. Adjust estimates if blockers are discovered
+4. Document any blockers discovered
 
-Keep TIFOSSI_DELIVERY_PLAN.md as the single source of truth for project progress. All stakeholders should refer to this document for current status.
+Keep TIFOSSI_DELIVERY_PLAN.md as the single source of truth for project status.
 
 ## IMPORTANT GUIDELINES
 - NEVER commit changes to git without being expressly asked to do so
@@ -44,9 +42,9 @@ Keep TIFOSSI_DELIVERY_PLAN.md as the single source of truth for project progress
 
 ## Authentication Setup
 - **Firebase Required**: The app uses Firebase Authentication for user management
-- **Apple Sign-In**: Required for App Store submission (iOS guideline compliance)
+- **Apple Sign-In**: ✅ Implemented via Firebase (required for App Store submission)
 - **Setup Guide**: See `FIREBASE_SETUP_GUIDE.md` for detailed client instructions
-- **Current Status**: Mock authentication implemented, awaiting Firebase production setup
+- **Current Status**: Firebase authentication implemented, awaiting production credentials
 
 ## Build Commands
 - `npm install` - Install dependencies

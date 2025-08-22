@@ -157,8 +157,8 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 
 ### Included (6 months)
 - Bug fixes for critical issues
-- Minor adjustments (3 months)
-- Re-submission support if rejected (30 days)
+- Minor adjustments
+- Re-submission support if rejected
 
 ### Not Included
 - New features

@@ -91,3 +91,8 @@ ios/tifossi.xcodeproj/project.pbxproj
 # Test coverage
 coverage/
 *.lcov
+test-report.xml
+
+# Temporary files
+sitemaps.png
+*.test.ts
