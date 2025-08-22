@@ -38,8 +38,6 @@ class ErrorReportingService {
     if (this.breadcrumbs.length > this.maxBreadcrumbs) {
       this.breadcrumbs = this.breadcrumbs.slice(-this.maxBreadcrumbs);
     }
-
-    console.log('[Error Reporting] Breadcrumb added:', breadcrumb.message);
   }
 
   /**
@@ -47,20 +45,9 @@ class ErrorReportingService {
    */
   async reportCrash(report: CrashReport): Promise<void> {
     try {
-      console.error('[Error Reporting] Crash reported:', {
-        error: report.error.message,
-        stack: report.error.stack,
-        componentStack: report.componentStack,
-        contextInfo: report.contextInfo,
-        metadata: report.metadata,
-        breadcrumbs: this.breadcrumbs,
-      });
-
       // In a real app, you would send this to a crash reporting service
       // For now, we just log it
-    } catch (err) {
-      console.error('[Error Reporting] Failed to report crash:', err);
-    }
+    } catch (err) {}
   }
 
   /**
@@ -68,19 +55,9 @@ class ErrorReportingService {
    */
   async reportError(report: ErrorReport): Promise<void> {
     try {
-      console.error('[Error Reporting] Error reported:', {
-        error: report.error.message,
-        stack: report.error.stack,
-        contextInfo: report.contextInfo,
-        metadata: report.metadata,
-        breadcrumbs: this.breadcrumbs,
-      });
-
       // In a real app, you would send this to an error reporting service
       // For now, we just log it
-    } catch (err) {
-      console.error('[Error Reporting] Failed to report error:', err);
-    }
+    } catch (err) {}
   }
 
   /**

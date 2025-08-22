@@ -40,16 +40,12 @@ class FirebaseConfigService {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      console.log('[Firebase] Already initialized');
       return;
     }
 
     try {
-      console.warn('[Firebase] Using mock Firebase implementation - Firebase not configured');
       this.isInitialized = true;
-      console.log('[Firebase] Mock initialization completed');
     } catch (error) {
-      console.error('[Firebase] Mock initialization failed:', error);
       throw error;
     }
   }
@@ -59,7 +55,6 @@ class FirebaseConfigService {
    */
   getApp(): FirebaseApp {
     if (!this.isInitialized) {
-      console.warn('[Firebase] Firebase not initialized, returning mock app');
     }
     return this.mockApp;
   }
@@ -69,7 +64,6 @@ class FirebaseConfigService {
    */
   getAuth(): Auth {
     if (!this.isInitialized) {
-      console.warn('[Firebase] Firebase not initialized, returning mock auth');
     }
     return this.mockAuth;
   }
@@ -79,7 +73,6 @@ class FirebaseConfigService {
    */
   getFirestore(): Firestore {
     if (!this.isInitialized) {
-      console.warn('[Firebase] Firebase not initialized, returning mock firestore');
     }
     return this.mockFirestore;
   }
@@ -109,7 +102,6 @@ class FirebaseConfigService {
    * Reset Firebase (for testing)
    */
   reset(): void {
-    console.log('[Firebase] Resetting mock Firebase configuration');
     this.isInitialized = false;
     this.mockApp = {};
     this.mockAuth = {};

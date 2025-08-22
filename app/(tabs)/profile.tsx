@@ -9,7 +9,6 @@ import {
   ViewStyle,
   TextStyle,
   ImageStyle,
-  Button as ReactNativeButton,
   Alert,
   Modal,
 } from 'react-native';
@@ -81,8 +80,7 @@ const LogoutButton = () => {
           await logout();
           // Navigate to the home screen
           router.replace('/(home)');
-        } catch (error) {
-          console.error('Error during logout:', error);
+        } catch {
           // Hide splash screen and show error
           setShowSplashScreen(false);
           Alert.alert('Error', 'No se pudo cerrar sesión. Intenta nuevamente.');
@@ -158,8 +156,7 @@ const LoggedInProfileCard = () => {
       // Update profile picture through Firebase auth service
       await updateProfilePicture(imageUri);
       setProfileImage(imageUri);
-    } catch (error) {
-      console.error('Failed to update profile picture:', error);
+    } catch {
       Alert.alert('Error', 'No se pudo actualizar la imagen de perfil.');
     }
   };
@@ -182,7 +179,6 @@ const LoggedInProfileCard = () => {
 
 export default function ProfileScreen() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn); // Ensure isLoggedIn is part of authStore state
-  const devToggleLogin = useAuthStore((state) => state.dev_toggleLogin);
 
   return (
     <View style={styles.container}>
@@ -194,27 +190,10 @@ export default function ProfileScreen() {
         >
           <View style={styles.backgroundOverlay} />
           <LoggedInProfileCard />
-
-          {/* DEV ONLY: Toggle Login Button */}
-          <View style={styles.devButtonContainer}>
-            <ReactNativeButton
-              title="DEV: Toggle Login"
-              onPress={devToggleLogin}
-              color={colors.secondary}
-            />
-          </View>
         </ImageBackground>
       ) : (
         <>
           <ReusableAuthPrompt message="Aún no iniciaste sesión." style={styles.authPromptStyle} />
-          {/* DEV ONLY: Toggle Login Button */}
-          <View style={styles.devButtonContainer}>
-            <ReactNativeButton
-              title="DEV: Toggle Login"
-              onPress={devToggleLogin}
-              color={colors.secondary}
-            />
-          </View>
         </>
       )}
 
@@ -266,7 +245,6 @@ type Styles = {
   actionButtonsContainer: ViewStyle;
   listItemContainer: ViewStyle;
   listItemText: TextStyle;
-  devButtonContainer: ViewStyle;
   authPromptStyle: ViewStyle;
   logoutButtonContainer: ViewStyle;
   logoutButton: ViewStyle;
@@ -372,11 +350,6 @@ const styles = StyleSheet.create<Styles>({
     lineHeight: lineHeights.lg,
     color: colors.primary,
     textAlign: 'left',
-  },
-  devButtonContainer: {
-    marginTop: spacing.lg,
-    zIndex: 2, // Ensure it's above the overlay but respects card content
-    alignSelf: 'center',
   },
   authPromptStyle: {
     marginVertical: spacing.lg,

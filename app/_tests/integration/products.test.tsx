@@ -25,7 +25,7 @@ jest.mock('../../_data/categories', () => ({
 }));
 
 jest.mock('../../_data/models', () => ({
-  getModelsByCategory: jest.fn(() => [
+  getModelsByCategory: jest.fn().mockImplementation(() => [
     { id: 'all', name: 'All Models' },
     { id: 'model-1', name: 'Model 1' },
   ]),
@@ -41,11 +41,11 @@ jest.mock('../../_types/constants', () => ({
 }));
 
 jest.mock('../../hooks/useProductFilters', () => ({
-  useProductFilters: jest.fn((products) => products),
+  useProductFilters: jest.fn().mockImplementation((products) => products),
 }));
 
 jest.mock('../../_types/product-status', () => ({
-  hasStatus: jest.fn(() => true),
+  hasStatus: jest.fn().mockImplementation(() => true),
 }));
 
 // Mock expo-router to provide navigation context

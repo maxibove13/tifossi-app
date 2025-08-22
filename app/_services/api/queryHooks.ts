@@ -24,7 +24,6 @@ export function useProducts(): QueryResult<Product[]> {
       const products = await apiManager.fetchProducts();
       setData(products);
     } catch (err) {
-      console.error('Failed to fetch products:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch products');
     } finally {
       setIsLoading(false);
@@ -64,7 +63,6 @@ export function useProduct(productId: string | null): QueryResult<Product> {
       const product = await apiManager.fetchProductById(productId);
       setData(product || null);
     } catch (err) {
-      console.error('Failed to fetch product:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch product');
     } finally {
       setIsLoading(false);

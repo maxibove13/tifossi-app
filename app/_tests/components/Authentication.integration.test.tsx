@@ -38,27 +38,15 @@ jest.mock('expo-router', () => ({
     canGoBack: mockCanGoBack,
   },
   Stack: {
-    Screen: ({ options }: any) => <div data-testid="stack-screen" {...options} />,
+    Screen: ({ options }: { options?: Record<string, unknown> }) => (
+      <div data-testid="stack-screen" {...options} />
+    ),
   },
 }));
 
-// Mock React Native components for testing
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return {
-    ...RN,
-    ScrollView: ({ children, ...props }: any) => <RN.View {...props}>{children}</RN.View>,
-    SafeAreaView: ({ children, ...props }: any) => <RN.View {...props}>{children}</RN.View>,
-    ActivityIndicator: ({ color, size }: any) => (
-      <div data-testid="loading-indicator" style={{ color, fontSize: size }}>
-        Loading...
-      </div>
-    ),
-  };
-});
+// React Native component mocking is handled in setup.ts
 
-// Mock SVG components
-jest.mock('../../../assets/icons/close.svg', () => 'CloseSVG');
+// SVG components are now handled by jest.config.js moduleNameMapper
 
 // Mock Firebase SDK
 const mockSignInWithEmailAndPassword = jest.fn();
@@ -68,14 +56,14 @@ const mockSendPasswordResetEmail = jest.fn();
 const mockSignOut = jest.fn();
 
 jest.mock('firebase/auth', () => ({
-  getAuth: jest.fn(() => ({})),
+  getAuth: jest.fn().mockImplementation(() => ({})),
   signInWithEmailAndPassword: mockSignInWithEmailAndPassword,
   signInWithPopup: mockSignInWithPopup,
   createUserWithEmailAndPassword: mockCreateUserWithEmailAndPassword,
   sendPasswordResetEmail: mockSendPasswordResetEmail,
   signOut: mockSignOut,
-  GoogleAuthProvider: jest.fn(() => ({})),
-  onAuthStateChanged: jest.fn((_auth, _callback) => {
+  GoogleAuthProvider: jest.fn().mockImplementation(() => ({})),
+  onAuthStateChanged: jest.fn().mockImplementation((_auth, _callback) => {
     // Return unsubscribe function
     return () => {};
   }),

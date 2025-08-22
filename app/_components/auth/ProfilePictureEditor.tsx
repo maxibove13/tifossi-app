@@ -24,13 +24,7 @@ export default function ProfilePictureEditor({
 
     try {
       // Mock the image selection and upload process
-      // In a real implementation, we would use:
-      // const result = await ImagePicker.launchImageLibraryAsync({
-      //   mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      //   allowsEditing: true,
-      //   aspect: [1, 1],
-      //   quality: 0.8,
-      // });
+      // In a real implementation, we would use ImagePicker.launchImageLibraryAsync()
 
       // For demo, simulate a delay and a mock result
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -56,7 +50,6 @@ export default function ProfilePictureEditor({
         Alert.alert('Éxito', 'Imagen de perfil actualizada correctamente.');
       }
     } catch (error) {
-      console.error('Error picking or uploading image:', error);
       Alert.alert('Error', 'No se pudo actualizar la imagen de perfil. Intenta nuevamente.');
     } finally {
       setIsUploading(false);

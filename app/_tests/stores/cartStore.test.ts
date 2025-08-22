@@ -17,12 +17,18 @@ const createMockCartStore = () => {
   };
 
   let state = { ...initialState };
+  let idCounter = 0;
 
   return {
     getState: () => state,
 
     // Actions
-    addItem: jest.fn((product: any, quantity = 1) => {
+    addItem: jest.fn().mockImplementation((product: any, quantity = 1) => {
+      // Don't add if quantity is zero or negative
+      if (quantity <= 0) {
+        return;
+      }
+
       const existingItem = state.items.find((item) => item.productId === product.id);
 
       if (existingItem) {
@@ -33,7 +39,7 @@ const createMockCartStore = () => {
         state.items = [
           ...state.items,
           {
-            id: `cart-item-${Date.now()}`,
+            id: `cart-item-${++idCounter}`,
             productId: product.id,
             product,
             quantity,
@@ -46,13 +52,13 @@ const createMockCartStore = () => {
       state.total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     }),
 
-    removeItem: jest.fn((itemId: string) => {
+    removeItem: jest.fn().mockImplementation((itemId: string) => {
       state.items = state.items.filter((item) => item.id !== itemId);
       state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
       state.total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     }),
 
-    updateItemQuantity: jest.fn((itemId: string, quantity: number) => {
+    updateItemQuantity: jest.fn().mockImplementation((itemId: string, quantity: number) => {
       if (quantity <= 0) {
         state.items = state.items.filter((item) => item.id !== itemId);
       } else {
@@ -64,24 +70,25 @@ const createMockCartStore = () => {
       state.total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     }),
 
-    clearCart: jest.fn(() => {
+    clearCart: jest.fn().mockImplementation(() => {
       state.items = [];
       state.total = 0;
       state.itemCount = 0;
       state.error = null;
     }),
 
-    setLoading: jest.fn((loading: boolean) => {
+    setLoading: jest.fn().mockImplementation((loading: boolean) => {
       state.isLoading = loading;
     }),
 
-    setError: jest.fn((error: string | null) => {
+    setError: jest.fn().mockImplementation((error: string | null) => {
       state.error = error;
     }),
 
     // Reset for testing
     reset: () => {
       state = { ...initialState };
+      idCounter = 0;
     },
   };
 };
@@ -365,7 +372,9 @@ describe('Cart Store', () => {
 
       state = cartStore.getState();
 
+      // After removing product2, only product1 should remain
       expect(state.items).toHaveLength(1);
+      expect(state.items[0].productId).toBe(product1.id);
       expect(state.itemCount).toBe(1);
       expect(state.total).toBe(product1.price);
     });

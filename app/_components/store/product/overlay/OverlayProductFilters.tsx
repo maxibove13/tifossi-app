@@ -11,7 +11,6 @@ import {
   ScrollView,
   // TextStyle, // Removed unused import
 } from 'react-native';
-// import Slider from '@react-native-community/slider'; // Removed single slider
 import MultiSlider from '@ptomasroos/react-native-multi-slider'; // Added multi-slider
 import { colors } from '../../../../_styles/colors';
 import { fonts, fontSizes, fontWeights, lineHeights } from '../../../../_styles/typography';
@@ -19,7 +18,6 @@ import { spacing, radius } from '../../../../_styles/spacing';
 import { ProductColor, ProductSize } from '../../../../_types/product';
 import { ProductLabel } from '../../../../_types/product-status';
 import { Ionicons } from '@expo/vector-icons'; // Added Ionicons import
-// import Button from '../../../ui/buttons/Button'; // Removed Button import
 
 const { height } = Dimensions.get('window'); // Re-add this line
 

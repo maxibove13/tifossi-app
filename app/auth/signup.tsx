@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -14,8 +15,21 @@ import { colors } from '../_styles/colors';
 import { spacing, radius } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
+import AppleSignInButton from '../_components/ui/buttons/AppleSignInButton';
+import AppleSignInHelpText from '../_components/auth/AppleSignInHelp';
 import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
+import { APPLE_AUTH_ERRORS_ES } from '../_types/auth';
+import { UnknownError } from '../_types/ui';
+
+// Helper function to extract error message from unknown error types
+function getErrorMessage(error: UnknownError): string {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return 'Error desconocido. Intenta nuevamente.';
+}
 
 export default function SignupScreen() {
   const [name, setName] = useState('');
@@ -26,7 +40,11 @@ export default function SignupScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Apple Sign-In specific state
+  const [appleError, setAppleError] = useState<string | null>(null);
+
   const register = useAuthStore((state) => state.register);
+  const loginWithApple = useAuthStore((state) => state.loginWithApple);
   const isLoading = useAuthStore((state) => state.isLoading);
 
   const validateEmail = (text: string) => {
@@ -83,9 +101,49 @@ export default function SignupScreen() {
         pathname: '/auth/verification-code',
         params: { email },
       });
-    } catch (error: any) {
+    } catch (error: UnknownError) {
       // Handle signup error
-      setError(error.message || 'Error al crear la cuenta o el correo ya está en uso.');
+      setError(getErrorMessage(error) || 'Error al crear la cuenta o el correo ya está en uso.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAppleSignUp = async () => {
+    setError(null);
+    setAppleError(null);
+    setIsSubmitting(true);
+
+    try {
+      // Apple Sign-In returns same result for signup/signin
+      await loginWithApple();
+
+      // Navigate to profile after successful Apple sign-in
+      // Apple users typically have complete profiles from first sign-in
+      router.replace('/(tabs)/profile');
+    } catch (error: UnknownError) {
+      const errorObj = error && typeof error === 'object' ? (error as any) : {};
+      const errorCode = errorObj?.code || errorObj?.name || 'unknown-error';
+      const errorMessage = getErrorMessage(error) || APPLE_AUTH_ERRORS_ES.ERROR_UNKNOWN;
+
+      // Check if user cancelled - don't show error
+      if (
+        errorCode.includes('canceled') ||
+        errorCode.includes('cancel') ||
+        errorMessage.includes('cancelado')
+      ) {
+        return;
+      }
+
+      // Set error state
+      setAppleError(errorMessage);
+
+      // Also set general error for fallback display
+      if (errorCode.includes('email_already_in_use')) {
+        setError('Este email ya está registrado. ¿Deseas iniciar sesión?');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -113,6 +171,28 @@ export default function SignupScreen() {
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.formContainer}>
+            {/* Apple Sign-In (iOS only) */}
+            {Platform.OS === 'ios' && (
+              <>
+                <AppleSignInButton
+                  onPress={handleAppleSignUp}
+                  type="signup"
+                  disabled={isSubmitting || isLoading}
+                  loading={isSubmitting && false} // Don't show loading on Apple button when form is submitting
+                  style={styles.socialButton}
+                />
+                <AppleSignInHelpText
+                  context="signup"
+                  showInline={true}
+                  style={styles.appleHelpText}
+                />
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>o</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+              </>
+            )}
             <Input
               placeholder="Nombre Completo"
               value={name}
@@ -216,6 +296,8 @@ export default function SignupScreen() {
             {error && error.includes('términos') ? (
               <Text style={styles.errorText}>{error}</Text>
             ) : null}
+
+            {appleError && <Text style={styles.errorText}>{appleError}</Text>}
           </View>
         </ScrollView>
       </View>
@@ -366,5 +448,32 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.md,
     color: colors.primary,
+  },
+  // Social sign-in button styles
+  socialButton: {
+    width: '100%',
+    height: 48,
+    borderRadius: radius.xxl,
+    marginBottom: spacing.sm,
+  },
+  appleHelpText: {
+    marginBottom: spacing.lg,
+  },
+  // Divider styles
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.lg,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    marginHorizontal: spacing.md,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    color: colors.secondary,
   },
 });

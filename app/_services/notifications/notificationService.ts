@@ -163,7 +163,6 @@ function getApiErrorNotificationContent(
               text: 'Retry',
               onPress: () => {
                 // This would trigger a retry mechanism
-                console.log('Retrying after network error...');
               },
             }
           : undefined,
@@ -177,7 +176,6 @@ function getApiErrorNotificationContent(
           text: 'Login',
           onPress: () => {
             // Navigate to login screen
-            console.log('Navigating to login...');
           },
         },
       };
@@ -207,9 +205,7 @@ function getApiErrorNotificationContent(
         actionButton: {
           text: 'Retry Later',
           onPress: () => {
-            setTimeout(() => {
-              console.log('Retrying after rate limit...');
-            }, 5000);
+            setTimeout(() => {}, 5000);
           },
         },
       };
@@ -221,9 +217,7 @@ function getApiErrorNotificationContent(
         actionButton: apiError.retryable
           ? {
               text: 'Retry',
-              onPress: () => {
-                console.log('Retrying after server error...');
-              },
+              onPress: () => {},
             }
           : undefined,
       };
@@ -234,9 +228,7 @@ function getApiErrorNotificationContent(
         message: `${contextPrefix}The request took too long to complete. Please try again.`,
         actionButton: {
           text: 'Retry',
-          onPress: () => {
-            console.log('Retrying after timeout...');
-          },
+          onPress: () => {},
         },
       };
 
@@ -306,7 +298,7 @@ class NotificationService {
         priority: 'medium',
         actionButton: {
           text: 'Retry',
-          onPress: () => console.log('Retrying network request...'),
+          onPress: () => {},
         },
       }
     );
@@ -318,7 +310,7 @@ class NotificationService {
       duration: 0, // Persistent until manually dismissed
       actionButton: {
         text: 'Login',
-        onPress: () => console.log('Navigating to login...'),
+        onPress: () => {},
       },
     });
   }
@@ -332,7 +324,7 @@ class NotificationService {
         duration: 10000,
         actionButton: {
           text: 'Try Again',
-          onPress: () => console.log('Retrying payment...'),
+          onPress: () => {},
         },
       }
     );
@@ -364,7 +356,7 @@ class NotificationService {
       duration: 0, // Persistent
       actionButton: {
         text: 'Refresh',
-        onPress: () => console.log('Refreshing after error...'),
+        onPress: () => {},
       },
     });
   }

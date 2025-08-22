@@ -56,7 +56,6 @@ export const useFavoritesStore = create<FavoritesState>()(
             throw new Error('Failed to sync favorites');
           }
         } catch (e) {
-          console.error('Failed to sync favorite add:', e);
           set({
             productIds: previousIds,
             isLoading: false,
@@ -82,7 +81,6 @@ export const useFavoritesStore = create<FavoritesState>()(
             throw new Error('Failed to sync favorites');
           }
         } catch (e) {
-          console.error('Failed to sync favorite remove:', e);
           set({
             productIds: previousIds,
             isLoading: false,
@@ -117,7 +115,6 @@ export const useFavoritesStore = create<FavoritesState>()(
             throw new Error('Failed to sync favorites with server');
           }
         } catch (e) {
-          console.error('Failed to sync favorites with server:', e);
           set({
             isLoading: false,
             error: 'Failed to sync favorites with server.',
@@ -139,7 +136,7 @@ export const useFavoritesStore = create<FavoritesState>()(
             pendingOperations: [],
             lastSyncTimestamp: Date.now(),
           });
-        } catch (_error) {
+        } catch {
           set({ actionStatus: 'failed' });
         }
       },
@@ -152,10 +149,6 @@ export const useFavoritesStore = create<FavoritesState>()(
         // Don't persist loading states or errors
       }),
       onRehydrateStorage: () => (state) => {
-        console.log('[Favorites Store] Hydration completed', {
-          favoriteCount: state?.productIds?.length || 0,
-        });
-
         // Reset transient state after hydration
         if (state) {
           state.isLoading = false;

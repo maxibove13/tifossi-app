@@ -97,7 +97,7 @@ class ApiErrorHandler {
   /**
    * Handles Axios-specific errors
    */
-  private handleAxiosError(error: AxiosError, timestamp: number, context?: string): ApiError {
+  private handleAxiosError(error: AxiosError, timestamp: number, _context?: string): ApiError {
     const response = error.response;
     const request = error.request;
 
@@ -297,19 +297,10 @@ class ApiErrorHandler {
     if (__DEV__) {
       switch (logLevel) {
         case 'error':
-          console.error(message, {
-            type: apiError.type,
-            statusCode: apiError.statusCode,
-            details: apiError.details,
-            retryable: apiError.retryable,
-            originalError: apiError.originalError,
-          });
           break;
         case 'warn':
-          console.warn(message, apiError);
           break;
         default:
-          console.log(message, apiError);
       }
     }
   }
@@ -338,9 +329,7 @@ class ApiErrorHandler {
     this.errorListeners.forEach((listener) => {
       try {
         listener(apiError);
-      } catch (error) {
-        console.error('[ApiErrorHandler] Error in listener:', error);
-      }
+      } catch (error) {}
     });
   }
 

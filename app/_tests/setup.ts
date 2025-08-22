@@ -8,16 +8,109 @@
 import '@testing-library/jest-native/extend-expect';
 import 'react-native-gesture-handler/jestSetup';
 
-// Polyfills for MSW
+// Polyfills for MSW and modern JavaScript features
 import { TextEncoder, TextDecoder } from 'util';
 
 // Mock AsyncStorage for testing
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 
-// Mock Dimensions
-import { Dimensions } from 'react-native';
-global.TextEncoder = TextEncoder;
+// Mock React Native Dimensions early
+jest.mock('react-native/Libraries/Utilities/Dimensions', () => ({
+  get: jest.fn(() => ({
+    width: 375,
+    height: 812,
+    scale: 2,
+    fontScale: 1,
+  })),
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
+}));
+
+// Mock PixelRatio
+jest.mock('react-native/Libraries/Utilities/PixelRatio', () => ({
+  get: jest.fn(() => 2),
+  getFontScale: jest.fn(() => 1),
+  getPixelSizeForLayoutSize: jest.fn((layoutSize) => layoutSize * 2),
+  roundToNearestPixel: jest.fn((layoutSize) => Math.round(layoutSize)),
+}));
+
+// Mock StyleSheet to avoid PixelRatio issues
+jest.mock('react-native/Libraries/StyleSheet/StyleSheet', () => ({
+  create: jest.fn((styles) => styles),
+  flatten: jest.fn((style) => style),
+  absoluteFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  hairlineWidth: 1,
+}));
+// Set up global polyfills
+global.TextEncoder = TextEncoder as any;
 global.TextDecoder = TextDecoder as any;
+
+// Add basic Response, Request, Headers polyfills for MSW
+if (typeof global.Response === 'undefined') {
+  global.Response = class MockResponse {
+    body: any;
+    status: number;
+    statusText: string;
+    ok: boolean;
+    headers: any;
+
+    constructor(body: any, init: any = {}) {
+      this.body = body;
+      this.status = init.status || 200;
+      this.statusText = init.statusText || 'OK';
+      this.ok = this.status >= 200 && this.status < 300;
+      this.headers = init.headers || new Map();
+    }
+    async json() {
+      return typeof this.body === 'string' ? JSON.parse(this.body) : this.body;
+    }
+    async text() {
+      return typeof this.body === 'string' ? this.body : JSON.stringify(this.body);
+    }
+    clone() {
+      return this;
+    }
+  } as any;
+}
+
+if (typeof global.Request === 'undefined') {
+  global.Request = class MockRequest {
+    url: string;
+    method: string;
+    headers: any;
+
+    constructor(input: any, init: any = {}) {
+      this.url = input;
+      this.method = init.method || 'GET';
+      this.headers = init.headers || new Map();
+    }
+  } as any;
+}
+
+if (typeof global.Headers === 'undefined') {
+  global.Headers = Map as any;
+}
+
+// Mock BroadcastChannel for MSW
+if (typeof global.BroadcastChannel === 'undefined') {
+  global.BroadcastChannel = class MockBroadcastChannel {
+    name: string;
+
+    constructor(name: string) {
+      this.name = name;
+    }
+    postMessage() {}
+    addEventListener() {}
+    removeEventListener() {}
+    close() {}
+  } as any;
+}
 
 // Start MSW server for tests (optional - skip if MSW not available)
 try {
@@ -30,7 +123,7 @@ try {
     mswHelpers.stopServer();
   });
 } catch (error) {
-  console.warn('MSW setup skipped - MSW not available for tests');
+  // MSW setup skipped - MSW not available for tests
 }
 jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
 
@@ -204,6 +297,9 @@ jest.mock('expo-linking', () => ({
   removeEventListener: jest.fn(),
 }));
 
+// Apple authentication is mocked in individual test files when needed
+// since expo-apple-authentication is not installed in all environments
+
 // Mock expo-router
 jest.mock('expo-router', () => ({
   useRouter: () => ({
@@ -303,9 +399,33 @@ jest.mock('@tanstack/react-query', () => ({
   QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// Mock zustand
+// Mock zustand with proper implementation
 jest.mock('zustand', () => ({
-  create: jest.fn((fn) => fn),
+  create: jest.fn(() => (fn: any) => {
+    const state = fn(
+      jest.fn(), // setState
+      jest.fn(), // getState
+      { setState: jest.fn(), getState: jest.fn(), subscribe: jest.fn(), destroy: jest.fn() } // store
+    );
+
+    const hook = jest.fn(() => state) as any;
+    hook.getState = jest.fn(() => state);
+    hook.setState = jest.fn();
+    hook.subscribe = jest.fn();
+    hook.destroy = jest.fn();
+
+    return hook;
+  }),
+}));
+
+// Mock zustand/middleware/persist
+jest.mock('zustand/middleware', () => ({
+  persist: jest.fn((fn) => fn),
+  createJSONStorage: jest.fn(() => ({
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+  })),
 }));
 
 // Mock fuse.js
@@ -326,20 +446,10 @@ const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
 const originalConsoleLog = console.log;
 
-console.error = (...args) => {
-  if (args[0]?.includes?.('Error loading font')) return;
-  if (args[0]?.includes?.('react-native-gesture-handler')) return;
-  if (args[0]?.includes?.('Warning: ReactDOM.render is no longer supported')) return;
-  if (args[0]?.includes?.("Warning: Can't perform a React state update")) return;
-  originalConsoleError(...args);
-};
+// Silent mock implementation for tests
+console.error = jest.fn();
 
-console.warn = (...args) => {
-  if (args[0]?.includes?.('fontFamily')) return;
-  if (args[0]?.includes?.('Reanimated')) return;
-  if (args[0]?.includes?.('VirtualizedLists should never be nested')) return;
-  originalConsoleWarn(...args);
-};
+console.warn = jest.fn();
 
 // Mock global performance for performance testing
 global.performance = {
@@ -352,12 +462,7 @@ global.performance = {
   getEntriesByName: jest.fn(() => []),
   getEntriesByType: jest.fn(() => []),
 } as any;
-jest.spyOn(Dimensions, 'get').mockReturnValue({
-  width: 375,
-  height: 812,
-  scale: 2,
-  fontScale: 1,
-});
+// Dimensions mock is handled above
 
 // Mock Platform
 jest.mock('react-native/Libraries/Utilities/Platform', () => ({
@@ -366,6 +471,48 @@ jest.mock('react-native/Libraries/Utilities/Platform', () => ({
   isPad: false,
   isTVOS: false,
   Version: 16,
+}));
+
+// Mock Settings
+jest.mock('react-native/Libraries/Settings/Settings', () => ({
+  get: jest.fn(),
+  set: jest.fn(),
+  watchKeys: jest.fn(),
+  clearWatch: jest.fn(),
+}));
+
+// Mock TurboModuleRegistry
+jest.mock('react-native/Libraries/TurboModule/TurboModuleRegistry', () => ({
+  getEnforcing: jest.fn().mockReturnValue({}),
+  get: jest.fn().mockReturnValue({}),
+}));
+
+// Mock native modules that cause issues
+jest.mock('react-native/Libraries/BatchedBridge/NativeModules', () => ({
+  SettingsManager: {},
+  DeviceInfo: {},
+}));
+
+// Mock Alert for tests
+jest.mock('react-native/Libraries/Alert/Alert', () => ({
+  alert: jest.fn(),
+}));
+
+// Mock Firebase
+jest.mock('@react-native-firebase/app', () => ({
+  default: jest.fn(() => ({
+    onReady: jest.fn(() => Promise.resolve()),
+  })),
+}));
+
+jest.mock('@react-native-firebase/auth', () => ({
+  default: jest.fn(() => ({
+    signInWithEmailAndPassword: jest.fn(() => Promise.resolve()),
+    createUserWithEmailAndPassword: jest.fn(() => Promise.resolve()),
+    signOut: jest.fn(() => Promise.resolve()),
+    onAuthStateChanged: jest.fn(),
+    currentUser: null,
+  })),
 }));
 
 // Global test timeout

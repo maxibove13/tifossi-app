@@ -105,7 +105,7 @@ class MercadoPagoService {
   async createPaymentPreference(orderData: OrderData): Promise<PaymentPreference> {
     try {
       if (!this.authToken) {
-        throw new Error('Authentication token required');
+        throw new Error('Se requiere autenticación');
       }
 
       const response = await fetch(`${this.baseUrl}/api/payment/create-preference`, {
@@ -120,14 +120,14 @@ class MercadoPagoService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `HTTP ${response.status}: Failed to create payment preference`
+          errorData.message || `Error ${response.status}: Error al crear preferencia de pago`
         );
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data) {
-        throw new Error('Invalid response format');
+        throw new Error('Formato de respuesta inválido');
       }
 
       return {
@@ -136,9 +136,8 @@ class MercadoPagoService {
         externalReference: result.data.preference.externalReference,
       };
     } catch (error) {
-      console.error('Error creating payment preference:', error);
       throw new Error(
-        `Failed to create payment preference: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Error al crear preferencia de pago: ${error instanceof Error ? error.message : 'Error desconocido'}`
       );
     }
   }
@@ -172,7 +171,7 @@ class MercadoPagoService {
       if (result.type === 'cancel') {
         return {
           success: false,
-          error: 'Payment cancelled by user',
+          error: 'Pago cancelado por el usuario',
         };
       }
 
@@ -183,10 +182,9 @@ class MercadoPagoService {
         orderId: preference.externalReference,
       };
     } catch (error) {
-      console.error('Error initiating payment:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to open payment page',
+        error: error instanceof Error ? error.message : 'No se pudo abrir la página de pago',
       };
     }
   }
@@ -227,10 +225,9 @@ class MercadoPagoService {
         paymentId: params.payment_id as string,
         collectionId: params.collection_id as string,
         status: paymentStatus,
-        error: status === 'failure' ? 'Payment was rejected' : undefined,
+        error: status === 'failure' ? 'El pago fue rechazado' : undefined,
       };
-    } catch (error) {
-      console.error('Error parsing payment callback:', error);
+    } catch {
       return null;
     }
   }
@@ -241,7 +238,7 @@ class MercadoPagoService {
   async verifyPaymentStatus(paymentId: string): Promise<PaymentStatus> {
     try {
       if (!this.authToken) {
-        throw new Error('Authentication token required');
+        throw new Error('Se requiere autenticación');
       }
 
       const response = await fetch(`${this.baseUrl}/api/payment/verify/${paymentId}`, {
@@ -253,20 +250,21 @@ class MercadoPagoService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: Failed to verify payment`);
+        throw new Error(
+          errorData.message || `Error ${response.status}: Error al verificar el pago`
+        );
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data) {
-        throw new Error('Invalid response format');
+        throw new Error('Formato de respuesta inválido');
       }
 
       return result.data;
     } catch (error) {
-      console.error('Error verifying payment status:', error);
       throw new Error(
-        `Failed to verify payment: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Error al verificar pago: ${error instanceof Error ? error.message : 'Error desconocido'}`
       );
     }
   }
@@ -277,7 +275,7 @@ class MercadoPagoService {
   async getUserOrders(page: number = 1, pageSize: number = 10, status?: string): Promise<any> {
     try {
       if (!this.authToken) {
-        throw new Error('Authentication token required');
+        throw new Error('Se requiere autenticación');
       }
 
       const params = new URLSearchParams({
@@ -295,20 +293,19 @@ class MercadoPagoService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: Failed to fetch orders`);
+        throw new Error(errorData.message || `Error ${response.status}: Error al obtener pedidos`);
       }
 
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error('Failed to fetch orders');
+        throw new Error('Error al obtener pedidos');
       }
 
       return result.data;
     } catch (error) {
-      console.error('Error fetching orders:', error);
       throw new Error(
-        `Failed to fetch orders: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Error al obtener pedidos: ${error instanceof Error ? error.message : 'Error desconocido'}`
       );
     }
   }
@@ -319,7 +316,7 @@ class MercadoPagoService {
   async getOrder(orderId: string): Promise<any> {
     try {
       if (!this.authToken) {
-        throw new Error('Authentication token required');
+        throw new Error('Se requiere autenticación');
       }
 
       const response = await fetch(`${this.baseUrl}/api/payment/orders/${orderId}`, {
@@ -331,20 +328,19 @@ class MercadoPagoService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: Failed to fetch order`);
+        throw new Error(errorData.message || `Error ${response.status}: Error al obtener pedido`);
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data) {
-        throw new Error('Invalid response format');
+        throw new Error('Formato de respuesta inválido');
       }
 
       return result.data;
     } catch (error) {
-      console.error('Error fetching order:', error);
       throw new Error(
-        `Failed to fetch order: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Error al obtener pedido: ${error instanceof Error ? error.message : 'Error desconocido'}`
       );
     }
   }
@@ -355,7 +351,7 @@ class MercadoPagoService {
   async requestRefund(orderId: string, reason?: string): Promise<any> {
     try {
       if (!this.authToken) {
-        throw new Error('Authentication token required');
+        throw new Error('Se requiere autenticación');
       }
 
       const response = await fetch(`${this.baseUrl}/api/payment/refund`, {
@@ -369,20 +365,21 @@ class MercadoPagoService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: Failed to process refund`);
+        throw new Error(
+          errorData.message || `Error ${response.status}: Error al procesar reembolso`
+        );
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data) {
-        throw new Error('Invalid response format');
+        throw new Error('Formato de respuesta inválido');
       }
 
       return result.data;
     } catch (error) {
-      console.error('Error processing refund:', error);
       throw new Error(
-        `Failed to process refund: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Error al procesar reembolso: ${error instanceof Error ? error.message : 'Error desconocido'}`
       );
     }
   }
@@ -408,39 +405,39 @@ class MercadoPagoService {
 
     // Required fields validation
     if (!orderData.items || orderData.items.length === 0) {
-      errors.push('Order must contain at least one item');
+      errors.push('El pedido debe contener al menos un artículo');
     }
 
     if (!orderData.user?.email) {
-      errors.push('User email is required');
+      errors.push('El email del usuario es requerido');
     }
 
     if (!orderData.shippingAddress?.street) {
-      errors.push('Shipping address is required');
+      errors.push('La dirección de envío es requerida');
     }
 
     if (!orderData.total || orderData.total <= 0) {
-      errors.push('Invalid order total');
+      errors.push('Total del pedido inválido');
     }
 
     // Email validation
     if (orderData.user?.email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(orderData.user.email)) {
-        errors.push('Invalid email format');
+        errors.push('Formato de email inválido');
       }
     }
 
     // Items validation
     orderData.items?.forEach((item, index) => {
       if (!item.productId) {
-        errors.push(`Item ${index + 1}: Product ID is required`);
+        errors.push(`Artículo ${index + 1}: ID del producto es requerido`);
       }
       if (!item.quantity || item.quantity <= 0) {
-        errors.push(`Item ${index + 1}: Valid quantity is required`);
+        errors.push(`Artículo ${index + 1}: Cantidad válida es requerida`);
       }
       if (!item.price || item.price <= 0) {
-        errors.push(`Item ${index + 1}: Valid price is required`);
+        errors.push(`Artículo ${index + 1}: Precio válido es requerido`);
       }
     });
 

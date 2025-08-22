@@ -100,7 +100,6 @@ class PreloadService {
       // Immediately start loading medium priority assets in the background
       this.preloadSecondary();
     } catch (error) {
-      console.error('Error during preload:', error);
       this.isPreloading = false;
       // Still mark as complete so the app can continue
       callback({ progress: 100, stage: 'READY', isComplete: true });
@@ -118,9 +117,7 @@ class PreloadService {
 
       // No callback needed as this happens in the background
       await loadAssets(assets, () => {});
-    } catch (error) {
-      console.error('Error loading secondary assets:', error);
-    }
+    } catch (error) {}
   }
 
   /**

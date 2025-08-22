@@ -87,3 +87,7 @@ ios/Pods/
 ios/Podfile.lock
 ios/Podfile.properties.json
 ios/tifossi.xcodeproj/project.pbxproj
+
+# Test coverage
+coverage/
+*.lcov

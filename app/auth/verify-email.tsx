@@ -14,6 +14,16 @@ import { spacing, radius } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
+import { UnknownError } from '../_types/ui';
+
+// Helper function to extract error message from unknown error types
+function getErrorMessage(error: UnknownError): string {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return 'No se pudo enviar el código de verificación. Intenta nuevamente.';
+}
 
 export default function VerifyEmailScreen() {
   const [isResending, setIsResending] = useState(false);
@@ -30,11 +40,8 @@ export default function VerifyEmailScreen() {
         'Código Enviado',
         'Se ha enviado un nuevo código de verificación a tu dirección de email.'
       );
-    } catch (error: any) {
-      Alert.alert(
-        'Error',
-        error.message || 'No se pudo enviar el código de verificación. Intenta nuevamente.'
-      );
+    } catch (error: UnknownError) {
+      Alert.alert('Error', getErrorMessage(error));
     } finally {
       setIsResending(false);
     }

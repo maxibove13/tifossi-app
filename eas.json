@@ -11,7 +11,10 @@
       },
       "ios": {
         "simulator": true,
-        "bundleIdentifier": "com.tifossi.dev"
+        "bundleIdentifier": "com.tifossi.dev",
+        "entitlements": {
+          "com.apple.developer.applesignin": ["Default"]
+        }
       },
       "android": {
         "gradleCommand": ":app:assembleDebug",
@@ -22,6 +25,11 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "staging"
+      },
+      "ios": {
+        "entitlements": {
+          "com.apple.developer.applesignin": ["Default"]
+        }
       }
     },
     "production": {
@@ -30,7 +38,10 @@
         "EXPO_PUBLIC_ENVIRONMENT": "production"
       },
       "ios": {
-        "bundleIdentifier": "com.tifossi.app"
+        "bundleIdentifier": "com.tifossi.app",
+        "entitlements": {
+          "com.apple.developer.applesignin": ["Default"]
+        }
       },
       "android": {
         "applicationId": "com.tifossi.app"

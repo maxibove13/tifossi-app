@@ -23,20 +23,20 @@ jest.mock('expo-secure-store', () => ({
 const mockStorage = new Map<string, string>();
 jest.mock('react-native-mmkv', () => ({
   MMKV: jest.fn().mockImplementation(() => ({
-    set: jest.fn((key: string, value: string) => mockStorage.set(key, value)),
-    getString: jest.fn((key: string) => mockStorage.get(key) || null),
-    getNumber: jest.fn((key: string) => {
+    set: jest.fn().mockImplementation((key: string, value: string) => mockStorage.set(key, value)),
+    getString: jest.fn().mockImplementation((key: string) => mockStorage.get(key) || null),
+    getNumber: jest.fn().mockImplementation((key: string) => {
       const value = mockStorage.get(key);
       return value ? Number(value) : undefined;
     }),
-    getBoolean: jest.fn((key: string) => {
+    getBoolean: jest.fn().mockImplementation((key: string) => {
       const value = mockStorage.get(key);
       return value ? JSON.parse(value) : undefined;
     }),
-    contains: jest.fn((key: string) => mockStorage.has(key)),
-    delete: jest.fn((key: string) => mockStorage.delete(key)),
-    clearAll: jest.fn(() => mockStorage.clear()),
-    getAllKeys: jest.fn(() => Array.from(mockStorage.keys())),
+    contains: jest.fn().mockImplementation((key: string) => mockStorage.has(key)),
+    delete: jest.fn().mockImplementation((key: string) => mockStorage.delete(key)),
+    clearAll: jest.fn().mockImplementation(() => mockStorage.clear()),
+    getAllKeys: jest.fn().mockImplementation(() => Array.from(mockStorage.keys())),
   })),
 }));
 
@@ -435,28 +435,6 @@ describe('Auth Store State Management', () => {
         expect(result.current.isLoggedIn).toBe(false);
         expect(result.current.isLoading).toBe(false);
       });
-    });
-  });
-
-  describe('Development Helper Functions', () => {
-    it('should toggle login state for development', async () => {
-      const { result } = renderHook(() => useAuthStore());
-
-      // Toggle to logged in
-      await act(async () => {
-        result.current.dev_toggleLogin();
-      });
-
-      expect(result.current.isLoggedIn).toBe(true);
-      expect(result.current.user?.email).toBe('dev@example.com');
-
-      // Toggle to logged out
-      await act(async () => {
-        result.current.dev_toggleLogin();
-      });
-
-      expect(result.current.isLoggedIn).toBe(false);
-      expect(result.current.user).toBeNull();
     });
   });
 

@@ -92,7 +92,6 @@ export default function FavoritesScreen() {
     if (sectionTitle.toLowerCase() === 'recomendados') {
       router.push('/catalog?title=Recomendados&category=recommended');
     } else {
-      console.log(`View more for ${sectionTitle} - navigation not yet defined`);
       router.push('/catalog');
     }
   };

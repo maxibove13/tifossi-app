@@ -37,7 +37,6 @@ export default function ForgotPasswordScreen() {
     }
 
     // Placeholder for password reset logic (e.g., API call)
-    console.log('Password reset requested for:', email);
     Alert.alert(
       'Solicitud Enviada',
       'Si existe una cuenta con este correo, recibirás instrucciones para restablecer tu contraseña.',

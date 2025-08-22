@@ -108,7 +108,6 @@ export default function CartScreen() {
     if (sectionTitle.toLowerCase() === 'recomendados') {
       router.push('/catalog?title=Recomendados&category=recommended');
     } else {
-      console.log(`View more for ${sectionTitle} - navigation not yet defined`);
       router.push('/catalog');
     }
   };
@@ -173,11 +172,11 @@ export default function CartScreen() {
   };
 
   const handleCouponPress = () => {
-    console.log('Coupon dropdown pressed');
+    // Coupon dropdown pressed
   };
 
   const handleGiftCardPress = () => {
-    console.log('Gift card dropdown pressed');
+    // Gift card dropdown pressed
   };
 
   return (

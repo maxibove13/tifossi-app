@@ -175,12 +175,7 @@ export class DeepLinkTester {
    */
   async runSingleTest(testCase: TestCase): Promise<boolean> {
     try {
-      console.log(`[DeepLinkTester] Running test: ${testCase.name}`);
-      console.log(`[DeepLinkTester] URL: ${testCase.url}`);
-
       const result = await deepLinkRouter.handleDeepLink(testCase.url);
-
-      console.log(`[DeepLinkTester] Result:`, result);
 
       const success = this.validateResult(testCase, result);
 
@@ -192,15 +187,11 @@ export class DeepLinkTester {
       });
 
       if (success) {
-        console.log(`✅ [DeepLinkTester] Test passed: ${testCase.name}`);
       } else {
-        console.log(`❌ [DeepLinkTester] Test failed: ${testCase.name}`);
       }
 
       return success;
     } catch (error: any) {
-      console.error(`❌ [DeepLinkTester] Test error: ${testCase.name}`, error);
-
       this.testResults.push({
         testCase,
         success: false,
@@ -216,8 +207,6 @@ export class DeepLinkTester {
    * Run all test cases
    */
   async runAllTests(): Promise<{ passed: number; failed: number; total: number }> {
-    console.log(`[DeepLinkTester] Running ${deepLinkTestCases.length} test cases...`);
-
     this.testResults = [];
     let passed = 0;
     let failed = 0;
@@ -236,10 +225,6 @@ export class DeepLinkTester {
     }
 
     const total = deepLinkTestCases.length;
-
-    console.log(
-      `[DeepLinkTester] Test Results: ${passed}/${total} passed, ${failed}/${total} failed`
-    );
 
     return { passed, failed, total };
   }
@@ -269,8 +254,6 @@ export class DeepLinkTester {
       }
     });
 
-    console.log(`[DeepLinkTester] Running ${categoryTests.length} ${category} tests...`);
-
     let passed = 0;
     let failed = 0;
 
@@ -288,10 +271,6 @@ export class DeepLinkTester {
 
     const total = categoryTests.length;
 
-    console.log(
-      `[DeepLinkTester] ${category} Test Results: ${passed}/${total} passed, ${failed}/${total} failed`
-    );
-
     return { passed, failed, total };
   }
 
@@ -300,12 +279,10 @@ export class DeepLinkTester {
    */
   private validateResult(testCase: TestCase, result: any): boolean {
     if (!result.handled) {
-      console.log(`❌ [DeepLinkTester] Link not handled for test: ${testCase.name}`);
       return false;
     }
 
     if (!result.success && testCase.expectedRoute) {
-      console.log(`❌ [DeepLinkTester] Navigation failed for test: ${testCase.name}`);
       return false;
     }
 

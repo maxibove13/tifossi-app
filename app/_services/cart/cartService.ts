@@ -58,11 +58,9 @@ class CartService {
       // Handle different response formats
       const cartData = response.cart || response.data?.cart || [];
 
-      console.log(`[Cart Service] Fetched ${cartData.length} cart items from server`);
       return cartData;
     } catch (error) {
       const apiError = handleApiError(error, 'fetchUserCart');
-      console.error('[Cart Service] Failed to fetch cart:', apiError.message);
       throw apiError;
     }
   }
@@ -74,7 +72,6 @@ class CartService {
     try {
       if (!this.authToken) {
         // For guests, we can't sync to server but return success for local storage
-        console.log('[Cart Service] Guest cart - storing locally only');
         return { success: true, items };
       }
 
@@ -88,14 +85,12 @@ class CartService {
         }
       );
 
-      console.log(`[Cart Service] Cart synced with ${items.length} items`);
       return {
         success: true,
         items: response.cart || response.data?.cart || items,
       };
     } catch (error) {
       const apiError = handleApiError(error, 'syncCart');
-      console.error('[Cart Service] Cart sync failed:', apiError.message);
 
       return {
         success: false,
@@ -124,9 +119,8 @@ class CartService {
       let userCartItems: CartItem[] = [];
       try {
         userCartItems = await this.fetchUserCart();
-      } catch (_error) {
+      } catch {
         // If fetching fails, assume empty cart
-        console.warn('[Cart Service] Could not fetch user cart for migration, assuming empty');
         userCartItems = [];
       }
 
@@ -140,17 +134,12 @@ class CartService {
         throw new Error(syncResult.error || 'Failed to sync merged cart');
       }
 
-      console.log(
-        `[Cart Service] Migrated guest cart: ${guestCartItems.length} guest + ${userCartItems.length} user = ${mergedItems.length} merged items`
-      );
-
       return {
         success: true,
         mergedItems: syncResult.items,
       };
     } catch (error) {
       const apiError = handleApiError(error, 'migrateGuestCart');
-      console.error('[Cart Service] Cart migration failed:', apiError.message);
 
       return {
         success: false,
@@ -178,9 +167,7 @@ class CartService {
       if (this.authToken) {
         try {
           currentItems = await this.fetchUserCart();
-        } catch (_error) {
-          console.warn('[Cart Service] Could not fetch current cart for add operation');
-        }
+        } catch {}
       }
 
       // Add or update item
@@ -209,9 +196,7 @@ class CartService {
       if (this.authToken) {
         try {
           currentItems = await this.fetchUserCart();
-        } catch (_error) {
-          console.warn('[Cart Service] Could not fetch current cart for remove operation');
-        }
+        } catch {}
       }
 
       // Remove item
@@ -251,9 +236,7 @@ class CartService {
       if (this.authToken) {
         try {
           currentItems = await this.fetchUserCart();
-        } catch (_error) {
-          console.warn('[Cart Service] Could not fetch current cart for update operation');
-        }
+        } catch {}
       }
 
       // Update item quantity

@@ -1,4 +1,4 @@
-# Tifossi E-commerce - Costos Operativos para Uruguay (Agosto 2025)
+# Tifossi E-commerce - Costos Operativos para Uruguay
 
 ---
 
@@ -129,4 +129,4 @@ Más: 5,23% de ingresos brutos (MercadoPago)
 
 ---
 
-*Todos los montos en USD. Precios vigentes a agosto 2025.*
+*Todos los montos en USD.*

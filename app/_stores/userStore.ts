@@ -141,11 +141,8 @@ export const useUserStore = create<UserState>()(
             isLoading: false,
             actionStatus: { ...get().actionStatus, updateProfile: 'success' },
           });
-
-          console.log('[User Store] Profile updated successfully');
         } catch (e) {
           const error = handleApiError(e, 'updateProfile');
-          console.error('Failed to update profile:', error.message);
 
           set({
             isLoading: false,
@@ -181,11 +178,8 @@ export const useUserStore = create<UserState>()(
             isLoading: false,
             actionStatus: { ...get().actionStatus, uploadProfilePicture: 'success' },
           });
-
-          console.log('[User Store] Profile picture updated successfully');
         } catch (e) {
           const error = handleApiError(e, 'uploadProfilePicture');
-          console.error('Failed to upload profile picture:', error.message);
 
           set({
             isLoading: false,
@@ -210,11 +204,8 @@ export const useUserStore = create<UserState>()(
             isLoading: false,
             actionStatus: { ...get().actionStatus, changePassword: 'success' },
           });
-
-          console.log('[User Store] Password changed successfully');
         } catch (e) {
           const error = handleApiError(e, 'changePassword');
-          console.error('Failed to change password:', error.message);
 
           set({
             isLoading: false,
@@ -241,11 +232,8 @@ export const useUserStore = create<UserState>()(
             isLoading: false,
             actionStatus: { ...get().actionStatus, fetchProfile: 'success' },
           });
-
-          console.log('[User Store] Profile fetch completed');
         } catch (e) {
           const error = handleApiError(e, 'fetchUserProfile');
-          console.error('Failed to fetch profile:', error.message);
 
           set({
             isLoading: false,
@@ -274,11 +262,8 @@ export const useUserStore = create<UserState>()(
             preferences: updatedPreferences,
             isLoading: false,
           });
-
-          console.log('[User Store] Preferences updated successfully');
         } catch (e) {
           const error = handleApiError(e, 'updatePreferences');
-          console.error('Failed to update preferences:', error.message);
 
           set({
             isLoading: false,
@@ -313,11 +298,8 @@ export const useUserStore = create<UserState>()(
             addresses: updatedAddresses,
             isLoading: false,
           });
-
-          console.log('[User Store] Address added successfully');
         } catch (e) {
           const error = handleApiError(e, 'addAddress');
-          console.error('Failed to add address:', error.message);
 
           set({
             isLoading: false,
@@ -348,11 +330,8 @@ export const useUserStore = create<UserState>()(
             addresses: updatedAddresses,
             isLoading: false,
           });
-
-          console.log('[User Store] Address updated successfully');
         } catch (e) {
           const error = handleApiError(e, 'updateAddress');
-          console.error('Failed to update address:', error.message);
 
           set({
             isLoading: false,
@@ -373,11 +352,8 @@ export const useUserStore = create<UserState>()(
             addresses: updatedAddresses,
             isLoading: false,
           });
-
-          console.log('[User Store] Address removed successfully');
         } catch (e) {
           const error = handleApiError(e, 'removeAddress');
-          console.error('Failed to remove address:', error.message);
 
           set({
             isLoading: false,
@@ -401,11 +377,8 @@ export const useUserStore = create<UserState>()(
             addresses: updatedAddresses,
             isLoading: false,
           });
-
-          console.log('[User Store] Default address updated successfully');
         } catch (e) {
           const error = handleApiError(e, 'setDefaultAddress');
-          console.error('Failed to set default address:', error.message);
 
           set({
             isLoading: false,
@@ -428,7 +401,6 @@ export const useUserStore = create<UserState>()(
             fetchProfile: 'idle',
           },
         });
-        console.log('[User Store] User data cleared');
       },
 
       clearError: () => {
@@ -445,12 +417,6 @@ export const useUserStore = create<UserState>()(
         // Don't persist loading states or errors
       }),
       onRehydrateStorage: () => (state) => {
-        console.log('[User Store] Hydration completed', {
-          hasProfile: !!state?.profile,
-          addressCount: state?.addresses?.length || 0,
-          language: state?.preferences?.language || 'en',
-        });
-
         // Reset transient state after hydration
         if (state) {
           state.isLoading = false;

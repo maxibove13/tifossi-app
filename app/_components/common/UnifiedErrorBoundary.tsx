@@ -139,8 +139,8 @@ export class UnifiedErrorBoundary extends React.Component<BaseErrorBoundaryProps
           },
         });
       }
-    } catch (reportingError) {
-      console.warn('Failed to report error:', reportingError);
+    } catch {
+      // Failed to report error
     } finally {
       this.setState({ isReporting: false });
     }
@@ -192,8 +192,7 @@ export class UnifiedErrorBoundary extends React.Component<BaseErrorBoundaryProps
         error: undefined,
         errorInfo: undefined,
       });
-    } catch (navigationError) {
-      console.error('Navigation failed after error:', navigationError);
+    } catch {
       router.replace('/');
     }
   };
@@ -206,8 +205,8 @@ export class UnifiedErrorBoundary extends React.Component<BaseErrorBoundaryProps
         error: undefined,
         errorInfo: undefined,
       });
-    } catch (navigationError) {
-      console.error('Failed to navigate home after error:', navigationError);
+    } catch {
+      // Failed to navigate home after error
     }
   };
 
@@ -223,8 +222,7 @@ export class UnifiedErrorBoundary extends React.Component<BaseErrorBoundaryProps
           errorInfo: undefined,
           isRestarting: false,
         });
-      } catch (navigationError) {
-        console.error('Failed to navigate after error:', navigationError);
+      } catch {
         Alert.alert(
           'Critical Error',
           'The app needs to be restarted manually. Please close and reopen the app.',

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { MMKV } from 'react-native-mmkv';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 import authService from '../_services/auth/authService';
 import { initializeDeepLinkRouter as initializeDeepLinking } from '../_services/navigation/deepLinkRouter';
 // Store imports removed to prevent circular dependencies
@@ -21,16 +22,8 @@ const mmkvStorage = createJSONStorage(() => ({
 
 const AUTH_TOKEN_KEY = 'tifossi_auth_token';
 
-// Mock user for development toggle
-const mockDevUser: UserFromTypes = {
-  id: 'dev-user-123',
-  name: 'Dev User',
-  email: 'dev@example.com',
-  profilePicture: null, // Or a mock image URL
-};
-
 type ExtendedAuthState = AuthStateFromTypes & {
-  dev_toggleLogin: () => void;
+  sendPasswordReset: (email: string) => Promise<void>;
   clearAuthData: () => void;
 };
 
@@ -57,8 +50,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
           set({ isLoading: true, status: 'loading', isLoggedIn: false, user: null, token: null });
 
           try {
-            console.log('[Auth Store] Initializing authentication services...');
-
             // Initialize authentication services and deep linking
             await Promise.all([authService.initialize(), initializeDeepLinking()]);
 
@@ -69,8 +60,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
               if (firebaseUser) {
                 // User is signed in with Firebase, update state if needed
                 if (!currentState.isLoggedIn || currentState.user?.id !== firebaseUser.id) {
-                  console.log('[Auth Store] Firebase auth state: user signed in, syncing...');
-
                   // Get API token for the current user
                   authService
                     .getApiToken()
@@ -85,19 +74,11 @@ export const useAuthStore = create<ExtendedAuthState>()(
                         });
                       }
                     })
-                    .catch((error) => {
-                      console.warn(
-                        '[Auth Store] Failed to get API token after Firebase auth change:',
-                        error
-                      );
-                    });
+                    .catch((error) => {});
                 }
               } else {
                 // User is signed out from Firebase
                 if (currentState.isLoggedIn) {
-                  console.log(
-                    '[Auth Store] Firebase auth state: user signed out, clearing state...'
-                  );
                   SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
                   set({
                     user: null,
@@ -114,8 +95,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
             const storedToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
 
             if (storedToken) {
-              console.log('[Auth Store] Found stored token, validating...');
-
               try {
                 // Validate token with the unified API service
                 const user = await authService.validateToken(storedToken);
@@ -132,16 +111,12 @@ export const useAuthStore = create<ExtendedAuthState>()(
 
                 // Store initialization will be handled via subscription patterns
                 // This prevents circular dependencies between stores
-
-                console.log('[Auth Store] Authentication restored successfully');
               } catch (tokenError) {
-                console.warn('[Auth Store] Token validation failed:', tokenError);
                 // Clear invalid token and continue as logged out
                 await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
                 throw tokenError;
               }
             } else {
-              console.log('[Auth Store] No stored token found');
               // No token found, set logged out state
               set({
                 user: null,
@@ -153,8 +128,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
               });
             }
           } catch (error: any) {
-            console.error('[Auth Store] Auth initialization failed:', error);
-
             // Ensure clean logged out state
             await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
 
@@ -174,8 +147,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
           set({ isLoading: true, error: null, status: 'loading' });
 
           try {
-            console.log('[Auth Store] Attempting login for:', credentials.email);
-
             // Login with the unified API service
             const loginResult = await authService.login(credentials);
 
@@ -194,15 +165,10 @@ export const useAuthStore = create<ExtendedAuthState>()(
             // Store synchronization will be handled via subscription patterns
             // This prevents circular dependencies between stores
 
-            console.log('[Auth Store] Login successful for:', credentials.email);
-
             // Handle email verification if needed
             if (loginResult.needsEmailVerification) {
-              console.log('[Auth Store] Email verification required');
             }
           } catch (error: any) {
-            console.error('[Auth Store] Login failed:', error);
-
             set({
               user: null,
               token: null,
@@ -218,8 +184,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
           set({ isLoading: true, error: null, status: 'loading' });
 
           try {
-            console.log('[Auth Store] Attempting registration for:', userData.email);
-
             // Register with the unified API service
             const registerResult = await authService.register(userData);
 
@@ -238,15 +202,10 @@ export const useAuthStore = create<ExtendedAuthState>()(
             // Store synchronization will be handled via subscription patterns
             // This prevents circular dependencies between stores
 
-            console.log('[Auth Store] Registration successful for:', userData.email);
-
             // Handle email verification requirement
             if (registerResult.needsEmailVerification) {
-              console.log('[Auth Store] Email verification required for new user');
             }
           } catch (error: any) {
-            console.error('[Auth Store] Registration failed:', error);
-
             set({
               user: null,
               token: null,
@@ -263,8 +222,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
           set({ isLoading: true, error: null, status: 'loading' });
 
           try {
-            console.log('[Auth Store] Attempting Google login...');
-
             // Login with Google via auth service (fallback to mock for development)
             const loginResult = await authService.loginWithGoogle();
 
@@ -283,15 +240,10 @@ export const useAuthStore = create<ExtendedAuthState>()(
             // Store synchronization will be handled via subscription patterns
             // This prevents circular dependencies between stores
 
-            console.log('[Auth Store] Google login successful');
-
             // Handle email verification if needed for Google accounts (usually not required)
             if (loginResult.needsEmailVerification) {
-              console.log('[Auth Store] Google account requires email verification');
             }
           } catch (error: any) {
-            console.error('[Auth Store] Google login failed:', error);
-
             set({
               user: null,
               token: null,
@@ -299,6 +251,62 @@ export const useAuthStore = create<ExtendedAuthState>()(
               isLoading: false,
               status: 'failed',
               error: error.message || 'Google login failed. Please try again.',
+            });
+          }
+        },
+
+        // Apple Sign-In login method
+        loginWithApple: async () => {
+          set({ isLoading: true, error: null, status: 'loading' });
+
+          try {
+            // Login with Apple via auth service
+            const loginResult = await authService.loginWithApple();
+
+            // Store the token securely
+            await SecureStore.setItemAsync(AUTH_TOKEN_KEY, loginResult.token);
+
+            set({
+              user: loginResult.user,
+              token: loginResult.token,
+              isLoggedIn: true,
+              isLoading: false,
+              status: 'succeeded',
+              error: null,
+            });
+
+            // Store synchronization will be handled via subscription patterns
+            // This prevents circular dependencies between stores
+
+            // Handle email verification if needed for Apple accounts (usually not required)
+            if (loginResult.needsEmailVerification) {
+            }
+          } catch (error: any) {
+            // Handle Apple-specific error messages in Spanish
+            let appleError = 'Inicio de sesión con Apple falló. Por favor intenta de nuevo.';
+
+            if (error.message) {
+              if (error.message.includes('canceled') || error.message.includes('cancelled')) {
+                appleError = 'Inicio de sesión cancelado';
+              } else if (error.message.includes('not available')) {
+                appleError = 'Apple Sign-In no está disponible en este dispositivo';
+              } else if (
+                error.message.includes('network') ||
+                error.message.includes('connection')
+              ) {
+                appleError = 'Error de conexión. Verifica tu conexión a internet';
+              } else if (error.message.includes('invalid')) {
+                appleError = 'Respuesta inválida de Apple';
+              }
+            }
+
+            set({
+              user: null,
+              token: null,
+              isLoggedIn: false,
+              isLoading: false,
+              status: 'failed',
+              error: appleError,
             });
           }
         },
@@ -313,7 +321,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
               await authService.logout(currentToken);
             }
           } catch (e) {
-            console.error('API logout call failed (continuing local logout):', e);
           } finally {
             await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
             const currentState = get();
@@ -326,9 +333,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
 
             // Store cleanup will be handled via subscription patterns
             // This prevents circular dependencies between stores
-            console.log(
-              '[Auth Store] User logged out, other stores will be notified via subscriptions'
-            );
           }
         },
 
@@ -348,7 +352,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
               status: 'succeeded',
             });
           } catch (error: any) {
-            console.error('Password change failed:', error);
             set({
               isChangingPassword: false,
               status: 'failed',
@@ -377,7 +380,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
               });
             }
           } catch (error: any) {
-            console.error('Profile picture update failed:', error);
             set({
               isUploadingProfilePicture: false,
               status: 'failed',
@@ -401,7 +403,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
               status: 'succeeded',
             });
           } catch (error: any) {
-            console.error('Resend verification email failed:', error);
             set({
               isVerifyingEmail: false,
               status: 'failed',
@@ -430,7 +431,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
               });
             }
           } catch (error: any) {
-            console.error('Email verification failed:', error);
             set({
               isVerifyingEmail: false,
               status: 'failed',
@@ -441,32 +441,26 @@ export const useAuthStore = create<ExtendedAuthState>()(
           }
         },
 
-        // Development only: Function to easily toggle login state
-        dev_toggleLogin: () => {
-          const currentState = get();
-          if (currentState.isLoggedIn) {
-            // Simulate logout
-            SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+        // Send password reset email
+        sendPasswordReset: async (email: string) => {
+          set({ isLoading: true, error: null, status: 'loading' });
+
+          try {
+            // Send password reset email via auth service
+            await authService.sendPasswordResetEmail(email);
+
             set({
-              user: null,
-              token: null,
-              isLoggedIn: false,
-              status: 'idle',
-              error: null,
-            });
-            console.log('[DEV] Toggled to Logged Out');
-          } else {
-            // Simulate login with mock user and token
-            const mockToken = 'mock-dev-token-xxxx';
-            SecureStore.setItemAsync(AUTH_TOKEN_KEY, mockToken);
-            set({
-              user: mockDevUser,
-              token: mockToken,
-              isLoggedIn: true,
+              isLoading: false,
               status: 'succeeded',
               error: null,
             });
-            console.log('[DEV] Toggled to Logged In with Dev User');
+          } catch (error: any) {
+            set({
+              isLoading: false,
+              status: 'failed',
+              error: error.message || 'Failed to send password reset email. Please try again.',
+            });
+            throw error;
           }
         },
 
@@ -483,6 +477,29 @@ export const useAuthStore = create<ExtendedAuthState>()(
             isUploadingProfilePicture: false,
             isVerifyingEmail: false,
           });
+        },
+
+        // Apple Sign-In utility methods
+        isAppleSignInAvailable: async (): Promise<boolean> => {
+          try {
+            if (Platform.OS !== 'ios') {
+              return false;
+            }
+            return await authService.isAppleSignInAvailable();
+          } catch (error) {
+            return false;
+          }
+        },
+
+        getAppleCredentialState: async (userId: string): Promise<number> => {
+          try {
+            if (Platform.OS !== 'ios') {
+              return 0; // Default to unknown state on non-iOS
+            }
+            return await authService.getAppleCredentialState(userId);
+          } catch (error) {
+            return 0; // Default to unknown state on error
+          }
         },
 
         // Test utility methods
@@ -503,11 +520,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
         return { isInitialized, user } as any;
       },
       onRehydrateStorage: () => (state: Partial<ExtendedAuthState> | undefined) => {
-        console.log('[Auth Store] Hydration completed', {
-          hasUser: !!state?.user,
-          isInitialized: state?.isInitialized,
-        });
-
         // Automatically initialize auth if not already done
         if (state && !state.isInitialized && state.initializeAuth) {
           state.initializeAuth();

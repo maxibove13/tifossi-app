@@ -69,11 +69,9 @@ class AddressService {
       // Handle different response formats
       const addresses = response.addresses || response.data?.addresses || response.data || [];
 
-      console.log(`[Address Service] Fetched ${addresses.length} addresses from server`);
       return addresses;
     } catch (error) {
       const apiError = handleApiError(error, 'fetchUserAddresses');
-      console.error('[Address Service] Failed to fetch addresses:', apiError.message);
       throw apiError;
     }
   }
@@ -104,14 +102,12 @@ class AddressService {
 
       const address = response.address || response.data?.address || response.data;
 
-      console.log('[Address Service] Address created successfully');
       return {
         success: true,
         address,
       };
     } catch (error) {
       const apiError = handleApiError(error, 'createAddress');
-      console.error('[Address Service] Address creation failed:', apiError.message);
 
       return {
         success: false,
@@ -148,14 +144,12 @@ class AddressService {
 
       const address = response.address || response.data?.address || response.data;
 
-      console.log('[Address Service] Address updated successfully');
       return {
         success: true,
         address,
       };
     } catch (error) {
       const apiError = handleApiError(error, 'updateAddress');
-      console.error('[Address Service] Address update failed:', apiError.message);
 
       return {
         success: false,
@@ -179,11 +173,9 @@ class AddressService {
         },
       });
 
-      console.log('[Address Service] Address deleted successfully');
       return { success: true };
     } catch (error) {
       const apiError = handleApiError(error, 'deleteAddress');
-      console.error('[Address Service] Address deletion failed:', apiError.message);
 
       return {
         success: false,
@@ -213,7 +205,6 @@ class AddressService {
 
       const addresses = response.addresses || response.data?.addresses || [];
 
-      console.log('[Address Service] Default address set successfully');
       return {
         success: true,
         addresses,
@@ -235,7 +226,6 @@ class AddressService {
       const addresses = await this.fetchUserAddresses();
       return addresses.find((address) => address.isDefault) || null;
     } catch (error) {
-      console.error('[Address Service] Failed to get default address:', error);
       return null;
     }
   }
@@ -399,7 +389,6 @@ class AddressService {
       return address || null;
     } catch (error) {
       const apiError = handleApiError(error, 'getAddressById');
-      console.error('[Address Service] Failed to get address by ID:', apiError.message);
       return null;
     }
   }
@@ -408,7 +397,7 @@ class AddressService {
    * Duplicate an existing address
    */
   duplicateAddress(address: Address): Omit<Address, 'id'> {
-    const { id, isDefault, ...addressData } = address;
+    const { id: _id, isDefault: _isDefault, ...addressData } = address;
     return {
       ...addressData,
       firstName: address.firstName + ' (Copy)',

@@ -149,7 +149,6 @@ export async function preloadHomeAssets(allProducts?: Product[]) {
       launchAndOpportunityProducts,
     };
   } catch (error) {
-    console.error('Error preloading home assets:', error);
     // Return empty data as fallback
     return {
       featuredProduct: null,

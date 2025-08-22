@@ -2,7 +2,7 @@
 const _unusedVar = 'This should trigger the linter';
 
 function testFunction(): void {
-  console.log('Hello world');
+  // Test function
 }
 
 export default testFunction;

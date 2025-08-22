@@ -120,7 +120,6 @@ export default function OverlayProductEditSize({
   // Handle size guide press
   const handleSizeGuidePress = () => {
     // Implement size guide functionality here
-    console.log('Size guide pressed');
   };
 
   return (

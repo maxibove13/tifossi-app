@@ -11,10 +11,8 @@ export function testMMKV() {
     mmkvInstance.set('test-key', 'MMKV is working!');
     const value = mmkvInstance.getString('test-key');
 
-    console.log('MMKV Test Result:', value);
     return value === 'MMKV is working!';
   } catch (error) {
-    console.error('MMKV Test Failed:', error);
     return false;
   }
 }

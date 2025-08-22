@@ -184,14 +184,14 @@ export default function TiffosiExploreScreen() {
 
         // Mark as preloaded so we don't try to preload again
         setPreloaded(true);
-      } catch (error) {
-        console.error('Failed to preload explore assets:', error);
+      } catch {
+        // Failed to preload explore assets
       }
     }
 
     // Execute the preload function
     preloadExploreProducts();
-  }, [preloaded]);
+  }, [preloaded, exploreProducts]);
 
   // Show loading state while fetching products
   if (productsLoading && exploreProducts.length === 0) {

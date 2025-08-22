@@ -215,7 +215,6 @@ const SwipeableEdge = ({
 
   const handleViewMorePress = useCallback(
     (title: string) => {
-      console.log('View more from SwipeableEdge:', title);
       onViewMore(title);
     },
     [onViewMore]
@@ -223,7 +222,6 @@ const SwipeableEdge = ({
 
   const handleActualAddToCart = useCallback(
     (size: string, qty: number) => {
-      console.log(`Adding to cart from overlay: Size ${size}, Quantity ${qty}`);
       onAddToCart?.();
     },
     [onAddToCart]
@@ -245,8 +243,6 @@ const SwipeableEdge = ({
       dimensions: product.dimensions,
       ...(getProductById(product.id) || {}),
     }) as Product;
-
-  // Removed console.log to reduce performance overhead
 
   /* Render */
   return (

@@ -234,6 +234,76 @@ export const mockGoogleAuthUser = {
   },
 };
 
+export const mockAppleAuthUser = {
+  uid: 'apple-test-user-1',
+  email: 'appleuser@privaterelay.appleid.com',
+  displayName: 'Apple Test User',
+  photoURL: null,
+  emailVerified: true,
+  phoneNumber: null,
+  providerData: [
+    {
+      providerId: 'apple.com',
+      uid: 'apple-user-id-123',
+      displayName: 'Apple Test User',
+      email: 'appleuser@privaterelay.appleid.com',
+      phoneNumber: null,
+      photoURL: null,
+    },
+  ],
+  metadata: {
+    creationTime: '2024-01-01T00:00:00.000Z',
+    lastSignInTime: '2024-01-15T10:30:00.000Z',
+  },
+};
+
+// Apple authentication credentials mock
+export const mockAppleCredentials = {
+  user: 'apple-user-id-123',
+  email: 'appleuser@privaterelay.appleid.com',
+  fullName: {
+    givenName: 'Apple',
+    familyName: 'Test User',
+    nickname: null,
+    namePrefix: null,
+    nameSuffix: null,
+    middleName: null,
+  },
+  identityToken: 'mock-apple-identity-token-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9',
+  authorizationCode: 'mock-apple-auth-code-12345',
+  realUserStatus: 1, // AppleAuthenticationUserDetectionStatus.LIKELY_REAL
+  state: null,
+};
+
+// Apple authentication credentials for subsequent logins (no name/email)
+export const mockAppleCredentialsSubsequent = {
+  user: 'apple-user-id-123',
+  email: null,
+  fullName: null,
+  identityToken: 'mock-apple-identity-token-subsequent-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9',
+  authorizationCode: 'mock-apple-auth-code-subsequent-67890',
+  realUserStatus: 1,
+  state: null,
+};
+
+// Apple authentication credentials with private relay email
+export const mockAppleCredentialsPrivateRelay = {
+  user: 'apple-user-id-456',
+  email: 'hidden.email.xyz@privaterelay.appleid.com',
+  fullName: {
+    givenName: 'Private',
+    familyName: 'User',
+    nickname: null,
+    namePrefix: null,
+    nameSuffix: null,
+    middleName: null,
+  },
+  identityToken: 'mock-apple-identity-token-private-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9',
+  authorizationCode: 'mock-apple-auth-code-private-11111',
+  realUserStatus: 1,
+  state: null,
+};
+
 // Mock Firebase tokens
 export const mockFirebaseIdToken = 'mock-firebase-id-token-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9';
 export const mockStrapiToken = 'mock-strapi-jwt-token-bearer-auth';
@@ -316,6 +386,23 @@ export const mockApiResponses = {
       token: mockFirebaseIdToken,
       needsEmailVerification: false,
     },
+    appleSignInSuccess: {
+      user: mockAppleAuthUser,
+      token: mockFirebaseIdToken,
+      needsEmailVerification: false,
+    },
+    appleSignInFirstTime: {
+      user: mockAppleAuthUser,
+      token: mockFirebaseIdToken,
+      needsEmailVerification: false,
+      credentials: mockAppleCredentials,
+    },
+    appleSignInSubsequent: {
+      user: mockAppleAuthUser,
+      token: mockFirebaseIdToken,
+      needsEmailVerification: false,
+      credentials: mockAppleCredentialsSubsequent,
+    },
     invalidCredentials: {
       error: 'Invalid email address format.',
       code: 'auth/invalid-email',
@@ -343,6 +430,27 @@ export const mockApiResponses = {
     networkError: {
       error: 'Network error. Please check your connection.',
       code: 'auth/network-request-failed',
+    },
+    appleSignInCanceled: {
+      error: 'Inicio de sesión cancelado',
+      code: 'ERR_CANCELED',
+    },
+    appleSignInFailed: {
+      error: 'Error al autenticar con Apple. Por favor, intenta nuevamente.',
+      code: 'ERR_FAILED',
+    },
+    appleInvalidResponse: {
+      error: 'Respuesta inválida de Apple. Por favor, intenta nuevamente.',
+      code: 'ERR_INVALID_RESPONSE',
+    },
+    appleUnknownError: {
+      error: 'Error desconocido al autenticar con Apple. Por favor, intenta nuevamente.',
+      code: 'ERR_UNKNOWN',
+    },
+    appleAccountAlreadyLinked: {
+      error:
+        'Esta cuenta ya está vinculada con otro proveedor. Por favor, inicia sesión con el método original.',
+      code: 'auth/account-exists-with-different-credential',
     },
   },
 };

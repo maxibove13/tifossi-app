@@ -11,20 +11,20 @@ import { mswHelpers } from '../utils/msw-setup';
 const mockStorage = new Map<string, string>();
 jest.mock('react-native-mmkv', () => ({
   MMKV: jest.fn().mockImplementation(() => ({
-    set: jest.fn((key: string, value: string) => mockStorage.set(key, value)),
-    getString: jest.fn((key: string) => mockStorage.get(key) || null),
-    getNumber: jest.fn((key: string) => {
+    set: jest.fn().mockImplementation((key: string, value: string) => mockStorage.set(key, value)),
+    getString: jest.fn().mockImplementation((key: string) => mockStorage.get(key) || null),
+    getNumber: jest.fn().mockImplementation((key: string) => {
       const value = mockStorage.get(key);
       return value ? Number(value) : undefined;
     }),
-    getBoolean: jest.fn((key: string) => {
+    getBoolean: jest.fn().mockImplementation((key: string) => {
       const value = mockStorage.get(key);
       return value ? JSON.parse(value) : undefined;
     }),
-    contains: jest.fn((key: string) => mockStorage.has(key)),
-    delete: jest.fn((key: string) => mockStorage.delete(key)),
-    clearAll: jest.fn(() => mockStorage.clear()),
-    getAllKeys: jest.fn(() => Array.from(mockStorage.keys())),
+    contains: jest.fn().mockImplementation((key: string) => mockStorage.has(key)),
+    delete: jest.fn().mockImplementation((key: string) => mockStorage.delete(key)),
+    clearAll: jest.fn().mockImplementation(() => mockStorage.clear()),
+    getAllKeys: jest.fn().mockImplementation(() => Array.from(mockStorage.keys())),
   })),
 }));
 
@@ -421,7 +421,7 @@ describe('Favorites Store State Management', () => {
     it('should handle storage errors gracefully', async () => {
       // Mock storage to throw errors
       const originalSet = mockStorage.set;
-      mockStorage.set = jest.fn(() => {
+      mockStorage.set = jest.fn().mockImplementation(() => {
         throw new Error('Storage full');
       });
 

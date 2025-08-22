@@ -5,7 +5,7 @@ module.exports = {
     '<rootDir>/app/_tests/utils/test-setup.ts'
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|react-native-svg|react-native-reanimated|@gorhom/bottom-sheet|@tanstack/react-query|zustand|fuse.js)'
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|react-native-svg|react-native-reanimated|@gorhom/bottom-sheet|@tanstack/react-query|zustand|fuse.js|expo-apple-authentication)'
   ],
   testMatch: [
     '**/__tests__/**/*.test.[jt]s?(x)',
@@ -48,6 +48,7 @@ module.exports = {
     '^@stores/(.*)$': '<rootDir>/app/_stores/$1',
     '^@utils/(.*)$': '<rootDir>/app/_utils/$1',
     '^@assets/(.*)$': '<rootDir>/assets/$1',
-    '\\.(png|jpg|jpeg|gif|svg)$': 'identity-obj-proxy'
+    '\\.svg$': '<rootDir>/app/_tests/mocks/svg-mock.js',
+    '\\.(png|jpg|jpeg|gif)$': '<rootDir>/app/_tests/mocks/image-mock.js'
   }
 };

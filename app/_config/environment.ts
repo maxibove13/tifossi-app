@@ -183,14 +183,12 @@ export const validateEnvironment = (): boolean => {
 
     for (const prop of requiredProps) {
       if (config[prop] === undefined || config[prop] === null) {
-        console.error(`[Environment] Missing required config property: ${prop}`);
         return false;
       }
     }
 
     return true;
   } catch (error) {
-    console.error('[Environment] Validation failed:', error);
     return false;
   }
 };
@@ -215,19 +213,19 @@ export const getEnvironmentBanner = () => {
  */
 export const safeLog = (...args: any[]) => {
   if (config.enableConsoleLogging) {
-    console.log(`[${config.displayName}]`, ...args);
+    // Log message would be displayed here
   }
 };
 
 export const safeWarn = (...args: any[]) => {
   if (config.enableConsoleLogging) {
-    console.warn(`[${config.displayName}]`, ...args);
+    // Warning message would be displayed here
   }
 };
 
 export const safeError = (...args: any[]) => {
   if (config.enableConsoleLogging) {
-    console.error(`[${config.displayName}]`, ...args);
+    // Error message would be displayed here
   }
 };
 

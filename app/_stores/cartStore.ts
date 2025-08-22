@@ -77,7 +77,6 @@ export const useCartStore = create<CartState>()(
           const items = response.data || [];
           set({ items, isLoading: false, isGuestCart: false });
         } catch (e) {
-          console.error('Failed to fetch user cart:', e);
           set({
             isLoading: false,
             error: 'Failed to fetch cart from server.',
@@ -117,7 +116,6 @@ export const useCartStore = create<CartState>()(
           await httpClient.post('/cart/sync', { items: get().items });
           set({ isLoading: false });
         } catch (e) {
-          console.error('Failed to sync cart addition:', e);
           set({
             items: previousItems, // Revert optimistic update
             isLoading: false,
@@ -157,7 +155,6 @@ export const useCartStore = create<CartState>()(
           await httpClient.post('/cart/sync', { items: get().items });
           set({ isLoading: false });
         } catch (e) {
-          console.error('Failed to sync cart update:', e);
           set({
             items: previousItems,
             isLoading: false,
@@ -181,7 +178,6 @@ export const useCartStore = create<CartState>()(
           await httpClient.post('/cart/sync', { items: get().items });
           set({ isLoading: false });
         } catch (e) {
-          console.error('Failed to sync cart removal:', e);
           set({
             items: previousItems,
             isLoading: false,
@@ -199,7 +195,6 @@ export const useCartStore = create<CartState>()(
           await httpClient.delete('/cart');
           set({ items: [], isLoading: false });
         } catch (e) {
-          console.error('Failed to sync cart clear:', e);
           set({
             items: previousItems,
             isLoading: false,
@@ -216,7 +211,6 @@ export const useCartStore = create<CartState>()(
       },
 
       migrateGuestCart: async (_authToken) => {
-        console.log('Migrating guest cart to authenticated user');
         const guestItems = get().items;
 
         try {
@@ -228,9 +222,7 @@ export const useCartStore = create<CartState>()(
             isGuestCart: false,
             error: null,
           });
-          console.log('Guest cart migration completed successfully');
         } catch (e) {
-          console.error('Guest cart migration failed:', e);
           set({
             isLoading: false,
             error: 'Failed to migrate cart after login.',
@@ -257,11 +249,6 @@ export const useCartStore = create<CartState>()(
         // Don't persist loading states or errors
       }),
       onRehydrateStorage: () => (state) => {
-        console.log('[Cart Store] Hydration completed', {
-          itemCount: state?.items?.length || 0,
-          isGuestCart: state?.isGuestCart,
-        });
-
         // Reset transient state after hydration
         if (state) {
           state.isLoading = false;

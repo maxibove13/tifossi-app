@@ -43,7 +43,6 @@ export default function ShippingPickupScreen() {
     const selectedCityData = citiesWithZones.find((city) => city.id === selectedItem.id);
 
     if (!selectedCityData) {
-      console.error('Selected city not found in processed data:', selectedItem.id);
       return;
     }
 
@@ -59,7 +58,6 @@ export default function ShippingPickupScreen() {
         params: { cityId: selectedCityData.id, zoneId: zoneId },
       });
     } else {
-      console.warn(`City ${selectedCityData.name} has no zones defined in storesData.`);
       router.push({
         pathname: '/checkout/store-selection',
         params: { cityId: selectedCityData.id },

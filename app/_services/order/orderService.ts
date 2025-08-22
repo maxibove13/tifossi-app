@@ -156,14 +156,12 @@ class OrderService {
 
       const order = response.order || response.data?.order || response.data;
 
-      console.log('[Order Service] Order created successfully:', orderNumber);
       return {
         success: true,
         order,
       };
     } catch (error) {
       const apiError = handleApiError(error, 'createOrder');
-      console.error('[Order Service] Failed to create order:', apiError.message);
       return {
         success: false,
         error: apiError.message,
@@ -219,11 +217,6 @@ class OrderService {
       // Create MercadoPago payment preference
       const preference = await mercadoPagoService.createPaymentPreference(mpOrderData);
 
-      console.log(
-        '[Order Service] Payment preference created for order:',
-        orderResult.order.orderNumber
-      );
-
       return {
         success: true,
         order: orderResult.order,
@@ -231,7 +224,6 @@ class OrderService {
       };
     } catch (error) {
       const apiError = handleApiError(error, 'createOrderWithPayment');
-      console.error('[Order Service] Failed to create order with payment:', apiError.message);
       return {
         success: false,
         error: apiError.message,
@@ -267,7 +259,6 @@ class OrderService {
       const orders = response.orders || response.data?.orders || response.data || [];
       const pagination = response.pagination || response.data?.pagination;
 
-      console.log(`[Order Service] Fetched ${orders.length} orders`);
       return {
         success: true,
         orders,
@@ -275,7 +266,6 @@ class OrderService {
       };
     } catch (error) {
       const apiError = handleApiError(error, 'getUserOrders');
-      console.error('[Order Service] Failed to fetch orders:', apiError.message);
       return {
         success: false,
         error: apiError.message,
@@ -302,7 +292,6 @@ class OrderService {
       return order || null;
     } catch (error) {
       const apiError = handleApiError(error, 'getOrderById');
-      console.error('[Order Service] Failed to get order by ID:', apiError.message);
       return null;
     }
   }
@@ -326,11 +315,9 @@ class OrderService {
         }
       );
 
-      console.log(`[Order Service] Order ${orderId} status updated to ${status}`);
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'updateOrderStatus');
-      console.error('[Order Service] Failed to update order status:', apiError.message);
       return false;
     }
   }
@@ -354,11 +341,9 @@ class OrderService {
         }
       );
 
-      console.log(`[Order Service] Order ${orderId} cancelled`);
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'cancelOrder');
-      console.error('[Order Service] Failed to cancel order:', apiError.message);
       return false;
     }
   }
@@ -389,7 +374,6 @@ class OrderService {
       return response.data || null;
     } catch (error) {
       const apiError = handleApiError(error, 'trackOrder');
-      console.error('[Order Service] Failed to track order:', apiError.message);
       return null;
     }
   }

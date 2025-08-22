@@ -412,19 +412,16 @@ export const validateEndpoints = (): boolean => {
     // Check if baseUrl is accessible
     const urlPattern = /^https?:\/\/.+/;
     if (!urlPattern.test(endpoints.baseUrl)) {
-      console.error('[Endpoints] Invalid base URL:', endpoints.baseUrl);
       return false;
     }
 
     // Check if timeout is reasonable
     if (endpoints.timeout < 1000 || endpoints.timeout > 60000) {
-      console.error('[Endpoints] Invalid timeout value:', endpoints.timeout);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('[Endpoints] Validation failed:', error);
     return false;
   }
 };

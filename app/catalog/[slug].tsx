@@ -13,6 +13,7 @@ import { useProducts } from '../_services/api/queryHooks';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import { spacing } from '../_styles/spacing';
+import { RNLayoutChangeEvent } from '../_types/ui';
 import Header from '../_components/store/layout/Header';
 import { SkeletonLoader } from '../_components/common/SkeletonLoader';
 import { CATEGORY_IDS, MODEL_IDS } from '../_types/constants';
@@ -43,12 +44,12 @@ const TabBar = <T extends { id: string; name: string }>({
   const [initialized, setInitialized] = useState(false);
 
   // Measure the scroll view width once it's rendered
-  const handleScrollViewLayout = (event: any) => {
+  const handleScrollViewLayout = (event: RNLayoutChangeEvent) => {
     scrollViewWidth.current = event.nativeEvent.layout.width;
   };
 
   // Store the position and width of each tab item
-  const measureItemLayout = (itemId: string, event: any) => {
+  const measureItemLayout = (itemId: string, event: RNLayoutChangeEvent) => {
     const { x, width } = event.nativeEvent.layout;
     itemLayouts.current[itemId] = { x, width };
 
@@ -117,14 +118,6 @@ const TabBar = <T extends { id: string; name: string }>({
       ))}
     </ScrollView>
   );
-};
-
-// Define mapping between section names and their corresponding titles
-const SECTION_TO_TITLE_MAP: Record<string, string> = {
-  Tienda: 'Productos Recomendados',
-  Destacados: 'Productos Destacados',
-  Tendencias: 'Tendencias',
-  'Lanzamientos & Oportunidades': 'Lanzamientos & Oportunidades',
 };
 
 export default function CategoryDetailScreen() {

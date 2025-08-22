@@ -202,8 +202,7 @@ function HomeScreen() {
           // Exit global loading state once all sections have started updating
           setIsLoading(false);
         }, 500);
-      } catch (error) {
-        console.error('Error loading home screen data:', error);
+      } catch {
         // Ensure we exit loading state even if some data fails to load
         setIsLoading(false);
       }

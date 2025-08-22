@@ -46,7 +46,7 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Shipping Address Screen**: Add/select delivery address
 - **Pickup/Delivery Option**: Choose between shipping or in-store pickup
 - **Store Selection Screen**: Choose pickup location (if applicable)
-- **Payment Method Screen**: Select payment option through Plexo payment platform
+- **Payment Method Screen**: Select payment option through MercadoPago Checkout Pro
 - **Order Review**: Final confirmation before purchase (planned)
 - **Success Confirmation**: Order placed confirmation (planned)
 
@@ -161,15 +161,11 @@ The following features are explicitly excluded from the current scope of the app
 - **Coupon System**: Discount code entry and processing
 - **Gift Cards**: Purchase and redemption of gift cards
 
-### Payment Platform Integration Limitations
-- **3-D Secure Flows**: Additional authentication steps for credit card transactions are out of scope for the current MVP.
-- **Partial Refunds**: Support for partial order refunds via Plexo is out of scope. (Full refunds/cancellations may be in scope via Plexo's Cancel API, to be managed via backend logic).
-- **Multiple Currencies**: Support for transactions in multiple currencies beyond the primary configured currency is out of scope.
-- **Plexo ExpressCheckout**: Plexo's "ExpressCheckout" flow (combined authorize and purchase) is out of scope. The integration will use the standard two-step flow (Authorize then Purchase).
-- **CVV-on-file / Token Recharge with CVV**: Secure storage of card verification values for specific recurring/token recharge scenarios beyond standard token reuse for basic saved card payments.
-- **Specific Payment Methods via Plexo (Out of Scope)**:
-  - Asynchronous payment methods (e.g., bank transfers, cash voucher payments processed via Plexo).
-  - Payment methods such as Banred and bank debit.
-- **Recurring Billing / Subscriptions**: Automated recurring payment plans and subscription management via Plexo.
+### Payment Platform Integration
+- **MercadoPago Checkout Pro**: Hosted payment solution that handles all payment methods available in Uruguay
+- **Security**: PCI-DSS compliance managed by MercadoPago
+- **Supported Methods**: All credit/debit cards, MercadoPago wallet, and local payment methods
+- **Webhooks**: Automatic payment status updates via MercadoPago webhooks
+- **Fees**: 5.23% per transaction (14-day settlement) or 4.01% (30-day settlement)
 
 These features may be considered for future development phases but are not part of the current implementation plan.

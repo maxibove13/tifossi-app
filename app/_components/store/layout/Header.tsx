@@ -71,8 +71,7 @@ function Header({
           // Assuming mockFetchProductById returns a Promise<Product | undefined>
           const fetchedProduct = await mockFetchProductById(productId);
           setProductForShare(fetchedProduct || null); // Convert undefined to null
-        } catch (error) {
-          console.error('Error fetching product for sharing:', error);
+        } catch {
           setProductForShare(null); // Ensure state is null on error
         }
       };
@@ -106,8 +105,7 @@ function Header({
   // --- Share Function ---
   const onShare = async () => {
     if (!productForShare) {
-      console.warn('Product data not available for sharing.');
-      // Optionally show an alert to the user
+      // Product data not available for sharing
       return;
     }
     try {
@@ -117,13 +115,11 @@ function Header({
         // Optional: title: productForShare.title (for Android)
       });
       if (result.action === Share.sharedAction) {
-        console.log('Product shared successfully');
-        // Handle success if needed (e.g., analytics)
+        // Product shared successfully
       } else if (result.action === Share.dismissedAction) {
-        console.log('Share action dismissed');
+        // Share action dismissed
       }
-    } catch (error) {
-      console.error('Error sharing product:', error);
+    } catch {
       // Optionally show an alert to the user
     }
   };

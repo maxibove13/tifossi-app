@@ -56,7 +56,6 @@ export default function ShippingAddressScreen() {
           setSelectedAddress(userAddresses[0].id!);
         }
       } catch (err) {
-        console.error('Failed to fetch addresses:', err);
         setError('Failed to load addresses. Please try again.');
       } finally {
         setIsLoading(false);
@@ -134,7 +133,7 @@ export default function ShippingAddressScreen() {
                       addressService.setAuthToken(token);
                       const userAddresses = await addressService.fetchUserAddresses();
                       setAddresses(userAddresses);
-                    } catch (err) {
+                    } catch (_err) {
                       setError('Failed to load addresses. Please try again.');
                     } finally {
                       setIsLoading(false);

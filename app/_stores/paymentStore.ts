@@ -110,8 +110,7 @@ export const usePaymentStore = create<PaymentState>()(
 
           return order;
         } catch (error) {
-          console.error('Error creating order:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Failed to create order';
+          const errorMessage = error instanceof Error ? error.message : 'Error al crear pedido';
           set({
             error: errorMessage,
             paymentStatus: 'error',
@@ -127,7 +126,7 @@ export const usePaymentStore = create<PaymentState>()(
 
           const { currentPreference } = get();
           if (!currentPreference) {
-            throw new Error('No payment preference found');
+            throw new Error('No se encontró preferencia de pago');
           }
 
           // Initiate payment using MercadoPago service
@@ -138,16 +137,14 @@ export const usePaymentStore = create<PaymentState>()(
           } else {
             set({
               paymentStatus: 'error',
-              error: result.error || 'Payment initiation failed',
+              error: result.error || 'Error al iniciar el pago',
               isLoading: false,
             });
           }
 
           return result;
         } catch (error) {
-          console.error('Error initiating payment:', error);
-          const errorMessage =
-            error instanceof Error ? error.message : 'Failed to initiate payment';
+          const errorMessage = error instanceof Error ? error.message : 'Error al iniciar el pago';
           set({
             error: errorMessage,
             paymentStatus: 'error',
@@ -189,14 +186,13 @@ export const usePaymentStore = create<PaymentState>()(
             // Payment failed
             set({
               paymentStatus: 'error',
-              error: result.error || 'Payment failed',
+              error: result.error || 'El pago falló',
               isLoading: false,
             });
           }
         } catch (error) {
-          console.error('Error processing payment callback:', error);
           set({
-            error: error instanceof Error ? error.message : 'Failed to process payment callback',
+            error: error instanceof Error ? error.message : 'Error al procesar respuesta del pago',
             paymentStatus: 'error',
             isLoading: false,
           });
@@ -224,9 +220,8 @@ export const usePaymentStore = create<PaymentState>()(
           set({ isLoading: false });
           return paymentStatus;
         } catch (error) {
-          console.error('Error verifying payment:', error);
           set({
-            error: error instanceof Error ? error.message : 'Failed to verify payment',
+            error: error instanceof Error ? error.message : 'Error al verificar el pago',
             isLoading: false,
           });
           throw error;
@@ -247,9 +242,8 @@ export const usePaymentStore = create<PaymentState>()(
             set({ orders: [...existingOrders, ...orders], isLoading: false });
           }
         } catch (error) {
-          console.error('Error fetching orders:', error);
           set({
-            error: error instanceof Error ? error.message : 'Failed to fetch orders',
+            error: error instanceof Error ? error.message : 'Error al obtener pedidos',
             isLoading: false,
           });
         }
@@ -264,9 +258,8 @@ export const usePaymentStore = create<PaymentState>()(
           set({ isLoading: false });
           return order;
         } catch (error) {
-          console.error('Error fetching order:', error);
           set({
-            error: error instanceof Error ? error.message : 'Failed to fetch order',
+            error: error instanceof Error ? error.message : 'Error al obtener pedido',
             isLoading: false,
           });
           throw error;
@@ -288,9 +281,8 @@ export const usePaymentStore = create<PaymentState>()(
           set({ orders: updatedOrders, isLoading: false });
           return refundResult;
         } catch (error) {
-          console.error('Error requesting refund:', error);
           set({
-            error: error instanceof Error ? error.message : 'Failed to request refund',
+            error: error instanceof Error ? error.message : 'Error al solicitar reembolso',
             isLoading: false,
           });
           throw error;
@@ -380,7 +372,6 @@ export const PaymentHelpers = {
 
 // Auth token synchronization will be handled via proper subscription patterns
 // This prevents potential issues with module-level store subscriptions
-console.log('[Payment Store] Payment service initialized, auth sync will be handled separately');
 
 const utilityExport = {
   name: 'PaymentStore',

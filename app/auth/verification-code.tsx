@@ -18,9 +18,26 @@ import { spacing, radius } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
+import { UnknownError } from '../_types/ui';
 
 // Number of verification code input fields
 const CODE_LENGTH = 6;
+
+// Helper function to extract error message from unknown error types
+function getErrorMessage(error: UnknownError): string {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return 'Error desconocido. Intenta nuevamente.';
+}
+
+// Type for key press events
+interface KeyPressEvent {
+  nativeEvent: {
+    key: string;
+  };
+}
 
 export default function VerificationCodeScreen() {
   const params = useLocalSearchParams();
@@ -74,7 +91,7 @@ export default function VerificationCodeScreen() {
     }
   };
 
-  const handleKeyPress = (event: any, index: number) => {
+  const handleKeyPress = (event: KeyPressEvent, index: number) => {
     // If delete/backspace is pressed and current field is empty, focus previous field
     if (event.nativeEvent.key === 'Backspace' && code[index] === '' && index > 0) {
       inputRefs.current[index - 1]?.focus();
@@ -95,13 +112,12 @@ export default function VerificationCodeScreen() {
       await verifyEmail(verificationCode);
       // Navigate to success screen on successful verification
       router.replace('/auth/verify-success');
-    } catch (error: any) {
-      console.error('Verification error:', error);
-
+    } catch (error: UnknownError) {
       // Handle different error messages in a user-friendly way
-      if (error.message === 'Invalid verification code format') {
+      const errorMessage = getErrorMessage(error);
+      if (errorMessage === 'Invalid verification code format') {
         setError('El código debe ser de 6 dígitos numéricos.');
-      } else if (error.message === 'Invalid verification code') {
+      } else if (errorMessage === 'Invalid verification code') {
         setError('Código incorrecto. Por favor verifica e intenta nuevamente.');
       } else {
         // For any other errors or network issues
@@ -130,12 +146,8 @@ export default function VerificationCodeScreen() {
         'Código Enviado',
         'Se ha enviado un nuevo código de verificación a tu dirección de email.'
       );
-    } catch (error: any) {
-      console.error('Resend code error:', error);
-      Alert.alert(
-        'Error',
-        error.message || 'No se pudo enviar el código de verificación. Intenta nuevamente.'
-      );
+    } catch (error: UnknownError) {
+      Alert.alert('Error', getErrorMessage(error));
     } finally {
       setIsResending(false);
     }

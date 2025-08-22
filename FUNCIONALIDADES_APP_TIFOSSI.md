@@ -147,7 +147,7 @@ Tifossi es una aplicación móvil desarrollada con React Native y Expo para un e
 ### Infraestructura Recomendada
 - **Hosting**: Render.com (servidor + base de datos)
 - **CDN**: Cloudinary (plan gratuito inicial)
-- **Costos estimados**: USD $14/mes + 5.23% comisión MercadoPago
+- **Costos estimados**: USD $35/mes + 5.23% comisión MercadoPago
 - **CFE**: Cliente gestiona facturación con su proveedor actual o nuevo (no incluido)
 
 ## Publicación en Tiendas
@@ -287,5 +287,4 @@ Modificaciones posteriores se gestionarán mediante presupuesto adicional y proc
 
 ---
 
-*Documento actualizado: Agosto 2025*
 *Versión: 2.1 - Con exclusiones ampliadas basadas en análisis del código*

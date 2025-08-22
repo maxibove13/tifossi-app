@@ -59,7 +59,6 @@ export const loadCriticalData = async (
       categoryModelMap, // Pre-computed category-model relationships
     };
   } catch (error) {
-    console.error('Error loading critical data:', error);
     // Return empty data on error
     return {
       featuredProducts: [],

@@ -317,9 +317,9 @@ jest.mock('expo-router', () => ({
     push: jest.fn(),
     replace: jest.fn(),
     back: jest.fn(),
-    canGoBack: jest.fn(() => true),
+    canGoBack: jest.fn().mockImplementation(() => true),
   },
-  useLocalSearchParams: jest.fn(() => ({ email: 'test@example.com' })),
+  useLocalSearchParams: jest.fn().mockImplementation(() => ({ email: 'test@example.com' })),
   Stack: {
     Screen: ({ children }: { children: React.ReactNode }) => children,
   },
@@ -336,17 +336,19 @@ jest.mock('react-native', () => {
 });
 
 jest.mock('expo-secure-store', () => ({
-  setItemAsync: jest.fn(() => Promise.resolve()),
-  getItemAsync: jest.fn(() => Promise.resolve(null)),
-  deleteItemAsync: jest.fn(() => Promise.resolve()),
+  setItemAsync: jest.fn().mockImplementation(() => Promise.resolve()),
+  getItemAsync: jest.fn().mockImplementation(() => Promise.resolve(null)),
+  deleteItemAsync: jest.fn().mockImplementation(() => Promise.resolve()),
 }));
 
 jest.mock('@react-native-google-signin/google-signin', () => ({
   GoogleSignin: {
-    configure: jest.fn(() => Promise.resolve()),
-    hasPlayServices: jest.fn(() => Promise.resolve(true)),
-    signIn: jest.fn(() => Promise.resolve({ idToken: 'mock-google-id-token' })),
-    signOut: jest.fn(() => Promise.resolve()),
+    configure: jest.fn().mockImplementation(() => Promise.resolve()),
+    hasPlayServices: jest.fn().mockImplementation(() => Promise.resolve(true)),
+    signIn: jest
+      .fn()
+      .mockImplementation(() => Promise.resolve({ idToken: 'mock-google-id-token' })),
+    signOut: jest.fn().mockImplementation(() => Promise.resolve()),
   },
   statusCodes: {
     SIGN_IN_CANCELLED: -5,
@@ -671,7 +673,9 @@ describe('Authentication Flow Integration Tests', () => {
   describe('Email Verification Flow', () => {
     it('should verify email with valid code', async () => {
       // Mock useLocalSearchParams to return test email
-      const mockUseLocalSearchParams = jest.fn(() => ({ email: 'test@example.com' }));
+      const mockUseLocalSearchParams = jest
+        .fn()
+        .mockImplementation(() => ({ email: 'test@example.com' }));
       jest.doMock('expo-router', () => ({
         ...jest.requireActual('expo-router'),
         useLocalSearchParams: mockUseLocalSearchParams,

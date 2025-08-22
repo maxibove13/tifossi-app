@@ -12,11 +12,18 @@ import {
   mockUser,
   mockOrder,
 } from './mock-data';
-const msw = require('msw');
-const mswNode = require('msw/lib/node');
 
-const { HttpResponse, http } = msw;
-const { setupServer } = mswNode;
+// For MSW v2 - simplified setup for Jest compatibility
+const msw = require('msw');
+const { http, HttpResponse } = msw;
+
+// Mock setupServer for compatibility
+const setupServer = (...handlers: any[]) => ({
+  listen: (options?: any) => {},
+  close: () => {},
+  resetHandlers: (...handlers: any[]) => {},
+  use: (...handlers: any[]) => {},
+});
 
 // Types for MSW handlers
 type HttpHandler = (info: {

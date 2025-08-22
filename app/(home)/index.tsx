@@ -9,7 +9,6 @@ import { spacing, layout } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
 
 export default function HomeScreen() {
-  console.log('[HomeScreen] Rendering');
   const router = useRouter();
 
   const handleGoToStore = () => {

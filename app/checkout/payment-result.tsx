@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ViewStyle,
   TextStyle,
+  Alert,
 } from 'react-native';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,7 +33,7 @@ export default function PaymentResultScreen() {
   const paymentPending = params.paymentPending === 'true';
   const paymentFailure = params.paymentFailure === 'true';
   const paymentError = params.paymentError === 'true';
-  const orderId = params.orderId as string;
+  const _orderId = params.orderId as string;
   const paymentId = params.paymentId as string;
   const error = params.error as string;
 
@@ -45,7 +46,11 @@ export default function PaymentResultScreen() {
           await verifyPayment(paymentId);
           setVerificationComplete(true);
         } catch (error) {
-          console.error('Error verifying payment:', error);
+          // Error is handled by Alert, no need for console logging in production
+          Alert.alert(
+            'Error',
+            'No pudimos verificar el estado del pago. Por favor, revisa tus pedidos.'
+          );
         } finally {
           setIsVerifying(false);
         }
@@ -53,14 +58,16 @@ export default function PaymentResultScreen() {
     };
 
     verifyPaymentStatus();
-  }, [paymentId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentId]); // verifyPayment and verificationComplete are intentionally omitted
 
   // Clear cart on successful payment
   useEffect(() => {
     if (paymentSuccess && !isVerifying) {
       clearCart();
     }
-  }, [paymentSuccess, isVerifying]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentSuccess, isVerifying]); // clearCart is intentionally omitted to prevent multiple clears
 
   const handleGoToOrders = () => {
     router.replace('/(tabs)/profile');

@@ -154,7 +154,6 @@ class StrapiApiService {
     if (this.cacheEnabled) {
       const cached = cache.get<Product[]>(cacheKey);
       if (cached) {
-        console.log('[Strapi API] Products loaded from cache');
         return cached;
       }
     }
@@ -190,7 +189,6 @@ class StrapiApiService {
         cache.set(cacheKey, products, CACHE_TTL.PRODUCTS);
       }
 
-      console.log(`[Strapi API] Fetched ${products.length} products`);
       return products;
     } catch (error) {
       const apiError = handleApiError(error, 'fetchProducts');
@@ -199,7 +197,6 @@ class StrapiApiService {
       if (this.cacheEnabled) {
         const cached = cache.get<Product[]>(cacheKey);
         if (cached) {
-          console.warn('[Strapi API] Returning cached products due to error:', apiError.message);
           return cached;
         }
       }
@@ -227,7 +224,6 @@ class StrapiApiService {
     if (this.cacheEnabled) {
       const cached = cache.get<Product[]>(cacheKey);
       if (cached) {
-        console.log(`[Strapi API] Search results for "${query}" loaded from cache`);
         return cached;
       }
     }
@@ -292,7 +288,6 @@ class StrapiApiService {
         cache.set(cacheKey, filteredProducts, CACHE_TTL.PRODUCTS);
       }
 
-      console.log(`[Strapi API] Found ${filteredProducts.length} products for search "${query}"`);
       return filteredProducts;
     } catch (error) {
       const apiError = handleApiError(error, `searchProducts:${query}`);
@@ -301,10 +296,6 @@ class StrapiApiService {
       if (this.cacheEnabled) {
         const cached = cache.get<Product[]>(cacheKey);
         if (cached) {
-          console.warn(
-            `[Strapi API] Returning cached search results for "${query}" due to error:`,
-            apiError.message
-          );
           return cached;
         }
       }
@@ -323,7 +314,6 @@ class StrapiApiService {
     if (this.cacheEnabled) {
       const cached = cache.get<Product>(cacheKey);
       if (cached) {
-        console.log(`[Strapi API] Product ${id} loaded from cache`);
         return cached;
       }
     }
@@ -358,7 +348,6 @@ class StrapiApiService {
         cache.set(cacheKey, product, CACHE_TTL.PRODUCT_DETAIL);
       }
 
-      console.log(`[Strapi API] Fetched product: ${product.title}`);
       return product;
     } catch (error) {
       const apiError = handleApiError(error, `fetchProductById:${id}`);
@@ -367,10 +356,6 @@ class StrapiApiService {
       if (this.cacheEnabled) {
         const cached = cache.get<Product>(cacheKey);
         if (cached) {
-          console.warn(
-            `[Strapi API] Returning cached product ${id} due to error:`,
-            apiError.message
-          );
           return cached;
         }
       }
@@ -392,11 +377,9 @@ class StrapiApiService {
   async syncCart(items: CartItem[]): Promise<boolean> {
     try {
       await httpClient.put('/users/me/cart', { cart: items });
-      console.log(`[Strapi API] Cart synced with ${items.length} items`);
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'syncCart');
-      console.error('[Strapi API] Cart sync failed:', apiError.message);
       throw apiError;
     }
   }
@@ -409,11 +392,9 @@ class StrapiApiService {
   async syncFavorites(productIds: string[]): Promise<boolean> {
     try {
       await httpClient.put('/users/me/favorites', { favorites: productIds });
-      console.log(`[Strapi API] Favorites synced with ${productIds.length} items`);
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'syncFavorites');
-      console.error('[Strapi API] Favorites sync failed:', apiError.message);
       throw apiError;
     }
   }
@@ -435,14 +416,12 @@ class StrapiApiService {
 
       const user = transformStrapiUser(response.user);
 
-      console.log(`[Strapi API] User logged in: ${user.email}`);
       return {
         token: response.jwt,
         user,
       };
     } catch (error) {
       const apiError = handleApiError(error, 'login');
-      console.error('[Strapi API] Login failed:', apiError.message);
       throw apiError;
     }
   }
@@ -471,14 +450,12 @@ class StrapiApiService {
 
       const user = transformStrapiUser(response.user);
 
-      console.log(`[Strapi API] User registered: ${user.email}`);
       return {
         token: response.jwt,
         user,
       };
     } catch (error) {
       const apiError = handleApiError(error, 'register');
-      console.error('[Strapi API] Registration failed:', apiError.message);
       throw apiError;
     }
   }
@@ -497,11 +474,9 @@ class StrapiApiService {
 
       const user = transformStrapiUser(response);
 
-      console.log(`[Strapi API] Token validated for user: ${user.email}`);
       return user;
     } catch (error) {
       const apiError = handleApiError(error, 'validateToken');
-      console.error('[Strapi API] Token validation failed:', apiError.message);
       throw apiError;
     }
   }
@@ -524,17 +499,14 @@ class StrapiApiService {
               },
             }
           );
-        } catch (error) {
+        } catch (_error) {
           // Ignore errors if logout endpoint doesn't exist
-          console.warn('[Strapi API] Logout endpoint not available, proceeding with local logout');
         }
       }
 
-      console.log('[Strapi API] User logged out');
       return true;
     } catch (error) {
       // Don't throw on logout errors, just log them
-      console.warn('[Strapi API] Logout error (continuing):', error);
       return true;
     }
   }
@@ -563,11 +535,9 @@ class StrapiApiService {
         }
       );
 
-      console.log('[Strapi API] Password changed successfully');
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'changePassword');
-      console.error('[Strapi API] Password change failed:', apiError.message);
       throw apiError;
     }
   }
@@ -615,11 +585,9 @@ class StrapiApiService {
 
       const profilePictureUrl = uploadResponse[0]?.url || imageUri;
 
-      console.log('[Strapi API] Profile picture updated');
       return { profilePictureUrl };
     } catch (error) {
       const apiError = handleApiError(error, 'updateProfilePicture');
-      console.error('[Strapi API] Profile picture update failed:', apiError.message);
       throw apiError;
     }
   }
@@ -639,11 +607,9 @@ class StrapiApiService {
         }
       );
 
-      console.log('[Strapi API] Verification email sent');
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'resendVerificationEmail');
-      console.error('[Strapi API] Resend verification email failed:', apiError.message);
       throw apiError;
     }
   }
@@ -659,11 +625,9 @@ class StrapiApiService {
         },
       });
 
-      console.log('[Strapi API] Email verified successfully');
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'verifyEmail');
-      console.error('[Strapi API] Email verification failed:', apiError.message);
       throw apiError;
     }
   }
@@ -675,11 +639,9 @@ class StrapiApiService {
     try {
       // This could involve fetching and merging server-side user data
       // with local data, but for now we'll just return success
-      console.log('[Strapi API] User data synced');
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'syncUserData');
-      console.error('[Strapi API] User data sync failed:', apiError.message);
       throw apiError;
     }
   }
@@ -691,7 +653,6 @@ class StrapiApiService {
    */
   setCacheEnabled(enabled: boolean): void {
     this.cacheEnabled = enabled;
-    console.log(`[Strapi API] Caching ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
@@ -699,7 +660,6 @@ class StrapiApiService {
    */
   clearCache(): void {
     cache.clear();
-    console.log('[Strapi API] Cache cleared');
   }
 
   /**

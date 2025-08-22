@@ -74,7 +74,6 @@ export const useProductStore = create<ProductState>()(
           now - lastFetchTimestamp < cacheExpiryTime &&
           products.length > 0
         ) {
-          console.log('[Product Store] Using cached products data');
           return;
         }
 
@@ -117,11 +116,7 @@ export const useProductStore = create<ProductState>()(
             lastFetchTimestamp: now,
             actionStatus: { ...get().actionStatus, fetchProducts: 'success' },
           });
-
-          console.log(`[Product Store] Fetched ${fetchedProducts.length} products`);
         } catch (e) {
-          console.error('Failed to fetch products:', e);
-
           set({
             isLoading: false,
             error: e instanceof Error ? e.message : 'Failed to fetch products',
@@ -141,7 +136,6 @@ export const useProductStore = create<ProductState>()(
           lastFetchTimestamp &&
           now - lastFetchTimestamp < cacheExpiryTime
         ) {
-          console.log(`[Product Store] Using cached data for product ${id}`);
           return productCache[id];
         }
 
@@ -177,20 +171,15 @@ export const useProductStore = create<ProductState>()(
               isLoading: false,
               actionStatus: { ...get().actionStatus, fetchProductById: 'success' },
             });
-
-            console.log(`[Product Store] Fetched product: ${product.title}`);
           } else {
             set({
               isLoading: false,
               actionStatus: { ...get().actionStatus, fetchProductById: 'success' },
             });
-            console.log(`[Product Store] Product not found: ${id}`);
           }
 
           return product;
         } catch (e) {
-          console.error(`Failed to fetch product ${id}:`, e);
-
           set({
             isLoading: false,
             error: e instanceof Error ? e.message : `Failed to fetch product ${id}`,
@@ -202,7 +191,6 @@ export const useProductStore = create<ProductState>()(
       },
 
       refreshProducts: async () => {
-        console.log('[Product Store] Refreshing products data...');
         set({ actionStatus: { ...get().actionStatus, refresh: 'loading' } });
 
         try {
@@ -265,7 +253,6 @@ export const useProductStore = create<ProductState>()(
             refresh: 'idle',
           },
         });
-        console.log('[Product Store] Cache invalidated');
       },
 
       clearError: () => {
@@ -282,14 +269,6 @@ export const useProductStore = create<ProductState>()(
         // Don't persist loading states or errors
       }),
       onRehydrateStorage: () => (state) => {
-        console.log('[Product Store] Hydration completed', {
-          productCount: state?.products?.length || 0,
-          cachedProducts: Object.keys(state?.productCache || {}).length,
-          lastFetch: state?.lastFetchTimestamp
-            ? new Date(state.lastFetchTimestamp).toISOString()
-            : 'never',
-        });
-
         // Reset transient state after hydration
         if (state) {
           state.isLoading = false;
@@ -303,7 +282,6 @@ export const useProductStore = create<ProductState>()(
           // Check if cache has expired
           const now = Date.now();
           if (state.lastFetchTimestamp && now - state.lastFetchTimestamp >= state.cacheExpiryTime) {
-            console.log('[Product Store] Cache expired, will refresh on next fetch');
             state.lastFetchTimestamp = null;
           }
         }

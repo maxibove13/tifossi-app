@@ -56,8 +56,8 @@ export default function AddToCartButton({
 
     try {
       await onPress();
-    } catch (error) {
-      console.error('Error adding to cart:', error);
+    } catch {
+      // Error adding to cart
     } finally {
       setInternalLoading(false);
     }

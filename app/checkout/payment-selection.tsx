@@ -47,9 +47,9 @@ export default function PaymentSelectionScreen() {
   const { items: cartItems } = useCartStore();
   const { user, token } = useAuthStore();
   const {
-    createOrder,
-    initiatePayment,
-    currentOrder,
+    createOrder: _createOrder,
+    initiatePayment: _initiatePayment,
+    currentOrder: _currentOrder,
     paymentStatus,
     isLoading,
     error,
@@ -69,7 +69,8 @@ export default function PaymentSelectionScreen() {
           const address = await addressService.getAddressById(selectedAddressId as string);
           setSelectedAddress(address);
         } catch (error) {
-          console.error('Failed to fetch selected address:', error);
+          // Error is handled by Alert, no need for console logging in production
+          Alert.alert('Error', 'No pudimos cargar la dirección de envío.');
         }
       }
     };
@@ -80,16 +81,11 @@ export default function PaymentSelectionScreen() {
   // Initialize deep link handler for payment callbacks
   useEffect(() => {
     PaymentDeepLinks.initialize({
-      onPaymentSuccess: (data) => {
-        console.log('Payment success callback:', data);
+      onPaymentSuccess: (_data) => {
         // Navigation will be handled by deep link handler
       },
-      onPaymentFailure: (data) => {
-        console.log('Payment failure callback:', data);
-      },
-      onPaymentPending: (data) => {
-        console.log('Payment pending callback:', data);
-      },
+      onPaymentFailure: (_data) => {},
+      onPaymentPending: (_data) => {},
     });
 
     return () => {
@@ -111,7 +107,8 @@ export default function PaymentSelectionScreen() {
         clearCurrentPayment();
       }
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // clearCurrentPayment and paymentStatus are intentionally omitted - cleanup only on unmount
 
   // Default payment methods
   const defaultPaymentMethods: PaymentMethod[] = [
@@ -240,7 +237,6 @@ export default function PaymentSelectionScreen() {
         const paymentResult = await mercadoPagoService.initiatePayment(preference);
 
         if (paymentResult.success) {
-          console.log('Payment initiated successfully');
           // WebView will handle the rest through deep links
         } else {
           Alert.alert('Error', paymentResult.error || 'No se pudo iniciar el pago');
@@ -249,8 +245,18 @@ export default function PaymentSelectionScreen() {
         Alert.alert('Error', result.error || 'No se pudo crear el pedido');
       }
     } catch (error) {
-      console.error('Payment error:', error);
-      Alert.alert('Error', 'Ocurrió un error al procesar el pago. Intenta nuevamente.');
+      // Determine appropriate error message based on error type
+      let errorMessage = 'Ocurrió un error al procesar el pago.';
+
+      if (error instanceof Error) {
+        if (error.message.includes('network')) {
+          errorMessage = 'Sin conexión a internet. Verifica tu conexión.';
+        } else if (error.message.includes('auth')) {
+          errorMessage = 'Debes iniciar sesión para continuar.';
+        }
+      }
+
+      Alert.alert('Error de Pago', errorMessage);
     } finally {
       setIsProcessingPayment(false);
     }

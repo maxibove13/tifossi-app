@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { colors } from '../_styles/colors';
@@ -15,6 +16,19 @@ import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typograph
 import Input from '../_components/ui/form/Input';
 import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
+import AppleSignInButton from '../_components/ui/buttons/AppleSignInButton';
+import AppleSignInHelpText from '../_components/auth/AppleSignInHelp';
+import { APPLE_AUTH_ERRORS_ES } from '../_types/auth';
+import { UnknownError } from '../_types/ui';
+
+// Helper function to extract error message from unknown error types
+function getErrorMessage(error: UnknownError): string {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return 'Error desconocido. Intenta nuevamente.';
+}
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -22,14 +36,19 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Apple Sign-In specific state
+  const [appleError, setAppleError] = useState<string | null>(null);
+
   const {
     login,
     loginWithGoogle,
+    loginWithApple,
     isLoading,
     error: authError,
   } = useAuthStore((state) => ({
     login: state.login,
     loginWithGoogle: state.loginWithGoogle,
+    loginWithApple: state.loginWithApple,
     isLoading: state.isLoading,
     error: state.error,
   }));
@@ -61,9 +80,9 @@ export default function LoginScreen() {
 
       // If successful, navigate to profile
       router.replace('/(tabs)/profile');
-    } catch (error: any) {
+    } catch (error: UnknownError) {
       // Handle login error
-      setError(error.message || 'Error al iniciar sesión. Verifica tus credenciales.');
+      setError(getErrorMessage(error) || 'Error al iniciar sesión. Verifica tus credenciales.');
     } finally {
       setIsSubmitting(false);
     }
@@ -79,9 +98,42 @@ export default function LoginScreen() {
 
       // If successful, navigate to profile
       router.replace('/(tabs)/profile');
-    } catch (error: any) {
+    } catch (error: UnknownError) {
       // Handle Google login error
-      setError(error.message || 'Error al iniciar sesión con Google.');
+      setError(getErrorMessage(error) || 'Error al iniciar sesión con Google.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setError(null);
+    setAppleError(null);
+    setIsSubmitting(true);
+
+    try {
+      // Attempt Apple login
+      await loginWithApple();
+
+      // If successful, navigate to profile
+      router.replace('/(tabs)/profile');
+    } catch (error: UnknownError) {
+      const errorObj = error && typeof error === 'object' ? (error as any) : {};
+      const errorCode = errorObj?.code || errorObj?.name || 'unknown-error';
+      const errorMessage = getErrorMessage(error) || APPLE_AUTH_ERRORS_ES.ERROR_UNKNOWN;
+
+      // Check if user cancelled - don't show error
+      if (
+        errorCode.includes('canceled') ||
+        errorCode.includes('cancel') ||
+        errorMessage.includes('cancelado')
+      ) {
+        return;
+      }
+
+      // Set error state
+      setAppleError(errorMessage);
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -151,6 +203,7 @@ export default function LoginScreen() {
             (authError && !authError.includes('email') && !authError.includes('password')) ? (
               <Text style={styles.errorText}>{error || authError}</Text>
             ) : null}
+            {appleError && <Text style={styles.errorText}>{appleError}</Text>}
           </View>
         </ScrollView>
       </View>
@@ -168,6 +221,19 @@ export default function LoginScreen() {
           )}
         </TouchableOpacity>
 
+        {Platform.OS === 'ios' && (
+          <>
+            <AppleSignInButton
+              onPress={handleAppleLogin}
+              type="signin"
+              disabled={isSubmitting || isLoading}
+              loading={isSubmitting}
+              style={styles.appleButton}
+            />
+            <AppleSignInHelpText context="login" showInline={true} style={styles.appleHelpText} />
+            <View style={styles.spacing} />
+          </>
+        )}
         <TouchableOpacity
           style={[styles.googleButton, (isSubmitting || isLoading) && styles.disabledButton]}
           onPress={handleGoogleLogin}
@@ -300,5 +366,17 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.md,
     color: colors.primary,
+  },
+  appleButton: {
+    width: '100%',
+    height: 48,
+    borderRadius: 24,
+  },
+  appleHelpText: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  spacing: {
+    height: spacing.md,
   },
 });

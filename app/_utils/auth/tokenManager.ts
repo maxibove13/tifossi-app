@@ -82,10 +82,8 @@ class TokenManager {
         throw new Error('No JWT token received from Strapi');
       }
 
-      console.log('[Token Manager] Firebase to Strapi token exchange successful');
       return data.jwt;
     } catch (error: any) {
-      console.error('[Token Manager] Token exchange failed:', error);
       throw new Error(`Token exchange failed: ${error.message}`);
     }
   }
@@ -110,10 +108,7 @@ class TokenManager {
         SecureStore.setItemAsync(STRAPI_TOKEN_KEY, strapiToken),
         SecureStore.setItemAsync(TOKEN_METADATA_KEY, JSON.stringify(metadata)),
       ]);
-
-      console.log('[Token Manager] Tokens stored successfully');
     } catch (error) {
-      console.error('[Token Manager] Failed to store tokens:', error);
       throw new Error('Failed to store authentication tokens');
     }
   }
@@ -133,9 +128,7 @@ class TokenManager {
       if (metadataJson) {
         try {
           metadata = JSON.parse(metadataJson);
-        } catch (error) {
-          console.warn('[Token Manager] Failed to parse token metadata:', error);
-        }
+        } catch (error) {}
       }
 
       return {
@@ -144,7 +137,6 @@ class TokenManager {
         metadata,
       };
     } catch (error) {
-      console.error('[Token Manager] Failed to retrieve tokens:', error);
       return {
         firebaseToken: null,
         strapiToken: null,
@@ -202,7 +194,6 @@ class TokenManager {
         error: isValidWithBackend ? undefined : 'Backend validation failed',
       };
     } catch (error: any) {
-      console.error('[Token Manager] Token validation failed:', error);
       return {
         isValid: false,
         needsRefresh: true,
@@ -229,7 +220,6 @@ class TokenManager {
 
       return response.ok;
     } catch (error) {
-      console.warn('[Token Manager] Backend validation failed:', error);
       return false;
     }
   }
@@ -240,7 +230,6 @@ class TokenManager {
   async refreshTokens(): Promise<TokenSet> {
     // Prevent concurrent refresh operations
     if (this.isRefreshing && this.refreshPromise) {
-      console.log('[Token Manager] Refresh already in progress, waiting...');
       return await this.refreshPromise;
     }
 
@@ -261,8 +250,6 @@ class TokenManager {
    */
   private async performTokenRefresh(): Promise<TokenSet> {
     try {
-      console.log('[Token Manager] Starting token refresh...');
-
       // Get fresh Firebase token
       const firebaseToken = await firebaseAuth.getIdToken(true);
 
@@ -285,10 +272,8 @@ class TokenManager {
       // Return updated token set
       const tokens = await this.getTokens();
 
-      console.log('[Token Manager] Token refresh completed successfully');
       return tokens;
     } catch (error: any) {
-      console.error('[Token Manager] Token refresh failed:', error);
       throw new Error(`Token refresh failed: ${error.message}`);
     }
   }
@@ -300,7 +285,6 @@ class TokenManager {
     const validation = await this.validateTokens();
 
     if (!validation.isValid || validation.needsRefresh) {
-      console.log('[Token Manager] Tokens need refresh, refreshing...');
       return await this.refreshTokens();
     }
 
@@ -317,10 +301,7 @@ class TokenManager {
         SecureStore.deleteItemAsync(STRAPI_TOKEN_KEY),
         SecureStore.deleteItemAsync(TOKEN_METADATA_KEY),
       ]);
-
-      console.log('[Token Manager] All tokens cleared');
     } catch (error) {
-      console.error('[Token Manager] Failed to clear tokens:', error);
       throw new Error('Failed to clear authentication tokens');
     }
   }
@@ -330,8 +311,6 @@ class TokenManager {
    */
   async syncAfterLogin(firebaseToken: string, userId: string): Promise<TokenSet> {
     try {
-      console.log('[Token Manager] Syncing tokens after login...');
-
       // Exchange Firebase token for Strapi token
       const strapiToken = await this.exchangeFirebaseTokenForStrapi(firebaseToken);
 
@@ -341,7 +320,6 @@ class TokenManager {
       // Return token set
       return await this.getTokens();
     } catch (error: any) {
-      console.error('[Token Manager] Post-login sync failed:', error);
       throw new Error(`Post-login sync failed: ${error.message}`);
     }
   }
@@ -354,7 +332,6 @@ class TokenManager {
       const tokens = await this.getValidTokens();
       return tokens.strapiToken || tokens.firebaseToken;
     } catch (error) {
-      console.error('[Token Manager] Failed to get API token:', error);
       return null;
     }
   }
@@ -367,7 +344,6 @@ class TokenManager {
       const tokens = await this.getValidTokens();
       return tokens.firebaseToken;
     } catch (error) {
-      console.error('[Token Manager] Failed to get Firebase token:', error);
       return null;
     }
   }
@@ -380,7 +356,6 @@ class TokenManager {
       const tokens = await this.getValidTokens();
       return tokens.strapiToken;
     } catch (error) {
-      console.error('[Token Manager] Failed to get Strapi token:', error);
       return null;
     }
   }
@@ -406,7 +381,7 @@ class TokenManager {
         tokensValid: validation.isValid,
         lastSync: tokens.metadata?.lastSync,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         status: 'error',
         hasFirebaseToken: false,

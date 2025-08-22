@@ -43,19 +43,15 @@ class HttpClient {
           if (token) {
             config.headers.Authorization = `Bearer ${token}`;
           }
-        } catch (error) {
-          console.warn('[HttpClient] Failed to retrieve auth token:', error);
-        }
+        } catch (error) {}
 
         // Log request in development
         if (__DEV__) {
-          console.log(`[HTTP Request] ${config.method?.toUpperCase()} ${config.url}`);
         }
 
         return config;
       },
       (error: AxiosError) => {
-        console.error('[HttpClient] Request interceptor error:', error);
         return Promise.reject(error);
       }
     );
@@ -65,7 +61,6 @@ class HttpClient {
       (response: AxiosResponse) => {
         // Log response in development
         if (__DEV__) {
-          console.log(`[HTTP Response] ${response.status} ${response.config.url}`);
         }
 
         return response;
@@ -73,11 +68,6 @@ class HttpClient {
       async (error: AxiosError) => {
         // Log error in development
         if (__DEV__) {
-          console.error('[HTTP Error]', {
-            url: error.config?.url,
-            status: error.response?.status,
-            message: error.message,
-          });
         }
 
         // Handle 401 Unauthorized - clear token

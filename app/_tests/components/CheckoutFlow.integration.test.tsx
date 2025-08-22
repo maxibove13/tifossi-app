@@ -26,6 +26,7 @@ import PaymentSelectionScreen from '../../checkout/payment-selection';
 import { useAuthStore } from '../../_stores/authStore';
 import { useCartStore } from '../../_stores/cartStore';
 import { usePaymentStore } from '../../_stores/paymentStore';
+import { CartItem } from '../../_services/cart/cartService';
 import { Address } from '../../_services/address/addressService';
 import { testLifecycleHelpers } from '../utils/test-setup';
 
@@ -41,46 +42,29 @@ jest.mock('expo-router', () => ({
   },
   useLocalSearchParams: () => ({ selectedAddressId: 'address-1' }),
   Stack: {
-    Screen: ({ options }: any) => <div data-testid="stack-screen" {...options} />,
+    Screen: ({ options }: { options?: Record<string, unknown> }) => (
+      <div data-testid="stack-screen" {...options} />
+    ),
   },
 }));
 
-// Mock React Native components for testing
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return {
-    ...RN,
-    ScrollView: ({ children, ...props }: any) => <RN.View {...props}>{children}</RN.View>,
-    SafeAreaView: ({ children, ...props }: any) => <RN.View {...props}>{children}</RN.View>,
-    ActivityIndicator: ({ color, size }: any) => (
-      <div data-testid="loading-indicator" style={{ color, fontSize: size }}>
-        Loading...
-      </div>
-    ),
-    Image: ({ source, style }: any) => (
-      <div data-testid="payment-icon" style={style}>
-        {source?.uri || 'payment-icon'}
-      </div>
-    ),
-    Alert: {
-      alert: jest.fn(),
-    },
-  };
-});
+// React Native component mocking is handled in setup.ts
 
-// Mock SVG components
-jest.mock('../../../assets/icons/close.svg', () => 'CloseSVG');
-jest.mock('../../../assets/icons/plus_circle.svg', () => 'PlusCircleSVG');
+// SVG components are now handled by jest.config.js moduleNameMapper
 
 // Mock UI components
-jest.mock('../../_components/ui/form/RadioButton', () => ({ selected, disabled }: any) => (
-  <div
-    data-testid={`radio-button-${selected ? 'selected' : 'unselected'}`}
-    className={disabled ? 'disabled' : ''}
-  >
-    {selected ? '●' : '○'}
-  </div>
-));
+jest.mock(
+  '../../_components/ui/form/RadioButton',
+  () =>
+    ({ selected, disabled }: { selected: boolean; disabled?: boolean }) => (
+      <div
+        data-testid={`radio-button-${selected ? 'selected' : 'unselected'}`}
+        className={disabled ? 'disabled' : ''}
+      >
+        {selected ? '●' : '○'}
+      </div>
+    )
+);
 
 // Mock payment utilities
 jest.mock('../../_utils/payment/deepLinkHandler', () => ({
@@ -463,7 +447,7 @@ describe('Checkout Flow Integration Tests', () => {
           const authHeader = request.headers.get('Authorization');
           expect(authHeader).toBe('Bearer mock-auth-token');
 
-          const body = (await request.json()) as { items?: any[]; shippingAddress?: Address };
+          const body = (await request.json()) as { items?: CartItem[]; shippingAddress?: Address };
           expect(body?.items).toHaveLength(2);
           expect(body?.shippingAddress).toEqual(mockAddresses[0]);
 

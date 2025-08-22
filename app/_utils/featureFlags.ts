@@ -322,7 +322,6 @@ class FeatureFlagManager {
   isEnabled(flagKey: string, userId?: string): boolean {
     const flag = this.getFlag(flagKey);
     if (!flag) {
-      console.warn(`[FeatureFlags] Flag '${flagKey}' not found`);
       return false;
     }
 
@@ -427,7 +426,6 @@ class FeatureFlagManager {
     if (config.debug) {
       if (this.flags[flagKey]) {
         this.flags[flagKey] = { ...this.flags[flagKey], enabled };
-        console.log(`[FeatureFlags] Override '${flagKey}' = ${enabled}`);
       }
     }
   }
@@ -438,7 +436,6 @@ class FeatureFlagManager {
   resetOverrides(): void {
     if (config.debug) {
       this.flags = { ...featureFlags };
-      console.log('[FeatureFlags] All overrides reset');
     }
   }
 
@@ -460,11 +457,8 @@ class FeatureFlagManager {
     try {
       // Implementation would fetch from remote config service
       // For now, this is a placeholder
-      console.log('[FeatureFlags] Remote flags fetching not implemented yet');
       this.lastFetchTime = now;
-    } catch (error) {
-      console.error('[FeatureFlags] Failed to fetch remote flags:', error);
-    }
+    } catch (error) {}
   }
 
   /**

@@ -30,7 +30,6 @@ export default function StoreSelectionScreen() {
   }, [cityId, zoneId]);
 
   const handleConfirm = () => {
-    console.log('Confirmed store:', store?.id);
     router.push('/checkout/payment-selection');
   };
 

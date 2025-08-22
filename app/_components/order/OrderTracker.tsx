@@ -65,7 +65,6 @@ export default function OrderTracker({ orderId, onClose }: OrderTrackerProps) {
           throw new Error('No tracking data found');
         }
       } catch (err) {
-        console.error('Failed to fetch order tracking:', err);
         setError('Failed to load order tracking information');
       } finally {
         setIsLoading(false);
@@ -272,7 +271,6 @@ export default function OrderTracker({ orderId, onClose }: OrderTrackerProps) {
             style={styles.cancelButton}
             onPress={() => {
               // Handle cancel order
-              console.log('Cancel order:', order.id);
             }}
           >
             <Text style={styles.cancelButtonText}>Cancel Order</Text>
@@ -283,7 +281,6 @@ export default function OrderTracker({ orderId, onClose }: OrderTrackerProps) {
             style={styles.refundButton}
             onPress={() => {
               // Handle refund request
-              console.log('Request refund:', order.id);
             }}
           >
             <Text style={styles.refundButtonText}>Request Refund</Text>

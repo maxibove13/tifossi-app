@@ -39,13 +39,10 @@ class StoreSynchronizer implements StoreSyncActions {
     });
 
     this.initialized = true;
-    console.log('[Store Sync] Store synchronizer initialized');
   }
 
   async onLogin(token: string, _user: any): Promise<void> {
     try {
-      console.log('[Store Sync] User logged in, syncing stores...');
-
       // Update cart store
       useCartStore.getState().setAuthToken(token);
 
@@ -57,17 +54,11 @@ class StoreSynchronizer implements StoreSyncActions {
 
       // Sync favorites with server
       await useFavoritesStore.getState().syncWithServer();
-
-      console.log('[Store Sync] Login synchronization complete');
-    } catch (error) {
-      console.error('[Store Sync] Error during login sync:', error);
-    }
+    } catch (error) {}
   }
 
   async onLogout(): Promise<void> {
     try {
-      console.log('[Store Sync] User logged out, cleaning stores...');
-
       // Clear cart
       await useCartStore.getState().clearCart();
 
@@ -78,24 +69,14 @@ class StoreSynchronizer implements StoreSyncActions {
 
       // Clear current payment session
       usePaymentStore.getState().clearCurrentPayment();
-
-      console.log('[Store Sync] Logout cleanup complete');
-    } catch (error) {
-      console.error('[Store Sync] Error during logout cleanup:', error);
-    }
+    } catch (error) {}
   }
 
   onTokenChange(token: string | null): void {
     try {
-      console.log('[Store Sync] Token changed, updating stores...');
-
       // Update cart auth token
       useCartStore.getState().setAuthToken(token);
-
-      console.log('[Store Sync] Token synchronization complete');
-    } catch (error) {
-      console.error('[Store Sync] Error during token sync:', error);
-    }
+    } catch (error) {}
   }
 }
 

@@ -38,7 +38,6 @@ class DeepLinkHandler {
    */
   initialize(options: DeepLinkOptions = {}) {
     this.options = options;
-    console.log('[PaymentDeepLinkHandler] Initialized with options:', Object.keys(options));
   }
 
   /**
@@ -46,10 +45,6 @@ class DeepLinkHandler {
    * @deprecated Use unified DeepLinkRouter instead
    */
   private startListening() {
-    console.warn(
-      '[PaymentDeepLinkHandler] Direct listening is deprecated. Use unified DeepLinkRouter.'
-    );
-
     if (!this.isListening) {
       // Handle deep links when app is already open
       Linking.addEventListener('url', this.handleDeepLink);
@@ -75,7 +70,6 @@ class DeepLinkHandler {
    * Handle deep link URL
    */
   private handleDeepLink = ({ url }: { url: string }) => {
-    console.log('[PaymentDeepLinkHandler] Deep link received:', url);
     this.processPaymentCallbackLegacy(url);
   };
 
@@ -86,12 +80,9 @@ class DeepLinkHandler {
     try {
       const initialUrl = await Linking.getInitialURL();
       if (initialUrl) {
-        console.log('[PaymentDeepLinkHandler] Initial URL:', initialUrl);
         this.processPaymentCallbackLegacy(initialUrl);
       }
-    } catch (error) {
-      console.error('[PaymentDeepLinkHandler] Error getting initial URL:', error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -100,13 +91,10 @@ class DeepLinkHandler {
    */
   processPaymentCallback(url: string, params: Record<string, any>) {
     try {
-      console.log('[PaymentDeepLinkHandler] Processing payment callback:', url);
-
       const parsedResult = mercadoPagoService.parsePaymentCallback(url);
 
       if (!parsedResult) {
         // Not a payment callback or invalid format
-        console.warn('[PaymentDeepLinkHandler] Invalid payment callback format');
         this.options.onInvalidLink?.(url);
         return { success: false, error: 'Invalid payment callback format' };
       }
@@ -120,7 +108,6 @@ class DeepLinkHandler {
         return this.handleFailureCallback(parsedResult, callbackData);
       }
     } catch (error: any) {
-      console.error('[PaymentDeepLinkHandler] Error processing payment callback:', error);
       this.options.onInvalidLink?.(url);
       return { success: false, error: error.message };
     }
@@ -149,7 +136,6 @@ class DeepLinkHandler {
         this.handleFailureCallback(parsedResult, callbackData);
       }
     } catch (error) {
-      console.error('Error processing payment callback:', error);
       this.options.onInvalidLink?.(url);
     }
   }
@@ -159,15 +145,11 @@ class DeepLinkHandler {
    */
   private async handleSuccessCallback(result: PaymentResult, callbackData: PaymentCallbackData) {
     try {
-      console.log('[PaymentDeepLinkHandler] Payment success callback:', result);
-
       // Verify payment status with backend if we have payment ID
       if (result.paymentId) {
         try {
           const verificationResult = await mercadoPagoService.verifyPaymentStatus(result.paymentId);
-          console.log('[PaymentDeepLinkHandler] Payment verification result:', verificationResult);
         } catch (error) {
-          console.warn('[PaymentDeepLinkHandler] Payment verification failed:', error);
           // Continue with callback processing even if verification fails
         }
       }
@@ -181,7 +163,6 @@ class DeepLinkHandler {
         data: { result, callbackData },
       };
     } catch (error: any) {
-      console.error('[PaymentDeepLinkHandler] Error handling success callback:', error);
       return this.handleFailureCallback(result, callbackData);
     }
   }
@@ -191,8 +172,6 @@ class DeepLinkHandler {
    */
   private handleFailureCallback(result: PaymentResult, callbackData: PaymentCallbackData) {
     try {
-      console.log('[PaymentDeepLinkHandler] Payment failure/pending callback:', result);
-
       if (result.status === 'pending') {
         // Call custom pending handler
         this.options.onPaymentPending?.(callbackData);
@@ -213,8 +192,6 @@ class DeepLinkHandler {
         };
       }
     } catch (error: any) {
-      console.error('[PaymentDeepLinkHandler] Error handling failure callback:', error);
-
       return {
         success: false,
         error: error.message,
@@ -241,7 +218,6 @@ class DeepLinkHandler {
         merchantOrderId: params.merchant_order_id as string,
       };
     } catch (error) {
-      console.error('Error extracting callback data:', error);
       return {};
     }
   }
@@ -311,7 +287,6 @@ class DeepLinkHandler {
     params: Partial<PaymentCallbackData> = {}
   ) {
     const testUrl = this.createTestDeepLink(status, params);
-    console.log('Testing deep link:', testUrl);
 
     // Simulate receiving the deep link
     this.handleDeepLink({ url: testUrl });

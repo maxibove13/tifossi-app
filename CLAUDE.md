@@ -42,6 +42,12 @@ Keep TIFOSSI_DELIVERY_PLAN.md as the single source of truth for project progress
 - **Delivery**: Functional app ready for store submission
 - **NOT Included**: CFE invoice integration (client responsibility)
 
+## Authentication Setup
+- **Firebase Required**: The app uses Firebase Authentication for user management
+- **Apple Sign-In**: Required for App Store submission (iOS guideline compliance)
+- **Setup Guide**: See `FIREBASE_SETUP_GUIDE.md` for detailed client instructions
+- **Current Status**: Mock authentication implemented, awaiting Firebase production setup
+
 ## Build Commands
 - `npm install` - Install dependencies
 - `npm run lint` - Run ESLint

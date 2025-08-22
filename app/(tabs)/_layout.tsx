@@ -8,7 +8,6 @@ import ScreenHeader from '../_components/common/ScreenHeader';
 
 // Placeholder for actual icon components if TabBar needs them passed this way,
 // or if they are used in screenOptions. The original diff didn't show them in Tabs.Screen options directly.
-// import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   // Assuming getActiveRoute was part of the original file, keep it.

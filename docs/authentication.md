@@ -66,6 +66,28 @@ The authentication system is **implemented** with the following components:
    - Provides mock user data and token handling
    - Implements delay for realistic behavior
 
+### Authentication Providers
+
+The Tifossi authentication system supports multiple authentication providers:
+
+| Provider | Status | Platform Support | Notes |
+|----------|--------|-------------------|-------|
+| Email/Password | ✅ Implemented | iOS, Android, Web | Traditional credential authentication |
+| Google Sign-In | ✅ Implemented | iOS, Android, Web | OAuth 2.0 with Google |
+| Apple Sign-In | ✅ Implemented | iOS (Native), Android (Web fallback) | Required for App Store compliance |
+
+#### Apple Sign-In Integration
+
+Apple Sign-In is fully integrated with the existing authentication system and provides:
+
+- **Native iOS Experience**: Uses `expo-apple-authentication` for seamless iOS integration
+- **Privacy Protection**: Supports Apple's private email relay feature
+- **App Store Compliance**: Required for apps offering third-party authentication
+- **Firebase Integration**: Apple credentials are exchanged for Firebase tokens
+- **Multi-Provider Support**: Users can link Apple Sign-In with existing accounts
+
+For detailed Apple Sign-In implementation information, see [Apple Sign-In Implementation Guide](./apple-signin-implementation.md).
+
 ### State Management Flow
 
 The authentication state is managed through the `authStore.ts` Zustand store with the following state structure:
@@ -87,6 +109,9 @@ interface AuthState {
   initializeAuth: () => Promise<void>;
   login: (credentials: { email: string; password: string }) => Promise<void>;
   register: (userData: { name: string; email: string; password: string }) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithApple: () => Promise<void>;
+  linkWithApple: () => Promise<void>;
   logout: () => Promise<void>;
 
   // New methods for additional functionality
@@ -94,6 +119,10 @@ interface AuthState {
   updateProfilePicture: (imageUri: string) => Promise<void>;
   resendVerificationEmail: () => Promise<void>;
   verifyEmail: (code: string) => Promise<void>;
+
+  // Apple Sign-In utility methods
+  isAppleSignInAvailable: () => Promise<boolean>;
+  getAppleCredentialState: (userId: string) => Promise<number>;
 }
 ```
 
@@ -198,6 +227,33 @@ On application startup:
 3. Terms/privacy screens display full legal text
 4. User can accept and return to signup flow
 
+### Apple Sign-In Flow
+
+1. User taps "Sign in with Apple" button
+2. System checks if Apple Sign-In is available on device
+3. If available, native Apple authentication dialog appears
+4. User authenticates using Touch ID, Face ID, or Apple ID password
+5. Apple returns identity token and authorization code
+6. Credentials are exchanged with Firebase for custom token
+7. On success:
+   - User data is extracted from Apple credentials
+   - Profile information is stored (respecting privacy choices)
+   - Auth state is updated with authenticated user
+   - User is redirected to authenticated experience
+8. On failure:
+   - Appropriate error message is displayed
+   - User remains on authentication screen
+
+### Apple Account Linking Flow
+
+1. Authenticated user navigates to account settings
+2. User taps "Link Apple Account" option
+3. Apple authentication dialog appears
+4. User completes Apple Sign-In process
+5. Apple credentials are linked to existing Firebase account
+6. Success confirmation is displayed
+7. User can now authenticate using either method
+
 ### Logout Flow
 
 1. User taps "Cerrar Sesión" in profile screen
@@ -215,6 +271,9 @@ Currently, the authentication system uses a mock implementation in `mockApi.ts`.
 
 - **login**: Accepts email/password, returns token and user data
 - **register**: Accepts registration data, returns token and user data
+- **loginWithGoogle**: Handles Google OAuth authentication
+- **loginWithApple**: Exchanges Apple identity token for Firebase token
+- **linkWithApple**: Links Apple credentials to existing account
 - **validateToken**: Validates a token, returns user data
 - **logout**: Invalidates a token
 - **changePassword**: Updates user password
@@ -336,6 +395,28 @@ For easier development and testing, the auth system includes:
 - Development-only toggle button in Profile screen
 - Mock user for testing authenticated state
 
+## Apple Sign-In Error Codes
+
+The system includes comprehensive Spanish error messages for Apple Sign-In:
+
+```typescript
+export const APPLE_AUTH_ERRORS_ES = {
+  ERROR_CANCELED: 'Inicio de sesión cancelado',
+  ERROR_NOT_AVAILABLE: 'Apple Sign-In no está disponible en este dispositivo',
+  ERROR_INVALID_RESPONSE: 'Respuesta inválida de Apple',
+  ERROR_UNKNOWN: 'Error desconocido con Apple Sign-In',
+  ERROR_NETWORK: 'Error de conexión. Verifica tu conexión a internet',
+  ERROR_USER_NOT_FOUND: 'Usuario no encontrado',
+  ERROR_INVALID_CREDENTIALS: 'Credenciales inválidas',
+  ERROR_ACCOUNT_DISABLED: 'La cuenta está deshabilitada',
+  ERROR_TOO_MANY_REQUESTS: 'Demasiados intentos. Intenta más tarde',
+  ERROR_AUTHORIZATION_FAILED: 'La autorización con Apple falló',
+  ERROR_EMAIL_ALREADY_IN_USE: 'Este email ya está en uso con otra cuenta',
+};
+```
+
+These error messages are automatically displayed to users when Apple Sign-In encounters issues, providing clear feedback in Spanish for the target audience.
+
 ## Testing Authentication
 
 To test the authentication flow:
@@ -347,7 +428,12 @@ To test the authentication flow:
 2. **Email Verification**:
    - Code `123456` is accepted as valid in the mock implementation
 
-3. **Development toggle**:
+3. **Apple Sign-In Testing**:
+   - Requires development build or physical iOS device
+   - Mock implementation available for Expo Go testing
+   - Test both first-time and returning user scenarios
+
+4. **Development toggle**:
    - Use the "DEV: Toggle Login" button on the Profile screen
    - This bypasses the actual API calls for quick testing
 
@@ -409,10 +495,11 @@ Planned improvements to the authentication system:
    - Password strength visual indicator
    - Multi-factor authentication options
 
-3. **Social Login**:
-   - Integration with OAuth providers
-   - Apple/Google/Facebook login options
-   - Linking multiple social accounts
+3. **Extended Social Login**:
+   - Facebook login integration
+   - LinkedIn/Twitter authentication options
+   - Enhanced account linking between providers
+   - Social profile synchronization
 
 4. **Additional User Management**:
    - Account deletion workflow with confirmation

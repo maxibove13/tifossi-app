@@ -7,6 +7,12 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { accessibilityHelpers, testLifecycleHelpers } from '../utils/test-setup';
 import { mockProductCard } from '../utils/mock-data';
+import {
+  BasicProductProps,
+  SearchInputProps,
+  FormWithValidationProps,
+  AccessibleButtonProps,
+} from '../../_types/ui';
 
 // Mock components for accessibility testing
 const AccessibleButton = ({
@@ -16,7 +22,7 @@ const AccessibleButton = ({
   accessibilityHint,
   disabled = false,
   testID,
-}: any) => (
+}: AccessibleButtonProps) => (
   <TouchableOpacity
     onPress={onPress}
     disabled={disabled}
@@ -29,7 +35,7 @@ const AccessibleButton = ({
   </TouchableOpacity>
 );
 
-const ProductCard = ({ product, onPress, onFavorite }: any) => (
+const ProductCard = ({ product, onPress, onFavorite }: BasicProductProps) => (
   <View
     testID={`product-card-${product.id}`}
     accessibilityRole="text"
@@ -39,11 +45,11 @@ const ProductCard = ({ product, onPress, onFavorite }: any) => (
       {product.name}
     </Text>
     <Text accessibilityLabel={`Price: $${product.price}`}>${product.price}</Text>
-    {product.originalPrice && (
+    {product.originalPrice ? (
       <Text accessibilityLabel={`Original price: $${product.originalPrice}`}>
         ${product.originalPrice}
       </Text>
-    )}
+    ) : null}
     <AccessibleButton
       onPress={onPress}
       accessibilityLabel={`Add ${product.name} to cart`}
@@ -53,7 +59,7 @@ const ProductCard = ({ product, onPress, onFavorite }: any) => (
       Add to Cart
     </AccessibleButton>
     <AccessibleButton
-      onPress={() => onFavorite(product.id)}
+      onPress={() => onFavorite?.(product.id)}
       accessibilityLabel={`Add ${product.name} to favorites`}
       accessibilityHint="Saves this product to your favorites list"
       testID="favorite-button"
@@ -63,7 +69,7 @@ const ProductCard = ({ product, onPress, onFavorite }: any) => (
   </View>
 );
 
-const SearchInput = ({ onSearch, value }: any) => (
+const SearchInput = ({ onSearch, value }: SearchInputProps) => (
   <View accessibilityRole="search">
     <Text>Search products</Text>
     <TextInput
@@ -78,13 +84,13 @@ const SearchInput = ({ onSearch, value }: any) => (
   </View>
 );
 
-const FormWithValidation = ({ onSubmit }: any) => {
+const FormWithValidation = ({ onSubmit }: FormWithValidationProps) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [errors, setErrors] = React.useState<any>({});
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   const handleSubmit = () => {
-    const newErrors: any = {};
+    const newErrors: Record<string, string> = {};
 
     if (!email) newErrors.email = 'Email is required';
     if (!password) newErrors.password = 'Password is required';

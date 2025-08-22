@@ -56,13 +56,10 @@ class DeepLinkingService {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      console.log('[Deep Linking] Already initialized');
       return;
     }
 
     try {
-      console.log('[Deep Linking] Initializing...');
-
       // Configure Expo Linking
       this.configureLinking();
 
@@ -73,9 +70,7 @@ class DeepLinkingService {
       await this.handleInitialUrl();
 
       this.isInitialized = true;
-      console.log('[Deep Linking] Initialization completed');
     } catch (error) {
-      console.error('[Deep Linking] Initialization failed:', error);
       throw error;
     }
   }
@@ -111,8 +106,6 @@ class DeepLinkingService {
         },
       },
     };
-
-    console.log('[Deep Linking] Linking configured with prefixes:', linking.prefixes);
   }
 
   /**
@@ -120,7 +113,6 @@ class DeepLinkingService {
    */
   private setupUrlListener(): void {
     this.linkingListener = (url: string) => {
-      console.log('[Deep Linking] Received URL:', url);
       this.handleIncomingUrl(url);
     };
 
@@ -135,12 +127,9 @@ class DeepLinkingService {
       const initialUrl = await Linking.getInitialURL();
 
       if (initialUrl) {
-        console.log('[Deep Linking] Initial URL detected:', initialUrl);
         await this.handleIncomingUrl(initialUrl);
       }
-    } catch (error) {
-      console.error('[Deep Linking] Failed to handle initial URL:', error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -149,7 +138,6 @@ class DeepLinkingService {
   private async handleIncomingUrl(url: string): Promise<DeepLinkResult> {
     try {
       const parsedUrl = Linking.parse(url);
-      console.log('[Deep Linking] Parsed URL:', parsedUrl);
 
       const { path, queryParams } = parsedUrl;
 
@@ -162,7 +150,6 @@ class DeepLinkingService {
         return await this.handleGeneralDeepLink(path, queryParams || {});
       }
     } catch (error: any) {
-      console.error('[Deep Linking] Failed to handle URL:', error);
       return {
         handled: false,
         error: error.message,
@@ -178,8 +165,6 @@ class DeepLinkingService {
     queryParams: Record<string, any>
   ): Promise<DeepLinkResult> {
     try {
-      console.log('[Deep Linking] Handling auth deep link:', path, queryParams);
-
       // Handle email verification
       if (path.includes('verify-email') || queryParams.mode === 'verifyEmail') {
         return await this.handleEmailVerification(queryParams);
@@ -205,7 +190,6 @@ class DeepLinkingService {
         error: 'Unknown auth deep link pattern',
       };
     } catch (error: any) {
-      console.error('[Deep Linking] Auth deep link error:', error);
       return {
         handled: true,
         success: false,
@@ -226,15 +210,11 @@ class DeepLinkingService {
         throw new Error('Missing verification code');
       }
 
-      console.log('[Deep Linking] Processing email verification...');
-
       // Verify email code with Firebase
       await firebaseAuth.verifyEmailCode(oobCode);
 
       // Refresh tokens to get updated user data
       await tokenManager.refreshTokens();
-
-      console.log('[Deep Linking] Email verification successful');
 
       // Navigate to success screen or profile
       router.replace('/(tabs)/profile');
@@ -246,8 +226,6 @@ class DeepLinkingService {
         redirectTo: '/(tabs)/profile',
       };
     } catch (error: any) {
-      console.error('[Deep Linking] Email verification failed:', error);
-
       // Navigate to error screen with message
       router.push({
         pathname: '/auth/verification-code' as any,
@@ -274,12 +252,8 @@ class DeepLinkingService {
         throw new Error('Missing password reset code');
       }
 
-      console.log('[Deep Linking] Processing password reset...');
-
       // Verify the password reset code
       const email = await firebaseAuth.verifyPasswordResetCode(oobCode);
-
-      console.log('[Deep Linking] Password reset code verified for:', email);
 
       // Navigate to password reset screen with code
       router.push({
@@ -294,8 +268,6 @@ class DeepLinkingService {
         redirectTo: '/auth/reset-password',
       };
     } catch (error: any) {
-      console.error('[Deep Linking] Password reset verification failed:', error);
-
       // Navigate to error screen
       router.push({
         pathname: '/auth/login' as any,
@@ -326,8 +298,6 @@ class DeepLinkingService {
         throw new Error('Missing OAuth authorization code');
       }
 
-      console.log('[Deep Linking] Processing OAuth callback...');
-
       // Handle OAuth callback (implementation depends on provider)
       // For now, redirect to login screen to complete the flow
       router.replace('/auth/login' as any);
@@ -339,8 +309,6 @@ class DeepLinkingService {
         redirectTo: '/auth/login',
       };
     } catch (error: any) {
-      console.error('[Deep Linking] OAuth callback error:', error);
-
       router.push({
         pathname: '/auth/login' as any,
         params: { error: error.message },
@@ -375,7 +343,6 @@ class DeepLinkingService {
           throw new Error(`Unknown Firebase auth action: ${mode}`);
       }
     } catch (error: any) {
-      console.error('[Deep Linking] Firebase auth action error:', error);
       return {
         handled: true,
         success: false,
@@ -392,8 +359,6 @@ class DeepLinkingService {
     queryParams: Record<string, any>
   ): Promise<DeepLinkResult> {
     try {
-      console.log('[Deep Linking] Processing dynamic link:', url);
-
       // Extract the actual deep link from the dynamic link
       const link = queryParams.link || queryParams.url;
 
@@ -406,7 +371,6 @@ class DeepLinkingService {
         error: 'No target link found in dynamic link',
       };
     } catch (error: any) {
-      console.error('[Deep Linking] Dynamic link error:', error);
       return {
         handled: true,
         success: false,
@@ -453,8 +417,6 @@ class DeepLinkingService {
         redirectTo: path,
       };
     } catch (error: any) {
-      console.error('[Deep Linking] General deep link error:', error);
-
       // Fall back to home screen
       router.replace('/' as any);
 

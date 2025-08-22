@@ -10,23 +10,18 @@ export const createAsyncStorage = () => ({
       const value = await AsyncStorage.getItem(name);
       return value;
     } catch (error) {
-      console.error('Error reading from AsyncStorage:', error);
       return null;
     }
   },
   setItem: async (name: string, value: string) => {
     try {
       await AsyncStorage.setItem(name, value);
-    } catch (error) {
-      console.error('Error writing to AsyncStorage:', error);
-    }
+    } catch (error) {}
   },
   removeItem: async (name: string) => {
     try {
       await AsyncStorage.removeItem(name);
-    } catch (error) {
-      console.error('Error removing from AsyncStorage:', error);
-    }
+    } catch (error) {}
   },
 });
 

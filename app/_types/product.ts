@@ -63,6 +63,7 @@ export interface ProductCardData {
   quantity?: number;
   color?: string;
   size?: string;
+  [key: string]: unknown;
 }
 
 // Product Card Types

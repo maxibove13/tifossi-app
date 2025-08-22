@@ -24,16 +24,13 @@ export const loadSingleAsset = async (asset: any): Promise<void> => {
     ) {
       // For remote video URLs - there's no specific prefetch for videos
       // but we'll mark it as handled to prevent logging
-      console.log('Video asset will be handled by expo-video at runtime:', asset);
     } else if (asset && typeof asset === 'object' && asset.uri) {
       // For objects with uri property (e.g. local file paths)
       await Image.prefetch(asset.uri);
     } else {
       // For any other type, log with more detail to help debugging
-      console.log('Unknown asset type in preloader:', asset, typeof asset);
     }
   } catch (error) {
-    console.error('Error loading asset:', error);
     // Don't throw - we want to continue loading other assets even if one fails
   }
 };
@@ -74,9 +71,12 @@ export const loadAssets = async (
   // Low priority assets are loaded in the background after main loading is complete
   if (lowPriorityAssets.length > 0) {
     setTimeout(() => {
-      Promise.all(lowPriorityAssets.map((a) => loadSingleAsset(a.asset))).catch((err) =>
-        console.error('Error loading low priority assets:', err)
-      );
+      Promise.all(lowPriorityAssets.map((a) => loadSingleAsset(a.asset))).catch((err) => {
+        // Only log in development mode
+        if (__DEV__) {
+          console.error('Error loading low priority assets:', err);
+        }
+      });
     }, 100);
   }
 };

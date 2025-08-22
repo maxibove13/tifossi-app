@@ -73,8 +73,3 @@ const styles = StyleSheet.create({
 export default CartItemDeletedScreen;
 
 // Removed the utilityExport object and the named export
-// const utilityExport = {
-//   name: 'CartItemDeletedScreen',
-//   version: '1.0.0'
-// };
-// export { CartItemDeletedScreen };

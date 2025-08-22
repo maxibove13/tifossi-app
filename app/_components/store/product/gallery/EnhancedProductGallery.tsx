@@ -120,7 +120,9 @@ function EnhancedProductGallery({
       <ProductViewGallery
         key={`product-gallery-${product.id}`}
         images={productImages}
-        onImagePress={(index) => console.log(`Image ${index} pressed`)}
+        onImagePress={(index) => {
+          /* Image pressed */
+        }}
       />
     </View>
   );

@@ -75,16 +75,8 @@ export default function ProductDetailScreen() {
         size: selectedSize,
       });
 
-      console.log('Added to cart', {
-        product: product.id,
-        quantity,
-        color: selectedColor,
-        size: selectedSize,
-      });
-
       return Promise.resolve();
     } catch (error) {
-      console.error('Failed to add to cart:', error);
       return Promise.reject(error);
     }
   };
@@ -94,10 +86,7 @@ export default function ProductDetailScreen() {
 
     try {
       await toggleFavorite(product.id);
-      console.log(isFavorite ? 'Removed from favorites' : 'Added to favorites', product.id);
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-    }
+    } catch (error) {}
   };
 
   const handleProductPress = (productId: string) => {
@@ -105,12 +94,10 @@ export default function ProductDetailScreen() {
   };
 
   const handleSupportAction = (action: 'chat' | 'faq' | 'call') => {
-    console.log('Support action:', action);
     // Handle support actions
   };
 
   const handleViewMore = (section: string) => {
-    console.log('View more:', section);
     // Navigate to section view
   };
 
@@ -197,7 +184,7 @@ export default function ProductDetailScreen() {
           onSupportAction={handleSupportAction}
           onProductPress={handleProductPress}
           onToggleFavorite={handleToggleFavorite} // Pass favorite toggle handler
-          onExpandedChange={(expanded) => console.log('Panel expanded:', expanded)}
+          onExpandedChange={(expanded) => {}}
           quantity={selectedQuantity}
           onQuantityChange={setSelectedQuantity}
         />
@@ -249,9 +236,3 @@ export const screenExport = {
 };
 
 // Add metadata to help router identification
-// eslint-disable-next-line unused-imports/no-unused-vars
-const metadata = {
-  isRoute: true,
-  componentType: 'Screen',
-  routePattern: '/products/[id]',
-};

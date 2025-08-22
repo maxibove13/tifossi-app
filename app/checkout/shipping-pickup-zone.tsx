@@ -25,12 +25,8 @@ export default function ShippingPickupZoneScreen() {
 
   useEffect(() => {
     if (!cityId || !cityName) {
-      console.error('City ID or Name missing in params');
       if (router.canGoBack()) router.back();
     } else if (zones.length === 0) {
-      console.warn(
-        `No zones found for city ${cityName} (${cityId}), navigating to store selection.`
-      );
       router.replace({
         pathname: '/checkout/store-selection',
         params: { cityId },
