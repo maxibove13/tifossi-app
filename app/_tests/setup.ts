@@ -1,526 +1,734 @@
 /**
- * Enhanced Test Setup for Tifossi App
- * This file contains comprehensive setup code for Jest tests
- * It is not a test file itself
- * @jest-environment jsdom
+ * Minimal Test Setup
+ * Following TESTING_PRINCIPLES.md: Mock only at system boundaries
  */
 
 import '@testing-library/jest-native/extend-expect';
-import 'react-native-gesture-handler/jestSetup';
-
-// Polyfills for MSW and modern JavaScript features
+import { cleanup } from '@testing-library/react-native';
 import { TextEncoder, TextDecoder } from 'util';
 
-// Mock AsyncStorage for testing
-import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
+// Setup custom matchers for domain-specific assertions
+import { setupCustomMatchers } from './utils/custom-matchers';
 
-// Mock React Native Dimensions early
-jest.mock('react-native/Libraries/Utilities/Dimensions', () => ({
-  get: jest.fn(() => ({
-    width: 375,
-    height: 812,
-    scale: 2,
-    fontScale: 1,
-  })),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
+// Provide default API endpoints for tests
+process.env['EXPO_PUBLIC_API_BASE_URL'] =
+  process.env['EXPO_PUBLIC_API_BASE_URL'] || 'http://localhost:1337';
+process.env['EXPO_PUBLIC_BACKEND_URL'] =
+  process.env['EXPO_PUBLIC_BACKEND_URL'] || 'http://localhost:1337';
+process.env['EXPO_PUBLIC_API_URL'] =
+  process.env['EXPO_PUBLIC_API_URL'] || 'http://localhost:1337/api';
+
+// Ensure authService is mocked before any store modules load it
+jest.mock('../_services/auth/authService', () => {
+  const authModule = {
+    initialize: jest.fn(),
+    login: jest.fn(),
+    register: jest.fn(),
+    loginWithGoogle: jest.fn(),
+    loginWithApple: jest.fn(),
+    logout: jest.fn(),
+    sendPasswordResetEmail: jest.fn(),
+    changePassword: jest.fn(),
+    validateToken: jest.fn(),
+    onAuthStateChanged: jest.fn(() => jest.fn()),
+    getApiToken: jest.fn(),
+    updateProfilePicture: jest.fn(),
+    resendVerificationEmail: jest.fn(),
+    verifyEmail: jest.fn(),
+    confirmPasswordReset: jest.fn(),
+    syncUserData: jest.fn(),
+    getCurrentUser: jest.fn(),
+    isAppleSignInAvailable: jest.fn(),
+    getAppleCredentialState: jest.fn(),
+  };
+
+  return {
+    __esModule: true,
+    default: authModule,
+  };
+});
+
+jest.mock('../_services/navigation/deepLinkRouter', () => ({
+  initializeDeepLinkRouter: jest.fn().mockResolvedValue(undefined),
 }));
 
-// Mock PixelRatio
-jest.mock('react-native/Libraries/Utilities/PixelRatio', () => ({
-  get: jest.fn(() => 2),
-  getFontScale: jest.fn(() => 1),
-  getPixelSizeForLayoutSize: jest.fn((layoutSize) => layoutSize * 2),
-  roundToNearestPixel: jest.fn((layoutSize) => Math.round(layoutSize)),
-}));
+// Load store utils after mocks so stores use the mocked services
+const storeUtils = require('./utils/store-utils') as typeof import('./utils/store-utils');
+const { resetAllStores } = storeUtils;
 
-// Mock StyleSheet to avoid PixelRatio issues
-jest.mock('react-native/Libraries/StyleSheet/StyleSheet', () => ({
-  create: jest.fn((styles) => styles),
-  flatten: jest.fn((style) => style),
-  absoluteFill: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  hairlineWidth: 1,
-}));
-// Set up global polyfills
+// Polyfills for Node environment
 global.TextEncoder = TextEncoder as any;
 global.TextDecoder = TextDecoder as any;
 
-// Add basic Response, Request, Headers polyfills for MSW
-if (typeof global.Response === 'undefined') {
-  global.Response = class MockResponse {
-    body: any;
-    status: number;
-    statusText: string;
-    ok: boolean;
-    headers: any;
-
-    constructor(body: any, init: any = {}) {
-      this.body = body;
-      this.status = init.status || 200;
-      this.statusText = init.statusText || 'OK';
-      this.ok = this.status >= 200 && this.status < 300;
-      this.headers = init.headers || new Map();
-    }
-    async json() {
-      return typeof this.body === 'string' ? JSON.parse(this.body) : this.body;
-    }
-    async text() {
-      return typeof this.body === 'string' ? this.body : JSON.stringify(this.body);
-    }
-    clone() {
-      return this;
-    }
-  } as any;
+// Some React Native internals expect setImmediate to exist (InteractionManager)
+if (typeof global.setImmediate === 'undefined') {
+  // Use setTimeout as a minimal polyfill for the jsdom environment
+  global.setImmediate = ((callback: (...args: any[]) => void, ...args: any[]): NodeJS.Immediate => {
+    return setTimeout(() => callback(...args), 0) as unknown as NodeJS.Immediate;
+  }) as typeof setImmediate;
 }
 
-if (typeof global.Request === 'undefined') {
-  global.Request = class MockRequest {
-    url: string;
-    method: string;
-    headers: any;
-
-    constructor(input: any, init: any = {}) {
-      this.url = input;
-      this.method = init.method || 'GET';
-      this.headers = init.headers || new Map();
-    }
-  } as any;
-}
-
-if (typeof global.Headers === 'undefined') {
-  global.Headers = Map as any;
-}
-
-// Mock BroadcastChannel for MSW
-if (typeof global.BroadcastChannel === 'undefined') {
-  global.BroadcastChannel = class MockBroadcastChannel {
-    name: string;
-
-    constructor(name: string) {
-      this.name = name;
-    }
-    postMessage() {}
-    addEventListener() {}
-    removeEventListener() {}
-    close() {}
-  } as any;
-}
-
-// Start MSW server for tests (optional - skip if MSW not available)
-try {
-  const { mswHelpers } = require('./utils/msw-setup');
-  beforeAll(() => {
-    mswHelpers.startServer();
-  });
-
-  afterAll(() => {
-    mswHelpers.stopServer();
-  });
-} catch (error) {
-  // MSW setup skipped - MSW not available for tests
-}
-jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
-
-// Mock MMKV for testing
+// Mock only what MUST be mocked for React Native environment
 jest.mock('react-native-mmkv', () => ({
   MMKV: jest.fn().mockImplementation(() => ({
+    getString: jest.fn(() => null),
     set: jest.fn(),
-    getString: jest.fn(),
-    getNumber: jest.fn(),
-    getBoolean: jest.fn(),
-    contains: jest.fn(),
     delete: jest.fn(),
     clearAll: jest.fn(),
-    getAllKeys: jest.fn(() => []),
   })),
 }));
 
-// Mock fetch with enhanced capabilities
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    json: () => Promise.resolve({}),
-    text: () => Promise.resolve(''),
-    ok: true,
-    status: 200,
-    statusText: 'OK',
-    headers: new Headers(),
-    clone: jest.fn(),
-    body: null,
-    bodyUsed: false,
-    arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-    blob: () => Promise.resolve(new Blob()),
-    formData: () => Promise.resolve(new FormData()),
-  } as unknown as Response)
+jest.mock('@react-native-async-storage/async-storage', () =>
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
 
-// Enhanced react-native-reanimated mock
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
+jest.mock('expo-secure-store', () => ({
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
 
-  // Add additional mock functions
-  Reanimated.default.call = jest.fn();
-  Reanimated.default.createAnimatedComponent = jest.fn((component) => component);
-  Reanimated.default.View = 'Animated.View';
-  Reanimated.default.Text = 'Animated.Text';
-  Reanimated.default.Image = 'Animated.Image';
-  Reanimated.default.ScrollView = 'Animated.ScrollView';
-  Reanimated.default.FlatList = 'Animated.FlatList';
+// Mock Firebase at the boundary
+jest.mock('firebase/auth', () => ({
+  getAuth: jest.fn(() => ({})),
+  signInWithEmailAndPassword: jest.fn(),
+  createUserWithEmailAndPassword: jest.fn(),
+  signOut: jest.fn(),
+  onAuthStateChanged: jest.fn(() => () => {}),
+  sendPasswordResetEmail: jest.fn(),
+  updateProfile: jest.fn(),
+  updatePassword: jest.fn(),
+  EmailAuthProvider: {
+    credential: jest.fn(),
+  },
+  reauthenticateWithCredential: jest.fn(),
+}));
 
-  return Reanimated;
+jest.mock('firebase/app', () => ({
+  initializeApp: jest.fn(),
+  getApps: jest.fn(() => []),
+  getApp: jest.fn(),
+}));
+
+// Mock React Native Firebase
+jest.mock('@react-native-firebase/auth', () => ({
+  __esModule: true,
+  default: () => ({
+    signInWithEmailAndPassword: jest.fn(),
+    createUserWithEmailAndPassword: jest.fn(),
+    signOut: jest.fn(),
+    onAuthStateChanged: jest.fn(() => () => {}),
+    sendPasswordResetEmail: jest.fn(),
+    updateProfile: jest.fn(),
+    updatePassword: jest.fn(),
+    reauthenticateWithCredential: jest.fn(),
+    currentUser: null,
+  }),
+  FirebaseAuthTypes: {
+    User: {},
+  },
+}));
+
+jest.mock('@react-native-firebase/app', () => ({
+  __esModule: true,
+  default: {
+    apps: [],
+    initializeApp: jest.fn(),
+  },
+}));
+
+jest.mock('expo-apple-authentication', () => ({
+  signInAsync: jest.fn(),
+  isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+  AppleAuthenticationScope: {
+    FULL_NAME: 0,
+    EMAIL: 1,
+  },
+  AppleAuthenticationResponseType: {
+    ID_TOKEN: 0,
+  },
+  AppleAuthenticationCredentialState: {
+    AUTHORIZED: 1,
+    NOT_FOUND: 0,
+    REVOKED: 2,
+  },
+}));
+
+// Mock HTTP client directly for more reliable testing
+jest.mock('../_services/api/httpClient', () => {
+  const { productMockData } = require('../_tests/mocks/data/products');
+
+  const transformMockToStrapi = (mockProduct: any): any => {
+    const attrs = mockProduct.attributes;
+
+    return {
+      id: parseInt(mockProduct.id),
+      attributes: {
+        title: attrs.name,
+        price: attrs.price,
+        discountedPrice: attrs.discountPrice,
+        isCustomizable: false,
+        warranty: '12 meses',
+        returnPolicy: '30 días para cambios y devoluciones',
+        shortDescription: attrs.shortDescription,
+        longDescription: attrs.longDescription,
+        createdAt: attrs.createdAt,
+        updatedAt: attrs.updatedAt,
+        publishedAt: attrs.createdAt,
+        category: {
+          data: {
+            id: 1,
+            attributes: {
+              slug: attrs.category,
+              name: attrs.category.charAt(0).toUpperCase() + attrs.category.slice(1),
+            },
+          },
+        },
+        model: {
+          data: {
+            id: 1,
+            attributes: {
+              slug: `model-${attrs.team}`,
+              name: `Modelo ${attrs.team}`,
+            },
+          },
+        },
+        statuses: {
+          data: [
+            ...(attrs.featured
+              ? [
+                  {
+                    id: 1,
+                    attributes: {
+                      name: 'FEATURED',
+                      priority: 1,
+                    },
+                  },
+                ]
+              : []),
+            ...(attrs.isNew
+              ? [
+                  {
+                    id: 2,
+                    attributes: {
+                      name: 'NEW',
+                      priority: 2,
+                    },
+                  },
+                ]
+              : []),
+          ],
+        },
+        frontImage: {
+          data: attrs.images.data[0]
+            ? {
+                id: parseInt(attrs.images.data[0].id),
+                attributes: {
+                  url: attrs.images.data[0].attributes.url,
+                  alternativeText: attrs.images.data[0].attributes.alternativeText,
+                },
+              }
+            : null,
+        },
+        images: {
+          data: attrs.images.data.map((img: any) => ({
+            id: parseInt(img.id),
+            attributes: {
+              url: img.attributes.url,
+              alternativeText: img.attributes.alternativeText,
+            },
+          })),
+        },
+        colors: attrs.colors.map((color: string, index: number) => ({
+          id: index + 1,
+          colorName: color,
+          quantity: 25 + index,
+          hex: '#000000',
+          mainImage: attrs.images.data[0]
+            ? {
+                data: {
+                  id: parseInt(attrs.images.data[0].id),
+                  attributes: {
+                    url: attrs.images.data[0].attributes.url,
+                  },
+                },
+              }
+            : null,
+          additionalImages: {
+            data: attrs.images.data.slice(1).map((img: any) => ({
+              id: parseInt(img.id),
+              attributes: {
+                url: img.attributes.url,
+              },
+            })),
+          },
+        })),
+        sizes: attrs.sizes.map((size: string, index: number) => ({
+          id: index + 1,
+          value: size,
+          available: true,
+        })),
+        dimensions: {
+          height: '30cm',
+          width: '20cm',
+          depth: '2cm',
+        },
+      },
+    };
+  };
+
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const deepClone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
+
+  const defaultAddressStore = [
+    {
+      id: 'addr-default-1',
+      firstName: 'Juan',
+      lastName: 'Pérez',
+      street: 'Avenida 18 de Julio',
+      number: '1234',
+      apartment: 'Apto. 4A',
+      city: 'Centro',
+      state: 'Montevideo',
+      country: 'Uruguay',
+      zipCode: '11100',
+      phone: '+598 099 123 456',
+      isDefault: true,
+    },
+    {
+      id: 'addr-default-2',
+      firstName: 'Ana',
+      lastName: 'Gómez',
+      street: 'Rambla República de México',
+      number: '5678',
+      city: 'Pocitos',
+      state: 'Montevideo',
+      country: 'Uruguay',
+      zipCode: '11300',
+      phone: '+598 098 765 432',
+      isDefault: false,
+    },
+    {
+      id: 'addr-default-3',
+      firstName: 'Pedro',
+      lastName: 'López',
+      street: 'Avenida Italia',
+      number: '3456',
+      city: 'Parque Batlle',
+      state: 'Montevideo',
+      country: 'Uruguay',
+      zipCode: '11600',
+      phone: '+598 097 111 222',
+      isDefault: false,
+    },
+  ];
+
+  let addressStore = deepClone(defaultAddressStore);
+  let addressScenario = 'default';
+
+  let shouldError = false;
+  let errorForEndpoint: string | null = null;
+
+  const matchesAddressEndpoint = (url: string) => url.startsWith('/users/me/addresses');
+  const resetAddressStore = () => {
+    addressStore = deepClone(defaultAddressStore);
+    addressScenario = 'default';
+  };
+
+  const listAddresses = () => {
+    if (addressScenario === 'empty') {
+      return [];
+    }
+    return deepClone(addressStore);
+  };
+
+  const findAddressById = (addressId: string) => {
+    return addressStore.find((address) => address.id === addressId);
+  };
+
+  const mutateDefaultAddress = (addressId: string) => {
+    addressStore = addressStore.map((address) => ({
+      ...address,
+      isDefault: address.id === addressId,
+    }));
+  };
+
+  const shouldSimulateError = (url: string): boolean => {
+    if (shouldError && (errorForEndpoint === null || url.includes(errorForEndpoint))) {
+      return true;
+    }
+
+    if (addressScenario === 'error' && matchesAddressEndpoint(url)) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const getHandler = jest.fn().mockImplementation(async (url: string): Promise<any> => {
+    await delay(10);
+
+    if (shouldSimulateError(url)) {
+      throw new Error('Mock HTTP error');
+    }
+
+    if (url === '/products') {
+      const strapiProducts = productMockData.map(transformMockToStrapi);
+      return {
+        data: strapiProducts,
+        meta: {
+          pagination: {
+            page: 1,
+            pageSize: 25,
+            pageCount: 1,
+            total: strapiProducts.length,
+          },
+        },
+      };
+    }
+
+    if (url.startsWith('/products/')) {
+      const productId = url.split('/')[2];
+      const product = productMockData.find((p: any) => p.id === productId);
+
+      if (!product) {
+        throw new Error('Product not found');
+      }
+
+      return {
+        data: transformMockToStrapi(product),
+      };
+    }
+
+    if (url === '/users/me/addresses') {
+      return {
+        addresses: listAddresses(),
+      };
+    }
+
+    if (url.startsWith('/users/me/addresses/')) {
+      const parts = url.split('/');
+      const addressId = parts[4];
+      const address = findAddressById(addressId);
+
+      if (!address) {
+        throw new Error('Address not found');
+      }
+
+      return {
+        address: deepClone(address),
+      };
+    }
+
+    return { data: [] };
+  });
+
+  const postHandler = jest
+    .fn()
+    .mockImplementation(async (url: string, data?: any): Promise<any> => {
+      await delay(10);
+
+      if (shouldSimulateError(url)) {
+        throw new Error('Mock HTTP error');
+      }
+
+      if (url === '/users/me/addresses') {
+        const newAddress = {
+          ...data,
+          id: data?.id || `addr-mock-${Date.now()}`,
+        };
+
+        addressStore = [...addressStore, newAddress];
+
+        if (newAddress.isDefault) {
+          mutateDefaultAddress(newAddress.id!);
+        }
+
+        return {
+          address: deepClone(newAddress),
+        };
+      }
+
+      if (url === '/cart/migrate') {
+        const mergedItems = Array.isArray(data?.guestItems) ? data.guestItems : [];
+        return {
+          mergedItems,
+        };
+      }
+
+      return { data: {} };
+    });
+
+  const putHandler = jest.fn().mockImplementation(async (url: string, data?: any): Promise<any> => {
+    await delay(10);
+
+    if (shouldSimulateError(url)) {
+      throw new Error('Mock HTTP error');
+    }
+
+    if (url.endsWith('/set-default')) {
+      const parts = url.split('/');
+      const addressId = parts[4];
+      mutateDefaultAddress(addressId);
+
+      return {
+        addresses: listAddresses(),
+      };
+    }
+
+    if (matchesAddressEndpoint(url)) {
+      const parts = url.split('/');
+      const addressId = parts[4];
+      const existing = findAddressById(addressId);
+
+      if (!existing) {
+        throw new Error('Address not found');
+      }
+
+      const updated = {
+        ...existing,
+        ...data,
+      };
+
+      addressStore = addressStore.map((address) => (address.id === addressId ? updated : address));
+
+      if (updated.isDefault) {
+        mutateDefaultAddress(updated.id!);
+      }
+
+      return {
+        address: deepClone(updated),
+      };
+    }
+
+    return { data: {} };
+  });
+
+  const deleteHandler = jest.fn().mockImplementation(async (url: string): Promise<any> => {
+    await delay(10);
+
+    if (shouldSimulateError(url)) {
+      throw new Error('Mock HTTP error');
+    }
+
+    if (matchesAddressEndpoint(url)) {
+      const parts = url.split('/');
+      const addressId = parts[4];
+
+      addressStore = addressStore.filter((address) => address.id !== addressId);
+
+      if (!addressStore.some((address) => address.isDefault) && addressStore.length > 0) {
+        mutateDefaultAddress(addressStore[0].id!);
+      }
+
+      return { success: true };
+    }
+
+    return { data: {} };
+  });
+
+  const controlMethods = {
+    __setError: (error: boolean, endpoint?: string): void => {
+      shouldError = error;
+      errorForEndpoint = endpoint || null;
+    },
+    __setAddressScenario: (scenario: string): void => {
+      addressScenario = scenario;
+      if (scenario === 'default') {
+        addressStore = deepClone(defaultAddressStore);
+      }
+      if (scenario === 'empty') {
+        addressStore = [];
+      }
+    },
+    __setMockAddresses: (addresses: any[]): void => {
+      addressScenario = 'custom';
+      addressStore = deepClone(addresses);
+    },
+    __getMockAddresses: () => {
+      return listAddresses();
+    },
+    __resetAddressMock: (): void => {
+      shouldError = false;
+      errorForEndpoint = null;
+      resetAddressStore();
+    },
+  } as const;
+
+  const httpApi = {
+    get: getHandler,
+    post: postHandler,
+    put: putHandler,
+    patch: jest.fn(),
+    delete: deleteHandler,
+  };
+
+  const defaultExport = {
+    ...httpApi,
+    ...controlMethods,
+  };
+
+  const secondaryExport = {
+    ...httpApi,
+    ...controlMethods,
+  };
+
+  return {
+    __esModule: true,
+    default: defaultExport,
+    httpClient: secondaryExport,
+  };
 });
 
-// Mock react-native-gesture-handler
-jest.mock('react-native-gesture-handler', () => ({
-  Swipeable: 'Swipeable',
-  DrawerLayout: 'DrawerLayout',
-  State: {},
-  ScrollView: 'ScrollView',
-  Slider: 'Slider',
-  Switch: 'Switch',
-  TextInput: 'TextInput',
-  ToolbarAndroid: 'ToolbarAndroid',
-  ViewPagerAndroid: 'ViewPagerAndroid',
-  DrawerLayoutAndroid: 'DrawerLayoutAndroid',
-  WebView: 'WebView',
-  NativeViewGestureHandler: 'NativeViewGestureHandler',
-  TapGestureHandler: 'TapGestureHandler',
-  FlingGestureHandler: 'FlingGestureHandler',
-  ForceTouchGestureHandler: 'ForceTouchGestureHandler',
-  LongPressGestureHandler: 'LongPressGestureHandler',
-  PanGestureHandler: 'PanGestureHandler',
-  PinchGestureHandler: 'PinchGestureHandler',
-  RotationGestureHandler: 'RotationGestureHandler',
-  RawButton: 'RawButton',
-  BaseButton: 'BaseButton',
-  RectButton: 'RectButton',
-  BorderlessButton: 'BorderlessButton',
-  FlatList: 'FlatList',
-  gestureHandlerRootHOC: jest.fn((component) => component),
-  Directions: {},
-}));
-
-// Mock expo modules
-jest.mock('expo-status-bar', () => ({
-  StatusBar: 'StatusBar',
-}));
-
-jest.mock('expo-constants', () => ({
-  default: {
-    expoConfig: {
-      name: 'Tifossi',
-      slug: 'tifossi',
-    },
-    appOwnership: 'standalone',
-    platform: {
-      ios: {
-        platform: 'ios',
-      },
-    },
-  },
-}));
-
-jest.mock('expo-font', () => ({
-  loadAsync: jest.fn(() => Promise.resolve()),
-  isLoaded: jest.fn(() => true),
-  isLoading: jest.fn(() => false),
-}));
-
-jest.mock('expo-asset', () => ({
-  Asset: {
-    loadAsync: jest.fn(() => Promise.resolve()),
-    fromModule: jest.fn(() => ({
-      downloadAsync: jest.fn(() => Promise.resolve()),
-    })),
-  },
-}));
-
-jest.mock('expo-splash-screen', () => ({
-  hideAsync: jest.fn(() => Promise.resolve()),
-  preventAutoHideAsync: jest.fn(() => Promise.resolve()),
-}));
-
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(() => Promise.resolve()),
-  notificationAsync: jest.fn(() => Promise.resolve()),
-  selectionAsync: jest.fn(() => Promise.resolve()),
-  ImpactFeedbackStyle: {
-    Light: 'light',
-    Medium: 'medium',
-    Heavy: 'heavy',
-  },
-  NotificationFeedbackType: {
-    Success: 'success',
-    Warning: 'warning',
-    Error: 'error',
-  },
-}));
-
-jest.mock('expo-linear-gradient', () => ({
-  LinearGradient: 'LinearGradient',
-}));
-
-jest.mock('expo-blur', () => ({
-  BlurView: 'BlurView',
-}));
-
-jest.mock('expo-image', () => ({
-  Image: 'Image',
-}));
-
-jest.mock('expo-av', () => ({
-  Video: 'Video',
-  Audio: {
-    setAudioModeAsync: jest.fn(() => Promise.resolve()),
-  },
-}));
-
-jest.mock('expo-secure-store', () => ({
-  setItemAsync: jest.fn(() => Promise.resolve()),
-  getItemAsync: jest.fn(() => Promise.resolve(null)),
-  deleteItemAsync: jest.fn(() => Promise.resolve()),
-}));
-
-jest.mock('expo-web-browser', () => ({
-  openBrowserAsync: jest.fn(() => Promise.resolve()),
-}));
+// Mock Expo modules - commented out as not used in current tests
+// Uncomment if needed for future tests that use image picker
+// jest.mock('expo-image-picker', () => ({
+//   launchImageLibraryAsync: jest.fn(),
+//   MediaTypeOptions: { Images: 'Images' },
+//   requestMediaLibraryPermissionsAsync: jest.fn(() => ({ granted: true })),
+// }));
 
 jest.mock('expo-linking', () => ({
-  createURL: jest.fn((path) => `exp://localhost:8081/--/${path}`),
-  parse: jest.fn((url) => ({ hostname: 'localhost', path: '/' })),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
+  openURL: jest.fn(),
+  canOpenURL: jest.fn(() => Promise.resolve(true)),
 }));
 
-// Apple authentication is mocked in individual test files when needed
-// since expo-apple-authentication is not installed in all environments
-
-// Mock expo-router
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
-    navigate: jest.fn(),
     back: jest.fn(),
-    canGoBack: jest.fn(() => false),
+    navigate: jest.fn(),
   }),
-  useSegments: () => [''],
-  usePathname: () => '/',
-  useGlobalSearchParams: () => ({}),
-  useLocalSearchParams: () => ({}),
-  useFocusEffect: jest.fn(),
-  Link: 'Link',
-  Redirect: 'Redirect',
+  useLocalSearchParams: jest.fn(() => ({})),
+  useGlobalSearchParams: jest.fn(() => ({})),
   router: {
     push: jest.fn(),
     replace: jest.fn(),
-    navigate: jest.fn(),
     back: jest.fn(),
-    canGoBack: jest.fn(() => false),
+    navigate: jest.fn(),
   },
+  Link: ({ children }: any) => children,
   Stack: {
-    Screen: 'Screen',
-  },
-  Tabs: {
-    Screen: 'Screen',
+    Screen: ({ children }: any) => children,
   },
 }));
 
-// Mock react-native-svg
-jest.mock('react-native-svg', () => ({
-  Svg: 'Svg',
-  Circle: 'Circle',
-  Ellipse: 'Ellipse',
-  G: 'G',
-  Text: 'Text',
-  TSpan: 'TSpan',
-  TextPath: 'TextPath',
-  Path: 'Path',
-  Polygon: 'Polygon',
-  Polyline: 'Polyline',
-  Line: 'Line',
-  Rect: 'Rect',
-  Use: 'Use',
-  Image: 'Image',
-  Symbol: 'Symbol',
-  Defs: 'Defs',
-  LinearGradient: 'LinearGradient',
-  RadialGradient: 'RadialGradient',
-  Stop: 'Stop',
-  ClipPath: 'ClipPath',
-  Pattern: 'Pattern',
-  Mask: 'Mask',
-}));
+// Mock React Native Reanimated
+jest.mock('react-native-reanimated', () => {
+  const Reanimated = require('react-native-reanimated/mock');
+  Reanimated.default.call = () => {};
+  return Reanimated;
+});
 
-// Mock @gorhom/bottom-sheet
-jest.mock('@gorhom/bottom-sheet', () => ({
-  BottomSheet: 'BottomSheet',
-  BottomSheetView: 'BottomSheetView',
-  BottomSheetScrollView: 'BottomSheetScrollView',
-  BottomSheetFlatList: 'BottomSheetFlatList',
-  BottomSheetModal: 'BottomSheetModal',
-  BottomSheetModalProvider: ({ children }: { children: React.ReactNode }) => children,
-  useBottomSheetDynamicSnapPoints: () => ({
-    animatedHandleHeight: { value: 0 },
-    animatedSnapPoints: { value: [] },
-    animatedContentHeight: { value: 0 },
-    handleContentLayout: jest.fn(),
-  }),
-}));
+// Mock React Native Gesture Handler
+jest.mock('react-native-gesture-handler', () => {
+  const View = require('react-native/Libraries/Components/View/View');
+  return {
+    GestureHandlerRootView: View,
+    Swipeable: View,
+    DrawerLayout: View,
+    State: {},
+    ScrollView: View,
+    Slider: View,
+    Switch: View,
+    TextInput: View,
+    ToolbarAndroid: View,
+    ViewPagerAndroid: View,
+    DrawerLayoutAndroid: View,
+    WebView: View,
+    NativeViewGestureHandler: View,
+    TapGestureHandler: View,
+    FlingGestureHandler: View,
+    ForceTouchGestureHandler: View,
+    LongPressGestureHandler: View,
+    PanGestureHandler: View,
+    PinchGestureHandler: View,
+    RotationGestureHandler: View,
+    RawButton: View,
+    BaseButton: View,
+    RectButton: View,
+    BorderlessButton: View,
+    FlatList: View,
+    gestureHandlerRootHOC: jest.fn((component) => component),
+    Directions: {},
+  };
+});
 
-// Mock @ptomasroos/react-native-multi-slider
-jest.mock('@ptomasroos/react-native-multi-slider', () => ({
-  MultiSlider: 'MultiSlider',
-}));
+// Mock React Native SVG
+jest.mock('react-native-svg', () => {
+  const React = require('react');
+  const { View } = require('react-native');
 
-// Mock @tanstack/react-query
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: jest.fn(() => ({
-    data: null,
-    isLoading: false,
-    error: null,
-    refetch: jest.fn(),
-  })),
-  useMutation: jest.fn(() => ({
-    mutate: jest.fn(),
-    isLoading: false,
-    error: null,
-  })),
-  QueryClient: jest.fn(() => ({
-    invalidateQueries: jest.fn(),
-    setQueryData: jest.fn(),
-    getQueryData: jest.fn(),
-  })),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
-
-// Mock zustand with proper implementation
-jest.mock('zustand', () => ({
-  create: jest.fn(() => (fn: any) => {
-    const state = fn(
-      jest.fn(), // setState
-      jest.fn(), // getState
-      { setState: jest.fn(), getState: jest.fn(), subscribe: jest.fn(), destroy: jest.fn() } // store
+  const mockSvgComponent = (name: string) =>
+    React.forwardRef((props: any, ref: any) =>
+      React.createElement(View, { ...props, ref, testID: `${name}-mock` })
     );
 
-    const hook = jest.fn(() => state) as any;
-    hook.getState = jest.fn(() => state);
-    hook.setState = jest.fn();
-    hook.subscribe = jest.fn();
-    hook.destroy = jest.fn();
-
-    return hook;
-  }),
-}));
-
-// Mock zustand/middleware/persist
-jest.mock('zustand/middleware', () => ({
-  persist: jest.fn((fn) => fn),
-  createJSONStorage: jest.fn(() => ({
-    getItem: jest.fn(),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-  })),
-}));
-
-// Mock fuse.js
-jest.mock('fuse.js', () => {
-  return jest.fn().mockImplementation(() => ({
-    search: jest.fn(() => []),
-    setCollection: jest.fn(),
-  }));
+  return {
+    default: mockSvgComponent('Svg'),
+    Svg: mockSvgComponent('Svg'),
+    Circle: mockSvgComponent('Circle'),
+    Ellipse: mockSvgComponent('Ellipse'),
+    G: mockSvgComponent('G'),
+    Text: mockSvgComponent('SvgText'),
+    TSpan: mockSvgComponent('TSpan'),
+    TextPath: mockSvgComponent('TextPath'),
+    Path: mockSvgComponent('Path'),
+    Polygon: mockSvgComponent('Polygon'),
+    Polyline: mockSvgComponent('Polyline'),
+    Line: mockSvgComponent('Line'),
+    Rect: mockSvgComponent('Rect'),
+    Use: mockSvgComponent('Use'),
+    Image: mockSvgComponent('SvgImage'),
+    Symbol: mockSvgComponent('Symbol'),
+    Defs: mockSvgComponent('Defs'),
+    LinearGradient: mockSvgComponent('LinearGradient'),
+    RadialGradient: mockSvgComponent('RadialGradient'),
+    Stop: mockSvgComponent('Stop'),
+    ClipPath: mockSvgComponent('ClipPath'),
+    Pattern: mockSvgComponent('Pattern'),
+    Mask: mockSvgComponent('Mask'),
+  };
 });
 
-// Mock react-native-country-flag
-jest.mock('react-native-country-flag', () => ({
-  CountryFlag: 'CountryFlag',
-}));
+// Silence console during tests
+const originalError: typeof console.error = console.error;
+beforeAll(() => {
+  console.error = (...args: any[]): void => {
+    if (
+      typeof args[0] === 'string' &&
+      (args[0].includes('Warning:') ||
+        args[0].includes('Not implemented') ||
+        args[0].includes('VirtualizedLists'))
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
 
-// Silence console warnings and errors during tests
-const originalConsoleError = console.error;
-const originalConsoleWarn = console.warn;
-const originalConsoleLog = console.log;
-
-// Silent mock implementation for tests
-console.error = jest.fn();
-
-console.warn = jest.fn();
-
-// Mock global performance for performance testing
-global.performance = {
-  now: jest.fn(() => Date.now()),
-  mark: jest.fn(),
-  measure: jest.fn(),
-  clearMarks: jest.fn(),
-  clearMeasures: jest.fn(),
-  getEntries: jest.fn(() => []),
-  getEntriesByName: jest.fn(() => []),
-  getEntriesByType: jest.fn(() => []),
-} as any;
-// Dimensions mock is handled above
-
-// Mock Platform
-jest.mock('react-native/Libraries/Utilities/Platform', () => ({
-  OS: 'ios',
-  select: jest.fn((obj) => obj.ios),
-  isPad: false,
-  isTVOS: false,
-  Version: 16,
-}));
-
-// Mock Settings
-jest.mock('react-native/Libraries/Settings/Settings', () => ({
-  get: jest.fn(),
-  set: jest.fn(),
-  watchKeys: jest.fn(),
-  clearWatch: jest.fn(),
-}));
-
-// Mock TurboModuleRegistry
-jest.mock('react-native/Libraries/TurboModule/TurboModuleRegistry', () => ({
-  getEnforcing: jest.fn().mockReturnValue({}),
-  get: jest.fn().mockReturnValue({}),
-}));
-
-// Mock native modules that cause issues
-jest.mock('react-native/Libraries/BatchedBridge/NativeModules', () => ({
-  SettingsManager: {},
-  DeviceInfo: {},
-}));
-
-// Mock Alert for tests
-jest.mock('react-native/Libraries/Alert/Alert', () => ({
-  alert: jest.fn(),
-}));
-
-// Mock Firebase
-jest.mock('@react-native-firebase/app', () => ({
-  default: jest.fn(() => ({
-    onReady: jest.fn(() => Promise.resolve()),
-  })),
-}));
-
-jest.mock('@react-native-firebase/auth', () => ({
-  default: jest.fn(() => ({
-    signInWithEmailAndPassword: jest.fn(() => Promise.resolve()),
-    createUserWithEmailAndPassword: jest.fn(() => Promise.resolve()),
-    signOut: jest.fn(() => Promise.resolve()),
-    onAuthStateChanged: jest.fn(),
-    currentUser: null,
-  })),
-}));
-
-// Global test timeout
-jest.setTimeout(10000);
-
-// Restore console after tests
 afterAll(() => {
-  console.error = originalConsoleError;
-  console.warn = originalConsoleWarn;
-  console.log = originalConsoleLog;
+  console.error = originalError;
 });
+
+afterEach(() => {
+  cleanup();
+});
+
+// Setup custom matchers for Jest
+setupCustomMatchers();
+
+// Setup global test utilities
+beforeEach(() => {
+  // Reset all Zustand stores to initial state before each test
+  resetAllStores();
+
+  // Clear all mocks
+  jest.clearAllMocks();
+});
+
+// Export test utilities for other tests to use
+export const resetAllMocks = (): void => {
+  jest.clearAllMocks();
+};

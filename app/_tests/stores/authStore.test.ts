@@ -1,472 +1,491 @@
 /**
- * Auth Store State Management Tests
- * Tests authentication state behavior with real store and services
+ * Auth Store Tests
+ * Testing authentication flows with services mocked at the boundary
  */
 
-import { act, renderHook, waitFor } from '@testing-library/react-native';
-import { useAuthStore } from '../../_stores/authStore';
-import { useCartStore } from '../../_stores/cartStore';
-import { useFavoritesStore } from '../../_stores/favoritesStore';
-import { mswServer, mswHelpers } from '../utils/msw-setup';
-import { mockUser } from '../utils/mock-data';
+import { renderHook, act } from '@testing-library/react-native';
 import * as SecureStore from 'expo-secure-store';
-import { http, HttpResponse } from 'msw';
+import authService from '../../_services/auth/authService';
+import { useAuthStore } from '../../_stores/authStore';
 
-// Mock SecureStore
-jest.mock('expo-secure-store', () => ({
-  setItemAsync: jest.fn(),
-  getItemAsync: jest.fn(),
-  deleteItemAsync: jest.fn(),
-}));
+// Get references to the mocked functions
+const mockLogin = authService.login as jest.MockedFunction<typeof authService.login>;
+const mockRegister = authService.register as jest.MockedFunction<typeof authService.register>;
+const mockLoginWithGoogle = authService.loginWithGoogle as jest.MockedFunction<typeof authService.loginWithGoogle>;
+const mockLoginWithApple = authService.loginWithApple as jest.MockedFunction<typeof authService.loginWithApple>;
+const mockLogout = authService.logout as jest.MockedFunction<typeof authService.logout>;
+const mockSendPasswordResetEmail = authService.sendPasswordResetEmail as jest.MockedFunction<typeof authService.sendPasswordResetEmail>;
+const mockChangePassword = authService.changePassword as jest.MockedFunction<typeof authService.changePassword>;
+const mockValidateToken = authService.validateToken as jest.MockedFunction<typeof authService.validateToken>;
+const mockInitialize = authService.initialize as jest.MockedFunction<typeof authService.initialize>;
 
-// Mock MMKV storage
-const mockStorage = new Map<string, string>();
-jest.mock('react-native-mmkv', () => ({
-  MMKV: jest.fn().mockImplementation(() => ({
-    set: jest.fn().mockImplementation((key: string, value: string) => mockStorage.set(key, value)),
-    getString: jest.fn().mockImplementation((key: string) => mockStorage.get(key) || null),
-    getNumber: jest.fn().mockImplementation((key: string) => {
-      const value = mockStorage.get(key);
-      return value ? Number(value) : undefined;
-    }),
-    getBoolean: jest.fn().mockImplementation((key: string) => {
-      const value = mockStorage.get(key);
-      return value ? JSON.parse(value) : undefined;
-    }),
-    contains: jest.fn().mockImplementation((key: string) => mockStorage.has(key)),
-    delete: jest.fn().mockImplementation((key: string) => mockStorage.delete(key)),
-    clearAll: jest.fn().mockImplementation(() => mockStorage.clear()),
-    getAllKeys: jest.fn().mockImplementation(() => Array.from(mockStorage.keys())),
-  })),
-}));
-
-// Mock auth service
-jest.mock('../../_services/auth/authService', () => ({
-  authService: {
-    initialize: jest.fn().mockResolvedValue(undefined),
-    login: jest.fn().mockResolvedValue({
-      user: mockUser,
-      token: 'mock-token-123',
-      needsEmailVerification: false,
-    }),
-    register: jest.fn().mockResolvedValue({
-      user: mockUser,
-      token: 'mock-token-123',
-      needsEmailVerification: true,
-    }),
-    loginWithGoogle: jest.fn().mockResolvedValue({
-      user: mockUser,
-      token: 'mock-google-token-123',
-      needsEmailVerification: false,
-    }),
-    logout: jest.fn().mockResolvedValue(undefined),
-    validateToken: jest.fn().mockResolvedValue(mockUser),
-    changePassword: jest.fn().mockResolvedValue(undefined),
-    updateProfilePicture: jest.fn().mockResolvedValue({
-      profilePictureUrl: 'https://example.com/new-profile-pic.jpg',
-    }),
-    resendVerificationEmail: jest.fn().mockResolvedValue(undefined),
-    verifyEmail: jest.fn().mockResolvedValue(undefined),
-    onAuthStateChanged: jest.fn(),
-    getApiToken: jest.fn().mockResolvedValue('mock-token-123'),
-  },
-}));
-
-// Mock deep linking
-jest.mock('../../_utils/auth/deepLinking', () => ({
-  initializeDeepLinking: jest.fn().mockResolvedValue(undefined),
-}));
-
-const setupTest = () => {
-  mockStorage.clear();
-  (SecureStore.setItemAsync as jest.Mock).mockClear();
-  (SecureStore.getItemAsync as jest.Mock).mockClear();
-  (SecureStore.deleteItemAsync as jest.Mock).mockClear();
-
-  // Reset stores
-  useAuthStore.getState().clearAuthData();
-  useCartStore.getState().clearCart();
-  useFavoritesStore.setState({ productIds: [], error: null });
-};
-
-describe('Auth Store State Management', () => {
-  beforeAll(() => {
-    mswHelpers.startServer();
-  });
-
-  afterAll(() => {
-    mswHelpers.stopServer();
-  });
-
+describe('authStore', () => {
   beforeEach(() => {
-    setupTest();
-    mswHelpers.resetHandlers();
+    // Clear all mocks
+    jest.clearAllMocks();
+
+    // Reset mock implementations
+    mockInitialize.mockResolvedValue(undefined);
+    mockLogout.mockResolvedValue(true);
+
+    // Reset store to initial state
+    useAuthStore.setState({
+      user: null,
+      token: null,
+      isLoggedIn: false,
+      isLoading: false,
+      error: null,
+      isInitialized: false,
+      status: 'idle',
+    });
   });
 
-  describe('Authentication Flow State Management', () => {
-    it('should handle complete login flow with state persistence', async () => {
+  describe('login', () => {
+    it('should login user successfully with email and password', async () => {
+      const mockUser = {
+        id: 'test-uid',
+        email: 'test@example.com',
+        name: 'Test User',
+        profilePicture: null,
+        isEmailVerified: true,
+      };
+
+      mockLogin.mockImplementation(async (_creds) => {
+        return {
+          token: 'test-token',
+          user: mockUser,
+        };
+      });
+
       const { result } = renderHook(() => useAuthStore());
 
-      // Initial state
+      await act(async () => {
+        await result.current.login({ email: 'test@example.com', password: 'password123' });
+      });
+
+      expect(mockLogin).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' });
+      expect(result.current.isLoggedIn).toBe(true);
+      expect(result.current.user).toEqual(mockUser);
+      expect(result.current.token).toBe('test-token');
+      expect(result.current.error).toBeNull();
+    });
+
+    it('should handle login failure with invalid credentials', async () => {
+      mockLogin.mockRejectedValue(new Error('Invalid email or password'));
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await result.current.login({ email: 'wrong@example.com', password: 'wrongpassword' });
+      });
+
+      expect(result.current.isLoggedIn).toBe(false);
+      expect(result.current.user).toBeNull();
+      expect(result.current.error).toBe('Invalid email or password');
+    });
+
+    it('should set loading state during login', async () => {
+      let resolveLogin!: (value: any) => void;
+      const deferredLogin = new Promise((resolve) => {
+        resolveLogin = resolve;
+      });
+
+      mockLogin.mockReturnValue(deferredLogin as Promise<any>);
+
+      const { result } = renderHook(() => useAuthStore());
+
+      let loginPromise!: Promise<any>;
+      act(() => {
+        loginPromise = result.current.login({ email: 'test@example.com', password: 'password123' });
+      });
+
+      expect(result.current.isLoading).toBe(true);
+
+      await act(async () => {
+        resolveLogin({
+          token: 'test-token',
+          user: { id: '1', email: 'test@example.com', name: 'Test', profilePicture: null, isEmailVerified: true },
+        });
+
+        await loginPromise;
+      });
+
+      expect(result.current.isLoading).toBe(false);
+    });
+  });
+
+  describe('register', () => {
+    it('should register new user successfully', async () => {
+      const mockUser = {
+        id: 'new-user-uid',
+        email: 'newuser@example.com',
+        name: 'New User',
+        profilePicture: null,
+        isEmailVerified: false,
+      };
+
+      mockRegister.mockResolvedValue({
+        token: 'new-token',
+        user: mockUser,
+      });
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await result.current.register({ name: 'New User', email: 'newuser@example.com', password: 'password123' });
+      });
+
+      expect(mockRegister).toHaveBeenCalledWith({
+        name: 'New User',
+        email: 'newuser@example.com',
+        password: 'password123',
+      });
+      expect(result.current.isLoggedIn).toBe(true);
+      expect(result.current.user).toEqual(mockUser);
+    });
+
+    it('should handle registration failure for existing email', async () => {
+      mockRegister.mockRejectedValue(new Error('Email already in use'));
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await result.current.register({ name: 'User', email: 'existing@example.com', password: 'password123' });
+      });
+
+      expect(result.current.isLoggedIn).toBe(false);
+      expect(result.current.error).toBe('Email already in use');
+    });
+  });
+
+  describe('logout', () => {
+    it('should logout user and clear state', async () => {
+      // Set initial authenticated state
+      useAuthStore.setState({
+        user: {
+          id: 'test-uid',
+          email: 'test@example.com',
+          name: 'Test User',
+          profilePicture: null,
+          isEmailVerified: true,
+        },
+        token: 'test-token',
+        isLoggedIn: true,
+      });
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await result.current.logout();
+      });
+
+      expect(mockLogout).toHaveBeenCalled();
       expect(result.current.isLoggedIn).toBe(false);
       expect(result.current.user).toBeNull();
       expect(result.current.token).toBeNull();
-
-      // Login
-      await act(async () => {
-        await result.current.login({
-          email: 'test@example.com',
-          password: 'password123',
-        });
-      });
-
-      // Verify state changes
-      await waitFor(() => {
-        expect(result.current.isLoggedIn).toBe(true);
-        expect(result.current.user).toEqual(mockUser);
-        expect(result.current.token).toBe('mock-token-123');
-        expect(result.current.status).toBe('succeeded');
-        expect(result.current.error).toBeNull();
-      });
-
-      // Verify secure storage was called
-      expect(SecureStore.setItemAsync).toHaveBeenCalledWith('tifossi_auth_token', 'mock-token-123');
     });
 
-    it('should handle registration flow with email verification state', async () => {
+    it('should handle logout error gracefully', async () => {
+      mockLogout.mockRejectedValue(new Error('Logout failed'));
+
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.register({
+        await result.current.logout();
+      });
+
+      // Should still clear local state even if logout fails
+      expect(result.current.isLoggedIn).toBe(false);
+      expect(result.current.user).toBeNull();
+    });
+  });
+
+  describe('sendPasswordReset', () => {
+    it('should send password reset email successfully', async () => {
+      mockSendPasswordResetEmail.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await result.current.sendPasswordReset('test@example.com');
+      });
+
+      expect(mockSendPasswordResetEmail).toHaveBeenCalledWith('test@example.com');
+      expect(result.current.error).toBeNull();
+    });
+
+    it('should handle reset password error', async () => {
+      mockSendPasswordResetEmail.mockRejectedValue(new Error('User not found'));
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await expect(
+          result.current.sendPasswordReset('nonexistent@example.com')
+        ).rejects.toThrow('User not found');
+      });
+
+      expect(result.current.error).toBe('User not found');
+      expect(result.current.status).toBe('failed');
+    });
+  });
+
+  describe('changePassword', () => {
+    it('should update password successfully', async () => {
+      useAuthStore.setState({
+        user: {
+          id: 'test-uid',
+          email: 'test@example.com',
           name: 'Test User',
-          email: 'test@example.com',
-          password: 'password123',
-        });
+          profilePicture: null,
+          isEmailVerified: true,
+        },
+        token: 'test-token',
+        isLoggedIn: true,
       });
 
-      await waitFor(() => {
-        expect(result.current.isLoggedIn).toBe(true);
-        expect(result.current.user).toEqual(mockUser);
-        expect(result.current.status).toBe('succeeded');
-      });
-    });
+      mockChangePassword.mockResolvedValue(true);
 
-    it('should handle logout and clear all auth state', async () => {
       const { result } = renderHook(() => useAuthStore());
 
-      // Login first
       await act(async () => {
-        await result.current.login({
-          email: 'test@example.com',
-          password: 'password123',
+        await result.current.changePassword({
+          currentPassword: 'oldPassword',
+          newPassword: 'newPassword',
         });
       });
 
-      await waitFor(() => {
-        expect(result.current.isLoggedIn).toBe(true);
+      expect(mockChangePassword).toHaveBeenCalledWith('test-token', {
+        currentPassword: 'oldPassword',
+        newPassword: 'newPassword',
+      });
+      expect(result.current.error).toBeNull();
+    });
+
+    it('should handle wrong current password', async () => {
+      // Set up authenticated state with token
+      useAuthStore.setState({
+        user: {
+          id: 'test-uid',
+          email: 'test@example.com',
+          name: 'Test User',
+          profilePicture: null,
+          isEmailVerified: true,
+        },
+        token: 'test-token',
+        isLoggedIn: true,
       });
 
-      // Logout
+      mockChangePassword.mockRejectedValue(new Error('Wrong password'));
+
+      const { result } = renderHook(() => useAuthStore());
+
       await act(async () => {
-        await result.current.logout();
+        await expect(
+          result.current.changePassword({
+            currentPassword: 'wrongPassword',
+            newPassword: 'newPassword',
+          })
+        ).rejects.toThrow('Wrong password');
       });
 
-      await waitFor(() => {
-        expect(result.current.isLoggedIn).toBe(false);
-        expect(result.current.user).toBeNull();
-        expect(result.current.token).toBeNull();
-        expect(result.current.status).toBe('idle');
-        expect(result.current.error).toBeNull();
+      expect(mockChangePassword).toHaveBeenCalledWith('test-token', {
+        currentPassword: 'wrongPassword',
+        newPassword: 'newPassword',
       });
-
-      // Verify secure storage was cleared
-      expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('tifossi_auth_token');
+      expect(result.current.error).toBe('Wrong password');
+      expect(result.current.status).toBe('failed');
     });
   });
 
-  describe('Token Persistence and Hydration', () => {
-    it('should restore authentication state from stored token', async () => {
-      // Mock stored token
-      (SecureStore.getItemAsync as jest.Mock).mockResolvedValue('stored-token-123');
-
-      const { result } = renderHook(() => useAuthStore());
-
-      await act(async () => {
-        await result.current.initializeAuth();
-      });
-
-      await waitFor(() => {
-        expect(result.current.isLoggedIn).toBe(true);
-        expect(result.current.user).toEqual(mockUser);
-        expect(result.current.token).toBe('stored-token-123');
-        expect(result.current.isInitialized).toBe(true);
-      });
-    });
-
-    it('should handle invalid stored token by clearing state', async () => {
-      // Mock stored token but validation fails
-      (SecureStore.getItemAsync as jest.Mock).mockResolvedValue('invalid-token');
-
-      const authService = require('../../_services/auth/authService').authService;
-      authService.validateToken.mockRejectedValue(new Error('Invalid token'));
-
-      const { result } = renderHook(() => useAuthStore());
-
-      await act(async () => {
-        await result.current.initializeAuth();
-      });
-
-      await waitFor(() => {
-        expect(result.current.isLoggedIn).toBe(false);
-        expect(result.current.user).toBeNull();
-        expect(result.current.token).toBeNull();
-        expect(result.current.status).toBe('failed');
-        expect(result.current.error).toContain('Session invalid');
-      });
-
-      expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('tifossi_auth_token');
-    });
-  });
-
-  describe('Cross-Store State Synchronization', () => {
-    it('should sync cart and favorites after login', async () => {
-      const cartStore = useCartStore.getState();
-      const favoritesStore = useFavoritesStore.getState();
-
-      // Mock sync methods
-      const mockCartSync = jest.spyOn(cartStore, 'migrateGuestCart').mockResolvedValue();
-      const mockFavoritesSync = jest.spyOn(favoritesStore, 'syncWithServer').mockResolvedValue();
-
-      const { result } = renderHook(() => useAuthStore());
-
-      await act(async () => {
-        await result.current.login({
-          email: 'test@example.com',
-          password: 'password123',
-        });
-      });
-
-      await waitFor(() => {
-        expect(mockCartSync).toHaveBeenCalledWith('mock-token-123');
-        expect(mockFavoritesSync).toHaveBeenCalled();
-      });
-
-      mockCartSync.mockRestore();
-      mockFavoritesSync.mockRestore();
-    });
-
-    it('should clear user data from all stores on logout', async () => {
-      const cartStore = useCartStore.getState();
-      const favoritesStore = useFavoritesStore.getState();
-
-      const mockCartClear = jest.spyOn(cartStore, 'clearCart').mockResolvedValue();
-
-      const { result } = renderHook(() => useAuthStore());
-
-      // Login first
-      await act(async () => {
-        await result.current.login({
-          email: 'test@example.com',
-          password: 'password123',
-        });
-      });
-
-      // Logout
-      await act(async () => {
-        await result.current.logout();
-      });
-
-      await waitFor(() => {
-        expect(mockCartClear).toHaveBeenCalled();
-        expect(favoritesStore.productIds).toEqual([]);
-      });
-
-      mockCartClear.mockRestore();
-    });
-  });
-
-  describe('Error Handling and Recovery', () => {
-    it('should handle login failure and maintain error state', async () => {
-      const authService = require('../../_services/auth/authService').authService;
-      authService.login.mockRejectedValue(new Error('Invalid credentials'));
-
-      const { result } = renderHook(() => useAuthStore());
-
-      await act(async () => {
-        await result.current.login({
-          email: 'invalid@example.com',
-          password: 'wrongpassword',
-        });
-      });
-
-      await waitFor(() => {
-        expect(result.current.isLoggedIn).toBe(false);
-        expect(result.current.status).toBe('failed');
-        expect(result.current.error).toContain('Invalid credentials');
-        expect(result.current.isLoading).toBe(false);
-      });
-    });
-
-    it('should handle network errors during auth operations', async () => {
-      // Setup MSW to simulate network error
-      mswServer.use(
-        http.post('/api/auth/login', () => {
-          return HttpResponse.error();
-        })
-      );
-
-      const authService = require('../../_services/auth/authService').authService;
-      authService.login.mockRejectedValue(new Error('Network error'));
-
-      const { result } = renderHook(() => useAuthStore());
-
-      await act(async () => {
-        await result.current.login({
-          email: 'test@example.com',
-          password: 'password123',
-        });
-      });
-
-      await waitFor(() => {
-        expect(result.current.status).toBe('failed');
-        expect(result.current.error).toContain('Network error');
-      });
-    });
-  });
-
-  describe('Profile Management State', () => {
-    it('should handle password change with loading states', async () => {
-      const { result } = renderHook(() => useAuthStore());
-
-      // Login first
-      await act(async () => {
-        await result.current.login({
-          email: 'test@example.com',
-          password: 'password123',
-        });
-      });
-
-      // Change password
-      await act(async () => {
-        const changePromise = result.current.changePassword({
-          currentPassword: 'oldpassword',
-          newPassword: 'newpassword',
-        });
-
-        // Check loading state
-        expect(result.current.isChangingPassword).toBe(true);
-
-        await changePromise;
-      });
-
-      await waitFor(() => {
-        expect(result.current.isChangingPassword).toBe(false);
-        expect(result.current.status).toBe('succeeded');
-      });
-    });
-
-    it('should handle profile picture update with state changes', async () => {
-      const { result } = renderHook(() => useAuthStore());
-
-      // Login first
-      await act(async () => {
-        await result.current.login({
-          email: 'test@example.com',
-          password: 'password123',
-        });
-      });
-
-      // Update profile picture
-      await act(async () => {
-        const updatePromise = result.current.updateProfilePicture('file://new-image.jpg');
-
-        // Check loading state
-        expect(result.current.isUploadingProfilePicture).toBe(true);
-
-        await updatePromise;
-      });
-
-      await waitFor(() => {
-        expect(result.current.isUploadingProfilePicture).toBe(false);
-        expect(result.current.user?.profilePicture).toBe('https://example.com/new-profile-pic.jpg');
-      });
-    });
-  });
-
-  describe('Concurrent Operations', () => {
-    it('should handle concurrent login attempts', async () => {
-      const { result } = renderHook(() => useAuthStore());
-
-      // Start multiple login attempts
-      const loginPromises = [
-        result.current.login({ email: 'test1@example.com', password: 'password123' }),
-        result.current.login({ email: 'test2@example.com', password: 'password123' }),
-        result.current.login({ email: 'test3@example.com', password: 'password123' }),
-      ];
-
-      await act(async () => {
-        await Promise.allSettled(loginPromises);
-      });
-
-      await waitFor(() => {
-        // Should end up in a consistent state
-        expect(result.current.isLoggedIn).toBe(true);
-        expect(result.current.isLoading).toBe(false);
-      });
-    });
-
-    it('should handle login followed by immediate logout', async () => {
-      const { result } = renderHook(() => useAuthStore());
-
-      await act(async () => {
-        // Start login and logout simultaneously
-        const loginPromise = result.current.login({
-          email: 'test@example.com',
-          password: 'password123',
-        });
-
-        const logoutPromise = result.current.logout();
-
-        await Promise.allSettled([loginPromise, logoutPromise]);
-      });
-
-      await waitFor(() => {
-        // Should be in logged out state
-        expect(result.current.isLoggedIn).toBe(false);
-        expect(result.current.isLoading).toBe(false);
-      });
-    });
-  });
-
-  describe('State Persistence Scenarios', () => {
-    it('should maintain state consistency across app restarts', async () => {
-      const { result } = renderHook(() => useAuthStore());
-
-      // Login and verify state
-      await act(async () => {
-        await result.current.login({
-          email: 'test@example.com',
-          password: 'password123',
-        });
-      });
-
-      const loginState = {
-        isLoggedIn: result.current.isLoggedIn,
-        user: result.current.user,
-        token: result.current.token,
+  describe('social login', () => {
+    it('should login with Google successfully', async () => {
+      const mockUser = {
+        id: 'google-uid',
+        email: 'google@example.com',
+        name: 'Google User',
+        profilePicture: 'https://example.com/photo.jpg',
+        isEmailVerified: true,
       };
 
-      // Simulate app restart by re-initializing
+      mockLoginWithGoogle.mockResolvedValue({
+        token: 'google-token',
+        user: mockUser,
+      });
+
+      const { result } = renderHook(() => useAuthStore());
+
       await act(async () => {
-        result.current.clearAuthData();
+        await result.current.loginWithGoogle();
+      });
+
+      expect(mockLoginWithGoogle).toHaveBeenCalled();
+      expect(result.current.isLoggedIn).toBe(true);
+      expect(result.current.user).toEqual(mockUser);
+    });
+
+    it('should login with Apple successfully', async () => {
+      const mockUser = {
+        id: 'apple-uid',
+        email: 'apple@example.com',
+        name: 'Apple User',
+        profilePicture: null,
+        isEmailVerified: true,
+      };
+
+      mockLoginWithApple.mockResolvedValue({
+        token: 'apple-token',
+        user: mockUser,
+      });
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await result.current.loginWithApple();
+      });
+
+      expect(mockLoginWithApple).toHaveBeenCalled();
+      expect(result.current.isLoggedIn).toBe(true);
+      expect(result.current.user).toEqual(mockUser);
+    });
+  });
+
+  describe('initialization', () => {
+    it('should initialize authentication status', async () => {
+      mockValidateToken.mockResolvedValue({
+        id: 'stored-uid',
+        email: 'stored@example.com',
+        name: 'Stored User',
+        profilePicture: null,
+        isEmailVerified: true,
+      });
+
+      (SecureStore.getItemAsync as jest.Mock).mockResolvedValue('stored-token');
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
         await result.current.initializeAuth();
       });
 
-      await waitFor(() => {
-        expect(result.current.isLoggedIn).toBe(loginState.isLoggedIn);
-        expect(result.current.user).toEqual(loginState.user);
-        expect(result.current.token).toBe(loginState.token);
+      expect(result.current.isInitialized).toBe(true);
+      expect(result.current.isLoggedIn).toBe(true);
+    });
+
+    it('should handle invalid token during initialization', async () => {
+      // Mock validateToken to throw an error (invalid token)
+      mockValidateToken.mockRejectedValue(new Error('Invalid token'));
+
+      (SecureStore.getItemAsync as jest.Mock).mockResolvedValue('invalid-token');
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await result.current.initializeAuth();
       });
+
+      expect(result.current.isInitialized).toBe(true);
+      expect(result.current.isLoggedIn).toBe(false);
+      expect(result.current.user).toBeNull();
+    });
+  });
+
+  describe('utility functions', () => {
+    it('should allow setting user for testing', () => {
+      const { result } = renderHook(() => useAuthStore());
+
+      const testUser = {
+        id: 'test-id',
+        email: 'test@test.com',
+        name: 'Test',
+        profilePicture: null,
+        isEmailVerified: true,
+      };
+
+      act(() => {
+        result.current.setUser(testUser);
+      });
+
+      expect(result.current.user).toEqual(testUser);
+    });
+
+    it('should allow setting token for testing', () => {
+      const { result } = renderHook(() => useAuthStore());
+
+      act(() => {
+        result.current.setToken('test-token');
+      });
+
+      expect(result.current.token).toBe('test-token');
+    });
+
+    it('should clear auth data properly', () => {
+      const { result } = renderHook(() => useAuthStore());
+
+      // Set some data first
+      act(() => {
+        result.current.setUser({ id: '1', email: 'test@test.com', name: 'Test', profilePicture: null, isEmailVerified: true });
+        result.current.setToken('token');
+      });
+
+      // Clear everything
+      act(() => {
+        result.current.clearAuthData();
+      });
+
+      expect(result.current.user).toBeNull();
+      expect(result.current.token).toBeNull();
+      expect(result.current.error).toBeNull();
+      expect(result.current.isLoggedIn).toBe(false);
+    });
+  });
+
+  describe('error handling', () => {
+    it('should clear error on successful operation', async () => {
+      // Set initial error state
+      useAuthStore.setState({
+        error: 'Previous error',
+      });
+
+      mockLogin.mockResolvedValue({
+        token: 'test-token',
+        user: { id: '1', email: 'test@test.com', name: 'Test', profilePicture: null, isEmailVerified: true },
+      });
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await result.current.login({ email: 'test@example.com', password: 'password123' });
+      });
+
+      expect(result.current.error).toBeNull();
+    });
+
+    it('should handle network errors', async () => {
+      mockLogin.mockRejectedValue(new Error('Network error'));
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await result.current.login({ email: 'test@example.com', password: 'password123' });
+      });
+
+      expect(result.current.error).toBe('Network error');
+      expect(result.current.isLoggedIn).toBe(false);
+    });
+
+    it('should handle authentication initialization errors', async () => {
+      mockInitialize.mockRejectedValue(new Error('Initialization failed'));
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        await result.current.initializeAuth();
+      });
+
+      // Should still mark as initialized even if it fails
+      expect(result.current.isInitialized).toBe(true);
+      expect(result.current.isLoggedIn).toBe(false);
     });
   });
 });

@@ -1,429 +1,592 @@
 /**
- * Unit tests for Cart Store (Zustand)
+ * Cart Store Tests
+ * Testing real Zustand store implementation with network mocking
+ * Following TESTING_PRINCIPLES.md: Test behavior, not implementation
  */
 
-import { act } from '@testing-library/react-native';
-import { testLifecycleHelpers } from '../utils/test-setup';
-import { mockProduct } from '../utils/mock-data';
+import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { useCartStore } from '../../_stores/cartStore';
 
-// Mock the actual cart store - adjust import path as needed
-const createMockCartStore = () => {
-  const initialState = {
-    items: [] as any[],
-    total: 0,
-    itemCount: 0,
-    isLoading: false,
-    error: null as string | null,
-  };
+// Mock MMKV at the boundary
+const mockMMKVStore = new Map<string, string>();
 
-  let state = { ...initialState };
-  let idCounter = 0;
-
-  return {
-    getState: () => state,
-
-    // Actions
-    addItem: jest.fn().mockImplementation((product: any, quantity = 1) => {
-      // Don't add if quantity is zero or negative
-      if (quantity <= 0) {
-        return;
-      }
-
-      const existingItem = state.items.find((item) => item.productId === product.id);
-
-      if (existingItem) {
-        state.items = state.items.map((item) =>
-          item.productId === product.id ? { ...item, quantity: item.quantity + quantity } : item
-        );
-      } else {
-        state.items = [
-          ...state.items,
-          {
-            id: `cart-item-${++idCounter}`,
-            productId: product.id,
-            product,
-            quantity,
-            price: product.price,
-          },
-        ];
-      }
-
-      state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
-      state.total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+jest.mock('react-native-mmkv', () => ({
+  MMKV: jest.fn().mockImplementation(() => ({
+    getString: jest.fn((key) => mockMMKVStore.get(key) || null),
+    set: jest.fn((key, value) => {
+      mockMMKVStore.set(key, value);
     }),
-
-    removeItem: jest.fn().mockImplementation((itemId: string) => {
-      state.items = state.items.filter((item) => item.id !== itemId);
-      state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
-      state.total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    delete: jest.fn((key) => {
+      mockMMKVStore.delete(key);
     }),
-
-    updateItemQuantity: jest.fn().mockImplementation((itemId: string, quantity: number) => {
-      if (quantity <= 0) {
-        state.items = state.items.filter((item) => item.id !== itemId);
-      } else {
-        state.items = state.items.map((item) =>
-          item.id === itemId ? { ...item, quantity } : item
-        );
-      }
-      state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
-      state.total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    clearAll: jest.fn(() => {
+      mockMMKVStore.clear();
     }),
+  })),
+}));
 
-    clearCart: jest.fn().mockImplementation(() => {
-      state.items = [];
-      state.total = 0;
-      state.itemCount = 0;
-      state.error = null;
-    }),
-
-    setLoading: jest.fn().mockImplementation((loading: boolean) => {
-      state.isLoading = loading;
-    }),
-
-    setError: jest.fn().mockImplementation((error: string | null) => {
-      state.error = error;
-    }),
-
-    // Reset for testing
-    reset: () => {
-      state = { ...initialState };
-      idCounter = 0;
-    },
-  };
+// Mock httpClient at the network boundary
+const mockHttpClient = {
+  post: jest.fn(),
+  get: jest.fn(),
+  delete: jest.fn(),
+  put: jest.fn(),
 };
 
-describe('Cart Store', () => {
-  let cartStore: ReturnType<typeof createMockCartStore>;
+jest.mock('../../_services/api/httpClient', () => ({
+  __esModule: true,
+  default: mockHttpClient,
+  httpClient: mockHttpClient,
+}));
 
+describe('cartStore', () => {
   beforeEach(() => {
-    testLifecycleHelpers.setupTest();
-    cartStore = createMockCartStore();
+    // Clear storage and reset store state
+    mockMMKVStore.clear();
+    useCartStore.setState({
+      items: [],
+      isLoading: false,
+      error: null,
+      isGuestCart: true,
+      lastSyncTimestamp: null,
+      actionStatus: 'idle',
+      pendingOperations: [],
+    });
+    
+    // Reset all mocks
+    jest.clearAllMocks();
+    
+    // Default successful response
+    mockHttpClient.post.mockResolvedValue({ success: true });
+    mockHttpClient.delete.mockResolvedValue({ success: true });
   });
 
-  afterEach(() => {
-    testLifecycleHelpers.teardownTest();
-  });
+  describe('addItem', () => {
+    it('should add a new item to the cart', async () => {
+      const { result } = renderHook(() => useCartStore());
 
-  describe('Initial State', () => {
-    it('should have correct initial state', () => {
-      const state = cartStore.getState();
-
-      expect(state.items).toEqual([]);
-      expect(state.total).toBe(0);
-      expect(state.itemCount).toBe(0);
-      expect(state.isLoading).toBe(false);
-      expect(state.error).toBeNull();
-    });
-  });
-
-  describe('Adding Items', () => {
-    it('should add new item to cart', () => {
-      act(() => {
-        cartStore.addItem(mockProduct, 1);
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 2,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
       });
 
-      const state = cartStore.getState();
-
-      expect(state.items).toHaveLength(1);
-      expect(state.items[0]).toMatchObject({
-        productId: mockProduct.id,
-        product: mockProduct,
-        quantity: 1,
-        price: mockProduct.price,
-      });
-      expect(state.itemCount).toBe(1);
-      expect(state.total).toBe(mockProduct.price);
-    });
-
-    it('should increase quantity when adding existing item', () => {
-      act(() => {
-        cartStore.addItem(mockProduct, 1);
-        cartStore.addItem(mockProduct, 2);
-      });
-
-      const state = cartStore.getState();
-
-      expect(state.items).toHaveLength(1);
-      expect(state.items[0].quantity).toBe(3);
-      expect(state.itemCount).toBe(3);
-      expect(state.total).toBe(mockProduct.price * 3);
-    });
-
-    it('should add multiple different products', () => {
-      const secondProduct = { ...mockProduct, id: 'product-2', price: 50 };
-
-      act(() => {
-        cartStore.addItem(mockProduct, 1);
-        cartStore.addItem(secondProduct, 2);
-      });
-
-      const state = cartStore.getState();
-
-      expect(state.items).toHaveLength(2);
-      expect(state.itemCount).toBe(3);
-      expect(state.total).toBe(mockProduct.price + secondProduct.price * 2);
-    });
-
-    it('should handle adding with zero quantity', () => {
-      act(() => {
-        cartStore.addItem(mockProduct, 0);
-      });
-
-      const state = cartStore.getState();
-
-      expect(state.items).toHaveLength(0);
-      expect(state.itemCount).toBe(0);
-      expect(state.total).toBe(0);
-    });
-  });
-
-  describe('Removing Items', () => {
-    beforeEach(() => {
-      act(() => {
-        cartStore.addItem(mockProduct, 2);
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1);
+        expect(result.current.items[0]).toEqual({
+          productId: '1',
+          quantity: 2,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
+        expect(result.current.isLoading).toBe(false);
+        expect(result.current.error).toBeNull();
       });
     });
 
-    it('should remove item from cart', () => {
-      const state = cartStore.getState();
-      const itemId = state.items[0].id;
+    it('should update quantity if item already exists', async () => {
+      const { result } = renderHook(() => useCartStore());
 
-      act(() => {
-        cartStore.removeItem(itemId);
+      // Add item first time
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 2,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
       });
 
-      const updatedState = cartStore.getState();
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1);
+      });
 
-      expect(updatedState.items).toHaveLength(0);
-      expect(updatedState.itemCount).toBe(0);
-      expect(updatedState.total).toBe(0);
+      // Add same item again
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 3,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1);
+        expect(result.current.items[0].quantity).toBe(5); // 2 + 3
+        expect(result.current.isLoading).toBe(false);
+      });
     });
 
-    it('should handle removing non-existent item', () => {
-      act(() => {
-        cartStore.removeItem('non-existent-id');
+    it('should treat items with different colors as separate items', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 1,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
       });
 
-      const state = cartStore.getState();
-
-      expect(state.items).toHaveLength(1);
-      expect(state.itemCount).toBe(2);
-      expect(state.total).toBe(mockProduct.price * 2);
-    });
-  });
-
-  describe('Updating Item Quantity', () => {
-    beforeEach(() => {
-      act(() => {
-        cartStore.addItem(mockProduct, 2);
-      });
-    });
-
-    it('should update item quantity', () => {
-      const state = cartStore.getState();
-      const itemId = state.items[0].id;
-
-      act(() => {
-        cartStore.updateItemQuantity(itemId, 5);
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 1,
+          color: 'blue',
+          size: 'M',
+          price: 99.99,
+        });
       });
 
-      const updatedState = cartStore.getState();
-
-      expect(updatedState.items[0].quantity).toBe(5);
-      expect(updatedState.itemCount).toBe(5);
-      expect(updatedState.total).toBe(mockProduct.price * 5);
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2);
+      });
     });
 
-    it('should remove item when quantity is set to zero', () => {
-      const state = cartStore.getState();
-      const itemId = state.items[0].id;
+    it('should handle different product sizes and colors', async () => {
+      const { result } = renderHook(() => useCartStore());
 
-      act(() => {
-        cartStore.updateItemQuantity(itemId, 0);
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 1,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
+      });
+      
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 2,
+          color: 'red',
+          size: 'L',
+          price: 99.99,
+        });
       });
 
-      const updatedState = cartStore.getState();
-
-      expect(updatedState.items).toHaveLength(0);
-      expect(updatedState.itemCount).toBe(0);
-      expect(updatedState.total).toBe(0);
-    });
-
-    it('should remove item when quantity is negative', () => {
-      const state = cartStore.getState();
-      const itemId = state.items[0].id;
-
-      act(() => {
-        cartStore.updateItemQuantity(itemId, -1);
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2);
+        expect(result.current.getTotalItems()).toBe(3); // 1 + 2
       });
-
-      const updatedState = cartStore.getState();
-
-      expect(updatedState.items).toHaveLength(0);
-      expect(updatedState.itemCount).toBe(0);
-      expect(updatedState.total).toBe(0);
-    });
-
-    it('should handle updating non-existent item', () => {
-      act(() => {
-        cartStore.updateItemQuantity('non-existent-id', 10);
-      });
-
-      const state = cartStore.getState();
-
-      expect(state.items).toHaveLength(1);
-      expect(state.items[0].quantity).toBe(2); // Should remain unchanged
     });
   });
 
-  describe('Clearing Cart', () => {
-    beforeEach(() => {
-      act(() => {
-        cartStore.addItem(mockProduct, 2);
-        cartStore.setError('Test error');
-      });
-    });
+  describe('updateItemQuantity', () => {
+    it('should update quantity of existing item', async () => {
+      const { result } = renderHook(() => useCartStore());
 
-    it('should clear all items from cart', () => {
-      act(() => {
-        cartStore.clearCart();
-      });
-
-      const state = cartStore.getState();
-
-      expect(state.items).toEqual([]);
-      expect(state.total).toBe(0);
-      expect(state.itemCount).toBe(0);
-      expect(state.error).toBeNull();
-    });
-  });
-
-  describe('Loading State', () => {
-    it('should update loading state', () => {
-      act(() => {
-        cartStore.setLoading(true);
+      // Add item first
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 2,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
       });
 
-      expect(cartStore.getState().isLoading).toBe(true);
-
-      act(() => {
-        cartStore.setLoading(false);
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1);
       });
-
-      expect(cartStore.getState().isLoading).toBe(false);
-    });
-  });
-
-  describe('Error State', () => {
-    it('should update error state', () => {
-      const errorMessage = 'Failed to add item to cart';
-
-      act(() => {
-        cartStore.setError(errorMessage);
-      });
-
-      expect(cartStore.getState().error).toBe(errorMessage);
-
-      act(() => {
-        cartStore.setError(null);
-      });
-
-      expect(cartStore.getState().error).toBeNull();
-    });
-  });
-
-  describe('Complex Scenarios', () => {
-    it('should handle multiple operations correctly', () => {
-      const product1 = mockProduct;
-      const product2 = { ...mockProduct, id: 'product-2', price: 75 };
-
-      act(() => {
-        // Add multiple products
-        cartStore.addItem(product1, 2);
-        cartStore.addItem(product2, 1);
-        cartStore.addItem(product1, 1); // Should increase quantity
-      });
-
-      let state = cartStore.getState();
-
-      expect(state.items).toHaveLength(2);
-      expect(state.itemCount).toBe(4); // 3 + 1
-      expect(state.total).toBe(product1.price * 3 + product2.price * 1);
 
       // Update quantity
-      const product1ItemId = state.items.find((item) => item.productId === product1.id)?.id;
-
-      act(() => {
-        cartStore.updateItemQuantity(product1ItemId!, 1);
+      await act(async () => {
+        await result.current.updateItemQuantity('1', 'red', 'M', 5);
       });
 
-      state = cartStore.getState();
+      await waitFor(() => {
+        expect(result.current.items[0].quantity).toBe(5);
+        expect(result.current.isLoading).toBe(false);
+      });
+    });
 
-      expect(state.itemCount).toBe(2); // 1 + 1
-      expect(state.total).toBe(product1.price + product2.price);
+    it('should remove item if quantity is set to 0', async () => {
+      const { result } = renderHook(() => useCartStore());
 
-      // Remove one product
-      const product2ItemId = state.items.find((item) => item.productId === product2.id)?.id;
-
-      act(() => {
-        cartStore.removeItem(product2ItemId!);
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 2,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
       });
 
-      state = cartStore.getState();
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1);
+      });
 
-      // After removing product2, only product1 should remain
-      expect(state.items).toHaveLength(1);
-      expect(state.items[0].productId).toBe(product1.id);
-      expect(state.itemCount).toBe(1);
-      expect(state.total).toBe(product1.price);
+      await act(async () => {
+        await result.current.updateItemQuantity('1', 'red', 'M', 0);
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(0);
+      });
     });
   });
 
-  describe('Performance', () => {
-    it('should handle large number of items efficiently', () => {
-      const startTime = performance.now();
+  describe('removeItem', () => {
+    it('should remove item from cart', async () => {
+      const { result } = renderHook(() => useCartStore());
 
-      act(() => {
-        // Add 100 different products
-        for (let i = 0; i < 100; i++) {
-          const product = { ...mockProduct, id: `product-${i}`, price: i + 1 };
-          cartStore.addItem(product, 1);
-        }
+      // Add two items
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 2,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
+      });
+      
+      await act(async () => {
+        await result.current.addItem({
+          productId: '2',
+          quantity: 1,
+          color: 'blue',
+          size: 'L',
+          price: 99.99,
+        });
       });
 
-      const endTime = performance.now();
-      const operationTime = endTime - startTime;
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2);
+      });
 
-      const state = cartStore.getState();
+      // Remove first item
+      await act(async () => {
+        await result.current.removeItem('1', 'red', 'M');
+      });
 
-      expect(state.items).toHaveLength(100);
-      expect(operationTime).toBeLessThan(1000); // Should complete within 1 second
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1);
+        expect(result.current.items[0].productId).toBe('2');
+      });
     });
   });
 
-  describe('Data Integrity', () => {
-    it('should maintain correct totals after operations', () => {
-      act(() => {
-        cartStore.addItem(mockProduct, 3);
+  describe('clearCart', () => {
+    it('should remove all items from cart', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      // Add multiple items
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 2,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
+      });
+      
+      await act(async () => {
+        await result.current.addItem({
+          productId: '2',
+          quantity: 1,
+          color: 'blue',
+          size: 'L',
+          price: 99.99,
+        });
       });
 
-      const state = cartStore.getState();
-      const expectedTotal = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const expectedCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2);
+      });
 
-      expect(state.total).toBe(expectedTotal);
-      expect(state.itemCount).toBe(expectedCount);
+      // Clear cart
+      await act(async () => {
+        await result.current.clearCart();
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(0);
+        expect(result.current.isLoading).toBe(false);
+      });
+    });
+  });
+
+  describe('getItemQuantity', () => {
+    it('should return quantity for existing item', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 5,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1);
+      });
+
+      const quantity = result.current.getItemQuantity('1', 'red', 'M');
+      expect(quantity).toBe(5);
     });
 
-    it('should not mutate original product data', () => {
-      const originalProduct = { ...mockProduct };
+    it('should return 0 for non-existent item', () => {
+      const { result } = renderHook(() => useCartStore());
 
-      act(() => {
-        cartStore.addItem(mockProduct, 1);
+      const quantity = result.current.getItemQuantity('999', 'red', 'M');
+      expect(quantity).toBe(0);
+    });
+  });
+
+  describe('computed values', () => {
+    it('should calculate total price correctly', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 2,
+          price: 100,
+          discountedPrice: 80,
+        });
       });
 
-      expect(mockProduct).toEqual(originalProduct);
+      await act(async () => {
+        await result.current.addItem({
+          productId: '2',
+          quantity: 1,
+          price: 50,
+          // No discount price
+        });
+      });
+
+      await waitFor(() => {
+        // First item: 2 * 80 (discount price) = 160
+        // Second item: 1 * 50 = 50
+        // Total: 210
+        expect(result.current.getTotalPrice()).toBe(210);
+        expect(result.current.getSubtotal()).toBe(250); // 2*100 + 1*50
+        expect(result.current.getDiscountTotal()).toBe(40); // (100-80)*2
+      });
+    });
+
+    it('should calculate total items correctly', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 2,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
+      });
+      
+      await act(async () => {
+        await result.current.addItem({
+          productId: '2',
+          quantity: 3,
+          color: 'blue',
+          size: 'L',
+          price: 99.99,
+        });
+      });
+      
+      await act(async () => {
+        await result.current.addItem({
+          productId: '3',
+          quantity: 1,
+          color: 'green',
+          size: 'S',
+          price: 99.99,
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(3);
+      });
+
+      const totalItems = result.current.getTotalItems();
+      expect(totalItems).toBe(6); // 2 + 3 + 1
+    });
+
+    it('should return 0 for empty cart', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      const totalItems = result.current.getTotalItems();
+      expect(totalItems).toBe(0);
+    });
+  });
+
+  describe('error handling', () => {
+    it('should clear error state', () => {
+      const { result } = renderHook(() => useCartStore());
+      
+      // Set error state
+      act(() => {
+        useCartStore.setState({ error: 'Some error' });
+      });
+
+      expect(result.current.error).toBe('Some error');
+
+      act(() => {
+        result.current.clearError();
+      });
+
+      expect(result.current.error).toBeNull();
+    });
+  });
+
+  describe('persistence', () => {
+    it('should store items in the cart state', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 2,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1);
+      });
+
+      // Test that cart state persists across operations
+      await act(async () => {
+        await result.current.addItem({
+          productId: '2',
+          quantity: 1,
+          color: 'blue',
+          size: 'L',
+          price: 99.99,
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2);
+        expect(result.current.getTotalItems()).toBe(3); // 2 + 1
+      });
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle items with optional color and size', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      // Add item without color or size
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 1,
+          price: 99.99,
+        });
+      });
+
+      // Add same item with color
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 1,
+          color: 'red',
+          price: 99.99,
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2); // Treated as different items
+        expect(result.current.getItemQuantity('1', undefined, undefined)).toBe(1);
+        expect(result.current.getItemQuantity('1', 'red', undefined)).toBe(1);
+      });
+    });
+
+    it('should handle large quantities', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      await act(async () => {
+        await result.current.addItem({
+          productId: '1',
+          quantity: 100,
+          color: 'red',
+          size: 'M',
+          price: 99.99,
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.getTotalItems()).toBe(100);
+      });
+
+      // Update to an even larger quantity
+      await act(async () => {
+        await result.current.updateItemQuantity('1', 'red', 'M', 500);
+      });
+
+      await waitFor(() => {
+        expect(result.current.items[0].quantity).toBe(500);
+        expect(result.current.getTotalItems()).toBe(500);
+      });
+    });
+
+    it('should handle multiple operations in sequence', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      // Add multiple items
+      for (let i = 1; i <= 5; i++) {
+        await act(async () => {
+          await result.current.addItem({
+            productId: i.toString(),
+            quantity: i,
+            color: 'red',
+            size: 'M',
+            price: 99.99,
+          });
+        });
+      }
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(5);
+        expect(result.current.getTotalItems()).toBe(15); // 1+2+3+4+5
+      });
+
+      // Remove some items
+      await act(async () => {
+        await result.current.removeItem('2', 'red', 'M');
+        await result.current.removeItem('4', 'red', 'M');
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(3);
+        expect(result.current.getTotalItems()).toBe(9); // 1+3+5
+      });
+
+      // Clear everything
+      await act(async () => {
+        await result.current.clearCart();
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(0);
+        expect(result.current.getTotalItems()).toBe(0);
+      });
     });
   });
 });
