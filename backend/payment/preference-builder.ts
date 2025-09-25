@@ -284,7 +284,7 @@ export class PreferenceBuilder {
     // Exclude specific payment methods if configured
     const excludedMethods = process.env.EXCLUDED_PAYMENT_METHODS;
     if (excludedMethods) {
-      excludedMethods.split(',').forEach((method) => {
+      excludedMethods.split(',').forEach((method: string) => {
         config.excluded_payment_methods.push({ id: method.trim() });
       });
     }
