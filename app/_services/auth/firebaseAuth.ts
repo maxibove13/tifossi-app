@@ -157,7 +157,8 @@ class FirebaseAuthService {
   async signInWithApple(): Promise<AuthResult> {
     try {
       // Check if Apple auth is available
-      if (!AppleAuthentication.isAvailableAsync()) {
+      const isAppleAvailable = await AppleAuthentication.isAvailableAsync();
+      if (!isAppleAvailable) {
         return {
           success: false,
           error: 'Apple Sign-In no está disponible en este dispositivo',

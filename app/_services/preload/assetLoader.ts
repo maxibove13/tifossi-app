@@ -30,7 +30,7 @@ export const loadSingleAsset = async (asset: any): Promise<void> => {
     } else {
       // For any other type, log with more detail to help debugging
     }
-  } catch (error) {
+  } catch {
     // Don't throw - we want to continue loading other assets even if one fails
   }
 };

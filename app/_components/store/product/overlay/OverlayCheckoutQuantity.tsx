@@ -136,7 +136,7 @@ export default function OverlayCheckoutQuantity({
           </View>
 
           {/* Quantity Counter */}
-          <View style={styles.counterContainer}>
+          <View style={styles.counterContainer} testID="quantity-selector">
             <View style={styles.counter}>
               {/* Decrease button */}
               <TouchableOpacity
@@ -178,6 +178,7 @@ export default function OverlayCheckoutQuantity({
 
               {/* Increase button */}
               <TouchableOpacity
+                testID="quantity-increase"
                 style={styles.counterButton}
                 onPress={increaseQuantity}
                 activeOpacity={0.7}

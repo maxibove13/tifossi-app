@@ -54,7 +54,7 @@ class StoreSynchronizer implements StoreSyncActions {
 
       // Sync favorites with server
       await useFavoritesStore.getState().syncWithServer();
-    } catch (error) {}
+    } catch {}
   }
 
   async onLogout(): Promise<void> {
@@ -63,20 +63,26 @@ class StoreSynchronizer implements StoreSyncActions {
       await useCartStore.getState().clearCart();
 
       // Clear favorites (reset to local state)
-      const favoritesStore = useFavoritesStore.getState();
-      favoritesStore.productIds.length = 0; // Clear array in place
-      favoritesStore.clearError();
+      useFavoritesStore.setState((state) => ({
+        ...state,
+        productIds: [],
+        error: null,
+        isLoading: false,
+        actionStatus: 'idle',
+        pendingOperations: [],
+        lastSyncTimestamp: null,
+      }));
 
       // Clear current payment session
-      usePaymentStore.getState().clearCurrentPayment();
-    } catch (error) {}
+      usePaymentStore.getState().clearPaymentState();
+    } catch {}
   }
 
   onTokenChange(token: string | null): void {
     try {
       // Update cart auth token
       useCartStore.getState().setAuthToken(token);
-    } catch (error) {}
+    } catch {}
   }
 }
 

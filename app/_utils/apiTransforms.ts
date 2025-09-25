@@ -1,4 +1,5 @@
 import { Product, ProductColor } from '../_types/product';
+import { endpoints } from '../_config/endpoints';
 
 // Strapi API response types
 export interface StrapiResponse<T> {
@@ -207,8 +208,8 @@ export function getFullMediaUrl(relativeUrl: string, baseUrl?: string): string {
     return relativeUrl;
   }
 
-  // Use provided base URL or default
-  const apiBaseUrl = baseUrl || (__DEV__ ? 'http://localhost:1337' : 'https://api.tifossi.app');
+  // Use provided base URL or centralized configuration
+  const apiBaseUrl = baseUrl || endpoints.baseUrl;
 
   return `${apiBaseUrl}${relativeUrl}`;
 }

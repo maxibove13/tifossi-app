@@ -9,7 +9,7 @@ import PromotionCard from '../_components/store/product/promotion/PromotionCard'
 import { Product } from '../_types/product';
 import DefaultLargeCard from '../_components/store/product/default/large';
 import { useFavoritesStore } from '../_stores/favoritesStore';
-import { useProducts } from '../_services/api/queryHooks';
+import { useProductStore } from '../_stores/productStore';
 import ProductData, { getProductById, products } from '../_data/products';
 import { SkeletonLoader } from '../_components/common/SkeletonLoader';
 import { hasStatus, ProductStatus } from '../_types/product-status';
@@ -50,12 +50,18 @@ type Styles = {
 
 export default function FavoritesScreen() {
   const {
-    data: allProducts = [],
+    products: allProducts,
     isLoading: productsLoading,
     error: productsError,
-  } = useProducts();
+    fetchProducts,
+  } = useProductStore();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const favoriteIds = useFavoritesStore((state) => state.productIds);
+
+  // Fetch products when component mounts
+  React.useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   // Get recommended products from API data or fallback
   const recommendedProductsData = useMemo(() => {

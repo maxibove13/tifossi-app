@@ -4,33 +4,73 @@
  * Tifossi Expo E-commerce Platform
  */
 
-class PreferenceBuilder {
-  constructor(config = {}) {
+import { MPPreferenceRequest, MPPreferenceItem, MPPayer, UruguayIdType } from './types/mercadopago';
+
+import { OrderData, OrderItem, OrderUser, ShippingAddress, ShippingMethod } from './types/orders';
+
+interface PreferenceBuilderConfig {
+  currency?: string;
+  maxInstallments?: number;
+  expirationMinutes?: number;
+  autoReturn?: 'approved' | 'all';
+  binaryMode?: boolean;
+}
+
+interface PickupLocation {
+  id: string;
+  name?: string;
+  address?: string;
+  zipCode?: string;
+  city?: string;
+  department?: string;
+}
+
+interface ExtendedOrderData extends Omit<OrderData, 'items' | 'user'> {
+  id: string;
+  pickupLocation?: PickupLocation;
+  discountCode?: string;
+  items: ExtendedOrderItem[];
+  user: ExtendedOrderUser;
+}
+
+interface ExtendedOrderItem extends OrderItem {
+  imageUrl?: string;
+  categoryId?: string;
+  warranty?: string;
+}
+
+interface ExtendedOrderUser extends OrderUser {
+  createdAt?: Date | string;
+  lastPurchase?: Date | string;
+}
+
+export class PreferenceBuilder {
+  private config: Required<PreferenceBuilderConfig>;
+  private baseUrl: string;
+  private appScheme: string;
+
+  constructor(config: PreferenceBuilderConfig = {}) {
     this.config = {
-      currency: 'UYU',
-      maxInstallments: 12,
-      expirationMinutes: 30,
-      autoReturn: 'approved',
-      binaryMode: false,
-      ...config
+      currency: config.currency || 'UYU',
+      maxInstallments: config.maxInstallments || 12,
+      expirationMinutes: config.expirationMinutes || 30,
+      autoReturn: config.autoReturn || 'approved',
+      binaryMode: config.binaryMode || false,
     };
-    
-    this.baseUrl = process.env.API_BASE_URL;
+
+    this.baseUrl = process.env.API_BASE_URL || '';
     this.appScheme = process.env.APP_SCHEME || 'tifossi';
   }
 
   /**
    * Build complete preference from order data
-   * @param {Object} orderData - Order information
-   * @returns {Object} MercadoPago preference object
    */
-  build(orderData) {
+  build(orderData: ExtendedOrderData): MPPreferenceRequest {
     this.validateOrderData(orderData);
 
-    return {
+    const preference: MPPreferenceRequest = {
       items: this.buildItems(orderData),
       external_reference: orderData.orderNumber,
-      description: this.buildDescription(orderData),
       payer: this.buildPayer(orderData),
       back_urls: this.buildBackUrls(orderData),
       notification_url: this.buildNotificationUrl(),
@@ -40,31 +80,55 @@ class PreferenceBuilder {
       expires: true,
       expiration_date_from: this.buildExpirationFrom(),
       expiration_date_to: this.buildExpirationTo(),
-      metadata: this.buildMetadata(orderData),
-      additional_info: this.buildAdditionalInfo(orderData)
     };
+
+    // Add optional fields
+    const description = this.buildDescription(orderData);
+    if (description) {
+      preference.statement_descriptor = description;
+    }
+
+    const additionalInfo = this.buildAdditionalInfo(orderData);
+    if (additionalInfo) {
+      preference.additional_info = JSON.stringify(additionalInfo);
+    }
+
+    return preference;
   }
 
   /**
    * Build items array from order data
-   * @param {Object} orderData - Order information
-   * @returns {Array} Items array for preference
    */
-  buildItems(orderData) {
-    const items = [];
+  private buildItems(orderData: ExtendedOrderData): MPPreferenceItem[] {
+    const items: MPPreferenceItem[] = [];
 
     // Add product items
-    orderData.items.forEach(item => {
-      items.push({
-        id: item.productId,
-        title: this.sanitizeString(item.productName, 256),
-        description: this.sanitizeString(item.description || item.productName, 600),
-        picture_url: item.imageUrl || null,
-        category_id: item.categoryId || 'clothing',
-        quantity: parseInt(item.quantity),
-        unit_price: this.formatPrice(item.price),
-        currency_id: this.config.currency
-      });
+    orderData.items.forEach((item) => {
+      const extendedItem = item as ExtendedOrderItem;
+      const preferenceItem: MPPreferenceItem = {
+        id: extendedItem.productId,
+        title: this.sanitizeString(extendedItem.productName, 256),
+        quantity: parseInt(String(extendedItem.quantity)),
+        unit_price: this.formatPrice(extendedItem.price),
+        currency_id: 'UYU',
+      };
+
+      if (extendedItem.description) {
+        preferenceItem.description = this.sanitizeString(
+          extendedItem.description || extendedItem.productName,
+          600
+        );
+      }
+
+      if (extendedItem.imageUrl) {
+        preferenceItem.picture_url = extendedItem.imageUrl;
+      }
+
+      if (extendedItem.categoryId) {
+        preferenceItem.category_id = extendedItem.categoryId;
+      }
+
+      items.push(preferenceItem);
     });
 
     // Add shipping cost as separate item if applicable
@@ -76,7 +140,7 @@ class PreferenceBuilder {
         category_id: 'shipping',
         quantity: 1,
         unit_price: this.formatPrice(orderData.shippingCost),
-        currency_id: this.config.currency
+        currency_id: 'UYU',
       });
     }
 
@@ -89,7 +153,7 @@ class PreferenceBuilder {
         category_id: 'discount',
         quantity: 1,
         unit_price: -this.formatPrice(orderData.discount),
-        currency_id: this.config.currency
+        currency_id: 'UYU',
       });
     }
 
@@ -98,24 +162,20 @@ class PreferenceBuilder {
 
   /**
    * Build shipping description
-   * @param {Object} orderData - Order information
-   * @returns {string} Shipping description
    */
-  buildShippingDescription(orderData) {
-    if (orderData.shippingMethod === 'pickup') {
+  private buildShippingDescription(orderData: ExtendedOrderData): string {
+    if (orderData.shippingMethod === ShippingMethod.PICKUP) {
       return `Retiro en tienda - ${orderData.pickupLocation?.name || 'Local seleccionado'}`;
     } else {
       const address = orderData.shippingAddress;
-      return `Envío a ${address.city}, ${address.department}`;
+      return `Envío a ${address.city}, ${address.state || 'Montevideo'}`;
     }
   }
 
   /**
    * Build discount description
-   * @param {Object} orderData - Order information
-   * @returns {string} Discount description
    */
-  buildDiscountDescription(orderData) {
+  private buildDiscountDescription(orderData: ExtendedOrderData): string {
     if (orderData.discountCode) {
       return `Descuento aplicado: ${orderData.discountCode}`;
     }
@@ -124,10 +184,8 @@ class PreferenceBuilder {
 
   /**
    * Build order description
-   * @param {Object} orderData - Order information
-   * @returns {string} Order description
    */
-  buildDescription(orderData) {
+  private buildDescription(orderData: ExtendedOrderData): string {
     const itemCount = orderData.items.reduce((sum, item) => sum + item.quantity, 0);
     const itemText = itemCount === 1 ? 'artículo' : 'artículos';
     return `Pedido Tifossi #${orderData.orderNumber} - ${itemCount} ${itemText}`;
@@ -135,32 +193,28 @@ class PreferenceBuilder {
 
   /**
    * Build payer information
-   * @param {Object} orderData - Order information
-   * @returns {Object} Payer object
    */
-  buildPayer(orderData) {
-    const user = orderData.user;
-    const payer = {
+  private buildPayer(orderData: ExtendedOrderData): MPPayer {
+    const user = orderData.user as ExtendedOrderUser;
+    const payer: MPPayer = {
       name: this.sanitizeString(user.firstName, 30),
       surname: this.sanitizeString(user.lastName, 30),
       email: user.email,
-      date_created: user.createdAt || null,
-      last_purchase: user.lastPurchase || null
     };
 
     // Add phone if available
     if (user.phone) {
       payer.phone = {
-        area_code: user.phone.areaCode || '598', // Uruguay default
-        number: this.sanitizePhoneNumber(user.phone.number)
+        area_code: user.phone.areaCode || '598',
+        number: this.sanitizePhoneNumber(user.phone.number),
       };
     }
 
     // Add identification if available
     if (user.identification) {
       payer.identification = {
-        type: user.identification.type, // CI, CE, RUT, etc.
-        number: this.sanitizeString(user.identification.number, 20)
+        type: user.identification.type as UruguayIdType,
+        number: this.sanitizeString(user.identification.number, 20),
       };
     }
 
@@ -174,61 +228,63 @@ class PreferenceBuilder {
 
   /**
    * Build payer address
-   * @param {Object} shippingAddress - Shipping address
-   * @returns {Object} Payer address object
    */
-  buildPayerAddress(shippingAddress) {
+  private buildPayerAddress(shippingAddress: ShippingAddress) {
     return {
       street_name: this.sanitizeString(shippingAddress.street, 100),
       street_number: this.extractStreetNumber(shippingAddress.number),
-      zip_code: this.sanitizeString(shippingAddress.zipCode || '11000', 10)
+      city: shippingAddress.city,
+      federal_unit: shippingAddress.state || 'Montevideo',
+      zip_code: this.sanitizeString(shippingAddress.zipCode || '11000', 10),
     };
   }
 
   /**
    * Build back URLs for payment callbacks
-   * @param {Object} orderData - Order information
-   * @returns {Object} Back URLs object
    */
-  buildBackUrls(orderData) {
+  private buildBackUrls(orderData: ExtendedOrderData) {
     const baseParams = `?order_id=${orderData.id}&external_reference=${orderData.orderNumber}`;
-    
+
     return {
       success: `${this.appScheme}://payment/success${baseParams}`,
       failure: `${this.appScheme}://payment/failure${baseParams}`,
-      pending: `${this.appScheme}://payment/pending${baseParams}`
+      pending: `${this.appScheme}://payment/pending${baseParams}`,
     };
   }
 
   /**
    * Build notification URL for webhooks
-   * @returns {string} Webhook notification URL
    */
-  buildNotificationUrl() {
+  private buildNotificationUrl(): string {
     return `${this.baseUrl}/webhooks/mercadopago`;
   }
 
   /**
    * Build payment methods configuration
-   * @param {Object} orderData - Order information
-   * @returns {Object} Payment methods configuration
    */
-  buildPaymentMethods(orderData) {
-    const config = {
-      excluded_payment_methods: [],
-      excluded_payment_types: [],
-      installments: this.config.maxInstallments
+  private buildPaymentMethods(orderData: ExtendedOrderData) {
+    const config: {
+      excluded_payment_methods: { id: string }[];
+      excluded_payment_types: { id: string }[];
+      installments: number;
+    } = {
+      excluded_payment_methods: [] as { id: string }[],
+      excluded_payment_types: [] as { id: string }[],
+      installments: this.config.maxInstallments,
     };
 
     // Exclude cash payments for delivery orders if configured
-    if (orderData.shippingMethod === 'delivery' && process.env.EXCLUDE_CASH_FOR_DELIVERY === 'true') {
+    if (
+      orderData.shippingMethod === ShippingMethod.DELIVERY &&
+      process.env.EXCLUDE_CASH_FOR_DELIVERY === 'true'
+    ) {
       config.excluded_payment_types.push({ id: 'cash' });
     }
 
     // Exclude specific payment methods if configured
     const excludedMethods = process.env.EXCLUDED_PAYMENT_METHODS;
     if (excludedMethods) {
-      excludedMethods.split(',').forEach(method => {
+      excludedMethods.split(',').forEach((method) => {
         config.excluded_payment_methods.push({ id: method.trim() });
       });
     }
@@ -238,17 +294,15 @@ class PreferenceBuilder {
 
   /**
    * Build expiration date from (now)
-   * @returns {string} ISO date string
    */
-  buildExpirationFrom() {
+  private buildExpirationFrom(): string {
     return new Date().toISOString();
   }
 
   /**
    * Build expiration date to (now + configured minutes)
-   * @returns {string} ISO date string
    */
-  buildExpirationTo() {
+  private buildExpirationTo(): string {
     const expirationDate = new Date();
     expirationDate.setMinutes(expirationDate.getMinutes() + this.config.expirationMinutes);
     return expirationDate.toISOString();
@@ -256,10 +310,9 @@ class PreferenceBuilder {
 
   /**
    * Build metadata for tracking and analytics
-   * @param {Object} orderData - Order information
-   * @returns {Object} Metadata object
    */
-  buildMetadata(orderData) {
+  // @ts-ignore - Future implementation placeholder
+  private _buildMetadata(orderData: ExtendedOrderData): Record<string, any> {
     return {
       order_id: orderData.id,
       order_number: orderData.orderNumber,
@@ -269,36 +322,42 @@ class PreferenceBuilder {
       total_quantity: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
       created_at: new Date().toISOString(),
       platform: 'mobile_app',
-      version: process.env.APP_VERSION || '1.0.0'
+      version: process.env.APP_VERSION || '1.0.0',
     };
   }
 
   /**
    * Build additional information for analytics and processing
-   * @param {Object} orderData - Order information
-   * @returns {Object} Additional info object
    */
-  buildAdditionalInfo(orderData) {
-    return {
+  private buildAdditionalInfo(orderData: ExtendedOrderData): Record<string, any> | null {
+    const user = orderData.user as ExtendedOrderUser;
+
+    const additionalInfo: Record<string, any> = {
       payer: {
-        first_name: orderData.user.firstName,
-        last_name: orderData.user.lastName,
-        registration_date: orderData.user.createdAt
+        first_name: user.firstName,
+        last_name: user.lastName,
       },
-      shipments: {
-        receiver_address: this.buildShipmentAddress(orderData)
-      },
-      items: this.buildAdditionalItemInfo(orderData.items)
+      items: this.buildAdditionalItemInfo(orderData.items),
     };
+
+    if (user.createdAt) {
+      additionalInfo.payer.registration_date = user.createdAt;
+    }
+
+    if (orderData.shippingAddress || orderData.pickupLocation) {
+      additionalInfo.shipments = {
+        receiver_address: this.buildShipmentAddress(orderData),
+      };
+    }
+
+    return additionalInfo;
   }
 
   /**
    * Build shipment address information
-   * @param {Object} orderData - Order information
-   * @returns {Object} Shipment address object
    */
-  buildShipmentAddress(orderData) {
-    if (orderData.shippingMethod === 'pickup') {
+  private buildShipmentAddress(orderData: ExtendedOrderData): Record<string, any> {
+    if (orderData.shippingMethod === ShippingMethod.PICKUP) {
       const pickup = orderData.pickupLocation;
       return {
         street_name: pickup?.address || 'Tienda Tifossi',
@@ -306,7 +365,7 @@ class PreferenceBuilder {
         zip_code: pickup?.zipCode || '11000',
         city_name: pickup?.city || 'Montevideo',
         state_name: pickup?.department || 'Montevideo',
-        country_name: 'Uruguay'
+        country_name: 'Uruguay',
       };
     } else {
       const address = orderData.shippingAddress;
@@ -315,33 +374,33 @@ class PreferenceBuilder {
         street_number: this.extractStreetNumber(address.number),
         zip_code: address.zipCode || '11000',
         city_name: address.city,
-        state_name: address.department,
-        country_name: 'Uruguay'
+        state_name: address.state || 'Montevideo',
+        country_name: address.country || 'Uruguay',
       };
     }
   }
 
   /**
    * Build additional item information
-   * @param {Array} items - Order items
-   * @returns {Array} Additional item info
    */
-  buildAdditionalItemInfo(items) {
-    return items.map(item => ({
-      id: item.productId,
-      title: item.productName,
-      description: item.description,
-      picture_url: item.imageUrl,
-      category_id: item.categoryId,
-      warranty: item.warranty || 'Garantía estándar Tifossi'
-    }));
+  private buildAdditionalItemInfo(items: OrderItem[]): Record<string, any>[] {
+    return items.map((item) => {
+      const extendedItem = item as ExtendedOrderItem;
+      return {
+        id: extendedItem.productId,
+        title: extendedItem.productName,
+        description: extendedItem.description,
+        picture_url: extendedItem.imageUrl,
+        category_id: extendedItem.categoryId,
+        warranty: extendedItem.warranty || 'Garantía estándar Tifossi',
+      };
+    });
   }
 
   /**
    * Validate order data before building preference
-   * @param {Object} orderData - Order information
    */
-  validateOrderData(orderData) {
+  private validateOrderData(orderData: ExtendedOrderData): void {
     // Required fields
     if (!orderData.orderNumber) {
       throw new Error('Order number is required');
@@ -377,19 +436,23 @@ class PreferenceBuilder {
     });
 
     // Validate shipping method
-    if (!['delivery', 'pickup'].includes(orderData.shippingMethod)) {
+    if (!Object.values(ShippingMethod).includes(orderData.shippingMethod)) {
       throw new Error('Invalid shipping method');
     }
 
     // Validate shipping address for delivery orders
-    if (orderData.shippingMethod === 'delivery') {
-      if (!orderData.shippingAddress || !orderData.shippingAddress.street || !orderData.shippingAddress.city) {
+    if (orderData.shippingMethod === ShippingMethod.DELIVERY) {
+      if (
+        !orderData.shippingAddress ||
+        !orderData.shippingAddress.street ||
+        !orderData.shippingAddress.city
+      ) {
         throw new Error('Shipping address is required for delivery orders');
       }
     }
 
     // Validate pickup location for pickup orders
-    if (orderData.shippingMethod === 'pickup') {
+    if (orderData.shippingMethod === ShippingMethod.PICKUP) {
       if (!orderData.pickupLocation || !orderData.pickupLocation.id) {
         throw new Error('Pickup location is required for pickup orders');
       }
@@ -398,69 +461,58 @@ class PreferenceBuilder {
 
   /**
    * Sanitize string for MercadoPago requirements
-   * @param {string} str - String to sanitize
-   * @param {number} maxLength - Maximum length
-   * @returns {string} Sanitized string
    */
-  sanitizeString(str, maxLength) {
+  private sanitizeString(str: string | undefined, maxLength: number): string {
     if (!str) return '';
-    
+
     // Remove special characters that might cause issues
     const sanitized = str.replace(/[<>'"&]/g, '').trim();
-    
+
     // Truncate if too long
     return sanitized.length > maxLength ? sanitized.substring(0, maxLength) : sanitized;
   }
 
   /**
    * Sanitize phone number
-   * @param {string} phone - Phone number to sanitize
-   * @returns {string} Sanitized phone number
    */
-  sanitizePhoneNumber(phone) {
+  private sanitizePhoneNumber(phone: string | undefined): string {
     if (!phone) return '';
-    
+
     // Remove all non-digit characters
     return phone.replace(/\D/g, '');
   }
 
   /**
    * Extract street number from address
-   * @param {string|number} numberStr - Street number string
-   * @returns {number} Street number or 1 if not found
    */
-  extractStreetNumber(numberStr) {
+  private extractStreetNumber(numberStr: string | number | undefined): number {
     if (!numberStr) return 1;
-    
+
     const num = parseInt(String(numberStr).replace(/\D/g, ''));
     return isNaN(num) || num <= 0 ? 1 : num;
   }
 
   /**
    * Format price to ensure correct decimal places
-   * @param {number|string} price - Price to format
-   * @returns {number} Formatted price
    */
-  formatPrice(price) {
-    const numPrice = parseFloat(price);
+  private formatPrice(price: number | string): number {
+    const numPrice = parseFloat(String(price));
     if (isNaN(numPrice)) {
       throw new Error('Invalid price format');
     }
-    
+
     // Round to 2 decimal places
     return Math.round(numPrice * 100) / 100;
   }
 
   /**
    * Calculate total amount from order data
-   * @param {Object} orderData - Order information
-   * @returns {number} Total amount
    */
-  calculateTotal(orderData) {
+  calculateTotal(orderData: ExtendedOrderData): number {
     let total = 0;
 
     // Add item costs
-    orderData.items.forEach(item => {
+    orderData.items.forEach((item) => {
       total += item.quantity * item.price;
     });
 
@@ -479,33 +531,37 @@ class PreferenceBuilder {
 
   /**
    * Build minimal preference for testing
-   * @param {string} externalReference - External reference for test
-   * @returns {Object} Minimal test preference
    */
-  buildTestPreference(externalReference) {
+  buildTestPreference(externalReference: string): MPPreferenceRequest {
     return {
-      items: [{
-        id: 'test_item',
-        title: 'Test Item',
-        quantity: 1,
-        unit_price: 100,
-        currency_id: this.config.currency
-      }],
+      items: [
+        {
+          id: 'test_item',
+          title: 'Test Item',
+          quantity: 1,
+          unit_price: 100,
+          currency_id: 'UYU',
+        },
+      ],
       external_reference: externalReference,
-      description: 'Test Preference',
+      payer: {
+        name: 'Test',
+        surname: 'User',
+        email: 'test@example.com',
+      },
       back_urls: {
         success: `${this.appScheme}://test/success`,
         failure: `${this.appScheme}://test/failure`,
-        pending: `${this.appScheme}://test/pending`
+        pending: `${this.appScheme}://test/pending`,
       },
       notification_url: this.buildNotificationUrl(),
       auto_return: this.config.autoReturn,
       binary_mode: false,
       expires: true,
       expiration_date_from: this.buildExpirationFrom(),
-      expiration_date_to: this.buildExpirationTo()
+      expiration_date_to: this.buildExpirationTo(),
     };
   }
 }
 
-module.exports = PreferenceBuilder;
+export default PreferenceBuilder;

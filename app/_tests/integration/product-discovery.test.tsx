@@ -11,28 +11,18 @@ import { useProductStore } from '../../_stores/productStore';
 import { useSearch } from '../../../hooks/useSearch';
 import { useProductFilters } from '../../../hooks/useProductFilters';
 import { productMockData } from '../mocks/data/products';
-import { CATEGORY_IDS, MODEL_IDS } from '../../_types/constants';
+import { CATEGORY_IDS } from '../../_types/constants';
 import { ProductStatus, hasStatus } from '../../_types/product-status';
 import httpClient from '../../_services/api/httpClient';
 
-const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:1337';
-
 // Helper component that simulates the catalog screen with all discovery features
 function ProductDiscoveryScreen() {
-  const {
-    products,
-    fetchProducts,
-    isLoading,
-    error,
-    searchProducts,
-    filterProductsByCategory,
-    refreshProducts,
-  } = useProductStore();
+  const { products, fetchProducts, isLoading, error, filterProductsByCategory, refreshProducts } =
+    useProductStore();
 
   const { searchTerm, setSearchTerm, searchResults, hasSearched } = useSearch();
 
   const [selectedCategory, setSelectedCategory] = React.useState<string>(CATEGORY_IDS.ALL);
-  const [selectedModel, setSelectedModel] = React.useState<string>(MODEL_IDS.ALL);
   const [appliedFilters, setAppliedFilters] = React.useState({
     sizes: [] as string[],
     colorHexes: [] as string[],
@@ -50,7 +40,7 @@ function ProductDiscoveryScreen() {
 
   React.useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   const handleSizeFilter = (size: string) => {
     setAppliedFilters((prev) => ({
@@ -359,10 +349,9 @@ const setupHttpClientMocks = () => {
   // Default successful response with transformed products
   const defaultProducts = mockDataWithStatuses.map(transformMockToStrapi);
 
-  (httpClient.get as jest.Mock).mockImplementation((url: string, options?: any) => {
+  (httpClient.get as jest.Mock).mockImplementation((url: string, _options?: any) => {
     // Parse endpoint
     if (url === '/products') {
-      const params = options?.params || {};
       let products = [...defaultProducts];
 
       // Apply filters based on params
@@ -580,7 +569,7 @@ describe('Product Discovery Integration', () => {
     });
 
     it('should filter by status-based categories (featured, new)', async () => {
-      const { getByTestId, getAllByTestId, queryAllByTestId } = render(<ProductDiscoveryScreen />);
+      const { getByTestId, getAllByTestId } = render(<ProductDiscoveryScreen />);
 
       // Wait for products to load
       await waitFor(() => {
@@ -712,7 +701,7 @@ describe('Product Discovery Integration', () => {
     });
 
     it('should combine multiple filters', async () => {
-      const { getByTestId, getAllByTestId } = render(<ProductDiscoveryScreen />);
+      const { getByTestId } = render(<ProductDiscoveryScreen />);
 
       // Wait for products to load
       await waitFor(() => {
@@ -759,7 +748,7 @@ describe('Product Discovery Integration', () => {
     });
 
     it('should filter out products with no available sizes when size filter is applied', async () => {
-      const { getByTestId, queryByTestId } = render(<ProductDiscoveryScreen />);
+      const { getByTestId } = render(<ProductDiscoveryScreen />);
 
       // Wait for products to load
       await waitFor(() => {

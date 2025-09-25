@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -6,56 +6,78 @@ import {
   ImageSourcePropType,
   Animated,
   Dimensions,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { colors } from '../../../../../_styles/colors';
 
 interface ProductViewGalleryProps {
-  /**
-   * Array of product images to display in the gallery
-   */
+  /** Array of product images to display in the gallery */
   images: ImageSourcePropType[];
-  /**
-   * Optional callback when image is pressed
-   */
+  /** Optional callback when image is pressed */
   onImagePress?: (index: number) => void;
+  /** Currently active image index for indicator support */
+  activeIndex?: number;
+  /** Notify parent when visible image changes (after scroll) */
+  onActiveIndexChange?: (index: number) => void;
+  /** Optional testID override for the ScrollView */
+  testID?: string;
+}
+
+function resolveImageSource(image: ImageSourcePropType) {
+  if (typeof image === 'string') {
+    return { uri: image };
+  }
+  return image;
 }
 
 /**
- * ProductViewGallery displays multiple product images in a vertical scrollable gallery
+ * ProductViewGallery displays multiple product images in a horizontal, paging-enabled gallery.
  */
-function ProductViewGallery({ images, onImagePress }: ProductViewGalleryProps) {
-  // Track which image is being zoomed
-  const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
-
-  // Get window width for responsive image sizing
+function ProductViewGallery({
+  images,
+  onImagePress,
+  activeIndex = 0,
+  onActiveIndexChange,
+  testID,
+}: ProductViewGalleryProps) {
   const { width } = Dimensions.get('window');
 
-  // Handle image press
-  const handleImagePress = (index: number) => {
-    setActiveImageIndex(index === activeImageIndex ? null : index);
-
-    // Call the provided callback if any
-    if (onImagePress) {
-      onImagePress(index);
+  const handleMomentumScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset } = event.nativeEvent;
+    const index = Math.round(contentOffset.x / width);
+    if (onActiveIndexChange) {
+      onActiveIndexChange(index);
     }
+  };
+
+  const handleImagePress = (index: number) => {
+    onImagePress?.(index);
   };
 
   return (
     <ScrollView
+      horizontal
+      pagingEnabled
+      showsHorizontalScrollIndicator={false}
       style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={true}
+      contentContainerStyle={[styles.content, { width: width * Math.max(images.length, 1) }]}
+      onMomentumScrollEnd={handleMomentumScrollEnd}
+      scrollEventThrottle={16}
+      testID={testID}
     >
-      {/* Display each product image in sequence */}
       {images.map((image, index) => (
         <Pressable
           key={`product-view-${index}`}
-          style={[styles.imageWrapper, { width, height: width }]}
+          testID={`gallery-image-${index}`}
+          style={[styles.imageWrapper, { width }]}
           onPress={() => handleImagePress(index)}
+          accessibilityRole="imagebutton"
+          accessibilityState={{ selected: activeIndex === index }}
         >
           <Animated.Image
-            source={image}
-            style={[styles.image, activeImageIndex === index && styles.activeImage]}
+            source={resolveImageSource(image)}
+            style={[styles.image, activeIndex === index && styles.activeImage]}
             resizeMode="cover"
           />
         </Pressable>
@@ -66,31 +88,29 @@ function ProductViewGallery({ images, onImagePress }: ProductViewGalleryProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 0,
     backgroundColor: colors.background.light,
   },
   content: {
-    flexDirection: 'column',
+    flexDirection: 'row',
   },
   imageWrapper: {
     overflow: 'hidden',
+    height: Dimensions.get('window').width,
   },
   image: {
     width: '100%',
     height: '100%',
   },
   activeImage: {
-    // Add a subtle highlight effect when image is active/selected
-    opacity: 0.9,
+    opacity: 0.95,
     borderWidth: 2,
     borderColor: colors.primary,
   },
 });
 
-// Export component
 export default ProductViewGallery;
 
-// Metadata for the router (export to satisfy the linter)
 export const componentExport = {
   name: 'ProductViewGallery',
   version: '1.0.0',

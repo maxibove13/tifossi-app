@@ -120,7 +120,7 @@ export function transformProducts(strapiProducts: StrapiProductEntity[]): Produc
  * Transform Strapi category to mobile app format
  */
 export function transformCategory(strapiCategory: StrapiCategoryEntity) {
-  const { id, attributes } = strapiCategory;
+  const { id: _id, attributes } = strapiCategory;
 
   return {
     id: attributes.slug,

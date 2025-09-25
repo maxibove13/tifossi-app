@@ -148,7 +148,7 @@ export async function preloadHomeAssets(allProducts?: Product[]) {
       newReleases,
       launchAndOpportunityProducts,
     };
-  } catch (error) {
+  } catch {
     // Return empty data as fallback
     return {
       featuredProduct: null,

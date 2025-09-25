@@ -58,7 +58,7 @@ export const loadCriticalData = async (
       trendingProducts: [], // Will be loaded when needed
       categoryModelMap, // Pre-computed category-model relationships
     };
-  } catch (error) {
+  } catch {
     // Return empty data on error
     return {
       featuredProducts: [],

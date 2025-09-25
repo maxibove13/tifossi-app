@@ -16,7 +16,7 @@ function ProductListWithCart() {
 
   React.useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   if (isLoading) {
     return <View testID="loading" />;
@@ -111,7 +111,7 @@ describe('Add-to-Cart Integration Flow', () => {
 
   describe('Complete User Journey', () => {
     it('should complete full add-to-cart flow from product list to cart', async () => {
-      const { getByTestId, getByText } = render(<ProductListWithCart />);
+      const { getByTestId } = render(<ProductListWithCart />);
 
       // Wait for products to load
       await waitFor(() => {
@@ -310,7 +310,7 @@ describe('Add-to-Cart Integration Flow', () => {
       //   })
       // );
 
-      const { getByTestId, getByText } = render(<ProductListWithCart />);
+      const { getByTestId } = render(<ProductListWithCart />);
 
       await waitFor(() => {
         expect(getByTestId('products-container')).toBeTruthy();
@@ -378,7 +378,7 @@ describe('Add-to-Cart Integration Flow', () => {
       //   })
       // );
 
-      const { getByTestId, getByText } = render(<ProductListWithCart />);
+      const { getByTestId } = render(<ProductListWithCart />);
 
       await waitFor(() => {
         expect(getByTestId('products-container')).toBeTruthy();

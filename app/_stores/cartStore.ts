@@ -8,6 +8,8 @@ export interface CartItem {
   quantity: number;
   color?: string;
   size?: string;
+  price?: number;
+  discountedPrice?: number;
 }
 
 // Setup MMKV storage
@@ -51,6 +53,13 @@ interface CartState {
   fetchUserCart: () => Promise<void>;
   clearError: () => void;
 
+  // Calculation methods
+  getTotalPrice: () => number;
+  getTotalItems: () => number;
+  getTotalQuantity: () => number;
+  getSubtotal: () => number;
+  getDiscountTotal: () => number;
+
   // Test utility methods
   setItems: (items: CartItem[]) => void;
 }
@@ -74,9 +83,17 @@ export const useCartStore = create<CartState>()(
         try {
           set({ isLoading: true, error: null });
           const response = await httpClient.get('/cart');
-          const items = response.data || [];
+
+          const items = Array.isArray(response)
+            ? response
+            : Array.isArray(response?.cart)
+              ? response.cart
+              : Array.isArray(response?.data)
+                ? response.data
+                : [];
+
           set({ items, isLoading: false, isGuestCart: false });
-        } catch (e) {
+        } catch {
           set({
             isLoading: false,
             error: 'Failed to fetch cart from server.',
@@ -115,7 +132,7 @@ export const useCartStore = create<CartState>()(
 
           await httpClient.post('/cart/sync', { items: get().items });
           set({ isLoading: false });
-        } catch (e) {
+        } catch {
           set({
             items: previousItems, // Revert optimistic update
             isLoading: false,
@@ -154,7 +171,7 @@ export const useCartStore = create<CartState>()(
 
           await httpClient.post('/cart/sync', { items: get().items });
           set({ isLoading: false });
-        } catch (e) {
+        } catch {
           set({
             items: previousItems,
             isLoading: false,
@@ -177,7 +194,7 @@ export const useCartStore = create<CartState>()(
           set({ isLoading: true, error: null });
           await httpClient.post('/cart/sync', { items: get().items });
           set({ isLoading: false });
-        } catch (e) {
+        } catch {
           set({
             items: previousItems,
             isLoading: false,
@@ -194,7 +211,7 @@ export const useCartStore = create<CartState>()(
           set({ isLoading: true, error: null });
           await httpClient.delete('/cart');
           set({ items: [], isLoading: false });
-        } catch (e) {
+        } catch {
           set({
             items: previousItems,
             isLoading: false,
@@ -222,7 +239,7 @@ export const useCartStore = create<CartState>()(
             isGuestCart: false,
             error: null,
           });
-        } catch (e) {
+        } catch {
           set({
             isLoading: false,
             error: 'Failed to migrate cart after login.',
@@ -233,6 +250,48 @@ export const useCartStore = create<CartState>()(
 
       clearError: () => {
         set({ error: null });
+      },
+
+      // Calculation methods
+      getTotalPrice: () => {
+        const items = get().items;
+        return items.reduce((total, item) => {
+          // Use discounted price if available, otherwise use regular price
+          const price =
+            (item as any).discountedPrice || (item as any).price || (item as any).unit_price || 0;
+          return total + price * item.quantity;
+        }, 0);
+      },
+
+      getTotalItems: () => {
+        // Alias for getTotalQuantity for backward compatibility
+        return get().getTotalQuantity();
+      },
+
+      getTotalQuantity: () => {
+        const items = get().items;
+        return items.reduce((total, item) => total + item.quantity, 0);
+      },
+
+      getSubtotal: () => {
+        const items = get().items;
+        return items.reduce((total, item) => {
+          // Use original price or price if no original price
+          const price =
+            (item as any).originalPrice || (item as any).price || (item as any).unit_price || 0;
+          return total + price * item.quantity;
+        }, 0);
+      },
+
+      getDiscountTotal: () => {
+        const items = get().items;
+        return items.reduce((total, item) => {
+          const originalPrice = (item as any).originalPrice || (item as any).price || 0;
+          const discountedPrice =
+            (item as any).discountedPrice || (item as any).price || originalPrice;
+          const discount = (originalPrice - discountedPrice) * item.quantity;
+          return total + (discount > 0 ? discount : 0);
+        }, 0);
       },
 
       // Test utility methods

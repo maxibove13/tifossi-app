@@ -22,8 +22,9 @@ export const colors = {
     light: '#FFFFFF',
     dark: '#0C0C0C',
     overlay: 'rgba(251, 251, 251, 0.25)',
-    gradient: ['rgba(12, 12, 12, 0.95)', 'rgba(12, 12, 12, 1)'] as const
+    gradient: ['rgba(12, 12, 12, 0.95)', 'rgba(12, 12, 12, 1)'] as const,
   },
+  error: '#AD3026',
 };
 
 export const spacing = {
@@ -80,7 +81,7 @@ const stylesExport = {
   colors,
   spacing,
   radius,
-  typography
+  typography,
 };
 
 export default stylesExport;

@@ -82,14 +82,14 @@ class DeepLinkHandler {
       if (initialUrl) {
         this.processPaymentCallbackLegacy(initialUrl);
       }
-    } catch (error) {}
+    } catch {}
   }
 
   /**
    * Process payment callback from deep link
    * This is the main method called by the unified DeepLinkRouter
    */
-  processPaymentCallback(url: string, params: Record<string, any>) {
+  processPaymentCallback(url: string, _params: Record<string, any>) {
     try {
       const parsedResult = mercadoPagoService.parsePaymentCallback(url);
 
@@ -135,7 +135,7 @@ class DeepLinkHandler {
       } else {
         this.handleFailureCallback(parsedResult, callbackData);
       }
-    } catch (error) {
+    } catch {
       this.options.onInvalidLink?.(url);
     }
   }
@@ -148,8 +148,10 @@ class DeepLinkHandler {
       // Verify payment status with backend if we have payment ID
       if (result.paymentId) {
         try {
-          const verificationResult = await mercadoPagoService.verifyPaymentStatus(result.paymentId);
-        } catch (error) {
+          const _verificationResult = await mercadoPagoService.verifyPaymentStatus(
+            result.paymentId
+          );
+        } catch {
           // Continue with callback processing even if verification fails
         }
       }
@@ -162,7 +164,7 @@ class DeepLinkHandler {
         action: 'payment-success',
         data: { result, callbackData },
       };
-    } catch (error: any) {
+    } catch {
       return this.handleFailureCallback(result, callbackData);
     }
   }
@@ -217,7 +219,7 @@ class DeepLinkHandler {
         paymentType: params.payment_type as string,
         merchantOrderId: params.merchant_order_id as string,
       };
-    } catch (error) {
+    } catch {
       return {};
     }
   }
@@ -229,7 +231,7 @@ class DeepLinkHandler {
     try {
       const urlObj = new URL(url);
       return urlObj.pathname?.includes('/payment/') || false;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -248,7 +250,7 @@ class DeepLinkHandler {
       }
 
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }

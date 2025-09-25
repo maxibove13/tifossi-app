@@ -12,7 +12,7 @@ import Button from '../_components/ui/buttons/Button';
 import Dropdown from '../_components/ui/form/Dropdown';
 import ProductData, { getProductById, products } from '../_data/products';
 import { useCartStore } from '../_stores/cartStore';
-import { useProducts } from '../_services/api/queryHooks';
+import { useProductStore } from '../_stores/productStore';
 import { hasStatus, ProductStatus } from '../_types/product-status';
 import OverlayProductEdit from '../_components/store/product/overlay/OverlayProductEdit';
 import { useAuthStore } from '../_stores/authStore';
@@ -43,8 +43,13 @@ interface CartDisplayItem extends Product {
 }
 
 export default function CartScreen() {
-  // Get all products from API
-  const { data: allProducts = [], isLoading: productsLoading } = useProducts();
+  // Get all products from store
+  const { products: allProducts, isLoading: productsLoading, fetchProducts } = useProductStore();
+
+  // Fetch products on mount
+  React.useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   // Get auth state
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -62,6 +67,9 @@ export default function CartScreen() {
   const updateItemQuantity = useCartStore((state) => state.updateItemQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const addItem = useCartStore((state) => state.addItem);
+  const getTotalPrice = useCartStore((state) => state.getTotalPrice);
+  const getSubtotal = useCartStore((state) => state.getSubtotal);
+  const getDiscountTotal = useCartStore((state) => state.getDiscountTotal);
 
   // State for edit overlay
   const [isEditOverlayVisible, setIsEditOverlayVisible] = useState(false);
@@ -133,6 +141,8 @@ export default function CartScreen() {
         quantity: newQuantity,
         size: newSize,
         color: editingItem.color,
+        price: editingItem.price,
+        discountedPrice: editingItem.discountedPrice,
       });
     }
     setIsEditOverlayVisible(false);
@@ -148,15 +158,11 @@ export default function CartScreen() {
   };
 
   const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return getSubtotal();
   };
 
   const calculateDiscountTotal = () => {
-    return cartItems.reduce((sum, item) => {
-      const regularPrice = item.price * item.quantity;
-      const discountedPrice = (item.discountedPrice || item.price) * item.quantity;
-      return sum + (regularPrice - discountedPrice);
-    }, 0);
+    return getDiscountTotal();
   };
 
   const hasDiscountedItems = () => {
@@ -232,9 +238,7 @@ export default function CartScreen() {
               </View>
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text style={styles.totalLabel}>Total a pagar</Text>
-                <Text style={styles.totalValue}>
-                  ${(calculateTotal() - calculateDiscountTotal()).toFixed(2)}
-                </Text>
+                <Text style={styles.totalValue}>${getTotalPrice().toFixed(2)}</Text>
               </View>
             </View>
 
@@ -279,9 +283,7 @@ export default function CartScreen() {
           {/* Total row */}
           <View style={styles.checkoutTotalRow}>
             <Text style={styles.checkoutTotalLabel}>Total</Text>
-            <Text style={styles.checkoutTotalValue}>
-              ${(calculateTotal() - calculateDiscountTotal()).toFixed(2)}
-            </Text>
+            <Text style={styles.checkoutTotalValue}>${getTotalPrice().toFixed(2)}</Text>
           </View>
 
           {/* Optional Auth Prompt Text for guest users - Replaced with ReusableAuthPrompt */}

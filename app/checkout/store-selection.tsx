@@ -58,7 +58,12 @@ export default function StoreSelectionScreen() {
 
       <View style={styles.header}>
         <Text style={styles.title}>Seleccionar local</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
+        <TouchableOpacity
+          testID="store-selection-close-button"
+          style={styles.closeButton}
+          onPress={handleClose}
+          activeOpacity={0.7}
+        >
           <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
         </TouchableOpacity>
       </View>

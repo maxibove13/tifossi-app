@@ -4,6 +4,7 @@
  */
 
 import * as WebBrowser from 'expo-web-browser';
+import { endpoints } from '../../_config/endpoints';
 
 export interface OrderData {
   id?: string;
@@ -88,8 +89,8 @@ class MercadoPagoService {
   private authToken: string | null = null;
 
   constructor() {
-    // Get base URL from environment or config
-    this.baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:1337';
+    // Get base URL from centralized configuration
+    this.baseUrl = endpoints.baseUrl;
   }
 
   /**
@@ -196,8 +197,21 @@ class MercadoPagoService {
     try {
       // Parse URL using URL constructor instead of Linking.parse
       const urlObj = new URL(url);
-      const path = urlObj.pathname;
 
+      // Security: Validate URL scheme to prevent deep link hijacking
+      if (urlObj.protocol !== 'tifossi:') {
+        console.warn('[MercadoPago] Invalid deep link scheme:', urlObj.protocol);
+        return null;
+      }
+
+      // Security: Validate URL host
+      const host = urlObj.hostname || urlObj.host;
+      if (host !== 'payment') {
+        console.warn('[MercadoPago] Invalid deep link host:', host);
+        return null;
+      }
+
+      const path = urlObj.pathname;
       if (!path) {
         return null;
       }
@@ -206,6 +220,12 @@ class MercadoPagoService {
       // Format: tifossi://payment/{status}?params...
       const pathParts = path.split('/');
       const status = pathParts[pathParts.length - 1]; // 'success', 'failure', or 'pending'
+
+      // Validate status is one of expected values
+      if (!['success', 'failure', 'pending'].includes(status)) {
+        console.warn('[MercadoPago] Invalid payment status in URL:', status);
+        return null;
+      }
 
       // Convert URLSearchParams to Record<string, any>
       const params: Record<string, any> = {};

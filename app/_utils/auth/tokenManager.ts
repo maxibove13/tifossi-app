@@ -6,6 +6,7 @@
  */
 
 import * as SecureStore from 'expo-secure-store';
+import { buildUrl } from '../../_config/endpoints';
 import firebaseAuthExport from '../../_services/auth/firebaseAuth';
 const firebaseAuth = firebaseAuthExport.service;
 
@@ -37,16 +38,6 @@ export interface TokenValidation {
   error?: string;
 }
 
-// Backend API configuration
-const BACKEND_CONFIG = {
-  baseUrl: process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:1337',
-  endpoints: {
-    tokenExchange: '/api/auth/firebase-exchange',
-    refresh: '/api/auth/refresh',
-    validate: '/api/auth/validate',
-  },
-};
-
 class TokenManager {
   private refreshPromise: Promise<TokenSet> | null = null;
   private isRefreshing = false;
@@ -56,20 +47,17 @@ class TokenManager {
    */
   async exchangeFirebaseTokenForStrapi(firebaseToken: string): Promise<string> {
     try {
-      const response = await fetch(
-        `${BACKEND_CONFIG.baseUrl}${BACKEND_CONFIG.endpoints.tokenExchange}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${firebaseToken}`,
-          },
-          body: JSON.stringify({
-            firebaseToken,
-            tokenVersion: 1,
-          }),
-        }
-      );
+      const response = await fetch(buildUrl('/api/auth/firebase-exchange'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${firebaseToken}`,
+        },
+        body: JSON.stringify({
+          firebaseToken,
+          tokenVersion: 1,
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Token exchange failed' }));
@@ -108,7 +96,7 @@ class TokenManager {
         SecureStore.setItemAsync(STRAPI_TOKEN_KEY, strapiToken),
         SecureStore.setItemAsync(TOKEN_METADATA_KEY, JSON.stringify(metadata)),
       ]);
-    } catch (error) {
+    } catch {
       throw new Error('Failed to store authentication tokens');
     }
   }
@@ -128,7 +116,7 @@ class TokenManager {
       if (metadataJson) {
         try {
           metadata = JSON.parse(metadataJson);
-        } catch (error) {}
+        } catch {}
       }
 
       return {
@@ -136,7 +124,7 @@ class TokenManager {
         strapiToken,
         metadata,
       };
-    } catch (error) {
+    } catch {
       return {
         firebaseToken: null,
         strapiToken: null,
@@ -207,19 +195,16 @@ class TokenManager {
    */
   private async validateWithBackend(strapiToken: string): Promise<boolean> {
     try {
-      const response = await fetch(
-        `${BACKEND_CONFIG.baseUrl}${BACKEND_CONFIG.endpoints.validate}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${strapiToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await fetch(buildUrl('/api/auth/validate'), {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${strapiToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
       return response.ok;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -301,7 +286,7 @@ class TokenManager {
         SecureStore.deleteItemAsync(STRAPI_TOKEN_KEY),
         SecureStore.deleteItemAsync(TOKEN_METADATA_KEY),
       ]);
-    } catch (error) {
+    } catch {
       throw new Error('Failed to clear authentication tokens');
     }
   }
@@ -331,7 +316,7 @@ class TokenManager {
     try {
       const tokens = await this.getValidTokens();
       return tokens.strapiToken || tokens.firebaseToken;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -343,7 +328,7 @@ class TokenManager {
     try {
       const tokens = await this.getValidTokens();
       return tokens.firebaseToken;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -355,7 +340,7 @@ class TokenManager {
     try {
       const tokens = await this.getValidTokens();
       return tokens.strapiToken;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -381,7 +366,7 @@ class TokenManager {
         tokensValid: validation.isValid,
         lastSync: tokens.metadata?.lastSync,
       };
-    } catch (_error) {
+    } catch {
       return {
         status: 'error',
         hasFirebaseToken: false,

@@ -10,17 +10,33 @@ import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useCartStore } from '../_stores/cartStore';
 import { useFavoritesStore } from '../_stores/favoritesStore';
-import { useProduct, useProducts } from '../_services/api/queryHooks';
+import { useProductStore } from '../_stores/productStore';
+import { useEffect } from 'react';
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const productId = id as string;
 
-  // Use TanStack Query to fetch product data
-  const { data: product, isLoading: isLoadingProduct, error: productError } = useProduct(productId);
-  // Also fetch all products for related/recommended products
-  const { data: allProducts } = useProducts();
+  // Use product store to fetch and get product data
+  const {
+    products: allProducts,
+    getProductById,
+    fetchProducts,
+    fetchProductById,
+    isLoading: isLoadingProduct,
+    error: productError,
+  } = useProductStore();
+
+  // Fetch products on mount
+  useEffect(() => {
+    fetchProducts();
+    if (productId) {
+      fetchProductById(productId);
+    }
+  }, [productId, fetchProducts, fetchProductById]);
+
+  const product = getProductById(productId);
 
   // Helper functions to filter products by status
   const getProductsByStatus = (products: Product[], status: ProductStatus) => {
@@ -72,6 +88,8 @@ export default function ProductScreen() {
         quantity,
         color: selectedColor,
         size: selectedSize,
+        price: product.price,
+        discountedPrice: product.discountedPrice,
       });
 
       return Promise.resolve();
@@ -85,18 +103,18 @@ export default function ProductScreen() {
 
     try {
       await toggleFavorite(product.id);
-    } catch (error) {}
+    } catch {}
   };
 
   const handleProductPress = (productId: string) => {
     router.push(`/products/product?id=${productId}`);
   };
 
-  const handleSupportAction = (action: 'chat' | 'faq' | 'call') => {
+  const handleSupportAction = (_action: 'chat' | 'faq' | 'call') => {
     // Handle support actions
   };
 
-  const handleViewMore = (section: string) => {
+  const handleViewMore = (_section: string) => {
     // Navigate to section view
   };
 
@@ -183,7 +201,7 @@ export default function ProductScreen() {
           onSupportAction={handleSupportAction}
           onProductPress={handleProductPress}
           onToggleFavorite={handleToggleFavorite} // Pass favorite toggle handler
-          onExpandedChange={(expanded) => {}}
+          onExpandedChange={(_expanded) => {}}
           quantity={selectedQuantity}
           onQuantityChange={setSelectedQuantity}
         />

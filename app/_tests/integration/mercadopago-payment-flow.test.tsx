@@ -105,7 +105,7 @@ Follow docs/MERCADOPAGO_CREDENTIAL_SETUP.md and docs/MERCADOPAGO_TESTING_PLAN.md
   it('integrates payment store order creation with a real MercadoPago preference', async () => {
     const orderNumber = generateTestOrderReference('STORE');
 
-    const orderData = {
+    const _orderData = {
       orderNumber,
       items: [
         {

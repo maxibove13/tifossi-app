@@ -148,19 +148,19 @@ export interface ModalProps {
 export interface SelectDropdownProps {
   value: string;
   placeholder: string;
-  options: Array<{ label: string; value: string }>;
+  options: { label: string; value: string }[];
   onSelect: (value: string) => void;
 }
 
 export interface RadioGroupProps {
   value: string;
-  options: Array<{ label: string; value: string }>;
+  options: { label: string; value: string }[];
   onSelect: (value: string) => void;
 }
 
 export interface CheckboxGroupProps {
   values: string[];
-  options: Array<{ label: string; value: string }>;
+  options: { label: string; value: string }[];
   onToggle: (value: string) => void;
 }
 

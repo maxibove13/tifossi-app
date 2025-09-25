@@ -64,7 +64,7 @@ export default function OrderTracker({ orderId, onClose }: OrderTrackerProps) {
         } else {
           throw new Error('No tracking data found');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load order tracking information');
       } finally {
         setIsLoading(false);

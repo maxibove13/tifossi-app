@@ -12,7 +12,7 @@ export function testMMKV() {
     const value = mmkvInstance.getString('test-key');
 
     return value === 'MMKV is working!';
-  } catch (error) {
+  } catch {
     return false;
   }
 }

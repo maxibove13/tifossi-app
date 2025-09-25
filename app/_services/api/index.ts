@@ -16,6 +16,9 @@ export interface ApiInterface {
   // Favorites methods
   syncFavorites(productIds: string[]): Promise<boolean>;
 
+  // Store methods
+  fetchStores(): Promise<import('../../_types').StoreDetails[]>;
+
   // Authentication methods
   login(credentials: {
     email: string;

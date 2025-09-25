@@ -660,10 +660,13 @@ jest.mock('react-native-svg', () => {
   const React = require('react');
   const { View } = require('react-native');
 
-  const mockSvgComponent = (name: string) =>
-    React.forwardRef((props: any, ref: any) =>
+  const mockSvgComponent = (name: string) => {
+    const component = React.forwardRef((props: any, ref: any) =>
       React.createElement(View, { ...props, ref, testID: `${name}-mock` })
     );
+    component.displayName = `Mock${name}`;
+    return component;
+  };
 
   return {
     default: mockSvgComponent('Svg'),

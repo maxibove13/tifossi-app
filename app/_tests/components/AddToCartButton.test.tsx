@@ -11,7 +11,7 @@ import AddToCartButton from '../../_components/store/product/cart/AddToCartButto
 jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');
   return {
-    Ionicons: ({ name, size, color, ...props }: any) => (
+    Ionicons: ({ name, _size, _color, ...props }: any) => (
       <Text {...props} testID={`icon-${name}`}>
         {name}
       </Text>
@@ -76,9 +76,7 @@ describe('AddToCartButton', () => {
 
   describe('Loading States', () => {
     it('should show loading indicator when isLoading is true', () => {
-      const { queryByTestId, queryByText } = render(
-        <AddToCartButton onPress={mockOnPress} isLoading={true} />
-      );
+      const { queryByText } = render(<AddToCartButton onPress={mockOnPress} isLoading={true} />);
 
       // Loading indicator should be shown (ActivityIndicator)
       expect(queryByText('Agregar al carrito')).toBeNull();

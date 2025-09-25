@@ -350,9 +350,7 @@ describe('Store Selection Flow - Integration', () => {
       fireEvent.press(getByText('Confirmar'));
       expect(mockPush).toHaveBeenCalledWith('/checkout/payment-selection');
 
-      // Verify store selection is saved
-      const paymentStore = usePaymentStore.getState();
-      // Note: In real implementation, this should be set by the component
+      // Note: In real implementation, store selection should be saved
       // Currently it's not implemented in the component code
     });
   });

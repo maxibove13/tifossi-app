@@ -14,6 +14,7 @@ import orderService from '../../_services/order/orderService';
 import addressService from '../../_services/address/addressService';
 import mercadoPagoService from '../../_services/payment/mercadoPago';
 import { productMockData } from '../mocks/data/products';
+import type { AxiosRequestConfig } from 'axios';
 
 type HttpClientMock = jest.Mocked<typeof httpClient>;
 
@@ -185,7 +186,7 @@ describe('Complete Purchase Flow - Revenue Critical', () => {
       setupAuthenticatedUser();
 
       // Step 1: Load products
-      const { products, fetchProducts } = useProductStore.getState();
+      const { fetchProducts } = useProductStore.getState();
       await act(async () => {
         await fetchProducts();
       });
@@ -238,7 +239,6 @@ describe('Complete Purchase Flow - Revenue Critical', () => {
 
       // Step 5: Select delivery method
       const deliveryMethod = 'delivery'; // or 'pickup'
-      const deliveryFee = 150; // UYU
 
       // Step 6: Initialize payment with MercadoPago
       enqueueOrderSuccess();
@@ -544,19 +544,21 @@ describe('Complete Purchase Flow - Revenue Critical', () => {
       expect(productState.products).toHaveLength(0);
 
       // Mock successful response for retry
-      httpClientMock.get.mockImplementationOnce(async (url: string, config?: unknown) => {
-        if (url === '/products') {
-          return {
-            data: productMockData.slice(0, 5).map((product) => ({
-              id: product.id,
-              attributes: product.attributes,
-            })),
-            meta: { pagination: { total: 5 } },
-          };
-        }
+      httpClientMock.get.mockImplementationOnce(
+        async (url: string, config?: AxiosRequestConfig) => {
+          if (url === '/products') {
+            return {
+              data: productMockData.slice(0, 5).map((product) => ({
+                id: product.id,
+                attributes: product.attributes,
+              })),
+              meta: { pagination: { total: 5 } },
+            };
+          }
 
-        return defaultHttpGet ? defaultHttpGet(url, config) : Promise.resolve({ data: [] });
-      });
+          return defaultHttpGet ? defaultHttpGet(url, config) : Promise.resolve({ data: [] });
+        }
+      );
 
       // Retry should work
       await act(async () => {

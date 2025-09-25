@@ -43,21 +43,21 @@ class ErrorReportingService {
   /**
    * Report a crash (fatal error)
    */
-  async reportCrash(report: CrashReport): Promise<void> {
+  async reportCrash(_report: CrashReport): Promise<void> {
     try {
       // In a real app, you would send this to a crash reporting service
       // For now, we just log it
-    } catch (err) {}
+    } catch {}
   }
 
   /**
    * Report a non-fatal error
    */
-  async reportError(report: ErrorReport): Promise<void> {
+  async reportError(_report: ErrorReport): Promise<void> {
     try {
       // In a real app, you would send this to an error reporting service
       // For now, we just log it
-    } catch (err) {}
+    } catch {}
   }
 
   /**

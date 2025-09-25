@@ -7,6 +7,7 @@ import httpClient from '../../_services/api/httpClient';
 import orderService from '../../_services/order/orderService';
 import mercadoPagoService from '../../_services/payment/mercadoPago';
 import type { Address } from '../../_services/address/addressService';
+import type { AxiosRequestConfig } from 'axios';
 
 type HttpClientMock = jest.Mocked<typeof httpClient>;
 
@@ -170,7 +171,7 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
     mockRouter.replace.mockReset();
 
     if (defaultHttpGet) {
-      httpClientMock.get.mockImplementation((url: string, config?: unknown) => {
+      httpClientMock.get.mockImplementation((url: string, config?: AxiosRequestConfig) => {
         if (url === '/users/me/addresses') {
           return Promise.resolve({ addresses: [defaultSelectedAddress] });
         }
@@ -436,9 +437,6 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
 
       render(<PaymentSelectionScreen />);
 
-      const createOrderSpy = jest.spyOn(orderService, 'createOrderWithPayment');
-      const initiatePaymentSpy = jest.spyOn(mercadoPagoService, 'initiatePayment');
-
       await selectMercadoPagoOption();
       await waitForSelectedAddress();
       await tapContinue();
@@ -595,7 +593,7 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
 
   describe('Error Handling', () => {
     it('should handle address loading failure gracefully', async () => {
-      httpClientMock.get.mockImplementationOnce((url: string, config?: unknown) => {
+      httpClientMock.get.mockImplementationOnce((url: string, config?: AxiosRequestConfig) => {
         if (url.startsWith('/users/me/addresses/')) {
           return Promise.reject(new Error('Address not found'));
         }

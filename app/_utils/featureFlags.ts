@@ -458,7 +458,7 @@ class FeatureFlagManager {
       // Implementation would fetch from remote config service
       // For now, this is a placeholder
       this.lastFetchTime = now;
-    } catch (error) {}
+    } catch {}
   }
 
   /**

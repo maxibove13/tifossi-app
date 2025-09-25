@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Pressable,
   SafeAreaView,
   ScrollView,
   ViewStyle,
@@ -13,7 +14,7 @@ import {
   ImageSourcePropType,
   Alert,
 } from 'react-native';
-import { router, useLocalSearchParams, Stack } from 'expo-router';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import CloseIcon from '../../assets/icons/close.svg';
 import RadioButton from '../_components/ui/form/RadioButton';
 
@@ -42,19 +43,16 @@ interface PaymentMethod {
 export default function PaymentSelectionScreen() {
   const params = useLocalSearchParams();
   const { selectedAddressId } = params;
+  const navigation = useRouter();
 
   // Store hooks
   const { items: cartItems } = useCartStore();
   const { user, token } = useAuthStore();
-  const {
-    createOrder: _createOrder,
-    initiatePayment: _initiatePayment,
-    currentOrder: _currentOrder,
-    paymentStatus,
-    isLoading,
-    error,
-    clearCurrentPayment,
-  } = usePaymentStore();
+  const isLoading = usePaymentStore((state) => state.isLoading);
+  const error = usePaymentStore((state) => state.error);
+  const setCurrentOrder = usePaymentStore((state) => state.setCurrentOrder);
+  const clearPaymentState = usePaymentStore((state) => state.clearPaymentState);
+  const setLoading = usePaymentStore((state) => state.setLoading);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -68,7 +66,7 @@ export default function PaymentSelectionScreen() {
           addressService.setAuthToken(token);
           const address = await addressService.getAddressById(selectedAddressId as string);
           setSelectedAddress(address);
-        } catch (error) {
+        } catch {
           // Error is handled by Alert, no need for console logging in production
           Alert.alert('Error', 'No pudimos cargar la dirección de envío.');
         }
@@ -93,22 +91,19 @@ export default function PaymentSelectionScreen() {
     };
   }, []);
 
-  // Handle payment status changes
+  // Clear payment state when leaving screen
+  useEffect(() => {
+    return () => {
+      clearPaymentState();
+    };
+  }, [clearPaymentState]);
+
+  // Surface store-level errors
   useEffect(() => {
     if (error) {
       Alert.alert('Error de pago', error);
     }
   }, [error]);
-
-  // Clear payment state when leaving screen
-  useEffect(() => {
-    return () => {
-      if (paymentStatus === 'error') {
-        clearCurrentPayment();
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // clearCurrentPayment and paymentStatus are intentionally omitted - cleanup only on unmount
 
   // Default payment methods
   const defaultPaymentMethods: PaymentMethod[] = [
@@ -160,7 +155,7 @@ export default function PaymentSelectionScreen() {
 
   const handleBack = () => {
     // Navigate back to the shipping address screen
-    router.back();
+    navigation.back();
   };
 
   const handleSave = async () => {
@@ -173,7 +168,7 @@ export default function PaymentSelectionScreen() {
       Alert.alert(
         'Método de pago',
         `${getPaymentMethodName(selectedPaymentMethod)} será implementado próximamente.`,
-        [{ text: 'OK', onPress: () => router.navigate('/(tabs)') }]
+        [{ text: 'OK', onPress: () => navigation.navigate('/(tabs)') }]
       );
     }
   };
@@ -196,6 +191,7 @@ export default function PaymentSelectionScreen() {
       }
 
       setIsProcessingPayment(true);
+      setLoading(true);
 
       // Set auth tokens for services
       orderService.setAuthToken(token);
@@ -227,6 +223,9 @@ export default function PaymentSelectionScreen() {
       const result = await orderService.createOrderWithPayment(orderRequest, userData);
 
       if (result.success && result.paymentUrl) {
+        // Store order info for display in payment result screen
+        setCurrentOrder(result.order?.orderNumber || null, result.order?.id || null);
+
         // Open MercadoPago payment page
         const preference = {
           id: result.order?.id || '',
@@ -259,6 +258,7 @@ export default function PaymentSelectionScreen() {
       Alert.alert('Error de Pago', errorMessage);
     } finally {
       setIsProcessingPayment(false);
+      setLoading(false);
     }
   };
 
@@ -274,15 +274,24 @@ export default function PaymentSelectionScreen() {
 
   const handleClose = () => {
     // Navigate back to the product screen or wherever the flow started
-    router.navigate('/(tabs)');
+    navigation.navigate('/(tabs)');
   };
 
   const renderPaymentMethod = (method: PaymentMethod) => (
-    <TouchableOpacity
+    <Pressable
       key={method.id}
-      style={[styles.paymentMethodItem, !method.enabled && styles.disabledPaymentMethod]}
+      style={({ pressed }) => [
+        styles.paymentMethodItem,
+        pressed && method.enabled !== false && styles.pressedPaymentMethod,
+        method.enabled === false && styles.disabledPaymentMethod,
+      ]}
       onPress={() => handlePaymentMethodSelect(method.id)}
-      activeOpacity={0.7}
+      testID={`payment-method-${method.id}`}
+      accessibilityRole="button"
+      accessibilityState={{
+        disabled: method.enabled === false,
+        selected: selectedPaymentMethod === method.id,
+      }}
     >
       <View style={styles.paymentMethodInfo}>
         <Image source={method.icon} style={styles.paymentIcon} resizeMode="contain" />
@@ -292,7 +301,7 @@ export default function PaymentSelectionScreen() {
         {!method.enabled && <Text style={styles.comingSoonText}>Próximamente</Text>}
       </View>
       <RadioButton selected={selectedPaymentMethod === method.id} disabled={!method.enabled} />
-    </TouchableOpacity>
+    </Pressable>
   );
 
   return (
@@ -306,7 +315,14 @@ export default function PaymentSelectionScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Método de pago</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={handleClose}
+          activeOpacity={0.7}
+          testID="close-button"
+          accessibilityRole="button"
+          accessibilityLabel="Cerrar"
+        >
           <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
         </TouchableOpacity>
       </View>
@@ -344,13 +360,25 @@ export default function PaymentSelectionScreen() {
           onPress={handleSave}
           activeOpacity={0.7}
           disabled={!selectedPaymentMethod || isProcessingPayment || isLoading}
+          testID="continue-button"
+          accessibilityRole="button"
+          accessibilityState={{
+            disabled: !selectedPaymentMethod || isProcessingPayment || isLoading,
+          }}
         >
           <Text style={styles.primaryButtonText}>
             {isProcessingPayment || isLoading ? 'Procesando...' : 'Continuar con el pago'}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.secondaryButton} onPress={handleBack} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={handleBack}
+          activeOpacity={0.7}
+          testID="back-button"
+          accessibilityRole="button"
+          accessibilityLabel="Volver"
+        >
           <Text style={styles.secondaryButtonText}>Atrás</Text>
         </TouchableOpacity>
       </View>
@@ -369,6 +397,7 @@ type Styles = {
   sectionTitle: TextStyle;
   paymentMethodsList: ViewStyle;
   paymentMethodItem: ViewStyle;
+  pressedPaymentMethod: ViewStyle;
   disabledPaymentMethod: ViewStyle;
   paymentMethodInfo: ViewStyle;
   paymentIcon: ImageStyle;
@@ -437,6 +466,9 @@ const styles = StyleSheet.create<Styles>({
     paddingHorizontal: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: '#DCDCDC',
+  },
+  pressedPaymentMethod: {
+    backgroundColor: '#F2F2F2',
   },
   disabledPaymentMethod: {
     opacity: 0.6,

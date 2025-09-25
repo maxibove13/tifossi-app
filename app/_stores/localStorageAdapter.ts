@@ -9,19 +9,19 @@ export const createAsyncStorage = () => ({
     try {
       const value = await AsyncStorage.getItem(name);
       return value;
-    } catch (error) {
+    } catch {
       return null;
     }
   },
   setItem: async (name: string, value: string) => {
     try {
       await AsyncStorage.setItem(name, value);
-    } catch (error) {}
+    } catch {}
   },
   removeItem: async (name: string) => {
     try {
       await AsyncStorage.removeItem(name);
-    } catch (error) {}
+    } catch {}
   },
 });
 

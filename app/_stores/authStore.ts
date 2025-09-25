@@ -74,7 +74,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
                         });
                       }
                     })
-                    .catch((error) => {});
+                    .catch(() => {});
                 }
               } else {
                 // User is signed out from Firebase
@@ -320,7 +320,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
               // Logout from the API service
               await authService.logout(currentToken);
             }
-          } catch (e) {
+          } catch {
           } finally {
             await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
             const currentState = get();
@@ -486,7 +486,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
               return false;
             }
             return await authService.isAppleSignInAvailable();
-          } catch (error) {
+          } catch {
             return false;
           }
         },
@@ -497,7 +497,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
               return 0; // Default to unknown state on non-iOS
             }
             return await authService.getAppleCredentialState(userId);
-          } catch (error) {
+          } catch {
             return 0; // Default to unknown state on error
           }
         },

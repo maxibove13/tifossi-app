@@ -5,6 +5,7 @@
 
 const MercadoPagoService = require('../../../../../payment/mercadopago-service');
 const OrderStateManager = require('../../../../../payment/order-state-manager');
+const { sanitizeOrderPayload, buildClientOrder } = require('../../../utils/order-sanitizer');
 
 module.exports = {
   /**
@@ -13,81 +14,95 @@ module.exports = {
    */
   async createPreference(ctx) {
     try {
-      const { orderData } = ctx.request.body;
-      
-      // Validate user authentication
-      if (!ctx.state.user) {
+      const authUser = ctx.state.user;
+
+      if (!authUser) {
         return ctx.unauthorized('Authentication required');
       }
 
-      // Validate order data
-      if (!orderData || !orderData.items || !orderData.user) {
-        return ctx.badRequest('Invalid order data');
-      }
+      const rawOrder = ctx.request.body?.orderData || ctx.request.body?.data || ctx.request.body || {};
 
-      // Ensure user can only create preferences for their own orders
-      if (orderData.user.id !== ctx.state.user.id) {
-        return ctx.forbidden('Cannot create preference for another user');
-      }
+      const sanitizedOrder = await sanitizeOrderPayload({
+        strapi,
+        rawOrder,
+        authUser,
+        requestMeta: {
+          userAgent: ctx.request.headers['user-agent'],
+          ip: ctx.request.ip,
+        },
+      });
 
-      // Initialize services
       const mpService = new MercadoPagoService();
       const orderManager = new OrderStateManager();
 
-      // Create order in database
-      const order = await strapi.entityService.create('api::order.order', {
+      const orderEntity = await strapi.entityService.create('api::order.order', {
         data: {
-          orderNumber: orderData.orderNumber,
-          user: orderData.user.id,
-          items: orderData.items,
-          shippingAddress: orderData.shippingAddress,
-          shippingMethod: orderData.shippingMethod,
-          shippingCost: orderData.shippingCost,
+          orderNumber: sanitizedOrder.orderNumber,
+          orderDate: new Date(),
+          user: authUser.id,
+          items: sanitizedOrder.itemsForPersistence,
+          shippingAddress: sanitizedOrder.shippingAddressComponent,
+          shippingMethod: sanitizedOrder.shippingMethod,
+          shippingCost: sanitizedOrder.shippingCost,
+          subtotal: sanitizedOrder.subtotal,
+          discount: sanitizedOrder.discount,
+          total: sanitizedOrder.total,
           paymentMethod: 'mercadopago',
-          subtotal: orderData.subtotal,
-          discount: orderData.discount || 0,
-          total: orderData.total,
-          currency: 'UYU',
+          paymentStatus: 'PENDING',
           status: 'CREATED',
+          notes: rawOrder.notes || null,
           metadata: {
-            createdVia: 'mobile_app',
-            userAgent: ctx.request.headers['user-agent'],
-            ipAddress: ctx.request.ip
-          }
-        }
+            ...sanitizedOrder.metadata,
+            paymentProvider: 'mercadopago',
+          },
+        },
+        populate: {
+          items: { populate: { product: true } },
+          user: true,
+        },
       });
 
-      // Create MercadoPago preference
       const preference = await mpService.createPreference({
-        ...orderData,
-        id: order.id
+        id: orderEntity.id,
+        orderNumber: orderEntity.orderNumber,
+        items: sanitizedOrder.mercadoPagoPayload.items,
+        user: sanitizedOrder.mercadoPagoPayload.user,
+        shippingAddress: sanitizedOrder.mercadoPagoPayload.address,
+        shippingMethod: sanitizedOrder.shippingMethod,
+        shippingCost: sanitizedOrder.shippingCost,
+        subtotal: sanitizedOrder.subtotal,
+        discount: sanitizedOrder.discount,
+        total: sanitizedOrder.total,
       });
 
-      // Update order with preference ID
-      await strapi.entityService.update('api::order.order', order.id, {
+      const updatedOrder = await strapi.entityService.update('api::order.order', orderEntity.id, {
         data: {
           mpPreferenceId: preference.id,
-          status: 'PAYMENT_PENDING'
-        }
+          status: 'PAYMENT_PENDING',
+        },
+        populate: {
+          items: { populate: { product: true } },
+          user: true,
+        },
       });
 
-      // Log order state change
-      await orderManager.transitionStatus(order.id, 'CREATED', 'PAYMENT_PENDING', {
+      await orderManager.transitionStatus(orderEntity.id, 'CREATED', 'PAYMENT_PENDING', {
         triggeredBy: 'system',
-        reason: 'MercadoPago preference created'
+        reason: 'MercadoPago preference created',
       });
+
+      const clientOrder = buildClientOrder(updatedOrder, sanitizedOrder.clientSummary);
 
       ctx.body = {
         success: true,
         data: {
-          orderId: order.id,
-          orderNumber: order.orderNumber,
+          order: clientOrder,
           preference: {
             id: preference.id,
             initPoint: preference.initPoint,
-            externalReference: preference.externalReference
-          }
-        }
+            externalReference: preference.externalReference,
+          },
+        },
       };
 
     } catch (error) {

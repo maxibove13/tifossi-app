@@ -89,6 +89,17 @@ export const mockSyncFavorites = async (productIds: string[]): Promise<boolean> 
   return true;
 };
 
+// --- Store Mocks ---
+export const mockFetchStores = async (): Promise<import('../../_types').StoreDetails[]> => {
+  await simulateNetworkConditions();
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  safeLog('[Mock API] Fetching stores');
+
+  // Return local store data
+  const { storesData } = await import('../../_data/stores');
+  return storesData;
+};
+
 // --- Auth Mocks ---
 export interface User {
   id: string;
@@ -276,6 +287,7 @@ const mockApi = {
   fetchProductById: mockFetchProductById,
   syncCart: mockSyncCart,
   syncFavorites: mockSyncFavorites,
+  fetchStores: mockFetchStores,
 
   // Authentication APIs
   login: mockLogin,

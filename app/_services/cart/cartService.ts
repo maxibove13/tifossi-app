@@ -5,6 +5,7 @@
 
 import httpClient from '../api/httpClient';
 import { handleApiError } from '../api/errorHandler';
+import { endpoints } from '../../_config/endpoints';
 
 export interface CartItem {
   productId: string;
@@ -30,7 +31,7 @@ class CartService {
   private authToken: string | null = null;
 
   constructor() {
-    this.baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:1337';
+    this.baseUrl = endpoints.baseUrl;
   }
 
   /**
@@ -61,7 +62,7 @@ class CartService {
       return cartData;
     } catch (error) {
       const apiError = handleApiError(error, 'fetchUserCart');
-      throw apiError;
+      throw new Error(apiError.message);
     }
   }
 
@@ -167,7 +168,12 @@ class CartService {
       if (this.authToken) {
         try {
           currentItems = await this.fetchUserCart();
-        } catch {}
+        } catch (error) {
+          // For adding items, we can start with empty cart if fetch fails
+          // This allows offline-first behavior
+          console.warn('Could not fetch current cart, starting with empty cart:', error);
+          currentItems = [];
+        }
       }
 
       // Add or update item
@@ -196,7 +202,16 @@ class CartService {
       if (this.authToken) {
         try {
           currentItems = await this.fetchUserCart();
-        } catch {}
+        } catch (error) {
+          // If we can't fetch the cart, we can't safely remove items
+          // This is a critical error that should bubble up
+          const apiError = handleApiError(error, 'removeFromCart');
+          return {
+            success: false,
+            items: [],
+            error: apiError.message,
+          };
+        }
       }
 
       // Remove item
@@ -236,7 +251,16 @@ class CartService {
       if (this.authToken) {
         try {
           currentItems = await this.fetchUserCart();
-        } catch {}
+        } catch (error) {
+          // If we can't fetch the cart, we can't safely update it
+          // This is a critical error that should bubble up
+          const apiError = handleApiError(error, 'updateCartItemQuantity');
+          return {
+            success: false,
+            items: [],
+            error: apiError.message,
+          };
+        }
       }
 
       // Update item quantity

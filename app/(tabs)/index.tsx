@@ -36,11 +36,12 @@ function HomeScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch products using TanStack Query
+  // Fetch products using Zustand store
   const {
     products: allProducts,
     isLoading: productsLoading,
     error: productsError,
+    fetchProducts,
   } = useProductStore();
 
   // Track loading state of individual sections for progressive loading
@@ -89,7 +90,10 @@ function HomeScreen() {
     }
   }
 
-  // No unused preload implementation - we load assets while skeleton is displayed
+  // Fetch products from Strapi when component mounts
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   // Load home assets while showing the skeleton - NOT in splash screen
   useEffect(() => {

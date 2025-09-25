@@ -111,7 +111,7 @@ describe('Test Utilities Example Usage', () => {
 
     it('should setup complete test scenarios', () => {
       // Setup authenticated user with cart
-      const { user, cartItems, addresses } = setupAuthenticatedUserWithCart();
+      const { cartItems, addresses } = setupAuthenticatedUserWithCart();
 
       expect(storeUtils.auth.getState()).toBeLoggedIn();
       expect(storeUtils.cart.getState()).toHaveCartItems(cartItems.length);

@@ -45,7 +45,12 @@ export default function SelectionListScreen({
 
       <View style={styles.header}>
         <Text style={styles.title}>{pageTitle}</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
+        <TouchableOpacity
+          testID="selection-close-button"
+          style={styles.closeButton}
+          onPress={onClose}
+          activeOpacity={0.7}
+        >
           <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
         </TouchableOpacity>
       </View>

@@ -42,6 +42,8 @@ export interface Product {
     depth?: string;
     width?: string;
   };
+  inStock?: boolean;
+  stockCount?: number;
 }
 
 export interface ProductCardData {

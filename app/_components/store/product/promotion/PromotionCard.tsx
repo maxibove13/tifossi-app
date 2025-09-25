@@ -23,7 +23,7 @@ type PromotionCardProps = {
 
 const PromotionCard = memo(function PromotionCard({
   product,
-  size = 's',
+  size: _size = 's',
   onPress,
   darkMode = false,
   invertTextColor = false,

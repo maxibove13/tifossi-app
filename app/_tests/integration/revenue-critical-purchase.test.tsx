@@ -209,9 +209,9 @@ See docs/MERCADOPAGO_CREDENTIAL_SETUP.md and docs/MERCADOPAGO_TESTING_PLAN.md fo
       },
       {
         id: '1',
-        firstName: orderData.payer.firstName,
-        lastName: orderData.payer.lastName,
-        email: orderData.payer.email,
+        firstName: orderData.user.firstName,
+        lastName: orderData.user.lastName,
+        email: orderData.user.email,
       }
     );
 
@@ -233,17 +233,27 @@ See docs/MERCADOPAGO_CREDENTIAL_SETUP.md and docs/MERCADOPAGO_TESTING_PLAN.md fo
   it('processes approved payment callbacks and updates state', async () => {
     const orderData = buildOrderData();
     const restorePreference = overrideCreatePreference();
+    const orderService = require('../../_services/order/orderService').default;
+
+    // Use orderService instead of paymentStore
+    orderService.setAuthToken('test-token');
+    mercadoPagoService.setAuthToken('test-token');
 
     await act(async () => {
-      await usePaymentStore.getState().createOrder(orderData);
+      await orderService.createOrderWithPayment(
+        {
+          items: orderData.items,
+          shippingAddress: orderData.shippingAddress as any,
+          shippingMethod: orderData.shippingMethod,
+        },
+        {
+          id: orderData.user.id,
+          firstName: orderData.user.firstName,
+          lastName: orderData.user.lastName,
+          email: orderData.user.email,
+        }
+      );
     });
-
-    const approvedResult: PaymentResult = {
-      success: true,
-      orderId: orderData.orderNumber,
-      paymentId: 'sandbox-payment-approved',
-      status: 'approved',
-    };
 
     // In real app, webhook handles payment result
     // For testing, we simulate the final state
@@ -289,9 +299,9 @@ See docs/MERCADOPAGO_CREDENTIAL_SETUP.md and docs/MERCADOPAGO_TESTING_PLAN.md fo
       },
       {
         id: '1',
-        firstName: orderData.payer.firstName,
-        lastName: orderData.payer.lastName,
-        email: orderData.payer.email,
+        firstName: orderData.user.firstName,
+        lastName: orderData.user.lastName,
+        email: orderData.user.email,
       }
     );
 

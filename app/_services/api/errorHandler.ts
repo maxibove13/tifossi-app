@@ -101,17 +101,6 @@ class ApiErrorHandler {
     const response = error.response;
     const request = error.request;
 
-    // Network error (no response received)
-    if (!response && request) {
-      return {
-        type: ApiErrorType.NETWORK_ERROR,
-        message: 'Network connection failed. Please check your internet connection.',
-        timestamp,
-        retryable: true,
-        originalError: error,
-      };
-    }
-
     // Request timeout
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
       return {
@@ -123,12 +112,23 @@ class ApiErrorHandler {
       };
     }
 
+    // Network error (no response received)
+    if (!response && request) {
+      return {
+        type: ApiErrorType.NETWORK_ERROR,
+        message: 'Network connection failed. Please check your internet connection.',
+        timestamp,
+        retryable: true,
+        originalError: error,
+      };
+    }
+
     // Response received but with error status
     if (response) {
       return this.handleHttpStatusError(response, timestamp, error);
     }
 
-    // Request was made but no response received
+    // Request was made but no response received - default to network error
     return {
       type: ApiErrorType.NETWORK_ERROR,
       message: 'Unable to connect to the server. Please check your internet connection.',
@@ -292,7 +292,7 @@ class ApiErrorHandler {
   private logError(apiError: ApiError, context?: string): void {
     const logLevel = this.getLogLevel(apiError.type);
     const contextStr = context ? ` [${context}]` : '';
-    const message = `[API Error${contextStr}] ${apiError.type}: ${apiError.message}`;
+    const _message = `[API Error${contextStr}] ${apiError.type}: ${apiError.message}`;
 
     if (__DEV__) {
       switch (logLevel) {
@@ -329,7 +329,7 @@ class ApiErrorHandler {
     this.errorListeners.forEach((listener) => {
       try {
         listener(apiError);
-      } catch (error) {}
+      } catch {}
     });
   }
 

@@ -156,7 +156,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   animationType = 'pulse',
   isLoading = true,
   children,
-  sections,
+  sections: _sections,
 }) => {
   if (!isLoading) {
     return children ? <>{children}</> : null;

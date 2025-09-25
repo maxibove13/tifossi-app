@@ -9,11 +9,23 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './_stores/authStore';
 // Removed complex caching and routing dependencies
 
+// Initialize app configuration (fail fast on missing config)
+import appInit from './_config/initialization';
+
 // Initialize store synchronizer
 import './_stores/storeSynchronizer';
 
 // Simple Error Handling
 import { GlobalErrorBoundary } from './_components/common/UnifiedErrorBoundary';
+
+// Initialize app configuration before anything else
+try {
+  appInit.initialize();
+} catch (error) {
+  console.error('❌ App initialization failed:', error);
+  // In production, the app will not start if critical config is missing
+  // In development, it will show warnings but continue
+}
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();

@@ -101,8 +101,19 @@ describe('PaymentResultScreen', () => {
       const mockVerifyStatus = jest
         .spyOn(mercadoPagoService, 'verifyPaymentStatus')
         .mockResolvedValue({
-          success: true,
+          orderId: 'ORDER-123',
+          orderNumber: 'ORD-2024-001',
           status: 'approved',
+          paymentInfo: {
+            id: 'PAY-456',
+            status: 'approved',
+            statusDetail: 'accredited',
+            amount: 1000,
+            currency: 'UYU',
+            paymentMethod: 'credit_card',
+            dateCreated: new Date().toISOString(),
+            dateApproved: new Date().toISOString(),
+          },
         });
 
       (useLocalSearchParams as jest.Mock).mockReturnValue({
@@ -325,7 +336,20 @@ describe('PaymentResultScreen', () => {
       const setAuthTokenSpy = jest.spyOn(mercadoPagoService, 'setAuthToken');
       const mockVerifyStatus = jest
         .spyOn(mercadoPagoService, 'verifyPaymentStatus')
-        .mockResolvedValue({ success: true, status: 'approved' });
+        .mockResolvedValue({
+          orderId: 'ORDER-123',
+          orderNumber: 'ORD-2024-001',
+          status: 'approved',
+          paymentInfo: {
+            id: 'PAY-123',
+            status: 'approved',
+            statusDetail: 'accredited',
+            amount: 1000,
+            currency: 'UYU',
+            paymentMethod: 'credit_card',
+            dateCreated: new Date().toISOString(),
+          },
+        });
 
       (useLocalSearchParams as jest.Mock).mockReturnValue({
         paymentSuccess: 'true',

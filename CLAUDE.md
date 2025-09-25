@@ -15,13 +15,23 @@
 5. Remove all TODO/placeholder content
 
 ## PROGRESS TRACKING
-**IMPORTANT**: After completing ANY task or making significant changes:
+**IMPORTANT**: TIFOSSI_DELIVERY_PLAN.md is the SINGLE SOURCE OF TRUTH for:
+- Project delivery goals vs current state
+- All current issues and blockers
+- Implementation status tracking
+- Gap analysis between commitments and reality
+
+After completing ANY task or making significant changes:
 1. Check alignment with TIFOSSI_DELIVERY_PLAN.md
 2. Update status in the plan (Implemented/Code Complete/Awaiting Credentials)
 3. Mark completed tasks with ✅ in the execution checklist
-4. Document any blockers discovered
+4. Document any blockers or issues discovered
+5. Keep clear distinction between GOAL (deliverables) and CURRENT STATE (actual status)
 
-Keep TIFOSSI_DELIVERY_PLAN.md as the single source of truth for project status.
+**File Roles**:
+- FUNCIONALIDADES_APP_TIFOSSI.md: Client commitments and deliverables (THE GOAL)
+- TIFOSSI_DELIVERY_PLAN.md: Current status, issues, and gap analysis (THE REALITY)
+- COSTOS_OPERATIVOS_URUGUAY_2025.md: Infrastructure costs and scaling
 
 ## IMPORTANT GUIDELINES
 - NEVER commit changes to git without being expressly asked to do so

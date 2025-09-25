@@ -7,12 +7,9 @@ import axios, {
 } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { endpoints } from '../../_config/endpoints';
 
 // Configuration constants
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:1337/api' // Local development
-  : 'https://api.tifossi.app/api'; // Production
-
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 const AUTH_TOKEN_KEY = 'tifossi_auth_token';
 
@@ -21,7 +18,7 @@ class HttpClient {
 
   constructor() {
     this.axiosInstance = axios.create({
-      baseURL: API_BASE_URL,
+      baseURL: `${endpoints.baseUrl}/api`,
       timeout: REQUEST_TIMEOUT,
       headers: {
         'Content-Type': 'application/json',
@@ -43,7 +40,7 @@ class HttpClient {
           if (token) {
             config.headers.Authorization = `Bearer ${token}`;
           }
-        } catch (error) {}
+        } catch {}
 
         // Log request in development
         if (__DEV__) {

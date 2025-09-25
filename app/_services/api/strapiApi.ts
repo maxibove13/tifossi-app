@@ -1,7 +1,9 @@
 import httpClient from './httpClient';
 import { transformStrapiProduct, StrapiResponse, StrapiProduct } from '../../_utils/apiTransforms';
-import { handleApiError } from './errorHandler';
+import { handleApiError, ApiErrorType } from './errorHandler';
 import { Product } from '../../_types/product';
+import { StoreDetails } from '../../_types';
+import { storesData } from '../../_data/stores';
 
 // Additional types needed
 export interface StrapiAuthResponse {
@@ -46,6 +48,9 @@ const CACHE_TTL = {
   STATUSES: 240,
 } as const;
 
+// Default cache duration for general use
+const DEFAULT_CACHE_DURATION = 30;
+
 // Simple in-memory cache for this service
 class SimpleCache {
   private cache = new Map<string, { data: any; expires: number }>();
@@ -74,9 +79,16 @@ const cache = new SimpleCache();
 // Helper functions
 function createCacheKey(prefix: string, params?: Record<string, any>): string {
   const base = `strapi_${prefix}`;
-  if (!params) return base;
-  const paramString = JSON.stringify(params);
-  return `${base}_${Buffer.from(paramString).toString('base64')}`;
+  if (!params) {
+    return base;
+  }
+
+  try {
+    const paramString = JSON.stringify(params);
+    return `${base}_${encodeURIComponent(paramString)}`;
+  } catch {
+    return base;
+  }
 }
 
 function buildStrapiQuery(options: {
@@ -118,10 +130,14 @@ function buildStrapiQuery(options: {
 
 function validateStrapiResponse<T>(response: StrapiResponse<T>): StrapiResponse<T> {
   if (!response || typeof response !== 'object') {
-    throw new Error('Invalid Strapi response format');
+    const error = new Error('Invalid Strapi response format');
+    error.name = 'ValidationError';
+    throw error;
   }
   if (!('data' in response)) {
-    throw new Error('Strapi response missing data field');
+    const error = new Error('Strapi response missing data field');
+    error.name = 'ValidationError';
+    throw error;
   }
   return response;
 }
@@ -149,14 +165,6 @@ class StrapiApiService {
    */
   async fetchProducts(): Promise<Product[]> {
     const cacheKey = createCacheKey('products');
-
-    // Try cache first
-    if (this.cacheEnabled) {
-      const cached = cache.get<Product[]>(cacheKey);
-      if (cached) {
-        return cached;
-      }
-    }
 
     try {
       const queryParams = buildStrapiQuery({
@@ -219,14 +227,6 @@ class StrapiApiService {
     }
   ): Promise<Product[]> {
     const cacheKey = createCacheKey('products_search', { query, filters });
-
-    // Try cache first
-    if (this.cacheEnabled) {
-      const cached = cache.get<Product[]>(cacheKey);
-      if (cached) {
-        return cached;
-      }
-    }
 
     try {
       const queryParams = buildStrapiQuery({
@@ -310,14 +310,6 @@ class StrapiApiService {
   async fetchProductById(id: string): Promise<Product | undefined> {
     const cacheKey = createCacheKey('product', { id });
 
-    // Try cache first
-    if (this.cacheEnabled) {
-      const cached = cache.get<Product>(cacheKey);
-      if (cached) {
-        return cached;
-      }
-    }
-
     try {
       const queryParams = buildStrapiQuery({
         populate: [
@@ -361,7 +353,12 @@ class StrapiApiService {
       }
 
       // Return undefined for not found errors to match mockApi behavior
-      if (apiError.message.includes('404') || apiError.message.includes('not found')) {
+      if (
+        apiError.type === ApiErrorType.NOT_FOUND_ERROR ||
+        apiError.statusCode === 404 ||
+        apiError.message.toLowerCase().includes('not found') ||
+        apiError.message.includes('404')
+      ) {
         return undefined;
       }
 
@@ -499,13 +496,13 @@ class StrapiApiService {
               },
             }
           );
-        } catch (_error) {
+        } catch {
           // Ignore errors if logout endpoint doesn't exist
         }
       }
 
       return true;
-    } catch (error) {
+    } catch {
       // Don't throw on logout errors, just log them
       return true;
     }
@@ -636,13 +633,50 @@ class StrapiApiService {
    * Syncs user data after login (cart, favorites, etc.)
    */
   async syncUserData(): Promise<boolean> {
+    // This could involve fetching and merging server-side user data
+    // with local data, but for now we'll just return success
+    return true;
+  }
+
+  // --- Store Methods ---
+
+  /**
+   * Fetches all physical store locations
+   */
+  async fetchStores(): Promise<StoreDetails[]> {
+    const cacheKey = createCacheKey('stores');
+
     try {
-      // This could involve fetching and merging server-side user data
-      // with local data, but for now we'll just return success
-      return true;
-    } catch (error) {
-      const apiError = handleApiError(error, 'syncUserData');
-      throw apiError;
+      const queryParams = '?populate=*';
+      const response = await httpClient.get<StrapiResponse<any[]>>(`/stores${queryParams}`);
+      const validatedResponse = validateStrapiResponse<any[]>(response);
+
+      // Transform Strapi store data to app format
+      const stores: StoreDetails[] = validatedResponse.data.map((store: any) => ({
+        id: store.id || store.attributes?.slug,
+        cityId: store.attributes?.cityId || 'mvd',
+        zoneId: store.attributes?.zoneId || 'centro',
+        name: store.attributes?.name || 'Tienda',
+        address: store.attributes?.address || '',
+        hours: store.attributes?.hours || '',
+        phone: store.attributes?.phone,
+        image: store.attributes?.image?.data?.attributes?.url
+          ? { uri: store.attributes.image.data.attributes.url }
+          : require('../../../assets/images/locations/montevideo.png'),
+      }));
+
+      // Cache the result
+      if (this.cacheEnabled && stores.length > 0) {
+        cache.set(cacheKey, stores, DEFAULT_CACHE_DURATION);
+      }
+
+      return stores;
+    } catch {
+      if (__DEV__) {
+        console.warn('⚠️ Failed to fetch stores from Strapi, using local data');
+      }
+      // Fall back to local store data if API fails
+      return storesData;
     }
   }
 
@@ -682,6 +716,7 @@ const strapiApiExport = {
   searchProducts: strapiApi.searchProducts.bind(strapiApi),
   syncCart: strapiApi.syncCart.bind(strapiApi),
   syncFavorites: strapiApi.syncFavorites.bind(strapiApi),
+  fetchStores: strapiApi.fetchStores.bind(strapiApi),
   login: strapiApi.login.bind(strapiApi),
   register: strapiApi.register.bind(strapiApi),
   validateToken: strapiApi.validateToken.bind(strapiApi),

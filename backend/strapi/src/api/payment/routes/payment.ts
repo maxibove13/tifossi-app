@@ -2,7 +2,23 @@
  * Payment routes for Tifossi Expo
  */
 
-module.exports = {
+interface RouteConfig {
+  policies?: string[];
+  middlewares?: string[];
+}
+
+interface RouteDefinition {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  path: string;
+  handler: string;
+  config?: RouteConfig;
+}
+
+interface RoutesModule {
+  routes: RouteDefinition[];
+}
+
+const paymentRoutes: RoutesModule = {
   routes: [
     {
       method: 'POST',
@@ -51,3 +67,5 @@ module.exports = {
     },
   ],
 };
+
+export default paymentRoutes;

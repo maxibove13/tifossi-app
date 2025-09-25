@@ -47,7 +47,9 @@ jest.mock('expo-status-bar', () => ({
 jest.mock('@ptomasroos/react-native-multi-slider', () => {
   const React = require('react');
   const { View } = require('react-native');
-  return ({ children, ...props }: any) => React.createElement(View, props, children);
+  const MockSlider = ({ children, ...props }: any) => React.createElement(View, props, children);
+  MockSlider.displayName = 'MockMultiSlider';
+  return MockSlider;
 });
 
 // Mock Expo vector icons to avoid font loading in tests
@@ -190,7 +192,7 @@ describe('Product Detail Flow - Integration', () => {
 
   describe('Product Information Display', () => {
     it('should display product details correctly', async () => {
-      const { getAllByText, getByTestId } = render(
+      const { getAllByText } = render(
         <TestWrapper>
           <ProductDetailScreen />
         </TestWrapper>
@@ -210,7 +212,7 @@ describe('Product Detail Flow - Integration', () => {
     });
 
     it('should display available colors', async () => {
-      const { getByText, getByTestId } = render(
+      const { getByText } = render(
         <TestWrapper>
           <ProductDetailScreen />
         </TestWrapper>
@@ -490,7 +492,7 @@ describe('Product Detail Flow - Integration', () => {
 
   describe('Related Products', () => {
     it('should display related products from same category', async () => {
-      const { getAllByText, getByTestId } = render(
+      const { getAllByText } = render(
         <TestWrapper>
           <ProductDetailScreen />
         </TestWrapper>
@@ -504,7 +506,7 @@ describe('Product Detail Flow - Integration', () => {
     });
 
     it('should navigate to related product when clicked', async () => {
-      const { getAllByText, getByTestId } = render(
+      const { getAllByText } = render(
         <TestWrapper>
           <ProductDetailScreen />
         </TestWrapper>

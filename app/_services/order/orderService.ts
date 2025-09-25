@@ -5,6 +5,7 @@
 
 import httpClient from '../api/httpClient';
 import { handleApiError } from '../api/errorHandler';
+import { endpoints } from '../../_config/endpoints';
 import { CartItem } from '../cart/cartService';
 import { Address } from '../address/addressService';
 import mercadoPagoService, { OrderData, UserData } from '../payment/mercadoPago';
@@ -91,7 +92,7 @@ class OrderService {
   private authToken: string | null = null;
 
   constructor() {
-    this.baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:1337';
+    this.baseUrl = endpoints.baseUrl;
   }
 
   /**
@@ -292,7 +293,7 @@ class OrderService {
       return order || null;
     } catch (error) {
       const apiError = handleApiError(error, 'getOrderById');
-      return null;
+      throw new Error(apiError.message);
     }
   }
 
@@ -317,7 +318,7 @@ class OrderService {
 
       return true;
     } catch (error) {
-      const apiError = handleApiError(error, 'updateOrderStatus');
+      const _apiError = handleApiError(error, 'updateOrderStatus');
       return false;
     }
   }
@@ -343,7 +344,7 @@ class OrderService {
 
       return true;
     } catch (error) {
-      const apiError = handleApiError(error, 'cancelOrder');
+      const _apiError = handleApiError(error, 'cancelOrder');
       return false;
     }
   }
@@ -374,7 +375,7 @@ class OrderService {
       return response.data || null;
     } catch (error) {
       const apiError = handleApiError(error, 'trackOrder');
-      return null;
+      throw new Error(apiError.message);
     }
   }
 

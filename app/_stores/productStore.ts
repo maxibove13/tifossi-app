@@ -122,6 +122,12 @@ export const useProductStore = create<ProductState>()(
             error: e instanceof Error ? e.message : 'Failed to fetch products',
             actionStatus: { ...get().actionStatus, fetchProducts: 'error' },
           });
+
+          // If force refresh was requested, propagate the error
+          // This allows refreshProducts to catch and handle it
+          if (force) {
+            throw e;
+          }
         }
       },
 

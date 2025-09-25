@@ -79,7 +79,7 @@ class DeepLinkingService {
    * Configure Expo Linking with URL scheme
    */
   private configureLinking(): void {
-    const linking = {
+    const _linking = {
       prefixes: [
         'tifossi://',
         'https://tifossi.app',
@@ -129,7 +129,7 @@ class DeepLinkingService {
       if (initialUrl) {
         await this.handleIncomingUrl(initialUrl);
       }
-    } catch (error) {}
+    } catch {}
   }
 
   /**
@@ -204,7 +204,7 @@ class DeepLinkingService {
    */
   private async handleEmailVerification(queryParams: Record<string, any>): Promise<DeepLinkResult> {
     try {
-      const { oobCode, continueUrl } = queryParams;
+      const { oobCode, continueUrl: _continueUrl } = queryParams;
 
       if (!oobCode) {
         throw new Error('Missing verification code');
@@ -246,7 +246,7 @@ class DeepLinkingService {
    */
   private async handlePasswordReset(queryParams: Record<string, any>): Promise<DeepLinkResult> {
     try {
-      const { oobCode, continueUrl } = queryParams;
+      const { oobCode, continueUrl: _continueUrl } = queryParams;
 
       if (!oobCode) {
         throw new Error('Missing password reset code');
@@ -288,7 +288,7 @@ class DeepLinkingService {
    */
   private async handleOAuthCallback(queryParams: Record<string, any>): Promise<DeepLinkResult> {
     try {
-      const { code, state, error } = queryParams;
+      const { code, state: _state, error } = queryParams;
 
       if (error) {
         throw new Error(`OAuth error: ${error}`);
@@ -384,7 +384,7 @@ class DeepLinkingService {
    */
   private async handleGeneralDeepLink(
     path: string | null,
-    queryParams: Record<string, any>
+    _queryParams: Record<string, any>
   ): Promise<DeepLinkResult> {
     try {
       if (!path) {

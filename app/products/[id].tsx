@@ -6,7 +6,7 @@ import SwipeableEdge from '../_components/store/product/swipeable/SwipeableEdge'
 import { colors } from '../_styles/colors';
 import { isProduct, Product } from '../_types/product';
 import { hasStatus, ProductStatus } from '../_types/product-status';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useCartStore } from '../_stores/cartStore';
 import { useFavoritesStore } from '../_stores/favoritesStore';
@@ -42,8 +42,10 @@ export default function ProductDetailScreen() {
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product?.colors && product.colors.length > 0 ? product.colors[0].colorName : undefined
   );
-  const [selectedSize, _setSelectedSize] = useState<string | undefined>(
-    product?.sizes && product.sizes.length > 0 ? product.sizes[0].value : undefined
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(
+    product?.sizes && product.sizes.length > 0
+      ? (product.sizes.find((size) => size.available)?.value ?? product.sizes[0].value)
+      : undefined
   );
   const [selectedQuantity, setSelectedQuantity] = useState(1);
 
@@ -64,15 +66,24 @@ export default function ProductDetailScreen() {
     ? getProductsByStatus(allProducts, ProductStatus.POPULAR)
     : [];
 
-  const handleAddToCart = async (product: Product, quantity: number = selectedQuantity) => {
+  const handleAddToCart = async (
+    product: Product,
+    selection?: { quantity?: number; color?: string; size?: string }
+  ) => {
     if (!product) return Promise.resolve();
+
+    const quantityToUse = selection?.quantity ?? selectedQuantity;
+    const colorToUse = selection?.color ?? selectedColor;
+    const sizeToUse = selection?.size ?? selectedSize;
 
     try {
       await addItemToCart({
         productId: product.id,
-        quantity,
-        color: selectedColor,
-        size: selectedSize,
+        quantity: quantityToUse,
+        color: colorToUse,
+        size: sizeToUse,
+        price: product.price,
+        discountedPrice: product.discountedPrice,
       });
 
       return Promise.resolve();
@@ -86,18 +97,40 @@ export default function ProductDetailScreen() {
 
     try {
       await toggleFavorite(product.id);
-    } catch (error) {}
+    } catch {}
   };
 
   const handleProductPress = (productId: string) => {
     router.push(`/products/${productId}` as any);
   };
 
-  const handleSupportAction = (action: 'chat' | 'faq' | 'call') => {
+  const handleViewCart = () => {
+    router.push('/cart');
+  };
+
+  useEffect(() => {
+    if (product?.colors?.length) {
+      setSelectedColor((current) => current ?? product.colors[0].colorName);
+    }
+  }, [product?.id, product?.colors]);
+
+  useEffect(() => {
+    if (product?.sizes?.length) {
+      const defaultSize =
+        product.sizes.find((size) => size.available)?.value ?? product.sizes[0].value;
+      setSelectedSize((current) => current ?? defaultSize);
+    }
+  }, [product?.id, product?.sizes]);
+
+  useEffect(() => {
+    setSelectedQuantity(1);
+  }, [product?.id]);
+
+  const handleSupportAction = (_action: 'chat' | 'faq' | 'call') => {
     // Handle support actions
   };
 
-  const handleViewMore = (section: string) => {
+  const handleViewMore = (_section: string) => {
     // Navigate to section view
   };
 
@@ -175,18 +208,26 @@ export default function ProductDetailScreen() {
             returnPolicy: product.returnPolicy,
             dimensions: product.dimensions,
             isFavorite: isFavorite,
+            colors: product.colors,
+            sizes: product.sizes,
+            inStock: product.inStock,
+            stockCount: product.stockCount,
           }}
           relatedProducts={relatedProducts}
           recommendedProducts={recommendedProducts}
           trendingProducts={trendingProducts}
-          onAddToCart={() => handleAddToCart(product, selectedQuantity)}
+          onAddToCart={(selection) => handleAddToCart(product, selection)}
           onViewMore={handleViewMore}
           onSupportAction={handleSupportAction}
           onProductPress={handleProductPress}
           onToggleFavorite={handleToggleFavorite} // Pass favorite toggle handler
-          onExpandedChange={(expanded) => {}}
+          onExpandedChange={(_expanded) => {}}
           quantity={selectedQuantity}
           onQuantityChange={setSelectedQuantity}
+          selectedSize={selectedSize}
+          onSizeChange={setSelectedSize}
+          selectedColor={selectedColor}
+          onViewCart={handleViewCart}
         />
       </View>
     </View>

@@ -83,7 +83,7 @@ describe('Shipping Address Flow - Integration', () => {
 
   describe('Address List Display', () => {
     it('should display loading state initially', async () => {
-      const { getByText, getAllByText } = render(
+      const { getByText } = render(
         <TestWrapper>
           <ShippingAddressScreen />
         </TestWrapper>
@@ -152,7 +152,7 @@ describe('Shipping Address Flow - Integration', () => {
     it('should handle error loading addresses', async () => {
       httpClientMock.__setAddressScenario?.('error');
 
-      const { getByText, getAllByText } = render(
+      const { getByText } = render(
         <TestWrapper>
           <ShippingAddressScreen />
         </TestWrapper>
@@ -226,7 +226,7 @@ describe('Shipping Address Flow - Integration', () => {
     it('should navigate to add new address screen', async () => {
       const addresses: Address[] = httpClientMock.__getMockAddresses?.() ?? [];
 
-      const { getByText, getAllByLabelText } = render(
+      const { getAllByLabelText } = render(
         <TestWrapper>
           <ShippingAddressScreen />
         </TestWrapper>
@@ -243,7 +243,7 @@ describe('Shipping Address Flow - Integration', () => {
     });
 
     it('should handle back navigation', async () => {
-      const { getByText, getAllByText } = render(
+      const { getByText } = render(
         <TestWrapper>
           <ShippingAddressScreen />
         </TestWrapper>
@@ -302,7 +302,7 @@ describe('Shipping Address Flow - Integration', () => {
     it('should allow retrying after error', async () => {
       httpClientMock.__setAddressScenario?.('error');
 
-      const { getByText, getAllByText } = render(
+      const { getByText } = render(
         <TestWrapper>
           <ShippingAddressScreen />
         </TestWrapper>
@@ -327,7 +327,7 @@ describe('Shipping Address Flow - Integration', () => {
 
   describe('Address Formatting', () => {
     it('should format addresses correctly with apartment', async () => {
-      const { getByText, getAllByText } = render(
+      const { getByText } = render(
         <TestWrapper>
           <ShippingAddressScreen />
         </TestWrapper>
@@ -342,7 +342,7 @@ describe('Shipping Address Flow - Integration', () => {
     it('should display all address fields correctly', async () => {
       const addresses: Address[] = httpClientMock.__getMockAddresses?.() ?? [];
 
-      const { getByText, getAllByText } = render(
+      const { getAllByText } = render(
         <TestWrapper>
           <ShippingAddressScreen />
         </TestWrapper>

@@ -16,36 +16,39 @@ import { Ionicons } from '@expo/vector-icons';
 import { spacing, radius } from '../_styles/spacing';
 import { fontWeights } from '../_styles/typography';
 
-// Import stores
+// Import stores and services
 import { usePaymentStore } from '../_stores/paymentStore';
 import { useCartStore } from '../_stores/cartStore';
+import { useAuthStore } from '../_stores/authStore';
+import mercadoPagoService from '../_services/payment/mercadoPago';
 
 export default function PaymentResultScreen() {
   const params = useLocalSearchParams();
   const { clearCart } = useCartStore();
-  const { currentOrder, verifyPayment } = usePaymentStore();
+  const { token } = useAuthStore();
+  const { currentOrderNumber } = usePaymentStore();
 
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationComplete, setVerificationComplete] = useState(false);
+  const [, setPaymentStatus] = useState<string | null>(null);
 
   // Extract payment result from params
   const paymentSuccess = params.paymentSuccess === 'true';
   const paymentPending = params.paymentPending === 'true';
-  const paymentFailure = params.paymentFailure === 'true';
-  const paymentError = params.paymentError === 'true';
-  const _orderId = params.orderId as string;
   const paymentId = params.paymentId as string;
   const error = params.error as string;
 
   // Verify payment status
   useEffect(() => {
     const verifyPaymentStatus = async () => {
-      if (paymentId && !verificationComplete) {
+      if (paymentId && !verificationComplete && token) {
         setIsVerifying(true);
         try {
-          await verifyPayment(paymentId);
+          mercadoPagoService.setAuthToken(token);
+          const status = await mercadoPagoService.verifyPaymentStatus(paymentId);
+          setPaymentStatus(status.status);
           setVerificationComplete(true);
-        } catch (error) {
+        } catch {
           // Error is handled by Alert, no need for console logging in production
           Alert.alert(
             'Error',
@@ -58,16 +61,14 @@ export default function PaymentResultScreen() {
     };
 
     verifyPaymentStatus();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentId]); // verifyPayment and verificationComplete are intentionally omitted
+  }, [paymentId, verificationComplete, token]);
 
   // Clear cart on successful payment
   useEffect(() => {
     if (paymentSuccess && !isVerifying) {
       clearCart();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentSuccess, isVerifying]); // clearCart is intentionally omitted to prevent multiple clears
+  }, [paymentSuccess, isVerifying, clearCart]);
 
   const handleGoToOrders = () => {
     router.replace('/(tabs)/profile');
@@ -78,122 +79,74 @@ export default function PaymentResultScreen() {
     router.back(); // Go back to payment selection
   };
 
-  const handleGoHome = () => {
-    router.replace('/(tabs)');
+  const handleBackToHome = () => {
+    router.replace('/');
   };
 
-  const renderSuccessContent = () => (
-    <>
-      <View style={styles.iconContainer}>
-        <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
-      </View>
-
-      <Text style={styles.title}>¡Pago exitoso!</Text>
-      <Text style={styles.message}>
-        Tu pedido ha sido procesado correctamente. Recibirás una confirmación por email.
-      </Text>
-
-      {currentOrder && (
-        <View style={styles.orderInfo}>
-          <Text style={styles.orderLabel}>Número de pedido:</Text>
-          <Text style={styles.orderNumber}>{currentOrder.orderNumber}</Text>
+  if (paymentSuccess) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Stack.Screen
+          options={{
+            headerShown: false,
+          }}
+        />
+        <View style={styles.content}>
+          <View style={styles.successIcon}>
+            <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
+          </View>
+          <Text style={styles.title}>¡Pago exitoso!</Text>
+          <Text style={styles.message}>Tu pedido ha sido procesado correctamente.</Text>
+          {currentOrderNumber && (
+            <View style={styles.orderInfo}>
+              <Text style={styles.orderLabel}>Número de pedido:</Text>
+              <Text style={styles.orderNumber}>{currentOrderNumber}</Text>
+            </View>
+          )}
+          <TouchableOpacity style={styles.primaryButton} onPress={handleGoToOrders}>
+            <Text style={styles.primaryButtonText}>Ver mis pedidos</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secondaryButton} onPress={handleBackToHome}>
+            <Text style={styles.secondaryButtonText}>Volver al inicio</Text>
+          </TouchableOpacity>
         </View>
-      )}
+      </SafeAreaView>
+    );
+  }
 
-      <TouchableOpacity style={styles.primaryButton} onPress={handleGoToOrders} activeOpacity={0.7}>
-        <Text style={styles.primaryButtonText}>Ver mis pedidos</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.secondaryButton} onPress={handleGoHome} activeOpacity={0.7}>
-        <Text style={styles.secondaryButtonText}>Continuar comprando</Text>
-      </TouchableOpacity>
-    </>
-  );
-
-  const renderPendingContent = () => (
-    <>
-      <View style={styles.iconContainer}>
-        <Ionicons name="hourglass" size={80} color="#FF9800" />
-      </View>
-
-      <Text style={styles.title}>Pago en proceso</Text>
-      <Text style={styles.message}>
-        Tu pago está siendo procesado. Te notificaremos cuando esté confirmado.
-      </Text>
-
-      {currentOrder && (
-        <View style={styles.orderInfo}>
-          <Text style={styles.orderLabel}>Número de pedido:</Text>
-          <Text style={styles.orderNumber}>{currentOrder.orderNumber}</Text>
+  if (paymentPending) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Stack.Screen
+          options={{
+            headerShown: false,
+          }}
+        />
+        <View style={styles.content}>
+          <View style={styles.pendingIcon}>
+            <Ionicons name="time-outline" size={80} color="#FFC107" />
+          </View>
+          <Text style={styles.title}>Pago pendiente</Text>
+          <Text style={styles.message}>Tu pago está siendo procesado.</Text>
+          {currentOrderNumber && (
+            <View style={styles.orderInfo}>
+              <Text style={styles.orderLabel}>Número de pedido:</Text>
+              <Text style={styles.orderNumber}>{currentOrderNumber}</Text>
+            </View>
+          )}
+          <Text style={styles.submessage}>Te notificaremos cuando el pago sea confirmado.</Text>
+          <TouchableOpacity style={styles.primaryButton} onPress={handleGoToOrders}>
+            <Text style={styles.primaryButtonText}>Ver mis pedidos</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secondaryButton} onPress={handleBackToHome}>
+            <Text style={styles.secondaryButtonText}>Volver al inicio</Text>
+          </TouchableOpacity>
         </View>
-      )}
+      </SafeAreaView>
+    );
+  }
 
-      {isVerifying && <Text style={styles.verifyingText}>Verificando estado del pago...</Text>}
-
-      <TouchableOpacity style={styles.primaryButton} onPress={handleGoToOrders} activeOpacity={0.7}>
-        <Text style={styles.primaryButtonText}>Ver mis pedidos</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.secondaryButton} onPress={handleGoHome} activeOpacity={0.7}>
-        <Text style={styles.secondaryButtonText}>Ir al inicio</Text>
-      </TouchableOpacity>
-    </>
-  );
-
-  const renderFailureContent = () => (
-    <>
-      <View style={styles.iconContainer}>
-        <Ionicons name="close-circle" size={80} color="#F44336" />
-      </View>
-
-      <Text style={styles.title}>Pago rechazado</Text>
-      <Text style={styles.message}>
-        {error
-          ? `No se pudo procesar tu pago: ${error}`
-          : 'No se pudo procesar tu pago. Por favor, intenta con otro método de pago.'}
-      </Text>
-
-      <TouchableOpacity style={styles.primaryButton} onPress={handleTryAgain} activeOpacity={0.7}>
-        <Text style={styles.primaryButtonText}>Intentar nuevamente</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.secondaryButton} onPress={handleGoHome} activeOpacity={0.7}>
-        <Text style={styles.secondaryButtonText}>Ir al inicio</Text>
-      </TouchableOpacity>
-    </>
-  );
-
-  const renderErrorContent = () => (
-    <>
-      <View style={styles.iconContainer}>
-        <Ionicons name="warning" size={80} color="#FF5722" />
-      </View>
-
-      <Text style={styles.title}>Error en el pago</Text>
-      <Text style={styles.message}>
-        Ocurrió un error inesperado durante el proceso de pago. Por favor, intenta nuevamente.
-      </Text>
-
-      <TouchableOpacity style={styles.primaryButton} onPress={handleTryAgain} activeOpacity={0.7}>
-        <Text style={styles.primaryButtonText}>Intentar nuevamente</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.secondaryButton} onPress={handleGoHome} activeOpacity={0.7}>
-        <Text style={styles.secondaryButtonText}>Ir al inicio</Text>
-      </TouchableOpacity>
-    </>
-  );
-
-  const renderContent = () => {
-    if (paymentSuccess) return renderSuccessContent();
-    if (paymentPending) return renderPendingContent();
-    if (paymentFailure) return renderFailureContent();
-    if (paymentError) return renderErrorContent();
-
-    // Default case
-    return renderErrorContent();
-  };
-
+  // Payment failed or error
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen
@@ -201,118 +154,103 @@ export default function PaymentResultScreen() {
           headerShown: false,
         }}
       />
-
-      <View style={styles.content}>{renderContent()}</View>
+      <View style={styles.content}>
+        <View style={styles.errorIcon}>
+          <Ionicons name="close-circle" size={80} color="#F44336" />
+        </View>
+        <Text style={styles.title}>Pago no completado</Text>
+        <Text style={styles.message}>
+          {error || 'No se pudo procesar tu pago. Por favor, intenta nuevamente.'}
+        </Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={handleTryAgain}>
+          <Text style={styles.primaryButtonText}>Intentar nuevamente</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.secondaryButton} onPress={handleBackToHome}>
+          <Text style={styles.secondaryButtonText}>Volver al inicio</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
-type Styles = {
-  container: ViewStyle;
-  content: ViewStyle;
-  iconContainer: ViewStyle;
-  title: TextStyle;
-  message: TextStyle;
-  orderInfo: ViewStyle;
-  orderLabel: TextStyle;
-  orderNumber: TextStyle;
-  verifyingText: TextStyle;
-  primaryButton: ViewStyle;
-  primaryButtonText: TextStyle;
-  secondaryButton: ViewStyle;
-  secondaryButtonText: TextStyle;
-};
-
-const styles = StyleSheet.create<Styles>({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
+    backgroundColor: '#fff',
+  } as ViewStyle,
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-    gap: spacing.xl,
-  },
-  iconContainer: {
-    marginBottom: spacing.lg,
-  },
-  title: {
-    fontFamily: 'Roboto',
-    fontSize: 24,
-    fontWeight: fontWeights.medium,
-    lineHeight: 32,
-    color: '#0C0C0C',
-    textAlign: 'center',
-  },
-  message: {
-    fontFamily: 'Inter',
-    fontSize: 16,
-    fontWeight: fontWeights.regular,
-    lineHeight: 24,
-    color: '#666666',
-    textAlign: 'center',
-    paddingHorizontal: spacing.md,
-  },
-  orderInfo: {
-    backgroundColor: '#FFFFFF',
     padding: spacing.lg,
+  } as ViewStyle,
+  successIcon: {
+    marginBottom: spacing.xl,
+  } as ViewStyle,
+  pendingIcon: {
+    marginBottom: spacing.xl,
+  } as ViewStyle,
+  errorIcon: {
+    marginBottom: spacing.xl,
+  } as ViewStyle,
+  title: {
+    fontSize: 24,
+    fontWeight: fontWeights.bold as any,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  } as TextStyle,
+  message: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
+  } as TextStyle,
+  submessage: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  } as TextStyle,
+  orderInfo: {
+    backgroundColor: '#F5F5F5',
+    padding: spacing.md,
     borderRadius: radius.md,
+    marginBottom: spacing.xl,
     alignItems: 'center',
-    gap: spacing.sm,
-    marginVertical: spacing.md,
-  },
+  } as ViewStyle,
   orderLabel: {
-    fontFamily: 'Inter',
-    fontSize: 14,
-    fontWeight: fontWeights.regular,
-    color: '#666666',
-  },
+    fontSize: 12,
+    color: '#666',
+    marginBottom: spacing.xs,
+  } as TextStyle,
   orderNumber: {
-    fontFamily: 'Inter',
     fontSize: 18,
-    fontWeight: fontWeights.medium,
-    color: '#0C0C0C',
-  },
-  verifyingText: {
-    fontFamily: 'Inter',
-    fontSize: 14,
-    fontWeight: fontWeights.regular,
-    color: '#999999',
-    fontStyle: 'italic',
-  },
+    fontWeight: fontWeights.semibold as any,
+    color: '#333',
+  } as TextStyle,
   primaryButton: {
-    width: '100%',
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
+    backgroundColor: '#000',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl * 2,
+    borderRadius: radius.circle,
+    marginBottom: spacing.md,
+    minWidth: 200,
     alignItems: 'center',
-    backgroundColor: '#0C0C0C',
-    marginTop: spacing.lg,
-  },
+  } as ViewStyle,
   primaryButtonText: {
-    fontFamily: 'Inter',
+    color: '#fff',
     fontSize: 16,
-    fontWeight: fontWeights.medium,
-    lineHeight: 24,
-    color: '#FBFBFB',
-  },
+    fontWeight: fontWeights.semibold as any,
+  } as TextStyle,
   secondaryButton: {
-    width: '100%',
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#DCDCDC',
-    backgroundColor: 'transparent',
-  },
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+  } as ViewStyle,
   secondaryButtonText: {
-    fontFamily: 'Inter',
+    color: '#000',
     fontSize: 16,
-    fontWeight: fontWeights.medium,
-    lineHeight: 24,
-    color: '#0C0C0C',
-  },
+    textDecorationLine: 'underline',
+  } as TextStyle,
 });

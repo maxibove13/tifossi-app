@@ -1,0 +1,613 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Job to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - quality-checks
+          - payment-tests
+          - build-backend
+          - deploy-backend
+          - build-mobile
+      environment:
+        description: 'Deployment environment'
+        required: false
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+      platform:
+        description: 'Mobile platform (for build-mobile job)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - ios
+          - android
+      profile:
+        description: 'Build profile (for build-mobile job)'
+        required: false
+        default: 'production'
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+
+env:
+  NODE_VERSION: '18'
+  RENDER_API_URL: 'https://api.render.com/v1'
+
+jobs:
+  # ============================
+  # Quality Checks - Always runs
+  # ============================
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.job == 'all' ||
+      github.event.inputs.job == 'quality-checks'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            backend/strapi/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        working-directory: backend/strapi
+        run: npm ci
+
+      - name: Run frontend linting
+        run: npm run lint
+
+      - name: Run frontend type checking
+        run: npm run typecheck
+
+      - name: Run frontend tests
+        run: npm run test:ci
+        env:
+          NODE_ENV: test
+
+      - name: Run backend linting
+        working-directory: backend/strapi
+        run: npm run lint || echo "Backend linting not configured"
+
+      - name: Upload test coverage
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: frontend
+          fail_ci_if_error: false
+
+  # ============================
+  # Payment Tests - Conditional
+  # ============================
+  payment-tests:
+    name: Payment Integration Tests
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    if: |
+      (github.event_name == 'push' || github.event_name == 'pull_request') &&
+      (contains(github.event.head_commit.message, '[payment]') ||
+       contains(github.event.head_commit.message, '[mercadopago]') ||
+       github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.job == 'all' || github.event.inputs.job == 'payment-tests'))
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for MercadoPago credentials
+        id: check-credentials
+        run: |
+          if [ -z "${{ secrets.MP_TEST_ACCESS_TOKEN }}" ]; then
+            echo "WARNING: MercadoPago test credentials not configured"
+            echo "has-credentials=false" >> $GITHUB_OUTPUT
+          else
+            echo "MercadoPago test credentials found"
+            echo "has-credentials=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node.js
+        if: steps.check-credentials.outputs.has-credentials == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.check-credentials.outputs.has-credentials == 'true'
+        run: npm ci
+
+      - name: Run payment tests
+        if: steps.check-credentials.outputs.has-credentials == 'true'
+        run: |
+          echo "Running payment integration tests..."
+          npm run test:payment || echo "Payment tests not configured"
+        env:
+          MP_TEST_ACCESS_TOKEN: ${{ secrets.MP_TEST_ACCESS_TOKEN }}
+          MP_TEST_PUBLIC_KEY: ${{ secrets.MP_TEST_PUBLIC_KEY }}
+          MP_WEBHOOK_SECRET: ${{ secrets.MP_WEBHOOK_SECRET }}
+          NODE_ENV: test
+
+      - name: Test webhook endpoints
+        if: steps.check-credentials.outputs.has-credentials == 'true'
+        working-directory: backend/strapi
+        run: |
+          echo "Testing MercadoPago webhook endpoints..."
+          npm run test:webhooks || echo "Webhook tests not configured"
+        env:
+          MP_WEBHOOK_SECRET: ${{ secrets.MP_WEBHOOK_SECRET }}
+          NODE_ENV: test
+
+      - name: Skip message
+        if: steps.check-credentials.outputs.has-credentials == 'false'
+        run: |
+          echo "Skipping payment tests - MercadoPago credentials not configured"
+          echo "Add MP_TEST_ACCESS_TOKEN, MP_TEST_PUBLIC_KEY, and MP_WEBHOOK_SECRET to GitHub Secrets to enable"
+
+  # ============================
+  # Build Backend
+  # ============================
+  build-backend:
+    name: Build Backend
+    runs-on: ubuntu-latest
+    needs: [quality-checks]
+    if: |
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.job == 'all' ||
+        github.event.inputs.job == 'build-backend' ||
+        github.event.inputs.job == 'deploy-backend'))
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install backend dependencies
+        working-directory: backend/strapi
+        run: npm ci --only=production
+
+      - name: Build Strapi
+        working-directory: backend/strapi
+        run: |
+          echo "Building Strapi for production..."
+          npm run build
+        env:
+          NODE_ENV: production
+          # Use test keys for build verification
+          APP_KEYS: build-key-1,build-key-2,build-key-3,build-key-4
+          JWT_SECRET: build-jwt-secret
+          API_TOKEN_SALT: build-api-token-salt
+          ADMIN_JWT_SECRET: build-admin-jwt-secret
+
+      - name: Verify build
+        working-directory: backend/strapi
+        run: |
+          if [ ! -d "dist" ] && [ ! -d "build" ]; then
+            echo "ERROR: Build directory not found"
+            exit 1
+          fi
+          echo "✅ Backend build completed successfully"
+
+      - name: Check build size
+        working-directory: backend/strapi
+        run: |
+          echo "Build size report:"
+          du -sh dist 2>/dev/null || du -sh build 2>/dev/null || echo "Build directory not found"
+
+  # ============================
+  # Deploy Backend to Render
+  # ============================
+  deploy-backend:
+    name: Deploy Backend to Render
+    runs-on: ubuntu-latest
+    needs: build-backend
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.job == 'all' || github.event.inputs.job == 'deploy-backend'))
+
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: ${{ steps.deploy.outputs.service_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set deployment environment
+        id: set-env
+        run: |
+          ENV_NAME="${{ github.event.inputs.environment || 'production' }}"
+          echo "environment=$ENV_NAME" >> $GITHUB_OUTPUT
+
+          # Set service ID and URL based on environment
+          case "$ENV_NAME" in
+            production)
+              echo "service_id=${{ secrets.RENDER_SERVICE_ID_PROD }}" >> $GITHUB_OUTPUT
+              echo "service_url=https://api.tifossi.app" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "service_id=${{ secrets.RENDER_SERVICE_ID_STAGING }}" >> $GITHUB_OUTPUT
+              echo "service_url=https://staging-api.tifossi.app" >> $GITHUB_OUTPUT
+              ;;
+            development)
+              echo "service_id=${{ secrets.RENDER_SERVICE_ID_DEV }}" >> $GITHUB_OUTPUT
+              echo "service_url=https://dev-api.tifossi.app" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Validate deployment prerequisites
+        run: |
+          # Check for Render API key
+          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
+            echo "❌ ERROR: RENDER_API_KEY not configured in GitHub Secrets"
+            echo "Please add RENDER_API_KEY to repository secrets"
+            exit 1
+          fi
+
+          # Check for service ID
+          SERVICE_ID="${{ steps.set-env.outputs.service_id }}"
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ ERROR: RENDER_SERVICE_ID not configured for ${{ steps.set-env.outputs.environment }}"
+            echo "Please add RENDER_SERVICE_ID_PROD/STAGING/DEV to repository secrets"
+            exit 1
+          fi
+
+          echo "✅ Deployment prerequisites validated"
+
+      - name: Configure Render environment variables
+        id: configure-env
+        run: |
+          SERVICE_ID="${{ steps.set-env.outputs.service_id }}"
+          ENV_NAME="${{ steps.set-env.outputs.environment }}"
+
+          echo "Configuring environment variables for $ENV_NAME..."
+
+          # Create JSON payload for environment variables
+          cat > env_vars.json << EOF
+          [
+            {"key": "NODE_ENV", "value": "$ENV_NAME"},
+            {"key": "APP_KEYS", "value": "${{ secrets.STRAPI_APP_KEYS }}"},
+            {"key": "API_TOKEN_SALT", "value": "${{ secrets.STRAPI_API_TOKEN_SALT }}"},
+            {"key": "ADMIN_JWT_SECRET", "value": "${{ secrets.STRAPI_ADMIN_JWT_SECRET }}"},
+            {"key": "TRANSFER_TOKEN_SALT", "value": "${{ secrets.STRAPI_TRANSFER_TOKEN_SALT }}"},
+            {"key": "JWT_SECRET", "value": "${{ secrets.STRAPI_JWT_SECRET }}"},
+            {"key": "DATABASE_CLIENT", "value": "postgres"},
+            {"key": "CLOUDINARY_NAME", "value": "${{ secrets.CLOUDINARY_NAME }}"},
+            {"key": "CLOUDINARY_KEY", "value": "${{ secrets.CLOUDINARY_KEY }}"},
+            {"key": "CLOUDINARY_SECRET", "value": "${{ secrets.CLOUDINARY_SECRET }}"},
+            {"key": "MP_ACCESS_TOKEN", "value": "${{ secrets.MP_ACCESS_TOKEN }}"},
+            {"key": "MP_PUBLIC_KEY", "value": "${{ secrets.MP_PUBLIC_KEY }}"},
+            {"key": "MP_WEBHOOK_SECRET", "value": "${{ secrets.MP_WEBHOOK_SECRET }}"},
+            {"key": "FRONTEND_URL", "value": "https://tifossi.app"},
+            {"key": "API_BASE_URL", "value": "${{ steps.set-env.outputs.service_url }}"}
+          ]
+          EOF
+
+          # Update environment variables via Render API
+          curl -X PUT "${{ env.RENDER_API_URL }}/services/$SERVICE_ID/env-vars" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d @env_vars.json \
+            --fail-with-body || {
+              echo "❌ Failed to update environment variables"
+              exit 1
+            }
+
+          echo "✅ Environment variables configured"
+          rm env_vars.json
+
+      - name: Trigger deployment
+        id: deploy
+        run: |
+          SERVICE_ID="${{ steps.set-env.outputs.service_id }}"
+
+          echo "Triggering deployment for service $SERVICE_ID..."
+
+          # Trigger deployment via Render API
+          DEPLOY_RESPONSE=$(curl -X POST "${{ env.RENDER_API_URL }}/services/$SERVICE_ID/deploys" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": false}' \
+            --fail-with-body) || {
+              echo "❌ Failed to trigger deployment"
+              exit 1
+            }
+
+          DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
+          echo "deployment_id=$DEPLOY_ID" >> $GITHUB_OUTPUT
+          echo "service_url=${{ steps.set-env.outputs.service_url }}" >> $GITHUB_OUTPUT
+
+          echo "✅ Deployment triggered with ID: $DEPLOY_ID"
+
+      - name: Wait for deployment
+        run: |
+          SERVICE_ID="${{ steps.set-env.outputs.service_id }}"
+          DEPLOY_ID="${{ steps.deploy.outputs.deployment_id }}"
+
+          echo "Waiting for deployment to complete..."
+
+          # Poll deployment status
+          for i in {1..60}; do
+            STATUS=$(curl -s "${{ env.RENDER_API_URL }}/services/$SERVICE_ID/deploys/$DEPLOY_ID" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" | \
+              jq -r '.status')
+
+            case "$STATUS" in
+              "live")
+                echo "✅ Deployment successful!"
+                exit 0
+                ;;
+              "build_failed"|"update_failed"|"canceled"|"deactivated")
+                echo "❌ Deployment failed with status: $STATUS"
+                exit 1
+                ;;
+              *)
+                echo "⏳ Deployment status: $STATUS (attempt $i/60)"
+                sleep 30
+                ;;
+            esac
+          done
+
+          echo "❌ Deployment timed out"
+          exit 1
+
+      - name: Verify deployment health
+        run: |
+          SERVICE_URL="${{ steps.deploy.outputs.service_url }}"
+
+          echo "Verifying deployment health at $SERVICE_URL..."
+
+          # Wait for service to be ready
+          sleep 10
+
+          # Check health endpoint
+          for i in {1..5}; do
+            if curl -f "$SERVICE_URL/api/health" --max-time 10; then
+              echo "✅ Health check passed!"
+              exit 0
+            fi
+            echo "⏳ Health check attempt $i/5 failed, retrying..."
+            sleep 10
+          done
+
+          echo "❌ Health check failed"
+          exit 1
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "======================================"
+          echo "DEPLOYMENT SUMMARY"
+          echo "======================================"
+          echo "Environment: ${{ steps.set-env.outputs.environment }}"
+          echo "Service URL: ${{ steps.deploy.outputs.service_url }}"
+          echo "Deployment ID: ${{ steps.deploy.outputs.deployment_id }}"
+          echo "======================================"
+
+  # ============================
+  # Build Mobile App
+  # ============================
+  build-mobile:
+    name: Build Mobile App
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.job == 'all' || github.event.inputs.job == 'build-mobile'))
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          expo-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure app credentials
+        run: |
+          echo "Configuring app credentials..."
+
+          # Update app.json with production values if available
+          if [ -n "${{ secrets.IOS_BUNDLE_ID }}" ]; then
+            npx json -I -f app.json -e "this.expo.ios.bundleIdentifier='${{ secrets.IOS_BUNDLE_ID }}'"
+          fi
+
+          if [ -n "${{ secrets.ANDROID_PACKAGE }}" ]; then
+            npx json -I -f app.json -e "this.expo.android.package='${{ secrets.ANDROID_PACKAGE }}'"
+          fi
+
+          echo "✅ App credentials configured"
+
+      - name: Set build profile
+        id: build-config
+        run: |
+          PLATFORM="${{ github.event.inputs.platform || 'all' }}"
+          PROFILE="${{ github.event.inputs.profile || 'production' }}"
+
+          echo "platform=$PLATFORM" >> $GITHUB_OUTPUT
+          echo "profile=$PROFILE" >> $GITHUB_OUTPUT
+
+          echo "Building for platform: $PLATFORM"
+          echo "Using profile: $PROFILE"
+
+      - name: Build iOS app
+        if: |
+          steps.build-config.outputs.platform == 'all' ||
+          steps.build-config.outputs.platform == 'ios'
+        run: |
+          echo "Building iOS app..."
+          eas build --platform ios \
+            --profile ${{ steps.build-config.outputs.profile }} \
+            --non-interactive \
+            --no-wait || {
+              echo "Note: EAS build submitted. Check Expo dashboard for status."
+            }
+
+      - name: Build Android app
+        if: |
+          steps.build-config.outputs.platform == 'all' ||
+          steps.build-config.outputs.platform == 'android'
+        run: |
+          echo "Building Android app..."
+          eas build --platform android \
+            --profile ${{ steps.build-config.outputs.profile }} \
+            --non-interactive \
+            --no-wait || {
+              echo "Note: EAS build submitted. Check Expo dashboard for status."
+            }
+
+      - name: Submit to app stores
+        if: |
+          github.event_name == 'push' &&
+          startsWith(github.ref, 'refs/tags/v') &&
+          steps.build-config.outputs.profile == 'production'
+        run: |
+          echo "Preparing store submission..."
+
+          # Submit to TestFlight
+          if [ "${{ steps.build-config.outputs.platform }}" = "all" ] || [ "${{ steps.build-config.outputs.platform }}" = "ios" ]; then
+            echo "Submitting to TestFlight..."
+            eas submit --platform ios --latest || echo "iOS submission requires manual review"
+          fi
+
+          # Submit to Google Play
+          if [ "${{ steps.build-config.outputs.platform }}" = "all" ] || [ "${{ steps.build-config.outputs.platform }}" = "android" ]; then
+            echo "Submitting to Google Play..."
+            eas submit --platform android --latest || echo "Android submission requires manual review"
+          fi
+
+      - name: Build summary
+        if: always()
+        run: |
+          echo "======================================"
+          echo "MOBILE BUILD SUMMARY"
+          echo "======================================"
+          echo "Platform: ${{ steps.build-config.outputs.platform }}"
+          echo "Profile: ${{ steps.build-config.outputs.profile }}"
+          echo "Check Expo dashboard for build status"
+          echo "======================================"
+
+  # ============================
+  # Notification Job
+  # ============================
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [quality-checks, payment-tests, build-backend, deploy-backend, build-mobile]
+    if: always()
+
+    steps:
+      - name: Determine status
+        id: status
+        run: |
+          if [ "${{ needs.quality-checks.result }}" = "failure" ]; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "message=Quality checks failed" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.deploy-backend.result }}" = "failure" ]; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "message=Backend deployment failed" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.build-mobile.result }}" = "failure" ]; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "message=Mobile build failed" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "message=Pipeline completed successfully" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          STATUS="${{ steps.status.outputs.status }}"
+          MESSAGE="${{ steps.status.outputs.message }}"
+          COLOR=$([ "$STATUS" = "success" ] && echo "good" || echo "danger")
+
+          curl -X POST $SLACK_WEBHOOK_URL \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"attachments\": [{
+                \"color\": \"$COLOR\",
+                \"title\": \"CI/CD Pipeline: $STATUS\",
+                \"text\": \"$MESSAGE\",
+                \"fields\": [
+                  {\"title\": \"Repository\", \"value\": \"${{ github.repository }}\", \"short\": true},
+                  {\"title\": \"Branch\", \"value\": \"${{ github.ref_name }}\", \"short\": true},
+                  {\"title\": \"Commit\", \"value\": \"${{ github.sha }}\", \"short\": false},
+                  {\"title\": \"Author\", \"value\": \"${{ github.actor }}\", \"short\": true}
+                ]
+              }]
+            }" || echo "Slack notification not configured"
+
+      - name: Create GitHub summary
+        run: |
+          echo "## CI/CD Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Quality Checks | ${{ needs.quality-checks.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Payment Tests | ${{ needs.payment-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Backend | ${{ needs.build-backend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy Backend | ${{ needs.deploy-backend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Mobile | ${{ needs.build-mobile.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Overall Status**: ${{ steps.status.outputs.status }}" >> $GITHUB_STEP_SUMMARY

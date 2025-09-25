@@ -71,7 +71,7 @@ export const appleAuthState = {
         timestamp: Date.now(),
       };
       await AsyncStorage.setItem(APPLE_AUTH_STATE_KEY, JSON.stringify(stateData));
-    } catch (error) {}
+    } catch {}
   },
 
   /**
@@ -85,7 +85,7 @@ export const appleAuthState = {
         return parsed;
       }
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   },
@@ -96,7 +96,7 @@ export const appleAuthState = {
   clearAuthState: async (): Promise<void> => {
     try {
       await AsyncStorage.removeItem(APPLE_AUTH_STATE_KEY);
-    } catch (error) {}
+    } catch {}
   },
 
   /**
@@ -109,7 +109,7 @@ export const appleAuthState = {
         timestamp: Date.now(),
       };
       await AsyncStorage.setItem(APPLE_AUTH_PENDING_KEY, JSON.stringify(pendingData));
-    } catch (error) {}
+    } catch {}
   },
 
   /**
@@ -131,7 +131,7 @@ export const appleAuthState = {
         return parsed;
       }
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   },
@@ -142,7 +142,7 @@ export const appleAuthState = {
   clearPendingAppleAuth: async (): Promise<void> => {
     try {
       await AsyncStorage.removeItem(APPLE_AUTH_PENDING_KEY);
-    } catch (error) {}
+    } catch {}
   },
 };
 
@@ -270,8 +270,8 @@ class DeepLinkRouter {
       await this.handleInitialUrl();
 
       this.isInitialized = true;
-    } catch (error) {
-      throw error;
+    } catch (_error) {
+      throw _error;
     }
   }
 
@@ -296,7 +296,7 @@ class DeepLinkRouter {
       if (initialUrl) {
         await this.handleDeepLink(initialUrl);
       }
-    } catch (error) {}
+    } catch {}
   }
 
   /**
@@ -688,7 +688,7 @@ class DeepLinkRouter {
   /**
    * Complete Apple Sign-In with authorization code
    */
-  private async completeAppleSignIn(code: string, state?: string): Promise<void> {
+  private async completeAppleSignIn(_code: string, _state?: string): Promise<void> {
     try {
       // Here you would typically:
       // 1. Exchange the authorization code for tokens with your backend
@@ -697,8 +697,8 @@ class DeepLinkRouter {
       // For now, we'll log and delegate to the auth service
       // The actual implementation would depend on your backend API
       // This is a placeholder for the integration
-    } catch (error) {
-      throw error;
+    } catch (_error) {
+      throw _error;
     }
   }
 
@@ -729,7 +729,7 @@ class DeepLinkRouter {
       });
 
       return defaultRoute;
-    } catch (error) {
+    } catch {
       // Fallback to home
       const fallbackRoute = '/(tabs)/';
       router.replace(fallbackRoute as any);
@@ -752,7 +752,7 @@ class DeepLinkRouter {
         // Clear pending session
         await appleAuthState.clearPendingAppleAuth();
       }
-    } catch (error) {}
+    } catch {}
   }
 
   /**
@@ -762,8 +762,8 @@ class DeepLinkRouter {
     try {
       // The implementation here would depend on your specific auth flow
       // This might involve re-validating tokens, checking session state, etc.
-    } catch (error) {
-      throw error;
+    } catch (_error) {
+      throw _error;
     }
   }
 
@@ -790,7 +790,7 @@ class DeepLinkRouter {
       // - Verifying state parameter
 
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -826,7 +826,7 @@ class DeepLinkRouter {
         this.showAppleAuthError(
           'La autenticación con Apple ha expirado. Por favor, intenta nuevamente.'
         );
-      } catch (error) {}
+      } catch {}
     }, APPLE_AUTH_TIMEOUT);
   }
 
@@ -837,7 +837,7 @@ class DeepLinkRouter {
     try {
       await appleAuthState.clearPendingAppleAuth();
       await appleAuthState.clearAuthState();
-    } catch (error) {}
+    } catch {}
   }
 
   /**

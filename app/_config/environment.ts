@@ -188,7 +188,7 @@ export const validateEnvironment = (): boolean => {
     }
 
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 };
@@ -211,19 +211,19 @@ export const getEnvironmentBanner = () => {
 /**
  * Safe Console Logging
  */
-export const safeLog = (...args: any[]) => {
+export const safeLog = (..._args: any[]) => {
   if (config.enableConsoleLogging) {
     // Log message would be displayed here
   }
 };
 
-export const safeWarn = (...args: any[]) => {
+export const safeWarn = (..._args: any[]) => {
   if (config.enableConsoleLogging) {
     // Warning message would be displayed here
   }
 };
 
-export const safeError = (...args: any[]) => {
+export const safeError = (..._args: any[]) => {
   if (config.enableConsoleLogging) {
     // Error message would be displayed here
   }

@@ -91,11 +91,64 @@ export interface ApiEndpoints {
 }
 
 /**
+ * Get API base URL from environment - fail fast if not configured
+ */
+const getApiBaseUrl = (environment: string): string => {
+  // Check for explicit environment variable
+  const envUrl = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+
+  if (process.env.NODE_ENV === 'test' && !envUrl) {
+    return 'http://localhost:1337';
+  }
+
+  // In test environment, always provide a default
+  if (process.env.NODE_ENV === 'test') {
+    return envUrl || 'http://localhost:1337';
+  }
+
+  // In development, allow localhost as fallback for developer convenience
+  if (environment === 'development' && !envUrl) {
+    if (__DEV__) {
+      console.warn(
+        '⚠️ API URL not configured. Using localhost:1337. Set EXPO_PUBLIC_API_BASE_URL in .env'
+      );
+    }
+    return 'http://localhost:1337';
+  }
+
+  // In staging/production, REQUIRE the environment variable
+  if (!envUrl) {
+    const errorMsg = `
+🚨 CONFIGURATION ERROR: API URL is not configured!
+
+You must set one of these environment variables:
+  - EXPO_PUBLIC_API_BASE_URL
+  - EXPO_PUBLIC_BACKEND_URL
+
+For production deployment to Render:
+  EXPO_PUBLIC_API_BASE_URL=https://tifossi-strapi-backend.onrender.com
+
+For local development:
+  EXPO_PUBLIC_API_BASE_URL=http://localhost:1337
+
+Please create a .env file or set the environment variable before building.
+`;
+
+    if (__DEV__) {
+      console.error(errorMsg);
+    }
+    throw new Error('API_URL_NOT_CONFIGURED: Missing required environment variable');
+  }
+
+  return envUrl;
+};
+
+/**
  * Environment-specific endpoint configurations
  */
 const endpointConfigurations: Record<string, ApiEndpoints> = {
   development: {
-    baseUrl: 'http://localhost:1337',
+    baseUrl: getApiBaseUrl('development'),
     apiVersion: 'v1',
     timeout: config.apiTimeout,
 
@@ -175,7 +228,7 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
   },
 
   staging: {
-    baseUrl: 'https://staging-api.tifossi.app',
+    baseUrl: getApiBaseUrl('staging'),
     apiVersion: 'v1',
     timeout: config.apiTimeout,
 
@@ -255,7 +308,7 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
   },
 
   production: {
-    baseUrl: 'https://api.tifossi.app',
+    baseUrl: getApiBaseUrl('production'),
     apiVersion: 'v1',
     timeout: config.apiTimeout,
 
@@ -405,31 +458,66 @@ export const getMediaUrl = (path: string): string => {
 };
 
 /**
- * Endpoint validation
+ * Endpoint validation - ensures configuration is correct
  */
 export const validateEndpoints = (): boolean => {
   try {
-    // Check if baseUrl is accessible
+    // Check if baseUrl is a valid URL
     const urlPattern = /^https?:\/\/.+/;
     if (!urlPattern.test(endpoints.baseUrl)) {
+      if (__DEV__) {
+        console.error(`❌ Invalid API URL format: ${endpoints.baseUrl}`);
+      }
       return false;
     }
 
     // Check if timeout is reasonable
     if (endpoints.timeout < 1000 || endpoints.timeout > 60000) {
+      if (__DEV__) {
+        console.error(`❌ Invalid timeout value: ${endpoints.timeout}`);
+      }
+      return false;
+    }
+
+    // Warn if using localhost in non-development environment
+    if (currentEnvironment !== 'development' && endpoints.baseUrl.includes('localhost')) {
+      if (__DEV__) {
+        console.error('❌ Using localhost URL in non-development environment!');
+      }
       return false;
     }
 
     return true;
   } catch (error) {
+    if (__DEV__) {
+      console.error('❌ Failed to validate endpoints:', error);
+    }
     return false;
+  }
+};
+
+/**
+ * Initialize and validate endpoints configuration
+ * Call this early in app initialization to fail fast
+ */
+export const initializeEndpoints = (): void => {
+  if (__DEV__) {
+    console.log(`🔧 Initializing API endpoints for ${currentEnvironment} environment...`);
+  }
+
+  if (!validateEndpoints()) {
+    throw new Error('INVALID_API_CONFIGURATION: Endpoints validation failed');
+  }
+
+  if (__DEV__) {
+    console.log(`✅ API configured: ${endpoints.baseUrl}`);
   }
 };
 
 /**
  * Request headers factory
  */
-export const getDefaultHeaders = (includeAuth = false): Record<string, string> => {
+export const getDefaultHeaders = (_includeAuth = false): Record<string, string> => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -438,10 +526,8 @@ export const getDefaultHeaders = (includeAuth = false): Record<string, string> =
     'X-App-Environment': currentEnvironment,
   };
 
-  if (includeAuth) {
-    // Auth token will be added by the auth service
-    headers['Authorization'] = 'Bearer {{TOKEN}}';
-  }
+  // Note: Auth token will be added by the auth service when includeAuth is true
+  // Do not set Authorization header here to avoid placeholder tokens
 
   return headers;
 };

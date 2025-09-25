@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ImageSourcePropType,
   ScrollView,
+  Text,
 } from 'react-native';
 import { colors } from '../../../../_styles/colors';
 import { Product } from '../../../../_types/product';
@@ -45,6 +46,8 @@ function EnhancedProductGallery({
   // Get the color object for the selected color
   const selectedColorObject = product.colors?.find((c) => c.colorName === activeColor);
 
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
   // If no matching color object is found, use the first available color from this product
   useEffect(() => {
     const colors = product.colors;
@@ -53,29 +56,35 @@ function EnhancedProductGallery({
     }
   }, [product.id, selectedColorObject, product.colors]);
 
-  // Get all available images for the selected color (main + additional)
-  // Only include images that actually exist (don't add placeholders)
-  const productImages: ImageSourcePropType[] = [];
+  const productImages: ImageSourcePropType[] = useMemo(() => {
+    const images: ImageSourcePropType[] = [];
 
-  if (selectedColorObject?.images) {
-    // Add the main image
-    productImages.push(selectedColorObject.images.main as ImageSourcePropType);
+    if (selectedColorObject?.images) {
+      images.push(selectedColorObject.images.main as ImageSourcePropType);
 
-    // Add additional images if available
-    if (selectedColorObject.images.additional && selectedColorObject.images.additional.length > 0) {
-      selectedColorObject.images.additional.forEach((img) => {
-        if (img) {
-          productImages.push(img as ImageSourcePropType);
-        }
-      });
+      if (selectedColorObject.images.additional?.length) {
+        selectedColorObject.images.additional.forEach((img) => {
+          if (img) {
+            images.push(img as ImageSourcePropType);
+          }
+        });
+      }
     }
-  } else {
-    // Fallback to product frontImage if no color-specific images
-    productImages.push(product.frontImage as ImageSourcePropType);
-  }
+
+    if (images.length === 0 && product.frontImage) {
+      images.push(product.frontImage as ImageSourcePropType);
+    }
+
+    return images;
+  }, [product.frontImage, selectedColorObject]);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [productImages.length]);
 
   const handleColorChange = (color: string) => {
     setActiveColor(color);
+    setActiveImageIndex(0);
 
     if (onColorChange) {
       onColorChange(color);
@@ -83,7 +92,7 @@ function EnhancedProductGallery({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="product-gallery-container">
       {product.colors && product.colors.length > 1 && (
         <View style={styles.colorSliderContainer}>
           <ScrollView
@@ -101,6 +110,9 @@ function EnhancedProductGallery({
                 ]}
                 onPress={() => handleColorChange(colorObj.colorName)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityState={{ selected: activeColor === colorObj.colorName }}
+                testID={`color-option-${colorObj.colorName.toLowerCase()}`}
               >
                 <Image
                   source={
@@ -111,6 +123,7 @@ function EnhancedProductGallery({
                   style={styles.colorThumbnail}
                   resizeMode="cover"
                 />
+                <Text style={styles.colorLabel}>{colorObj.colorName}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -118,12 +131,27 @@ function EnhancedProductGallery({
       )}
 
       <ProductViewGallery
-        key={`product-gallery-${product.id}`}
+        key={`product-gallery-${product.id}-${activeColor}`}
         images={productImages}
-        onImagePress={(index) => {
+        onImagePress={(_index) => {
           /* Image pressed */
         }}
+        activeIndex={activeImageIndex}
+        onActiveIndexChange={setActiveImageIndex}
+        testID="product-gallery"
       />
+
+      {productImages.length > 1 && (
+        <View style={styles.galleryIndicators}>
+          {productImages.map((_, index) => (
+            <View
+              key={`indicator-${index}`}
+              testID={`gallery-indicator-${index}`}
+              style={[styles.indicatorDot, { opacity: activeImageIndex === index ? 0.9 : 0.3 }]}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -136,10 +164,9 @@ const styles = StyleSheet.create({
 
   // Color slider styles
   colorSliderContainer: {
-    height: 130, // Provides enough space for 96px images + padding
     backgroundColor: colors.background.light,
     paddingTop: spacing.md,
-    paddingBottom: spacing.xs,
+    paddingBottom: spacing.sm,
   },
   colorSliderContent: {
     flexDirection: 'row',
@@ -149,18 +176,39 @@ const styles = StyleSheet.create({
   },
   colorOption: {
     width: COLOR_OPTION_SIZE,
-    height: COLOR_OPTION_SIZE,
-    borderRadius: 2, // Per the design spec
+    borderRadius: 8,
     borderWidth: 2,
     borderColor: 'transparent',
     overflow: 'hidden',
+    backgroundColor: colors.background.light,
+    alignItems: 'center',
   },
   selectedColorOption: {
     borderColor: colors.primary || '#0C0C0C',
   },
   colorThumbnail: {
     width: '100%',
-    height: '100%',
+    height: COLOR_OPTION_SIZE - 28,
+  },
+  colorLabel: {
+    marginTop: spacing.xs,
+    fontSize: 12,
+    color: colors.primary,
+    textAlign: 'center',
+  },
+
+  galleryIndicators: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+  },
+  indicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
   },
 
   // Product images section handled by ProductViewGallery component

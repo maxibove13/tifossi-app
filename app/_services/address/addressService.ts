@@ -5,6 +5,7 @@
 
 import httpClient from '../api/httpClient';
 import { handleApiError } from '../api/errorHandler';
+import { endpoints } from '../../_config/endpoints';
 
 export interface Address {
   id?: string;
@@ -41,7 +42,7 @@ class AddressService {
   private authToken: string | null = null;
 
   constructor() {
-    this.baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:1337';
+    this.baseUrl = endpoints.baseUrl;
   }
 
   /**
@@ -72,7 +73,7 @@ class AddressService {
       return addresses;
     } catch (error) {
       const apiError = handleApiError(error, 'fetchUserAddresses');
-      throw apiError;
+      throw new Error(apiError.message);
     }
   }
 
@@ -225,7 +226,7 @@ class AddressService {
     try {
       const addresses = await this.fetchUserAddresses();
       return addresses.find((address) => address.isDefault) || null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -340,13 +341,11 @@ class AddressService {
 
   /**
    * Check if address data contains all required fields
+   * Note: This checks if fields are present, not if they're valid
    */
   private isCompleteAddress(address: Partial<Address>): boolean {
     const requiredFields = ['firstName', 'lastName', 'street', 'number', 'city', 'country'];
-    return requiredFields.every(
-      (field) =>
-        address[field as keyof Address] && String(address[field as keyof Address]).trim().length > 0
-    );
+    return requiredFields.every((field) => field in address);
   }
 
   /**
@@ -389,7 +388,7 @@ class AddressService {
       return address || null;
     } catch (error) {
       const apiError = handleApiError(error, 'getAddressById');
-      return null;
+      throw new Error(apiError.message);
     }
   }
 

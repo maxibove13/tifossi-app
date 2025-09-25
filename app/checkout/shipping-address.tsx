@@ -55,7 +55,7 @@ export default function ShippingAddressScreen() {
         } else if (userAddresses.length > 0) {
           setSelectedAddress(userAddresses[0].id!);
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load addresses. Please try again.');
       } finally {
         setIsLoading(false);
@@ -105,7 +105,14 @@ export default function ShippingAddressScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Direcciones de envío</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
+        <TouchableOpacity
+          testID="address-close-button"
+          accessibilityRole="button"
+          accessibilityLabel="address-close-button"
+          style={styles.closeButton}
+          onPress={handleClose}
+          activeOpacity={0.7}
+        >
           <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
         </TouchableOpacity>
       </View>
@@ -133,7 +140,7 @@ export default function ShippingAddressScreen() {
                       addressService.setAuthToken(token);
                       const userAddresses = await addressService.fetchUserAddresses();
                       setAddresses(userAddresses);
-                    } catch (_err) {
+                    } catch {
                       setError('Failed to load addresses. Please try again.');
                     } finally {
                       setIsLoading(false);
@@ -154,6 +161,9 @@ export default function ShippingAddressScreen() {
                   {addresses.map((address) => (
                     <TouchableOpacity
                       key={address.id}
+                      testID={`address-item-${address.id}`}
+                      accessibilityRole="button"
+                      accessibilityLabel="address-item"
                       style={styles.addressItem}
                       onPress={() => handleAddressSelect(address.id!)}
                       activeOpacity={0.7}
@@ -172,6 +182,9 @@ export default function ShippingAddressScreen() {
 
               <View style={styles.addAddressContainer}>
                 <TouchableOpacity
+                  testID="address-add-button"
+                  accessibilityRole="button"
+                  accessibilityLabel="address-add-button"
                   style={styles.addAddressButton}
                   onPress={handleAddNewAddress}
                   activeOpacity={0.7}
@@ -194,6 +207,9 @@ export default function ShippingAddressScreen() {
 
               <View style={styles.addAddressEmptyContainer}>
                 <TouchableOpacity
+                  testID="address-add-button"
+                  accessibilityRole="button"
+                  accessibilityLabel="address-add-button"
                   style={styles.addAddressButton}
                   onPress={handleAddNewAddress}
                   activeOpacity={0.7}
@@ -210,6 +226,9 @@ export default function ShippingAddressScreen() {
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
         <TouchableOpacity
+          testID="address-next-button"
+          accessibilityRole="button"
+          accessibilityLabel="address-next-button"
           style={[
             styles.primaryButton,
             !selectedAddress && addresses.length > 0 && styles.disabledButton,

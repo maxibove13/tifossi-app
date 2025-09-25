@@ -185,6 +185,7 @@ function Header({
                 <Ionicons name="share-outline" size={24} color={colors.primary} />
               </Pressable>
               <Pressable
+                testID="favorite-button"
                 hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
                 onPress={toggleFavorite}
                 aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}

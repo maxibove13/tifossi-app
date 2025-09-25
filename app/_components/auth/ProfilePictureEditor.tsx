@@ -49,7 +49,7 @@ export default function ProfilePictureEditor({
         // Success message
         Alert.alert('Éxito', 'Imagen de perfil actualizada correctamente.');
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'No se pudo actualizar la imagen de perfil. Intenta nuevamente.');
     } finally {
       setIsUploading(false);

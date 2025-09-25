@@ -273,7 +273,7 @@ class AuthService {
       // Even if logout fails, we should clear local tokens
       try {
         await tokenManager.clearTokens();
-      } catch (clearError) {}
+      } catch {}
       throw error;
     }
   }
@@ -342,16 +342,12 @@ class AuthService {
    *
    * Maintains compatibility with existing authStore.verifyEmail() interface
    */
-  async verifyEmail(_token: string, code: string): Promise<boolean> {
+  async verifyEmail(_token: string, _code: string): Promise<boolean> {
     this.ensureInitialized();
 
-    try {
-      // Verify email code with Firebase (mock implementation)
-
-      return true;
-    } catch (error: any) {
-      throw error;
-    }
+    // Verify email code with Firebase (mock implementation)
+    // For now, we'll just return success
+    return true;
   }
 
   /**
@@ -370,7 +366,7 @@ class AuthService {
   /**
    * Confirm password reset (simplified)
    */
-  async confirmPasswordReset(code: string, _newPassword: string): Promise<void> {
+  async confirmPasswordReset(_code: string, _newPassword: string): Promise<void> {
     this.ensureInitialized();
 
     try {
@@ -433,7 +429,7 @@ class AuthService {
       await tokenManager.refreshTokens();
 
       return true;
-    } catch (error: any) {
+    } catch {
       return false;
     }
   }

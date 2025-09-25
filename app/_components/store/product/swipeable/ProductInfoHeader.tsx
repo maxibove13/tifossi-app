@@ -9,6 +9,8 @@ interface ProductInfoHeaderProps {
   currentPrice: string;
   originalPrice?: string;
   onAddToCart: () => void;
+  addToCartLabel?: string;
+  disabled?: boolean;
 }
 
 export default function ProductInfoHeader({
@@ -18,6 +20,8 @@ export default function ProductInfoHeader({
   currentPrice,
   originalPrice,
   onAddToCart,
+  addToCartLabel = 'Agregar al carrito',
+  disabled = false,
 }: ProductInfoHeaderProps) {
   return (
     <View style={styles.container}>
@@ -45,12 +49,18 @@ export default function ProductInfoHeader({
         style={styles.addToCartButtonContainer}
         onPress={onAddToCart}
         activeOpacity={0.8}
+        disabled={disabled}
+        testID="add-to-cart-button"
       >
         <LinearGradient
           colors={[colors.secondary.gradientStart, colors.secondary.gradientEnd]}
           style={styles.addToCartButton}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
         >
-          <Text style={styles.buttonText}>Agregar al carrito</Text>
+          <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
+            {addToCartLabel}
+          </Text>
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -71,6 +81,7 @@ type Styles = {
   addToCartButtonContainer: ViewStyle;
   addToCartButton: ViewStyle;
   buttonText: TextStyle;
+  buttonTextDisabled: TextStyle;
 };
 
 const styles = StyleSheet.create<Styles>({
@@ -147,6 +158,7 @@ const styles = StyleSheet.create<Styles>({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
+    opacity: 1,
   },
   buttonText: {
     fontFamily: typography.button.fontFamily,
@@ -154,5 +166,8 @@ const styles = StyleSheet.create<Styles>({
     fontSize: typography.button.fontSize,
     color: colors.primary.background,
     textAlign: 'center',
+  },
+  buttonTextDisabled: {
+    opacity: 0.6,
   },
 });
