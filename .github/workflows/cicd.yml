@@ -260,123 +260,42 @@ jobs:
         id: set-env
         run: |
           echo "environment=production" >> $GITHUB_OUTPUT
-          echo "service_id=${{ secrets.RENDER_SERVICE_ID }}" >> $GITHUB_OUTPUT
           echo "service_url=https://tifossi-strapi-backend.onrender.com" >> $GITHUB_OUTPUT
 
       - name: Validate deployment prerequisites
         run: |
-          # Check for Render API key
-          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
-            echo "❌ ERROR: RENDER_API_KEY not configured in GitHub Secrets"
-            echo "Please add RENDER_API_KEY to repository secrets"
-            exit 1
-          fi
-
-          # Check for service ID
-          SERVICE_ID="${{ steps.set-env.outputs.service_id }}"
-          if [ -z "$SERVICE_ID" ]; then
-            echo "❌ ERROR: RENDER_SERVICE_ID not configured"
-            echo "Please add RENDER_SERVICE_ID to repository secrets"
+          # Check for Deploy Hook URL
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+            echo "❌ ERROR: RENDER_DEPLOY_HOOK_URL not configured in GitHub Secrets"
+            echo "Please add RENDER_DEPLOY_HOOK_URL to repository secrets"
             exit 1
           fi
 
           echo "✅ Deployment prerequisites validated"
 
-      - name: Configure Render environment variables
-        id: configure-env
-        run: |
-          SERVICE_ID="${{ steps.set-env.outputs.service_id }}"
-
-          echo "Configuring environment variables for production..."
-
-          # Create JSON payload for environment variables
-          cat > env_vars.json << EOF
-          [
-            {"key": "NODE_ENV", "value": "production"},
-            {"key": "APP_KEYS", "value": "${{ secrets.STRAPI_APP_KEYS }}"},
-            {"key": "API_TOKEN_SALT", "value": "${{ secrets.STRAPI_API_TOKEN_SALT }}"},
-            {"key": "ADMIN_JWT_SECRET", "value": "${{ secrets.STRAPI_ADMIN_JWT_SECRET }}"},
-            {"key": "TRANSFER_TOKEN_SALT", "value": "${{ secrets.STRAPI_TRANSFER_TOKEN_SALT }}"},
-            {"key": "JWT_SECRET", "value": "${{ secrets.STRAPI_JWT_SECRET }}"},
-            {"key": "DATABASE_CLIENT", "value": "postgres"},
-            {"key": "CLOUDINARY_NAME", "value": "${{ secrets.CLOUDINARY_NAME }}"},
-            {"key": "CLOUDINARY_KEY", "value": "${{ secrets.CLOUDINARY_KEY }}"},
-            {"key": "CLOUDINARY_SECRET", "value": "${{ secrets.CLOUDINARY_SECRET }}"},
-            {"key": "MP_ACCESS_TOKEN", "value": "${{ secrets.MP_ACCESS_TOKEN }}"},
-            {"key": "MP_PUBLIC_KEY", "value": "${{ secrets.MP_PUBLIC_KEY }}"},
-            {"key": "MP_WEBHOOK_SECRET", "value": "${{ secrets.MP_WEBHOOK_SECRET }}"},
-            {"key": "FRONTEND_URL", "value": "https://tifossi.app"},
-            {"key": "API_BASE_URL", "value": "${{ steps.set-env.outputs.service_url }}"}
-          ]
-          EOF
-
-          # Update environment variables via Render API
-          curl -X PUT "${{ env.RENDER_API_URL }}/services/$SERVICE_ID/env-vars" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d @env_vars.json \
-            --fail-with-body || {
-              echo "❌ Failed to update environment variables"
-              exit 1
-            }
-
-          echo "✅ Environment variables configured"
-          rm env_vars.json
 
       - name: Trigger deployment
         id: deploy
         run: |
-          SERVICE_ID="${{ steps.set-env.outputs.service_id }}"
+          echo "Triggering deployment via deploy hook..."
 
-          echo "Triggering deployment for service $SERVICE_ID..."
-
-          # Trigger deployment via Render API
-          DEPLOY_RESPONSE=$(curl -X POST "${{ env.RENDER_API_URL }}/services/$SERVICE_ID/deploys" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d '{"clearCache": false}' \
-            --fail-with-body) || {
-              echo "❌ Failed to trigger deployment"
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" \
+            --fail-with-body || {
+              echo "❌ Failed to trigger deployment via deploy hook"
               exit 1
             }
 
-          DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
-          echo "deployment_id=$DEPLOY_ID" >> $GITHUB_OUTPUT
-          echo "service_url=${{ steps.set-env.outputs.service_url }}" >> $GITHUB_OUTPUT
-
-          echo "✅ Deployment triggered with ID: $DEPLOY_ID"
+          echo "✅ Deployment triggered via deploy hook"
+          echo "service_url=https://tifossi-strapi-backend.onrender.com" >> $GITHUB_OUTPUT
 
       - name: Wait for deployment
         run: |
-          SERVICE_ID="${{ steps.set-env.outputs.service_id }}"
-          DEPLOY_ID="${{ steps.deploy.outputs.deployment_id }}"
-
           echo "Waiting for deployment to complete..."
-
-          # Poll deployment status
-          for i in {1..60}; do
-            STATUS=$(curl -s "${{ env.RENDER_API_URL }}/services/$SERVICE_ID/deploys/$DEPLOY_ID" \
-              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" | \
-              jq -r '.status')
-
-            case "$STATUS" in
-              "live")
-                echo "✅ Deployment successful!"
-                exit 0
-                ;;
-              "build_failed"|"update_failed"|"canceled"|"deactivated")
-                echo "❌ Deployment failed with status: $STATUS"
-                exit 1
-                ;;
-              *)
-                echo "⏳ Deployment status: $STATUS (attempt $i/60)"
-                sleep 30
-                ;;
-            esac
-          done
-
-          echo "❌ Deployment timed out"
-          exit 1
+          echo "Deploy hook triggered. Deployment in progress..."
+          echo "Note: Deploy hooks don't provide deployment IDs for status tracking"
+          echo "Waiting 3 minutes for deployment to initialize..."
+          sleep 180
+          echo "✅ Deploy hook triggered successfully (check Render dashboard for full status)"
 
       - name: Verify deployment health
         run: |
