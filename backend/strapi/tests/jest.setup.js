@@ -4,6 +4,35 @@
 
 const path = require('path');
 
+// Mock Strapi's env utility for test environment
+global.env = (key, defaultValue) => {
+  return process.env[key] || defaultValue;
+};
+
+global.env.bool = (key, defaultValue) => {
+  const value = process.env[key];
+  if (value === undefined) return defaultValue;
+  return value === 'true' || value === '1';
+};
+
+global.env.int = (key, defaultValue) => {
+  const value = process.env[key];
+  if (value === undefined) return defaultValue;
+  return parseInt(value, 10);
+};
+
+global.env.float = (key, defaultValue) => {
+  const value = process.env[key];
+  if (value === undefined) return defaultValue;
+  return parseFloat(value);
+};
+
+global.env.array = (key, defaultValue) => {
+  const value = process.env[key];
+  if (value === undefined) return defaultValue;
+  return value.split(',').map(item => item.trim());
+};
+
 // Global setup for all tests
 beforeAll(async () => {
   // Set test environment
@@ -11,7 +40,7 @@ beforeAll(async () => {
   process.env.DATABASE_CLIENT = 'sqlite';
   process.env.DATABASE_FILENAME = ':memory:';
   process.env.STRAPI_TELEMETRY_DISABLED = 'true';
-  
+
   // Mock console methods to reduce test noise
   global.console = {
     ...console,
@@ -27,7 +56,15 @@ beforeAll(async () => {
 afterAll(async () => {
   // Cleanup after tests
   if (global.strapi) {
-    await global.strapi.destroy();
+    // Check if destroy method exists
+    if (typeof global.strapi.destroy === 'function') {
+      await global.strapi.destroy();
+    } else if (typeof global.strapi.stop === 'function') {
+      // Fallback to stop method if destroy doesn't exist
+      await global.strapi.stop();
+    }
+    // Clear the global reference
+    global.strapi = null;
   }
 });
 
@@ -49,7 +86,14 @@ global.setupStrapi = async () => {
 // Cleanup Strapi instance
 global.cleanupStrapi = async () => {
   if (global.strapi) {
-    await global.strapi.destroy();
+    // Check if destroy method exists
+    if (typeof global.strapi.destroy === 'function') {
+      await global.strapi.destroy();
+    } else if (typeof global.strapi.stop === 'function') {
+      // Fallback to stop method if destroy doesn't exist
+      await global.strapi.stop();
+    }
+    // Clear the global reference
     global.strapi = null;
   }
 };

@@ -7,7 +7,7 @@ The Tifossi project uses a unified CI/CD pipeline (`.github/workflows/cicd.yml`)
 ## Workflow Structure
 
 ### Triggers
-- **Push to main/develop branches**: Runs full CI/CD pipeline
+- **Push to main branch**: Runs full CI/CD pipeline
 - **Pull requests to main**: Runs quality checks and tests
 - **Git tags (v*)**: Triggers mobile app builds
 - **Manual dispatch**: Run specific jobs on demand
@@ -31,7 +31,7 @@ The Tifossi project uses a unified CI/CD pipeline (`.github/workflows/cicd.yml`)
 - Strapi production build verification
 - Dependency installation
 - Build artifact verification
-- **Runs when**: Push to main/develop or manual trigger
+- **Runs when**: Push to main or manual trigger
 - **Required for**: Backend deployment
 
 #### 4. Deploy Backend (Production only)
@@ -65,11 +65,6 @@ Job Options:
 - deploy-backend: Deploy to Render
 - build-mobile: Build mobile apps
 
-Environment Options:
-- production (default)
-- staging
-- development
-
 Mobile Platform:
 - all (default)
 - ios
@@ -84,13 +79,11 @@ Build Profile:
 ## Required GitHub Secrets
 
 ### Core Secrets
-- `NODE_ENV`: Environment (production/staging/development)
+- `NODE_ENV`: Environment (production)
 
 ### Render Deployment
 - `RENDER_API_KEY`: Render.com API key
-- `RENDER_SERVICE_ID_PROD`: Production service ID
-- `RENDER_SERVICE_ID_STAGING`: Staging service ID (optional)
-- `RENDER_SERVICE_ID_DEV`: Development service ID (optional)
+- `RENDER_SERVICE_ID`: Production service ID
 
 ### Strapi Configuration
 - `STRAPI_APP_KEYS`: Comma-separated app keys

@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
     tags:
       - 'v*'
   pull_request:
@@ -21,15 +21,6 @@ on:
           - build-backend
           - deploy-backend
           - build-mobile
-      environment:
-        description: 'Deployment environment'
-        required: false
-        default: 'production'
-        type: choice
-        options:
-          - production
-          - staging
-          - development
       platform:
         description: 'Mobile platform (for build-mobile job)'
         required: false
@@ -108,12 +99,18 @@ jobs:
         working-directory: backend/strapi
         run: npm run lint || echo "Backend linting not configured"
 
+      - name: Run backend tests
+        working-directory: backend/strapi
+        run: npm run test:ci
+        env:
+          NODE_ENV: test
+
       - name: Upload test coverage
         if: always()
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage/lcov.info
-          flags: frontend
+          files: ./coverage/lcov.info,./backend/strapi/coverage/lcov.info
+          flags: frontend,backend
           fail_ci_if_error: false
 
   # ============================
@@ -252,7 +249,7 @@ jobs:
        (github.event.inputs.job == 'all' || github.event.inputs.job == 'deploy-backend'))
 
     environment:
-      name: ${{ github.event.inputs.environment || 'production' }}
+      name: production
       url: ${{ steps.deploy.outputs.service_url }}
 
     steps:
@@ -262,24 +259,9 @@ jobs:
       - name: Set deployment environment
         id: set-env
         run: |
-          ENV_NAME="${{ github.event.inputs.environment || 'production' }}"
-          echo "environment=$ENV_NAME" >> $GITHUB_OUTPUT
-
-          # Set service ID and URL based on environment
-          case "$ENV_NAME" in
-            production)
-              echo "service_id=${{ secrets.RENDER_SERVICE_ID_PROD }}" >> $GITHUB_OUTPUT
-              echo "service_url=https://api.tifossi.app" >> $GITHUB_OUTPUT
-              ;;
-            staging)
-              echo "service_id=${{ secrets.RENDER_SERVICE_ID_STAGING }}" >> $GITHUB_OUTPUT
-              echo "service_url=https://staging-api.tifossi.app" >> $GITHUB_OUTPUT
-              ;;
-            development)
-              echo "service_id=${{ secrets.RENDER_SERVICE_ID_DEV }}" >> $GITHUB_OUTPUT
-              echo "service_url=https://dev-api.tifossi.app" >> $GITHUB_OUTPUT
-              ;;
-          esac
+          echo "environment=production" >> $GITHUB_OUTPUT
+          echo "service_id=${{ secrets.RENDER_SERVICE_ID }}" >> $GITHUB_OUTPUT
+          echo "service_url=https://tifossi-strapi-backend.onrender.com" >> $GITHUB_OUTPUT
 
       - name: Validate deployment prerequisites
         run: |
@@ -293,8 +275,8 @@ jobs:
           # Check for service ID
           SERVICE_ID="${{ steps.set-env.outputs.service_id }}"
           if [ -z "$SERVICE_ID" ]; then
-            echo "❌ ERROR: RENDER_SERVICE_ID not configured for ${{ steps.set-env.outputs.environment }}"
-            echo "Please add RENDER_SERVICE_ID_PROD/STAGING/DEV to repository secrets"
+            echo "❌ ERROR: RENDER_SERVICE_ID not configured"
+            echo "Please add RENDER_SERVICE_ID to repository secrets"
             exit 1
           fi
 
@@ -304,14 +286,13 @@ jobs:
         id: configure-env
         run: |
           SERVICE_ID="${{ steps.set-env.outputs.service_id }}"
-          ENV_NAME="${{ steps.set-env.outputs.environment }}"
 
-          echo "Configuring environment variables for $ENV_NAME..."
+          echo "Configuring environment variables for production..."
 
           # Create JSON payload for environment variables
           cat > env_vars.json << EOF
           [
-            {"key": "NODE_ENV", "value": "$ENV_NAME"},
+            {"key": "NODE_ENV", "value": "production"},
             {"key": "APP_KEYS", "value": "${{ secrets.STRAPI_APP_KEYS }}"},
             {"key": "API_TOKEN_SALT", "value": "${{ secrets.STRAPI_API_TOKEN_SALT }}"},
             {"key": "ADMIN_JWT_SECRET", "value": "${{ secrets.STRAPI_ADMIN_JWT_SECRET }}"},
@@ -425,7 +406,7 @@ jobs:
           echo "======================================"
           echo "DEPLOYMENT SUMMARY"
           echo "======================================"
-          echo "Environment: ${{ steps.set-env.outputs.environment }}"
+          echo "Environment: production"
           echo "Service URL: ${{ steps.deploy.outputs.service_url }}"
           echo "Deployment ID: ${{ steps.deploy.outputs.deployment_id }}"
           echo "======================================"

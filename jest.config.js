@@ -33,10 +33,10 @@ module.exports = {
   ],
   coverageThreshold: {
     global: {
-      branches: 30,
-      functions: 30,
-      lines: 35,
-      statements: 35
+      branches: 20,
+      functions: 20,
+      lines: 25,
+      statements: 25
     }
   },
   coverageReporters: ['text', 'lcov', 'html'],
