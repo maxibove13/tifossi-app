@@ -653,7 +653,7 @@ export const products: Product[] = [
   {
     id: 'mochila-gold',
     frontImage: require('../../assets/images/products/mochila-gold.png'),
-    videoSource: require('../../assets/videos/mochila-gold.mov'),
+    videoSource: '/uploads/mochila_gold_video.mp4',
     title: 'Mochila Gold',
     categoryId: 'mochilas',
     modelId: 'premium',
@@ -692,7 +692,7 @@ export const products: Product[] = [
   {
     id: 'mochila-black',
     frontImage: require('../../assets/images/products/mochila-black.png'),
-    videoSource: require('../../assets/videos/mochila-black.mov'),
+    videoSource: '/uploads/mochila_black_video.mp4',
     title: 'Mochila Black',
     categoryId: 'mochilas',
     modelId: 'premium',
