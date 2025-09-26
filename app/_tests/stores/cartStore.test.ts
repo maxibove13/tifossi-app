@@ -532,7 +532,8 @@ describe('cartStore', () => {
       });
 
       await waitFor(() => {
-        expect(result.current.getTotalItems()).toBe(100);
+        // Should be clamped to maximum of 99
+        expect(result.current.getTotalItems()).toBe(99);
       });
 
       // Update to an even larger quantity
@@ -541,8 +542,9 @@ describe('cartStore', () => {
       });
 
       await waitFor(() => {
-        expect(result.current.items[0].quantity).toBe(500);
-        expect(result.current.getTotalItems()).toBe(500);
+        // Should still be clamped to maximum of 99
+        expect(result.current.items[0].quantity).toBe(99);
+        expect(result.current.getTotalItems()).toBe(99);
       });
     });
 
