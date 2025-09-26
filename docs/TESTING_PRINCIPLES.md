@@ -62,6 +62,7 @@
 - **authService**: Globally mocked for store testing
 - **Firebase/Native modules**: Mocked at boundaries
 - **React Native modules**: Mocked for test environment compatibility
+- **Media files**: Mocked via `__mocks__/products.ts` - no actual files needed
 
 ### Types of Tests We Have
 
@@ -98,6 +99,30 @@
 - **When to Run**: Local or CI environments with valid sandbox credentials; treat failures as release blockers
 
 **Note**: These suites talk to the MercadoPago sandbox directly. Do not replace them with mocks—if credentials are unavailable, keep the failure visible instead of skipping.
+
+### CI/CD Testing Strategy
+
+#### Media Files in Tests
+- **Problem**: Tests failed in CI/CD due to `require()` statements for non-existent media files
+- **Solution**: Complete mock-based approach
+
+1. **Mock Products Data** (`app/_data/__mocks__/products.ts`)
+   - Automatically used by Jest in tests
+   - Converts `require()` calls to URL strings
+   - No actual media files needed
+
+2. **Media Resolver** (`app/_services/media/mediaResolver.ts`)
+   - Returns mock URLs in test environment
+   - Handles path references for development
+   - Production URLs pass through unchanged
+
+3. **Benefits**
+   - Tests run in CI/CD without media files
+   - Faster test execution (no asset loading)
+   - Consistent behavior across environments
+
+#### Key Principle
+**Test business logic, not asset loading.** If a test needs to verify image rendering, mock the component that displays it, not the image itself.
 
 ### Current Test Coverage Status (December 2024)
 

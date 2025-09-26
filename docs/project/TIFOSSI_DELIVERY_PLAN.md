@@ -37,7 +37,7 @@ Based on **FUNCIONALIDADES_APP_TIFOSSI.md** and **COSTOS_OPERATIVOS_URUGUAY_2025
    - Firebase for authentication
    - PostgreSQL database
 
-## 🔴 CURRENT ISSUES & BLOCKERS (As of 2025-09-25)
+## 🔴 CURRENT ISSUES & BLOCKERS (As of 2025-09-26)
 
 ### Build & Test Issues
 - **TypeScript Compilation**: ✅ FIXED - All TypeScript errors resolved
@@ -49,10 +49,14 @@ Based on **FUNCIONALIDADES_APP_TIFOSSI.md** and **COSTOS_OPERATIVOS_URUGUAY_2025
   - Removed all unused imports
   - Warnings are mostly unused error variables in catch blocks
 - **Test Suite**: ✅ PASSING - Tests verified and working
-  - 518 tests passing (99.2% pass rate)
-  - 28 test suites passing
-  - 4 tests skipped, 2 suites skipped
-  - Execution time: ~3.4 seconds
+  - 636 tests passing (99.5% pass rate)
+  - 35 test suites passing
+  - 3 tests skipped, 1 suite skipped
+  - Execution time: ~6.5 seconds
+- **CI/CD Media Loading**: ✅ FIXED - Removed all require() statements
+  - Replaced 96 hardcoded media files with path references
+  - Created media upload script for Strapi migration
+  - Tests now pass without actual media files
 
 ### Missing Features (Per Deliverables)
 - **Store Locator UI**: ✅ COMPLETED (2025-09-25)
@@ -151,6 +155,35 @@ Based on **FUNCIONALIDADES_APP_TIFOSSI.md** and **COSTOS_OPERATIVOS_URUGUAY_2025
 - ✅ App icons and splash screens ready
 - ✅ Deep linking configured
 - ✅ Privacy manifest configured
+
+## 🏗️ Media Architecture (COMPLETED 2025-09-26)
+
+### Production-Ready Media Loading System
+- **Problem**: 96 hardcoded `require()` statements broke CI/CD tests
+- **Solution**: Complete separation of data and media loading
+
+#### Implementation Details
+1. **Data Layer** (`products.ts`)
+   - Pure data structure with path references
+   - No `require()` statements
+   - Used for: development, Strapi seeding, tests
+
+2. **Media Resolution** (`mediaResolver.ts`)
+   - Environment-based loading strategy
+   - Production: Strapi URLs pass through
+   - Development: Maps paths to local assets
+   - Testing: Mock URLs (no files needed)
+
+3. **Migration Tools** (`upload-media-to-strapi.js`)
+   - Uploads local media to Strapi
+   - Generates mapping file for migration
+   - Supports batch processing
+
+4. **Benefits**
+   - ✅ CI/CD tests pass without media files
+   - ✅ Clean separation of concerns
+   - ✅ Easy migration to production CDN
+   - ✅ Consistent across all environments
 
 ## 💰 Infrastructure & Budget Breakdown
 

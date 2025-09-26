@@ -2,13 +2,31 @@ import { Product } from '../_types/product';
 import { ProductStatus, isLabelCategory, hasStatus } from '../_types/product-status';
 import { CATEGORY_IDS, MODEL_IDS, DEFAULTS } from '../_types/constants';
 
+/**
+ * Product Catalog Data
+ *
+ * IMPORTANT: This file contains product data with media path references.
+ *
+ * In different environments:
+ * - PRODUCTION: All media is served from Strapi/CDN with full URLs
+ * - DEVELOPMENT: Mock API resolves these paths to local assets or placeholders
+ * - TESTING: Paths are mocked and don't require actual files
+ * - MIGRATION: These paths are used to map local assets when seeding Strapi
+ *
+ * Path conventions:
+ * - /products/* - Product images
+ * - /videos/* - Product videos
+ * - /uploads/* - Strapi upload directory structure
+ *
+ * DO NOT use require() statements in this file as it breaks CI/CD.
+ * Media loading is handled by the API layer based on environment.
+ */
 export const defaultReturnPolicy = DEFAULTS.RETURN_POLICY;
-
 // Products data with explicit model IDs
 export const products: Product[] = [
   {
     id: 'tiffosi-fast',
-    frontImage: require('../../assets/images/products/product_socks_1.png'),
+    frontImage: '/products/product_socks_1.png',
     title: 'Tiffosi Fast',
     categoryId: 'medias',
     modelId: 'fast',
@@ -37,11 +55,8 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#FAFAFA',
         images: {
-          main: require('../../assets/images/products/white-sock-1.png'),
-          additional: [
-            require('../../assets/images/products/white-sock-2.png'),
-            require('../../assets/images/products/white-sock-3.png'),
-          ],
+          main: '/products/white-sock-1.png',
+          additional: ['/products/white-sock-2.png', '/products/white-sock-3.png'],
         },
       },
       {
@@ -49,7 +64,7 @@ export const products: Product[] = [
         quantity: 8,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/sock-color-2.png'),
+          main: '/products/sock-color-2.png',
           additional: [],
         },
       },
@@ -58,7 +73,7 @@ export const products: Product[] = [
         quantity: 5,
         hex: '#FFBA54',
         images: {
-          main: require('../../assets/images/products/sock-color-3.png'),
+          main: '/products/sock-color-3.png',
           additional: [],
         },
       },
@@ -67,7 +82,7 @@ export const products: Product[] = [
         quantity: 12,
         hex: '#70BF73',
         images: {
-          main: require('../../assets/images/products/sock-color-5.png'),
+          main: '/products/sock-color-5.png',
           additional: [],
         },
       },
@@ -76,7 +91,7 @@ export const products: Product[] = [
         quantity: 7,
         hex: '#FFF27C',
         images: {
-          main: require('../../assets/images/products/sock-color-4.png'),
+          main: '/products/sock-color-4.png',
           additional: [],
         },
       },
@@ -90,7 +105,7 @@ export const products: Product[] = [
   },
   {
     id: 'classic-socks',
-    frontImage: require('../../assets/images/products/product_socks_2.png'),
+    frontImage: '/products/product_socks_2.png',
     title: 'Classic Socks',
     categoryId: 'medias',
     modelId: 'classic',
@@ -111,7 +126,7 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#70BF73',
         images: {
-          main: require('../../assets/images/products/product_socks_2.png'),
+          main: '/products/product_socks_2.png',
         },
       },
     ],
@@ -123,7 +138,7 @@ export const products: Product[] = [
   },
   {
     id: 'socks-v2',
-    frontImage: require('../../assets/images/products/product_socks_0.png'),
+    frontImage: '/products/product_socks_0.png',
     title: 'Socks V2',
     categoryId: 'medias',
     modelId: 'sport',
@@ -146,7 +161,7 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#FAFAFA',
         images: {
-          main: require('../../assets/images/products/product_socks_0.png'),
+          main: '/products/product_socks_0.png',
         },
       },
       {
@@ -154,7 +169,7 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/product_socks_0.png'),
+          main: '/products/product_socks_0.png',
         },
       },
     ],
@@ -168,7 +183,7 @@ export const products: Product[] = [
   },
   {
     id: 'regular-black',
-    frontImage: require('../../assets/images/products/product_bag_0.png'),
+    frontImage: '/products/product_bag_0.png',
     title: 'Regular Black',
     categoryId: 'bolsos',
     modelId: 'regular_bag',
@@ -191,7 +206,7 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#FAFAFA',
         images: {
-          main: require('../../assets/images/products/sock-color-1.png'),
+          main: '/products/sock-color-1.png',
         },
       },
       {
@@ -199,8 +214,8 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/sock-color-2.png'),
-          additional: [require('../../assets/images/products/white-sock-2.png')],
+          main: '/products/sock-color-2.png',
+          additional: ['/products/white-sock-2.png'],
         },
       },
       {
@@ -208,11 +223,8 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#FFBA54',
         images: {
-          main: require('../../assets/images/products/sock-color-3.png'),
-          additional: [
-            require('../../assets/images/products/white-sock-2.png'),
-            require('../../assets/images/products/white-sock-3.png'),
-          ],
+          main: '/products/sock-color-3.png',
+          additional: ['/products/white-sock-2.png', '/products/white-sock-3.png'],
         },
       },
       {
@@ -220,7 +232,7 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#FFF27C',
         images: {
-          main: require('../../assets/images/products/sock-color-4.png'),
+          main: '/products/sock-color-4.png',
         },
       },
       {
@@ -228,8 +240,8 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#70BF73',
         images: {
-          main: require('../../assets/images/products/sock-color-5.png'),
-          additional: [require('../../assets/images/products/white-sock-3.png')],
+          main: '/products/sock-color-5.png',
+          additional: ['/products/white-sock-3.png'],
         },
       },
     ],
@@ -242,7 +254,7 @@ export const products: Product[] = [
   },
   {
     id: 'mochila-sq',
-    frontImage: require('../../assets/images/products/product_bag_1.png'),
+    frontImage: '/products/product_bag_1.png',
     title: 'Mochila SQ',
     categoryId: 'mochilas',
     modelId: 'standard',
@@ -266,14 +278,14 @@ export const products: Product[] = [
         quantity: 12,
         hex: '#9E9E9E',
         images: {
-          main: require('../../assets/images/products/product_bag_1.png'),
+          main: '/products/product_bag_1.png',
         },
       },
     ],
   },
   {
     id: 'buzo-oversize',
-    frontImage: require('../../assets/images/products/product_sweater.png'),
+    frontImage: '/products/product_sweater.png',
     title: 'Buzo Oversize',
     categoryId: 'buzos',
     modelId: 'oversize_buzo',
@@ -297,7 +309,7 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#FAFAFA',
         images: {
-          main: require('../../assets/images/products/product_sweater.png'),
+          main: '/products/product_sweater.png',
         },
       },
       {
@@ -305,7 +317,7 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/product_sweater.png'),
+          main: '/products/product_sweater.png',
         },
       },
     ],
@@ -319,7 +331,7 @@ export const products: Product[] = [
   },
   {
     id: 'neceser-ball',
-    frontImage: require('../../assets/images/products/product_bag_2.png'),
+    frontImage: '/products/product_bag_2.png',
     title: 'Neceser Ball',
     categoryId: 'neceser',
     modelId: 'ball',
@@ -342,14 +354,14 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/product_bag_2.png'),
+          main: '/products/product_bag_2.png',
         },
       },
     ],
   },
   {
     id: 'mochila-classic',
-    frontImage: require('../../assets/images/products/product_bag_3.png'),
+    frontImage: '/products/product_bag_3.png',
     title: 'Mochila Classic',
     categoryId: 'mochilas',
     modelId: 'standard',
@@ -371,14 +383,14 @@ export const products: Product[] = [
         quantity: 8,
         hex: '#9E9E9E',
         images: {
-          main: require('../../assets/images/products/product_bag_3.png'),
+          main: '/products/product_bag_3.png',
         },
       },
     ],
   },
   {
     id: 'cap-v3',
-    frontImage: require('../../assets/images/products/product_cap_black.png'),
+    frontImage: '/products/product_cap_black.png',
     title: 'Cap V3',
     categoryId: 'gorros',
     modelId: 'cap',
@@ -400,14 +412,14 @@ export const products: Product[] = [
         quantity: 12,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/product_cap_black.png'),
+          main: '/products/product_cap_black.png',
         },
       },
     ],
   },
   {
     id: 'relaxed-classic',
-    frontImage: require('../../assets/images/products/product_shirt_black_relaxed.png'),
+    frontImage: '/products/product_shirt_black_relaxed.png',
     title: 'Relaxed Classic',
     categoryId: 'remeras',
     modelId: 'relaxed',
@@ -429,7 +441,7 @@ export const products: Product[] = [
         quantity: 15,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/product_shirt_black_relaxed.png'),
+          main: '/products/product_shirt_black_relaxed.png',
         },
       },
     ],
@@ -442,7 +454,7 @@ export const products: Product[] = [
   },
   {
     id: 'regular-shirt',
-    frontImage: require('../../assets/images/products/product_shirt_black_regular.png'),
+    frontImage: '/products/product_shirt_black_regular.png',
     title: 'Regular Shirt',
     categoryId: 'remeras',
     modelId: 'regular',
@@ -464,7 +476,7 @@ export const products: Product[] = [
         quantity: 20,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/product_shirt_black_regular.png'),
+          main: '/products/product_shirt_black_regular.png',
         },
       },
     ],
@@ -477,7 +489,7 @@ export const products: Product[] = [
   },
   {
     id: 'white-shirt',
-    frontImage: require('../../assets/images/products/product_shirt_white.png'),
+    frontImage: '/products/product_shirt_white.png',
     title: 'White Shirt',
     categoryId: 'remeras',
     modelId: 'regular',
@@ -499,7 +511,7 @@ export const products: Product[] = [
         quantity: 18,
         hex: '#FAFAFA',
         images: {
-          main: require('../../assets/images/products/product_shirt_white.png'),
+          main: '/products/product_shirt_white.png',
         },
       },
     ],
@@ -513,7 +525,7 @@ export const products: Product[] = [
   },
   {
     id: 't-shirt-black',
-    frontImage: require('../../assets/images/products/product_t_shirt_black.png'),
+    frontImage: '/products/product_t_shirt_black.png',
     title: 'T-Shirt Black',
     categoryId: 'remeras',
     modelId: 'tshirt',
@@ -535,7 +547,7 @@ export const products: Product[] = [
         quantity: 25,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/product_t_shirt_black.png'),
+          main: '/products/product_t_shirt_black.png',
         },
       },
     ],
@@ -548,7 +560,7 @@ export const products: Product[] = [
   },
   {
     id: 'backpack-pro',
-    frontImage: require('../../assets/images/products/product_bag_4.png'),
+    frontImage: '/products/product_bag_4.png',
     title: 'Backpack Pro',
     categoryId: 'mochilas',
     modelId: 'premium',
@@ -571,14 +583,14 @@ export const products: Product[] = [
         quantity: 15,
         hex: '#9E9E9E',
         images: {
-          main: require('../../assets/images/products/product_bag_4.png'),
+          main: '/products/product_bag_4.png',
         },
       },
     ],
   },
   {
     id: 'neceserr',
-    frontImage: require('../../assets/images/products/product_bag_5.png'),
+    frontImage: '/products/product_bag_5.png',
     title: 'Neceser Globo',
     categoryId: 'neceser',
     modelId: 'globo',
@@ -611,18 +623,15 @@ export const products: Product[] = [
         quantity: 15,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/neceser9-1.png'),
-          additional: [
-            require('../../assets/images/products/neceser9-3.png'),
-            require('../../assets/images/products/neceser9-4.png'),
-          ],
+          main: '/products/neceser9-1.png',
+          additional: ['/products/neceser9-3.png', '/products/neceser9-4.png'],
         },
       },
     ],
   },
   {
     id: 'backpack-travel',
-    frontImage: require('../../assets/images/products/product_bag_6.png'),
+    frontImage: '/products/product_bag_6.png',
     title: 'Backpack Travel',
     categoryId: 'mochilas',
     modelId: 'travel',
@@ -645,14 +654,14 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#9E9E9E',
         images: {
-          main: require('../../assets/images/products/product_bag_6.png'),
+          main: '/products/product_bag_6.png',
         },
       },
     ],
   },
   {
     id: 'mochila-gold',
-    frontImage: require('../../assets/images/products/mochila-gold.png'),
+    frontImage: '/products/mochila-gold.png',
     videoSource: '/uploads/mochila_gold_video.mp4',
     title: 'Mochila Gold',
     categoryId: 'mochilas',
@@ -683,7 +692,7 @@ export const products: Product[] = [
         quantity: 8,
         hex: '#D4AF37',
         images: {
-          main: require('../../assets/images/products/mochila-gold.png'),
+          main: '/products/mochila-gold.png',
         },
       },
     ],
@@ -691,7 +700,7 @@ export const products: Product[] = [
   },
   {
     id: 'mochila-black',
-    frontImage: require('../../assets/images/products/mochila-black.png'),
+    frontImage: '/products/mochila-black.png',
     videoSource: '/uploads/mochila_black_video.mp4',
     title: 'Mochila Black',
     categoryId: 'mochilas',
@@ -722,7 +731,7 @@ export const products: Product[] = [
         quantity: 15,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/mochila-black.png'),
+          main: '/products/mochila-black.png',
         },
       },
     ],
@@ -736,7 +745,7 @@ export const products: Product[] = [
     modelId: 'campera',
     price: 1890,
     statuses: [ProductStatus.NEW, ProductStatus.APP_EXCLUSIVE],
-    frontImage: require('../../assets/images/products/campera-deportiva.png'),
+    frontImage: '/products/campera-deportiva.png',
     shortDescription: {
       line1: 'Campera deportiva de alto rendimiento.',
       line2: 'Material de primera calidad con tecnología térmica.',
@@ -754,7 +763,7 @@ export const products: Product[] = [
         quantity: 12,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/campera-deportiva.png'),
+          main: '/products/campera-deportiva.png',
         },
       },
     ],
@@ -772,7 +781,7 @@ export const products: Product[] = [
     modelId: 'antideslizante',
     price: 490,
     statuses: [ProductStatus.RECOMMENDED],
-    frontImage: require('../../assets/images/products/antideslizantes-1.png'),
+    frontImage: '/products/antideslizantes-1.png',
     shortDescription: {
       line1: 'Calcetines antideslizantes para mayor agarre.',
       line2: 'Perfectos para entrenamientos de alta intensidad.',
@@ -790,7 +799,7 @@ export const products: Product[] = [
         quantity: 20,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/antideslizantes-1.png'),
+          main: '/products/antideslizantes-1.png',
         },
       },
     ],
@@ -807,7 +816,7 @@ export const products: Product[] = [
     modelId: 'antideslizante',
     price: 490,
     statuses: [ProductStatus.RECOMMENDED],
-    frontImage: require('../../assets/images/products/antideslizantes-2.png'),
+    frontImage: '/products/antideslizantes-2.png',
     shortDescription: {
       line1: 'Segunda generación de calcetines con mejor agarre.',
       line2: 'Diseño mejorado para mayor durabilidad.',
@@ -825,7 +834,7 @@ export const products: Product[] = [
         quantity: 15,
         hex: '#9E9E9E',
         images: {
-          main: require('../../assets/images/products/antideslizantes-2.png'),
+          main: '/products/antideslizantes-2.png',
         },
       },
     ],
@@ -842,7 +851,7 @@ export const products: Product[] = [
     modelId: 'antideslizante',
     price: 550,
     statuses: [ProductStatus.RECOMMENDED],
-    frontImage: require('../../assets/images/products/tiffosi-antideslizante-1.png'),
+    frontImage: '/products/tiffosi-antideslizante-1.png',
     shortDescription: {
       line1: 'Calcetines premium con tecnología antideslizante.',
       line2: 'La mejor opción para deportes de alta exigencia.',
@@ -860,7 +869,7 @@ export const products: Product[] = [
         quantity: 18,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/tiffosi-antideslizante-1.png'),
+          main: '/products/tiffosi-antideslizante-1.png',
         },
       },
     ],
@@ -878,7 +887,7 @@ export const products: Product[] = [
     price: 790,
     isCustomizable: true,
     statuses: [ProductStatus.NEW],
-    frontImage: require('../../assets/images/products/shinguards-1.png'),
+    frontImage: '/products/shinguards-1.png',
     shortDescription: {
       line1: 'Espinilleras profesionales con protección avanzada.',
       line2: 'Personalizables con tu nombre o número.',
@@ -896,7 +905,7 @@ export const products: Product[] = [
         quantity: 15,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/shinguards-1.png'),
+          main: '/products/shinguards-1.png',
         },
       },
     ],
@@ -913,7 +922,7 @@ export const products: Product[] = [
     modelId: 'lite',
     price: 690,
     statuses: [ProductStatus.FEATURED],
-    frontImage: require('../../assets/images/products/shinguards-2.png'),
+    frontImage: '/products/shinguards-2.png',
     shortDescription: {
       line1: 'Espinilleras ultraligeras para máxima velocidad.',
       line2: 'Protección efectiva sin sacrificar agilidad.',
@@ -931,7 +940,7 @@ export const products: Product[] = [
         quantity: 10,
         hex: '#FAFAFA',
         images: {
-          main: require('../../assets/images/products/shinguards-2.png'),
+          main: '/products/shinguards-2.png',
         },
       },
     ],
@@ -948,7 +957,7 @@ export const products: Product[] = [
     modelId: 'oversize',
     price: 890,
     statuses: [ProductStatus.FEATURED],
-    frontImage: require('../../assets/images/products/shirt-os-black-1.png'),
+    frontImage: '/products/shirt-os-black-1.png',
     shortDescription: {
       line1: 'Camisa oversize de corte moderno.',
       line2: 'Estilo urbano con máxima comodidad.',
@@ -966,11 +975,8 @@ export const products: Product[] = [
         quantity: 25,
         hex: '#0C0C0C',
         images: {
-          main: require('../../assets/images/products/shirt-os-black-1.png'),
-          additional: [
-            require('../../assets/images/products/shirt-os-black-2.png'),
-            require('../../assets/images/products/shirt-os-black-3.png'),
-          ],
+          main: '/products/shirt-os-black-1.png',
+          additional: ['/products/shirt-os-black-2.png', '/products/shirt-os-black-3.png'],
         },
       },
     ],

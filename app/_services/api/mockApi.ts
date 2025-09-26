@@ -1,6 +1,7 @@
-import { products, getProductById } from '../../_data/products';
+import { products as rawProducts, getProductById as getRawProductById } from '../../_data/products';
 import { Product } from '../../_types/product';
 import { config, safeLog, safeWarn } from '../../_config/environment';
+import { MediaResolver } from '../media/mediaResolver';
 
 const MOCK_DELAY = config.mockDelay; // Use environment-specific delay
 
@@ -51,6 +52,13 @@ const simulateNetworkConditions = async (): Promise<void> => {
     safeWarn('[Mock API] Simulating slow network...');
     await new Promise((resolve) => setTimeout(resolve, SLOW_NETWORK_DELAY));
   }
+};
+
+// Resolve products with media based on environment
+const products = MediaResolver.resolveProducts(rawProducts);
+const getProductById = (id: string): Product | undefined => {
+  const product = getRawProductById(id);
+  return product ? MediaResolver.resolveProductMedia(product) : undefined;
 };
 
 // --- Product Mocks ---
