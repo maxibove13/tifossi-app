@@ -1,7 +1,7 @@
 {
   "extends": "@strapi/typescript-utils/tsconfigs/server",
   "compilerOptions": {
-    "allowJs": true,
+    "allowJs": false,
     "declaration": false,
     "importHelpers": true,
     "esModuleInterop": true,
@@ -14,13 +14,13 @@
     "noImplicitThis": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "exactOptionalPropertyTypes": false
+    "exactOptionalPropertyTypes": false,
+    "outDir": "./dist"
   },
   "include": [
-    "./",
-    "./src/**/*",
-    "./config/**/*",
-    "./database/**/*"
+    "./src/**/*.ts",
+    "./config/**/*.ts",
+    "./database/**/*.ts"
   ],
   "exclude": [
     "node_modules/",
@@ -30,6 +30,7 @@
     ".tmp/",
     "src/admin/",
     "**/*.test.*",
-    "**/*.spec.*"
+    "**/*.spec.*",
+    "**/*.js"
   ]
 }
