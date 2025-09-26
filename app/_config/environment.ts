@@ -64,7 +64,7 @@ const environmentConfigs: Record<Environment, EnvironmentConfig> = {
     debug: true,
     apiTimeout: 10000,
     mockDelay: 500,
-    useMockApi: true,
+    useMockApi: false, // Always use real Strapi, even in development
     enableConsoleLogging: true,
     enableErrorReporting: false,
     enableAnalytics: false,
@@ -85,7 +85,7 @@ const environmentConfigs: Record<Environment, EnvironmentConfig> = {
     debug: true,
     apiTimeout: 15000,
     mockDelay: 200,
-    useMockApi: false,
+    useMockApi: false, // Always use real Strapi
     enableConsoleLogging: true,
     enableErrorReporting: true,
     enableAnalytics: false,
@@ -106,7 +106,7 @@ const environmentConfigs: Record<Environment, EnvironmentConfig> = {
     debug: false,
     apiTimeout: 20000,
     mockDelay: 0,
-    useMockApi: false,
+    useMockApi: false, // Always use real Strapi
     enableConsoleLogging: false,
     enableErrorReporting: true,
     enableAnalytics: true,
