@@ -88,7 +88,7 @@ services:
 databases:
   # PostgreSQL Database
   - name: tifossi-postgres
-    plan: starter
+    plan: free  # Free tier - expires after 30 days, upgrade to basic-1gb for production
     # Note: Storage size is configured via Render Dashboard, not in YAML
     # Free tier: 1GB, Paid: multiples of 5GB at $0.30/GB/month
 
