@@ -738,11 +738,13 @@ describe('Product Discovery Integration', () => {
 
       if (productWithSizes) {
         const sizes = within(productWithSizes).getByTestId(/^product-sizes-/);
-        const unavailableSize = within(sizes).queryByText(/\(Agotado\)/);
+        const unavailableSizes = within(sizes).queryAllByText(/\(Agotado\)/);
 
-        if (unavailableSize) {
-          // Check that unavailable size has reduced opacity
-          expect(unavailableSize.props.style.opacity).toBe(0.5);
+        if (unavailableSizes.length > 0) {
+          // Check that all unavailable sizes have reduced opacity
+          unavailableSizes.forEach((unavailableSize) => {
+            expect(unavailableSize.props.style.opacity).toBe(0.5);
+          });
         }
       }
     });
