@@ -95,4 +95,8 @@ test-report.xml
 
 # Temporary files
 sitemaps.png
+
+# Temporary test spikes (allow curated suites under app/_tests and __tests__)
 *.test.ts
+!app/_tests/**/*.test.ts
+!__tests__/**/*.test.ts
