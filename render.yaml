@@ -19,19 +19,14 @@ services:
         value: 10000
       - key: APP_KEYS
         generateValue: true
-        sync: false
       - key: API_TOKEN_SALT
         generateValue: true
-        sync: false
       - key: ADMIN_JWT_SECRET
         generateValue: true
-        sync: false
       - key: TRANSFER_TOKEN_SALT
         generateValue: true
-        sync: false
       - key: JWT_SECRET
         generateValue: true
-        sync: false
       - key: DATABASE_CLIENT
         value: postgres
       - key: DATABASE_SSL
