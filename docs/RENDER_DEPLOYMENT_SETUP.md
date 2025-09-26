@@ -167,7 +167,7 @@ npx expo start --clear
    - Ensure Firebase authentication is configured
 
 3. **CORS Errors**
-   - Update CORS configuration in `backend/strapi/render.yaml`
+   - Update CORS configuration in `render.yaml`
    - Add your app domains to `CORS_ORIGINS`
 
 4. **Environment Variables Not Working**

@@ -194,7 +194,7 @@ GET    /api/health/detailed       # Detailed health information
 ### Render Deployment
 
 1. Connect your repository to Render
-2. Use the provided `render.yaml` configuration
+2. Use the provided `render.yaml` configuration (located at repository root)
 3. Set up environment variables in Render dashboard
 4. Deploy using the Render dashboard
 
