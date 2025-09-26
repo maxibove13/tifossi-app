@@ -20,6 +20,8 @@ const mmkvStorage = createJSONStorage(() => ({
   removeItem: (name) => storage.delete(name),
 }));
 
+const MAX_CART_QUANTITY = 99;
+
 interface CartState {
   items: CartItem[];
   isLoading: boolean;
@@ -116,14 +118,24 @@ export const useCartStore = create<CartState>()(
           if (existingItemIndex > -1) {
             // Item exists, update quantity
             const updatedItems = [...state.items];
+            const existingItem = updatedItems[existingItemIndex];
+            const combinedQuantity = existingItem.quantity + itemToAdd.quantity;
             updatedItems[existingItemIndex] = {
-              ...updatedItems[existingItemIndex],
-              quantity: updatedItems[existingItemIndex].quantity + itemToAdd.quantity,
+              ...existingItem,
+              quantity: Math.min(combinedQuantity, MAX_CART_QUANTITY),
             };
             return { items: updatedItems };
           } else {
             // Add new item
-            return { items: [...state.items, itemToAdd] };
+            return {
+              items: [
+                ...state.items,
+                {
+                  ...itemToAdd,
+                  quantity: Math.min(itemToAdd.quantity, MAX_CART_QUANTITY),
+                },
+              ],
+            };
           }
         });
 
@@ -156,10 +168,11 @@ export const useCartStore = create<CartState>()(
             };
           } else {
             // Update quantity for the specific item variant
+            const clampedQuantity = Math.min(newQuantity, MAX_CART_QUANTITY);
             return {
               items: state.items.map((item) =>
                 item.productId === productId && item.color === color && item.size === size
-                  ? { ...item, quantity: newQuantity }
+                  ? { ...item, quantity: clampedQuantity }
                   : item
               ),
             };

@@ -1,6 +1,16 @@
 import { AxiosError } from 'axios';
 import { Alert } from 'react-native';
 
+type AlertHandler = typeof Alert.alert;
+
+const defaultAlertHandler: AlertHandler = (...args) => Alert.alert(...args);
+
+let alertHandler: AlertHandler = defaultAlertHandler;
+
+export function __setAlertHandler(handler?: AlertHandler): void {
+  alertHandler = handler ?? defaultAlertHandler;
+}
+
 // Error types
 export enum ApiErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
@@ -102,7 +112,7 @@ class ApiErrorHandler {
     const request = error.request;
 
     // Request timeout
-    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+    if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
       return {
         type: ApiErrorType.TIMEOUT_ERROR,
         message: 'Request timed out. Please try again.',
@@ -245,7 +255,7 @@ class ApiErrorHandler {
    */
   private handleGenericError(error: Error, timestamp: number): ApiError {
     // Check for specific error types by name or message
-    if (error.name === 'NetworkError' || error.message.includes('network')) {
+    if (error.name === 'NetworkError' || (error.message && error.message.includes('network'))) {
       return {
         type: ApiErrorType.NETWORK_ERROR,
         message: error.message || 'Network error occurred',
@@ -255,7 +265,7 @@ class ApiErrorHandler {
       };
     }
 
-    if (error.name === 'TimeoutError' || error.message.includes('timeout')) {
+    if (error.name === 'TimeoutError' || (error.message && error.message.includes('timeout'))) {
       return {
         type: ApiErrorType.TIMEOUT_ERROR,
         message: error.message || 'Request timed out',
@@ -357,7 +367,7 @@ class ApiErrorHandler {
 
     const userMessage = this.getUserFriendlyMessage(error);
 
-    Alert.alert('Error', userMessage, [
+    alertHandler('Error', userMessage, [
       {
         text: 'OK',
         style: 'default',

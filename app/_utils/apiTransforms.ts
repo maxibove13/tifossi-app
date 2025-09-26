@@ -150,9 +150,10 @@ export function transformStrapiProduct(strapiProduct: StrapiProduct): Product {
     })) || [];
 
   // Transform long description from rich text to string array
-  const longDescription = attrs.longDescription
-    ? transformRichTextToArray(attrs.longDescription)
-    : undefined;
+  const longDescription =
+    attrs.longDescription !== undefined
+      ? transformRichTextToArray(attrs.longDescription)
+      : undefined;
 
   return {
     id: strapiProduct.id.toString(),
@@ -187,6 +188,7 @@ function transformRichTextToArray(richText: string): string[] {
     .replace(/<p>/g, '')
     .replace(/<\/p>/g, '\n')
     .replace(/<br\s*\/?>/g, '\n')
+    .replace(/<\/li>/g, '\n') // Add newline after list items
     .replace(/<[^>]*>/g, '') // Remove remaining HTML tags
     .trim();
 
@@ -211,5 +213,7 @@ export function getFullMediaUrl(relativeUrl: string, baseUrl?: string): string {
   // Use provided base URL or centralized configuration
   const apiBaseUrl = baseUrl || endpoints.baseUrl;
 
-  return `${apiBaseUrl}${relativeUrl}`;
+  const normalizedPath = relativeUrl.startsWith('/') ? relativeUrl : `/${relativeUrl}`;
+
+  return `${apiBaseUrl}${normalizedPath}`;
 }

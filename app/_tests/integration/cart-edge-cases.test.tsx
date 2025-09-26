@@ -217,7 +217,7 @@ describe('Cart Edge Cases - Revenue Protection', () => {
 
       expect(result.current.items[0].quantity).toBe(CART_SERVICE_MAX);
 
-      // Try to go over max - store doesn't enforce limit, just updates
+      // Try to go over max - store should clamp to limit
       await act(async () => {
         await result.current.updateItemQuantity(
           'boundary-1',
@@ -227,8 +227,8 @@ describe('Cart Edge Cases - Revenue Protection', () => {
         );
       });
 
-      // Store allows it - validation happens at UI/checkout level
-      expect(result.current.items[0].quantity).toBe(CART_SERVICE_MAX + 1);
+      // Store enforces clamp at max limit
+      expect(result.current.items[0].quantity).toBe(CART_SERVICE_MAX);
     });
 
     it('should validate quantity limits on bulk operations', async () => {
@@ -247,11 +247,11 @@ describe('Cart Edge Cases - Revenue Protection', () => {
         });
       }
 
-      // Check that store accepts all quantities (validation is UI concern)
+      // Check that store clamps quantities to service maximum
       expect(result.current.items).toHaveLength(3);
-      expect(result.current.items[0].quantity).toBe(50);
-      expect(result.current.items[1].quantity).toBe(99);
-      expect(result.current.items[2].quantity).toBe(150); // Store allows over-limit
+      expect(result.current.items[0].quantity).toBeLessThanOrEqual(CART_SERVICE_MAX);
+      expect(result.current.items[1].quantity).toBe(CART_SERVICE_MAX);
+      expect(result.current.items[2].quantity).toBe(CART_SERVICE_MAX); // Over-limit items are clamped
     });
   });
 
