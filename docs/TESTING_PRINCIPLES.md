@@ -1360,12 +1360,12 @@ The Tifossi app has comprehensive test coverage for all revenue-critical paths. 
 
 ### Test Suite Overview
 
-#### Current Test Results (npm run test:app -- --watchman=false, March 2025)
+#### Current Test Results (npm run test:app, March 2025)
 ```
 Test Suites: 40 passed, 1 skipped, 41 total
 Tests:       765 passed, 3 skipped, 768 total
 Time:        ~18.8 seconds
-Command:     npm run test:app -- --watchman=false
+Command:     npm run test:app
 ```
 
 #### Coverage Report (March 2025)
@@ -1648,7 +1648,7 @@ Added missing testIDs for better test reliability:
 - ✅ Uses httpClient mocking (not MSW) as specified
 
 #### Next Steps
-1. **Run tests with:** `npx jest --runInBand --watchman=false`
+1. **Run tests with:** `npm run test:app`
 2. Obtain MercadoPago credentials for real sandbox testing
 3. Increase coverage beyond current ~25% to target 60%+
 4. Add more integration tests following the same pragmatic patterns
@@ -1660,7 +1660,7 @@ Added missing testIDs for better test reliability:
 
 ## Final Test Status Summary (March 2025)
 
-### Snapshot From `npm run test:app -- --watchman=false`
+### Snapshot From `npm run test:app`
 - **Total Tests:** 768 total → 765 passing, 3 skipped (credential-gated)
 - **Test Files:** 44 tracked (14 integration, 8 service, 7 store, 6 component, 10 utility, 3 smoke, 1 screen)
 - **Service Coverage Adds:** `NetworkService` resilience suite now in place alongside order/address/cart/error handlers
