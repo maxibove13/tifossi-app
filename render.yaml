@@ -34,7 +34,7 @@ services:
       - key: DATABASE_CLIENT
         value: postgres
       - key: DATABASE_SSL
-        value: false
+        value: true
       - key: CORS_ORIGINS
         value: https://tifossi.app,https://www.tifossi.app,https://admin.tifossi.app
       - key: UPLOAD_PROVIDER
