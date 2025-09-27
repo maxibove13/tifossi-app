@@ -3,21 +3,13 @@ const path = require('path');
 module.exports = ({ env }) => {
   // Use DATABASE_URL if provided (for production/staging deployments)
   if (env('DATABASE_URL')) {
-    const { parse } = require('pg-connection-string');
-    const config = parse(env('DATABASE_URL'));
-
     return {
       connection: {
         client: 'postgres',
-        host: config.host,
-        port: config.port || 5432,
-        database: config.database,
-        user: config.user,
-        password: config.password,
+        connectionString: env('DATABASE_URL'),
         ssl: env.bool('DATABASE_SSL', true) ? {
-          rejectUnauthorized: env.bool('DATABASE_SSL_REJECT_UNAUTHORIZED', false),
+          rejectUnauthorized: false
         } : false,
-        schema: env('DATABASE_SCHEMA', 'public'),
         pool: {
           min: env.int('DATABASE_POOL_MIN', 2),
           max: env.int('DATABASE_POOL_MAX', 10),
