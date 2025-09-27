@@ -9,17 +9,15 @@ module.exports = ({ env }) => {
     return {
       connection: {
         client: 'postgres',
-        connection: {
-          host: config.host,
-          port: config.port || 5432,
-          database: config.database,
-          user: config.user,
-          password: config.password,
-          ssl: env.bool('DATABASE_SSL', true) ? {
-            rejectUnauthorized: env.bool('DATABASE_SSL_REJECT_UNAUTHORIZED', false),
-          } : false,
-          schema: env('DATABASE_SCHEMA', 'public'),
-        },
+        host: config.host,
+        port: config.port || 5432,
+        database: config.database,
+        user: config.user,
+        password: config.password,
+        ssl: env.bool('DATABASE_SSL', true) ? {
+          rejectUnauthorized: env.bool('DATABASE_SSL_REJECT_UNAUTHORIZED', false),
+        } : false,
+        schema: env('DATABASE_SCHEMA', 'public'),
         pool: {
           min: env.int('DATABASE_POOL_MIN', 2),
           max: env.int('DATABASE_POOL_MAX', 10),
