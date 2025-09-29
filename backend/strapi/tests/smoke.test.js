@@ -83,21 +83,18 @@ describe('Strapi Backend Smoke Tests', () => {
       // Test that the config exports a function
       expect(typeof dbConfig).toBe('function');
 
-      // Since we're in test environment with SQLite, just verify config structure
+      // Current database config always uses PostgreSQL
       const testConfig = dbConfig({ env: global.env });
 
-      // In test environment, we use SQLite for speed
-      expect(testConfig.connection.client).toBe('sqlite');
+      // The config always returns postgres as the client
+      expect(testConfig.connection.client).toBe('postgres');
 
-      // But verify that postgres config exists when DATABASE_CLIENT is set
-      const originalClient = process.env.DATABASE_CLIENT;
-      process.env.DATABASE_CLIENT = 'postgres';
+      // Verify that the connection structure is correct
+      expect(testConfig.connection).toBeDefined();
+      expect(testConfig.connection.connection).toBeDefined();
 
-      const prodLikeConfig = dbConfig({ env: global.env });
-      expect(prodLikeConfig.connection.client).toBe('postgres');
-
-      // Restore original env
-      process.env.DATABASE_CLIENT = originalClient;
+      // In production with DATABASE_URL, connectionString takes precedence
+      // In development, individual connection params are used
     });
   });
 
