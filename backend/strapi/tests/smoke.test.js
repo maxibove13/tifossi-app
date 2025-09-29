@@ -83,11 +83,18 @@ describe('Strapi Backend Smoke Tests', () => {
       // Test that the config exports a function
       expect(typeof dbConfig).toBe('function');
 
-      // Current database config always uses PostgreSQL
+      // Set DATABASE_CLIENT to postgres for this test
+      const originalClient = process.env.DATABASE_CLIENT;
+      process.env.DATABASE_CLIENT = 'postgres';
+
+      // Database config uses PostgreSQL when DATABASE_CLIENT is set to postgres
       const testConfig = dbConfig({ env: global.env });
 
-      // The config always returns postgres as the client
+      // The config returns postgres as the client when configured
       expect(testConfig.connection.client).toBe('postgres');
+
+      // Restore original value
+      process.env.DATABASE_CLIENT = originalClient;
 
       // Verify that the connection structure is correct
       expect(testConfig.connection).toBeDefined();

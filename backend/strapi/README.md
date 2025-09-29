@@ -247,6 +247,81 @@ npm run test:ci
 npm run test:e2e
 ```
 
+### Testing with PostgreSQL (DATABASE_URL)
+
+To test the production database configuration locally (using `DATABASE_URL` as used on Render):
+
+#### 1. Start PostgreSQL with Docker
+
+```bash
+# Start PostgreSQL container
+docker-compose up -d postgres
+
+# Verify PostgreSQL is running
+docker-compose ps
+```
+
+#### 2. Use .env.postgres configuration
+
+```bash
+# Copy the PostgreSQL test environment
+cp .env.postgres .env
+
+# Start Strapi in development mode
+npm run develop
+```
+
+The `.env.postgres` file includes:
+- `DATABASE_URL` (connection string format used on Render)
+- `DATABASE_SSL=false` (for local testing)
+- All individual DB parameters as fallback
+
+This configuration tests the exact same code path that runs in production on Render.
+
+#### 3. Verify Database Connection
+
+Check the Strapi startup logs for:
+```
+✔ Connected to database
+✔ Database migrations completed
+```
+
+Visit `http://localhost:1337/api/health` to confirm the health check passes.
+
+#### 4. Clean Up
+
+```bash
+# Stop PostgreSQL container
+docker-compose down
+
+# Remove volumes (optional - removes all data)
+docker-compose down -v
+```
+
+### Troubleshooting Database Connection
+
+If you encounter database connection errors:
+
+1. **Check PostgreSQL is running**:
+   ```bash
+   docker-compose logs postgres
+   ```
+
+2. **Verify DATABASE_URL format**:
+   - Format: `postgresql://username:password@host:port/database`
+   - Example: `postgresql://strapi:strapi123@localhost:5432/tifossi_dev`
+
+3. **Test connection directly**:
+   ```bash
+   psql "postgresql://strapi:strapi123@localhost:5432/tifossi_dev"
+   ```
+
+4. **Enable debug logging**:
+   ```env
+   DATABASE_DEBUG=true
+   LOG_LEVEL=debug
+   ```
+
 ## 🔒 Security Features
 
 - **Rate Limiting**: Configurable rate limits per IP
