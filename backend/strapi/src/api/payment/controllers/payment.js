@@ -35,7 +35,7 @@ module.exports = {
       const mpService = new MercadoPagoService();
       const orderManager = new OrderStateManager();
 
-      const orderEntity = await strapi.entityService.create('api::order.order', {
+      const orderEntity = await strapi.documents('api::order.order').create({
         data: {
           orderNumber: sanitizedOrder.orderNumber,
           orderDate: new Date(),
@@ -75,15 +75,17 @@ module.exports = {
         total: sanitizedOrder.total,
       });
 
-      const updatedOrder = await strapi.entityService.update('api::order.order', orderEntity.id, {
+      const updatedOrder = await strapi.documents('api::order.order').update({
+        documentId: orderEntity.documentId,
         data: {
           mpPreferenceId: preference.id,
           status: 'PAYMENT_PENDING',
         },
+
         populate: {
           items: { populate: { product: true } },
           user: true,
-        },
+        }
       });
 
       await orderManager.transitionStatus(orderEntity.id, 'CREATED', 'PAYMENT_PENDING', {
@@ -130,7 +132,7 @@ module.exports = {
       const paymentInfo = await mpService.getPayment(paymentId);
       
       // Find associated order
-      const orders = await strapi.entityService.findMany('api::order.order', {
+      const orders = await strapi.documents('api::order.order').findMany({
         filters: {
           mpPaymentId: paymentId,
           user: ctx.state.user.id
@@ -146,8 +148,9 @@ module.exports = {
       
       // Update order with payment information
       const orderStatus = mpService.mapPaymentStatus(paymentInfo.status, paymentInfo.statusDetail);
-      
-      const updatedOrder = await strapi.entityService.update('api::order.order', order.id, {
+
+      const updatedOrder = await strapi.documents('api::order.order').update({
+        documentId: order.documentId,
         data: {
           mpPaymentId: paymentInfo.id,
           mpPaymentStatus: paymentInfo.status,
@@ -215,7 +218,7 @@ module.exports = {
         filters.status = status;
       }
 
-      const orders = await strapi.entityService.findMany('api::order.order', {
+      const orders = await strapi.documents('api::order.order').findMany({
         filters,
         populate: ['user'],
         pagination: {
@@ -243,12 +246,13 @@ module.exports = {
   async getOrder(ctx) {
     try {
       const { orderId } = ctx.params;
-      
+
       if (!ctx.state.user) {
         return ctx.unauthorized('Authentication required');
       }
 
-      const order = await strapi.entityService.findOne('api::order.order', orderId, {
+      const order = await strapi.documents('api::order.order').findOne({
+        documentId: orderId,
         populate: ['user'],
         filters: {
           user: ctx.state.user.id
@@ -277,13 +281,14 @@ module.exports = {
   async requestRefund(ctx) {
     try {
       const { orderId, reason = 'Customer request' } = ctx.request.body;
-      
+
       if (!ctx.state.user) {
         return ctx.unauthorized('Authentication required');
       }
 
       // Get order
-      const order = await strapi.entityService.findOne('api::order.order', orderId, {
+      const order = await strapi.documents('api::order.order').findOne({
+        documentId: orderId,
         populate: ['user'],
         filters: {
           user: ctx.state.user.id
@@ -310,7 +315,8 @@ module.exports = {
       const refundInfo = await mpService.processRefund(order.mpPaymentId, null, reason);
 
       // Update order status
-      await strapi.entityService.update('api::order.order', order.id, {
+      await strapi.documents('api::order.order').update({
+        documentId: order.documentId,
         data: {
           status: 'REFUNDED',
           metadata: {

@@ -154,7 +154,7 @@ module.exports = ({ env }) => ({
   },
 
   // Redis Plugin for Caching (if using Redis)
-  ...(env('REDIS_URL') || env('REDIS_HOST')) && {
+  ...((env('REDIS_URL') || env('REDIS_HOST')) && {
     redis: {
       config: {
         connections: {
@@ -172,10 +172,10 @@ module.exports = ({ env }) => ({
         },
       },
     },
-  },
+  }),
 
   // Sentry Plugin for Error Monitoring (if using Sentry)
-  ...(env('SENTRY_DSN')) && {
+  ...((env('SENTRY_DSN')) && {
     sentry: {
       enabled: true,
       config: {
@@ -189,5 +189,5 @@ module.exports = ({ env }) => ({
         },
       },
     },
-  },
+  }),
 });

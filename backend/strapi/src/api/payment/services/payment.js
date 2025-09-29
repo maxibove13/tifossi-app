@@ -65,7 +65,9 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
         // Check if product exists and is available
         if (item.productId) {
           try {
-            const product = await strapi.entityService.findOne('api::product.product', item.productId);
+            const product = await strapi.documents('api::product.product').findOne({
+              documentId: item.productId
+            });
             if (!product) {
               errors.push(`Item ${i + 1}: Product not found`);
             } else if (!product.available) {
@@ -246,7 +248,7 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
    */
   async getOrderStats(userId) {
     try {
-      const orders = await strapi.entityService.findMany('api::order.order', {
+      const orders = await strapi.documents('api::order.order').findMany({
         filters: { user: userId },
         populate: false
       });

@@ -24,7 +24,7 @@ module.exports = createCoreController('api::order.order', ({ strapi }) => ({
         },
       });
 
-      const orderEntity = await strapi.entityService.create('api::order.order', {
+      const orderEntity = await strapi.documents('api::order.order').create({
         data: {
           orderNumber: sanitizedOrder.orderNumber,
           orderDate: new Date(),

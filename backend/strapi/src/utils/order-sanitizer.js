@@ -132,7 +132,7 @@ const sanitizeOrderPayload = async ({
     throw new Error('Each item must include a valid productId');
   }
 
-  const products = await strapi.entityService.findMany('api::product.product', {
+  const products = await strapi.documents('api::product.product').findMany({
     filters: { id: { $in: productIds } },
     fields: ['id', 'title', 'price', 'discountedPrice', 'slug', 'longDescription'],
     populate: { frontImage: true },

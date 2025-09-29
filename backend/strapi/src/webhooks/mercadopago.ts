@@ -19,6 +19,7 @@ const OrderStateManager = require('../../../payment/order-state-manager');
 
 interface StrapiOrder {
   id: number;
+  documentId: string;
   orderNumber: string;
   status: OrderStatus;
   total: number;
@@ -165,7 +166,7 @@ module.exports = {
       // Find associated order by external reference
       let order: StrapiOrder | null = null;
       if (paymentInfo.external_reference) {
-        const orders = await strapi.entityService.findMany('api::order.order', {
+        const orders = await strapi.documents('api::order.order').findMany({
           filters: {
             orderNumber: paymentInfo.external_reference,
           },
@@ -178,7 +179,7 @@ module.exports = {
 
       // If not found by external reference, try by preference ID or payment ID
       if (!order && (paymentInfo.external_reference || paymentId)) {
-        const orders = await strapi.entityService.findMany('api::order.order', {
+        const orders = await strapi.documents('api::order.order').findMany({
           filters: {
             $or: [{ mpPaymentId: paymentId }, { mpPreferenceId: paymentInfo.external_reference }],
           },
@@ -245,7 +246,8 @@ module.exports = {
       }
 
       // Update order in database
-      await strapi.entityService.update('api::order.order', order.id, {
+      await strapi.documents('api::order.order').update({
+        documentId: order.documentId,
         data: updateData,
       });
 

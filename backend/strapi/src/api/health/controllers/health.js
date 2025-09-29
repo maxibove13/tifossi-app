@@ -118,7 +118,7 @@ async function checkDatabaseHealth() {
  */
 async function checkUploadHealth() {
   try {
-    const uploadConfig = strapi.config.get('plugin.upload');
+    const uploadConfig = strapi.config.get("plugin::upload");
     
     return {
       status: 'ok',
@@ -139,7 +139,7 @@ async function checkUploadHealth() {
  */
 async function checkEmailHealth() {
   try {
-    const emailConfig = strapi.config.get('plugin.email');
+    const emailConfig = strapi.config.get("plugin::email");
     
     if (!emailConfig || !emailConfig.provider) {
       return {
