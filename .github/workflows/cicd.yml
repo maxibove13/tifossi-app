@@ -250,7 +250,7 @@ jobs:
 
     environment:
       name: production
-      url: ${{ steps.deploy.outputs.service_url }}
+      url: https://tifossi-strapi-backend.onrender.com
 
     steps:
       - name: Checkout code
@@ -264,60 +264,53 @@ jobs:
 
       - name: Validate deployment prerequisites
         run: |
-          # Check for Deploy Hook URL
-          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
-            echo "❌ ERROR: RENDER_DEPLOY_HOOK_URL not configured in GitHub Secrets"
-            echo "Please add RENDER_DEPLOY_HOOK_URL to repository secrets"
+          # Check for Render Service ID
+          if [ -z "${{ secrets.RENDER_SERVICE_ID }}" ]; then
+            echo "❌ ERROR: RENDER_SERVICE_ID not configured in GitHub Secrets"
+            echo "Please add RENDER_SERVICE_ID to repository secrets"
+            echo "Service ID: srv-d3bhauq4d50c73bqah90"
+            exit 1
+          fi
+
+          # Check for Render API Key
+          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
+            echo "❌ ERROR: RENDER_API_KEY not configured in GitHub Secrets"
+            echo "Please create an API key in Render dashboard and add it to repository secrets"
             exit 1
           fi
 
           echo "✅ Deployment prerequisites validated"
 
-
-      - name: Trigger deployment
+      - name: Deploy to Render
         id: deploy
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+          wait-for-success: true
+
+      - name: Set deployment URL
+        id: set-url
         run: |
-          echo "Triggering deployment via deploy hook..."
-
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" \
-            --fail-with-body || {
-              echo "❌ Failed to trigger deployment via deploy hook"
-              exit 1
-            }
-
-          echo "✅ Deployment triggered via deploy hook"
           echo "service_url=https://tifossi-strapi-backend.onrender.com" >> $GITHUB_OUTPUT
-
-      - name: Wait for deployment
-        run: |
-          echo "Waiting for deployment to complete..."
-          echo "Deploy hook triggered. Deployment in progress..."
-          echo "Note: Deploy hooks don't provide deployment IDs for status tracking"
-          echo "Waiting 3 minutes for deployment to initialize..."
-          sleep 180
-          echo "✅ Deploy hook triggered successfully (check Render dashboard for full status)"
 
       - name: Verify deployment health
         run: |
-          SERVICE_URL="${{ steps.deploy.outputs.service_url }}"
+          SERVICE_URL="https://tifossi-strapi-backend.onrender.com"
 
           echo "Verifying deployment health at $SERVICE_URL..."
 
-          # Wait for service to be ready
-          sleep 10
+          # Give the service a moment to stabilize
+          sleep 5
 
           # Check health endpoint
-          for i in {1..5}; do
-            if curl -f "$SERVICE_URL/api/health" --max-time 10; then
-              echo "✅ Health check passed!"
-              exit 0
-            fi
-            echo "⏳ Health check attempt $i/5 failed, retrying..."
-            sleep 10
-          done
-
-          echo "❌ Health check failed"
-          exit 1
+          if curl -f "$SERVICE_URL/api/health" --max-time 10; then
+            echo "✅ Health check passed!"
+          else
+            echo "⚠️ Health check failed - service may still be initializing"
+            echo "Check Render dashboard for more details"
+            exit 1
+          fi
 
       - name: Deployment summary
         if: always()
@@ -326,8 +319,8 @@ jobs:
           echo "DEPLOYMENT SUMMARY"
           echo "======================================"
           echo "Environment: production"
-          echo "Service URL: ${{ steps.deploy.outputs.service_url }}"
-          echo "Deployment ID: ${{ steps.deploy.outputs.deployment_id }}"
+          echo "Service URL: https://tifossi-strapi-backend.onrender.com"
+          echo "Deployment Status: ${{ steps.deploy.outcome }}"
           echo "======================================"
 
   # ============================
