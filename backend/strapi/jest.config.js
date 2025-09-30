@@ -28,15 +28,15 @@ module.exports = {
   
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
-  
+
   // Module paths
   moduleNameMapper: {
     '^~/(.*)$': '<rootDir>/src/$1',
   },
-  
+
   // Test timeout
   testTimeout: 30000,
-  
+
   // Transform files
   transform: {
     '^.+\\.js$': 'babel-jest',

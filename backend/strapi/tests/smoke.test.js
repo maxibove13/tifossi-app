@@ -20,8 +20,8 @@ describe('Strapi Backend Smoke Tests', () => {
       const packageJson = require('../package.json');
       const strapiVersion = packageJson.dependencies['@strapi/strapi'];
 
-      // Should be version 4.x
-      expect(strapiVersion).toMatch(/^\^4\./);
+      // Should be version 5.x
+      expect(strapiVersion).toMatch(/^\^?5\./);
     });
 
     it('should have test scripts configured', () => {
@@ -88,7 +88,20 @@ describe('Strapi Backend Smoke Tests', () => {
       process.env.DATABASE_CLIENT = 'postgres';
 
       // Database config uses PostgreSQL when DATABASE_CLIENT is set to postgres
-      const testConfig = dbConfig({ env: global.env });
+      const mockEnv = Object.assign(
+        (key, defaultValue) => process.env[key] || defaultValue,
+        {
+          bool: (key, defaultValue) => {
+            const val = process.env[key];
+            return val === undefined ? defaultValue : val === 'true' || val === '1';
+          },
+          int: (key, defaultValue) => {
+            const val = process.env[key];
+            return val === undefined ? defaultValue : parseInt(val, 10);
+          }
+        }
+      );
+      const testConfig = dbConfig({ env: mockEnv });
 
       // The config returns postgres as the client when configured
       expect(testConfig.connection.client).toBe('postgres');
