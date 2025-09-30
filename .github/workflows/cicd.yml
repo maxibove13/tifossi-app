@@ -1,5 +1,15 @@
 name: CI/CD Pipeline
 
+# Required GitHub Secrets:
+# - RENDER_SERVICE_ID: Render service ID (srv-...)
+# - RENDER_API_KEY: Render API key for deployments
+# - CLOUDINARY_NAME: Cloudinary cloud name
+# - CLOUDINARY_KEY: Cloudinary API key
+# - CLOUDINARY_SECRET: Cloudinary API secret
+# - MERCADO_PAGO_ACCESS_TOKEN: MercadoPago production access token
+# - MERCADO_PAGO_PUBLIC_KEY: MercadoPago production public key
+# - MERCADO_PAGO_WEBHOOK_SECRET: MercadoPago webhook secret
+
 on:
   push:
     branches: [main]
@@ -264,30 +274,102 @@ jobs:
 
       - name: Validate deployment prerequisites
         run: |
-          # Check for Render Service ID
-          if [ -z "${{ secrets.RENDER_SERVICE_ID }}" ]; then
-            echo "❌ ERROR: RENDER_SERVICE_ID not configured in GitHub Secrets"
-            echo "Please add RENDER_SERVICE_ID to repository secrets"
-            echo "Service ID: srv-d3bhauq4d50c73bqah90"
+          MISSING_SECRETS=()
+
+          # Check for Render credentials
+          [ -z "${{ secrets.RENDER_SERVICE_ID }}" ] && MISSING_SECRETS+=("RENDER_SERVICE_ID")
+          [ -z "${{ secrets.RENDER_API_KEY }}" ] && MISSING_SECRETS+=("RENDER_API_KEY")
+
+          # Check for Cloudinary credentials
+          [ -z "${{ secrets.CLOUDINARY_NAME }}" ] && MISSING_SECRETS+=("CLOUDINARY_NAME")
+          [ -z "${{ secrets.CLOUDINARY_KEY }}" ] && MISSING_SECRETS+=("CLOUDINARY_KEY")
+          [ -z "${{ secrets.CLOUDINARY_SECRET }}" ] && MISSING_SECRETS+=("CLOUDINARY_SECRET")
+
+          # Check for MercadoPago credentials
+          [ -z "${{ secrets.MERCADO_PAGO_ACCESS_TOKEN }}" ] && MISSING_SECRETS+=("MERCADO_PAGO_ACCESS_TOKEN")
+          [ -z "${{ secrets.MERCADO_PAGO_PUBLIC_KEY }}" ] && MISSING_SECRETS+=("MERCADO_PAGO_PUBLIC_KEY")
+          [ -z "${{ secrets.MERCADO_PAGO_WEBHOOK_SECRET }}" ] && MISSING_SECRETS+=("MERCADO_PAGO_WEBHOOK_SECRET")
+
+          if [ ${#MISSING_SECRETS[@]} -ne 0 ]; then
+            echo "❌ ERROR: Missing required GitHub Secrets:"
+            printf '%s\n' "${MISSING_SECRETS[@]}"
+            echo ""
+            echo "Please add these secrets to your repository settings"
             exit 1
           fi
 
-          # Check for Render API Key
-          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
-            echo "❌ ERROR: RENDER_API_KEY not configured in GitHub Secrets"
-            echo "Please create an API key in Render dashboard and add it to repository secrets"
-            exit 1
-          fi
+          echo "✅ All required secrets configured"
 
-          echo "✅ Deployment prerequisites validated"
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Sync environment variables to Render
+        run: |
+          chmod +x scripts/sync-render-env.sh
+
+          # Export secrets as environment variables for the script
+          export CLOUDINARY_NAME="${{ secrets.CLOUDINARY_NAME }}"
+          export CLOUDINARY_KEY="${{ secrets.CLOUDINARY_KEY }}"
+          export CLOUDINARY_SECRET="${{ secrets.CLOUDINARY_SECRET }}"
+          export MERCADO_PAGO_ACCESS_TOKEN="${{ secrets.MERCADO_PAGO_ACCESS_TOKEN }}"
+          export MERCADO_PAGO_PUBLIC_KEY="${{ secrets.MERCADO_PAGO_PUBLIC_KEY }}"
+          export MERCADO_PAGO_WEBHOOK_SECRET="${{ secrets.MERCADO_PAGO_WEBHOOK_SECRET }}"
+
+          # Run sync script
+          ./scripts/sync-render-env.sh \
+            "${{ secrets.RENDER_SERVICE_ID }}" \
+            "${{ secrets.RENDER_API_KEY }}"
 
       - name: Deploy to Render
         id: deploy
-        uses: johnbeynon/render-deploy-action@v0.0.8
-        with:
-          service-id: ${{ secrets.RENDER_SERVICE_ID }}
-          api-key: ${{ secrets.RENDER_API_KEY }}
-          wait-for-success: true
+        run: |
+          echo "Triggering deployment to Render..."
+
+          DEPLOY_RESPONSE=$(curl -s -X POST \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json")
+
+          DEPLOY_ID=$(echo "$DEPLOY_RESPONSE" | jq -r '.id')
+
+          if [ -z "$DEPLOY_ID" ] || [ "$DEPLOY_ID" = "null" ]; then
+            echo "❌ Failed to trigger deployment"
+            echo "$DEPLOY_RESPONSE"
+            exit 1
+          fi
+
+          echo "✅ Deployment triggered successfully"
+          echo "Deploy ID: $DEPLOY_ID"
+          echo "deploy_id=$DEPLOY_ID" >> $GITHUB_OUTPUT
+
+          # Wait for deployment to complete
+          echo "Waiting for deployment to complete..."
+          MAX_WAIT=600  # 10 minutes
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            DEPLOY_STATUS=$(curl -s \
+              "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys/$DEPLOY_ID" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" | jq -r '.status')
+
+            echo "Status: $DEPLOY_STATUS (${ELAPSED}s elapsed)"
+
+            if [ "$DEPLOY_STATUS" = "live" ]; then
+              echo "✅ Deployment completed successfully"
+              exit 0
+            elif [ "$DEPLOY_STATUS" = "build_failed" ] || [ "$DEPLOY_STATUS" = "deactivated" ]; then
+              echo "❌ Deployment failed with status: $DEPLOY_STATUS"
+              exit 1
+            fi
+
+            sleep 30
+            ELAPSED=$((ELAPSED + 30))
+          done
+
+          echo "⚠️ Deployment timeout - check Render dashboard"
+          exit 1
 
       - name: Set deployment URL
         id: set-url
