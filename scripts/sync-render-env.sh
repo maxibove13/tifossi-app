@@ -83,16 +83,37 @@ if [[ -n "${CLOUDINARY_SECRET:-}" ]]; then
 fi
 
 # Update MercadoPago credentials
+# Note: Backend code uses MP_* prefix, so we sync both naming conventions
 if [[ -n "${MERCADO_PAGO_ACCESS_TOKEN:-}" ]]; then
   update_env_var "MERCADO_PAGO_ACCESS_TOKEN" "$MERCADO_PAGO_ACCESS_TOKEN"
+  update_env_var "MP_ACCESS_TOKEN" "$MERCADO_PAGO_ACCESS_TOKEN"
 fi
 
 if [[ -n "${MERCADO_PAGO_PUBLIC_KEY:-}" ]]; then
   update_env_var "MERCADO_PAGO_PUBLIC_KEY" "$MERCADO_PAGO_PUBLIC_KEY"
+  update_env_var "MP_PUBLIC_KEY" "$MERCADO_PAGO_PUBLIC_KEY"
 fi
 
 if [[ -n "${MERCADO_PAGO_WEBHOOK_SECRET:-}" ]]; then
   update_env_var "MERCADO_PAGO_WEBHOOK_SECRET" "$MERCADO_PAGO_WEBHOOK_SECRET"
+  update_env_var "MP_WEBHOOK_SECRET" "$MERCADO_PAGO_WEBHOOK_SECRET"
+fi
+
+# Update MercadoPago test credentials
+if [[ -n "${MP_TEST_ACCESS_TOKEN:-}" ]]; then
+  update_env_var "MP_TEST_ACCESS_TOKEN" "$MP_TEST_ACCESS_TOKEN"
+fi
+
+if [[ -n "${MP_TEST_PUBLIC_KEY:-}" ]]; then
+  update_env_var "MP_TEST_PUBLIC_KEY" "$MP_TEST_PUBLIC_KEY"
+fi
+
+if [[ -n "${MP_WEBHOOK_SECRET:-}" ]]; then
+  update_env_var "MP_WEBHOOK_SECRET" "$MP_WEBHOOK_SECRET"
+fi
+
+if [[ -n "${WEBHOOK_URL:-}" ]]; then
+  update_env_var "WEBHOOK_URL" "$WEBHOOK_URL"
 fi
 
 echo "Updating environment variables on Render..."

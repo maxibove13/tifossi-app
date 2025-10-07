@@ -6,9 +6,10 @@ name: CI/CD Pipeline
 # - CLOUDINARY_NAME: Cloudinary cloud name
 # - CLOUDINARY_KEY: Cloudinary API key
 # - CLOUDINARY_SECRET: Cloudinary API secret
-# - MERCADO_PAGO_ACCESS_TOKEN: MercadoPago production access token
-# - MERCADO_PAGO_PUBLIC_KEY: MercadoPago production public key
-# - MERCADO_PAGO_WEBHOOK_SECRET: MercadoPago webhook secret
+# - MP_TEST_ACCESS_TOKEN: MercadoPago test access token (TEST-...)
+# - MP_TEST_PUBLIC_KEY: MercadoPago test public key (TEST-...)
+# - MP_WEBHOOK_SECRET: MercadoPago webhook secret
+# - WEBHOOK_URL: Webhook URL for MercadoPago notifications
 
 on:
   push:
@@ -285,10 +286,11 @@ jobs:
           [ -z "${{ secrets.CLOUDINARY_KEY }}" ] && MISSING_SECRETS+=("CLOUDINARY_KEY")
           [ -z "${{ secrets.CLOUDINARY_SECRET }}" ] && MISSING_SECRETS+=("CLOUDINARY_SECRET")
 
-          # Check for MercadoPago credentials
-          [ -z "${{ secrets.MERCADO_PAGO_ACCESS_TOKEN }}" ] && MISSING_SECRETS+=("MERCADO_PAGO_ACCESS_TOKEN")
-          [ -z "${{ secrets.MERCADO_PAGO_PUBLIC_KEY }}" ] && MISSING_SECRETS+=("MERCADO_PAGO_PUBLIC_KEY")
-          [ -z "${{ secrets.MERCADO_PAGO_WEBHOOK_SECRET }}" ] && MISSING_SECRETS+=("MERCADO_PAGO_WEBHOOK_SECRET")
+          # Check for MercadoPago credentials (MP_* prefix used by backend)
+          [ -z "${{ secrets.MP_TEST_ACCESS_TOKEN }}" ] && MISSING_SECRETS+=("MP_TEST_ACCESS_TOKEN")
+          [ -z "${{ secrets.MP_TEST_PUBLIC_KEY }}" ] && MISSING_SECRETS+=("MP_TEST_PUBLIC_KEY")
+          [ -z "${{ secrets.MP_WEBHOOK_SECRET }}" ] && MISSING_SECRETS+=("MP_WEBHOOK_SECRET")
+          [ -z "${{ secrets.WEBHOOK_URL }}" ] && MISSING_SECRETS+=("WEBHOOK_URL")
 
           if [ ${#MISSING_SECRETS[@]} -ne 0 ]; then
             echo "❌ ERROR: Missing required GitHub Secrets:"
@@ -313,9 +315,10 @@ jobs:
           export CLOUDINARY_NAME="${{ secrets.CLOUDINARY_NAME }}"
           export CLOUDINARY_KEY="${{ secrets.CLOUDINARY_KEY }}"
           export CLOUDINARY_SECRET="${{ secrets.CLOUDINARY_SECRET }}"
-          export MERCADO_PAGO_ACCESS_TOKEN="${{ secrets.MERCADO_PAGO_ACCESS_TOKEN }}"
-          export MERCADO_PAGO_PUBLIC_KEY="${{ secrets.MERCADO_PAGO_PUBLIC_KEY }}"
-          export MERCADO_PAGO_WEBHOOK_SECRET="${{ secrets.MERCADO_PAGO_WEBHOOK_SECRET }}"
+          export MP_TEST_ACCESS_TOKEN="${{ secrets.MP_TEST_ACCESS_TOKEN }}"
+          export MP_TEST_PUBLIC_KEY="${{ secrets.MP_TEST_PUBLIC_KEY }}"
+          export MP_WEBHOOK_SECRET="${{ secrets.MP_WEBHOOK_SECRET }}"
+          export WEBHOOK_URL="${{ secrets.WEBHOOK_URL }}"
 
           # Run sync script
           ./scripts/sync-render-env.sh \
