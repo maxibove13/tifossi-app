@@ -118,12 +118,21 @@ fi
 
 echo "Updating environment variables on Render..."
 
+# Filter out any entries with empty keys or values before sending
+CLEAN_VARS=$(mktemp)
+trap 'rm -f "$TEMP_FILE" "$MERGED_FILE" "$CLEAN_VARS"' EXIT
+
+jq 'map(select(.key != "" and .key != null))' "$MERGED_FILE" > "$CLEAN_VARS"
+
+echo "Filtered environment variables:"
+jq -r '.[] | "\(.key)"' "$CLEAN_VARS"
+
 # Send updated env vars to Render
 HTTP_STATUS=$(curl -s -w "%{http_code}" -o "$TEMP_FILE" \
   -X PUT \
   -H "Authorization: Bearer ${RENDER_API_KEY}" \
   -H "Content-Type: application/json" \
-  --data-binary "@${MERGED_FILE}" \
+  --data-binary "@${CLEAN_VARS}" \
   "${API_BASE}/services/${RENDER_SERVICE_ID}/env-vars")
 
 if [[ "$HTTP_STATUS" != "200" ]]; then
