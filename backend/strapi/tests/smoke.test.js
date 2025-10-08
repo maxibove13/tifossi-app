@@ -85,7 +85,10 @@ describe('Strapi Backend Smoke Tests', () => {
 
       // Set DATABASE_CLIENT to postgres for this test
       const originalClient = process.env.DATABASE_CLIENT;
+      const originalUrl = process.env.DATABASE_URL;
+
       process.env.DATABASE_CLIENT = 'postgres';
+      process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
 
       // Database config uses PostgreSQL when DATABASE_CLIENT is set to postgres
       const mockEnv = Object.assign(
@@ -106,8 +109,13 @@ describe('Strapi Backend Smoke Tests', () => {
       // The config returns postgres as the client when configured
       expect(testConfig.connection.client).toBe('postgres');
 
-      // Restore original value
+      // Restore original values
       process.env.DATABASE_CLIENT = originalClient;
+      if (originalUrl !== undefined) {
+        process.env.DATABASE_URL = originalUrl;
+      } else {
+        delete process.env.DATABASE_URL;
+      }
 
       // Verify that the connection structure is correct
       expect(testConfig.connection).toBeDefined();
