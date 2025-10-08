@@ -143,6 +143,11 @@ export const productFactory = {
       };
     });
 
+    // Ensure at least one color has stock (unless explicitly creating out of stock product)
+    if (productColors.every((color) => color.quantity === 0)) {
+      productColors[0].quantity = randomInt(1, 50);
+    }
+
     // Generate sizes for this product
     const numSizes = randomInt(3, 6);
     const productSizes: ProductSize[] = SIZES.slice(0, numSizes).map((size) => ({
