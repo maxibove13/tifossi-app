@@ -3,6 +3,7 @@ set -euo pipefail
 
 # Render Environment Variable Sync Script
 # Fetches current env vars from Render, merges with GitHub Secrets, and updates service
+# Syncs: Database credentials, Cloudinary, MercadoPago, and webhook configuration
 # Usage: ./sync-render-env.sh <service_id> <api_key>
 
 RENDER_SERVICE_ID="${1:-}"
@@ -114,6 +115,19 @@ fi
 
 if [[ -n "${WEBHOOK_URL:-}" ]]; then
   update_env_var "WEBHOOK_URL" "$WEBHOOK_URL"
+fi
+
+# Update Database credentials
+if [[ -n "${DATABASE_URL:-}" ]]; then
+  update_env_var "DATABASE_URL" "$DATABASE_URL"
+fi
+
+if [[ -n "${DATABASE_CLIENT:-}" ]]; then
+  update_env_var "DATABASE_CLIENT" "$DATABASE_CLIENT"
+fi
+
+if [[ -n "${DATABASE_SSL:-}" ]]; then
+  update_env_var "DATABASE_SSL" "$DATABASE_SSL"
 fi
 
 echo "Updating environment variables on Render..."
