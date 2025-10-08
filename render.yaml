@@ -7,8 +7,8 @@ services:
     rootDir: backend/strapi  # For monorepo - all paths relative to this
     branch: main  # Deploy from main branch
     autoDeployTrigger: commit  # Auto-deploy on push to main
-    buildCommand: npm ci && npm run build
-    startCommand: npm run start
+    buildCommand: node scripts/debug-config.js && npm ci && npm run build
+    startCommand: npm run start:debug
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV

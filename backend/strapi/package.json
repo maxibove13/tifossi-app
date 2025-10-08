@@ -7,6 +7,7 @@
     "build": "strapi build",
     "develop": "strapi develop",
     "start": "strapi start",
+    "start:debug": "node scripts/test-db-connection.js && strapi start",
     "strapi": "strapi",
     "seed": "strapi import",
     "export": "strapi export",
