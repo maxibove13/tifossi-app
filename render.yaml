@@ -34,7 +34,7 @@ services:
       - key: DATABASE_SSL
         sync: false
       - key: DATABASE_SSL_REJECT_UNAUTHORIZED
-        value: false
+        sync: false
       - key: CORS_ORIGINS
         value: https://tifossi.app,https://www.tifossi.app,https://admin.tifossi.app
       - key: UPLOAD_PROVIDER
@@ -103,6 +103,7 @@ databases:
 # - DATABASE_URL (external connection string from Render PostgreSQL)
 # - DATABASE_CLIENT (postgres)
 # - DATABASE_SSL (true for Render)
+# - DATABASE_SSL_REJECT_UNAUTHORIZED (false for Render)
 # - CLOUDINARY_NAME (from Cloudinary account)
 # - CLOUDINARY_KEY (from Cloudinary account)
 # - CLOUDINARY_SECRET (from Cloudinary account)

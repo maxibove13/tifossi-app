@@ -14,6 +14,7 @@ This document lists all GitHub Secrets required for the automated deployment wor
 - `DATABASE_URL` - PostgreSQL EXTERNAL connection string from Render (use the one with .oregon-postgres.render.com)
 - `DATABASE_CLIENT` - Database client type (set to `postgres`)
 - `DATABASE_SSL` - Enable SSL for database connection (set to `true` for Render)
+- `DATABASE_SSL_REJECT_UNAUTHORIZED` - Reject unauthorized SSL certificates (set to `false` for Render)
 
 ### 3. Strapi Core (CRITICAL - Generate secure values!)
 ```bash
@@ -69,7 +70,8 @@ Add secrets in this order:
 3. `DATABASE_URL` (external connection string)
 4. `DATABASE_CLIENT` (set to `postgres`)
 5. `DATABASE_SSL` (set to `true`)
-6. All Strapi core secrets (APP_KEYS, JWT_SECRET, etc.)
+6. `DATABASE_SSL_REJECT_UNAUTHORIZED` (set to `false`)
+7. All Strapi core secrets (APP_KEYS, JWT_SECRET, etc.)
 
 ### Phase 2: Required for Full Functionality
 1. Cloudinary credentials (for image uploads)
@@ -105,6 +107,7 @@ JWT_SECRET: "64_character_hex_string_here"
 DATABASE_URL: "postgresql://user:pass@dpg-xxxxx.oregon-postgres.render.com/dbname"
 DATABASE_CLIENT: "postgres"
 DATABASE_SSL: "true"
+DATABASE_SSL_REJECT_UNAUTHORIZED: "false"
 CLOUDINARY_NAME: "your-cloud-name"
 MERCADO_PAGO_ACCESS_TOKEN: "APP-USR-xxxxxxxxxx"
 ```

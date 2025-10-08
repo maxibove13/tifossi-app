@@ -6,6 +6,7 @@ name: CI/CD Pipeline
 # - DATABASE_URL: PostgreSQL external connection string (with .oregon-postgres.render.com)
 # - DATABASE_CLIENT: Database client type (postgres)
 # - DATABASE_SSL: Enable SSL for database (true)
+# - DATABASE_SSL_REJECT_UNAUTHORIZED: Reject unauthorized SSL certificates (false)
 # - CLOUDINARY_NAME: Cloudinary cloud name
 # - CLOUDINARY_KEY: Cloudinary API key
 # - CLOUDINARY_SECRET: Cloudinary API secret
@@ -288,6 +289,7 @@ jobs:
           [ -z "${{ secrets.DATABASE_URL }}" ] && MISSING_SECRETS+=("DATABASE_URL")
           [ -z "${{ secrets.DATABASE_CLIENT }}" ] && MISSING_SECRETS+=("DATABASE_CLIENT")
           [ -z "${{ secrets.DATABASE_SSL }}" ] && MISSING_SECRETS+=("DATABASE_SSL")
+          [ -z "${{ secrets.DATABASE_SSL_REJECT_UNAUTHORIZED }}" ] && MISSING_SECRETS+=("DATABASE_SSL_REJECT_UNAUTHORIZED")
 
           # Check for Cloudinary credentials
           [ -z "${{ secrets.CLOUDINARY_NAME }}" ] && MISSING_SECRETS+=("CLOUDINARY_NAME")
@@ -323,6 +325,7 @@ jobs:
           export DATABASE_URL="${{ secrets.DATABASE_URL }}"
           export DATABASE_CLIENT="${{ secrets.DATABASE_CLIENT }}"
           export DATABASE_SSL="${{ secrets.DATABASE_SSL }}"
+          export DATABASE_SSL_REJECT_UNAUTHORIZED="${{ secrets.DATABASE_SSL_REJECT_UNAUTHORIZED }}"
           export CLOUDINARY_NAME="${{ secrets.CLOUDINARY_NAME }}"
           export CLOUDINARY_KEY="${{ secrets.CLOUDINARY_KEY }}"
           export CLOUDINARY_SECRET="${{ secrets.CLOUDINARY_SECRET }}"

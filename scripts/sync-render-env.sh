@@ -130,6 +130,10 @@ if [[ -n "${DATABASE_SSL:-}" ]]; then
   update_env_var "DATABASE_SSL" "$DATABASE_SSL"
 fi
 
+if [[ -n "${DATABASE_SSL_REJECT_UNAUTHORIZED:-}" ]]; then
+  update_env_var "DATABASE_SSL_REJECT_UNAUTHORIZED" "$DATABASE_SSL_REJECT_UNAUTHORIZED"
+fi
+
 echo "Updating environment variables on Render..."
 
 # Filter out any entries with empty keys or values before sending
