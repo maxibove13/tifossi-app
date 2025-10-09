@@ -302,11 +302,19 @@ jobs:
           [ -z "${{ secrets.MP_WEBHOOK_SECRET }}" ] && MISSING_SECRETS+=("MP_WEBHOOK_SECRET")
           [ -z "${{ secrets.WEBHOOK_URL }}" ] && MISSING_SECRETS+=("WEBHOOK_URL")
 
+          # Check for Strapi security secrets
+          [ -z "${{ secrets.APP_KEYS }}" ] && MISSING_SECRETS+=("APP_KEYS")
+          [ -z "${{ secrets.API_TOKEN_SALT }}" ] && MISSING_SECRETS+=("API_TOKEN_SALT")
+          [ -z "${{ secrets.ADMIN_JWT_SECRET }}" ] && MISSING_SECRETS+=("ADMIN_JWT_SECRET")
+          [ -z "${{ secrets.TRANSFER_TOKEN_SALT }}" ] && MISSING_SECRETS+=("TRANSFER_TOKEN_SALT")
+          [ -z "${{ secrets.JWT_SECRET }}" ] && MISSING_SECRETS+=("JWT_SECRET")
+
           if [ ${#MISSING_SECRETS[@]} -ne 0 ]; then
             echo "❌ ERROR: Missing required GitHub Secrets:"
             printf '%s\n' "${MISSING_SECRETS[@]}"
             echo ""
             echo "Please add these secrets to your repository settings"
+            echo "Run './scripts/setup-github-secrets.sh' to generate and set Strapi secrets"
             exit 1
           fi
 
@@ -333,6 +341,11 @@ jobs:
           export MP_TEST_PUBLIC_KEY="${{ secrets.MP_TEST_PUBLIC_KEY }}"
           export MP_WEBHOOK_SECRET="${{ secrets.MP_WEBHOOK_SECRET }}"
           export WEBHOOK_URL="${{ secrets.WEBHOOK_URL }}"
+          export APP_KEYS="${{ secrets.APP_KEYS }}"
+          export API_TOKEN_SALT="${{ secrets.API_TOKEN_SALT }}"
+          export ADMIN_JWT_SECRET="${{ secrets.ADMIN_JWT_SECRET }}"
+          export TRANSFER_TOKEN_SALT="${{ secrets.TRANSFER_TOKEN_SALT }}"
+          export JWT_SECRET="${{ secrets.JWT_SECRET }}"
 
           # Run sync script
           ./scripts/sync-render-env.sh \

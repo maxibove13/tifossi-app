@@ -134,6 +134,27 @@ if [[ -n "${DATABASE_SSL_REJECT_UNAUTHORIZED:-}" ]]; then
   update_env_var "DATABASE_SSL_REJECT_UNAUTHORIZED" "$DATABASE_SSL_REJECT_UNAUTHORIZED"
 fi
 
+# Update Strapi security secrets
+if [[ -n "${APP_KEYS:-}" ]]; then
+  update_env_var "APP_KEYS" "$APP_KEYS"
+fi
+
+if [[ -n "${API_TOKEN_SALT:-}" ]]; then
+  update_env_var "API_TOKEN_SALT" "$API_TOKEN_SALT"
+fi
+
+if [[ -n "${ADMIN_JWT_SECRET:-}" ]]; then
+  update_env_var "ADMIN_JWT_SECRET" "$ADMIN_JWT_SECRET"
+fi
+
+if [[ -n "${TRANSFER_TOKEN_SALT:-}" ]]; then
+  update_env_var "TRANSFER_TOKEN_SALT" "$TRANSFER_TOKEN_SALT"
+fi
+
+if [[ -n "${JWT_SECRET:-}" ]]; then
+  update_env_var "JWT_SECRET" "$JWT_SECRET"
+fi
+
 echo "Updating environment variables on Render..."
 
 # Filter out any entries with empty keys or values before sending
