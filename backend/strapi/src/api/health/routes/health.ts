@@ -1,10 +1,8 @@
-'use strict';
-
 /**
  * Health check routes
  */
 
-module.exports = {
+export default {
   routes: [
     {
       method: 'GET',

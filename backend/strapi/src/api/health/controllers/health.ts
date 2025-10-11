@@ -1,14 +1,12 @@
-'use strict';
-
 /**
  * Health check controller
  */
 
-module.exports = {
+export default {
   /**
    * Basic health check endpoint
    */
-  async healthCheck(ctx) {
+  async healthCheck(ctx: any) {
     try {
       // Basic health check - just return OK if the server is running
       const healthStatus = {
@@ -21,10 +19,10 @@ module.exports = {
 
       ctx.status = 200;
       ctx.body = healthStatus;
-      
+
     } catch (error) {
       strapi.log.error('Health check failed:', error);
-      
+
       ctx.status = 503;
       ctx.body = {
         status: 'error',
@@ -37,7 +35,7 @@ module.exports = {
   /**
    * Detailed health check endpoint
    */
-  async detailedHealthCheck(ctx) {
+  async detailedHealthCheck(ctx: any) {
     try {
       const healthChecks = {
         status: 'ok',
@@ -74,16 +72,16 @@ module.exports = {
       }
 
       ctx.body = healthChecks;
-      
+
     } catch (error) {
       strapi.log.error('Detailed health check failed:', error);
-      
+
       ctx.status = 503;
       ctx.body = {
         status: 'error',
         message: 'Service Unavailable',
         timestamp: new Date().toISOString(),
-        error: error.message,
+        error: (error as Error).message,
       };
     }
   },
@@ -96,7 +94,7 @@ async function checkDatabaseHealth() {
   try {
     // Try a simple query to test database connectivity
     await strapi.db.connection.raw('SELECT 1');
-    
+
     return {
       status: 'ok',
       message: 'Database connection is healthy',
@@ -104,11 +102,11 @@ async function checkDatabaseHealth() {
     };
   } catch (error) {
     strapi.log.error('Database health check failed:', error);
-    
+
     return {
       status: 'error',
       message: 'Database connection failed',
-      error: error.message,
+      error: (error as Error).message,
     };
   }
 }
@@ -119,17 +117,17 @@ async function checkDatabaseHealth() {
 async function checkUploadHealth() {
   try {
     const uploadConfig = strapi.config.get("plugin::upload");
-    
+
     return {
       status: 'ok',
-      provider: uploadConfig?.provider || 'local',
+      provider: (uploadConfig as any)?.provider || 'local',
       message: 'Upload service is configured',
     };
   } catch (error) {
     return {
       status: 'error',
       message: 'Upload service configuration error',
-      error: error.message,
+      error: (error as Error).message,
     };
   }
 }
@@ -140,24 +138,24 @@ async function checkUploadHealth() {
 async function checkEmailHealth() {
   try {
     const emailConfig = strapi.config.get("plugin::email");
-    
-    if (!emailConfig || !emailConfig.provider) {
+
+    if (!emailConfig || !(emailConfig as any).provider) {
       return {
         status: 'warning',
         message: 'Email service not configured',
       };
     }
-    
+
     return {
       status: 'ok',
-      provider: emailConfig.provider,
+      provider: (emailConfig as any).provider,
       message: 'Email service is configured',
     };
   } catch (error) {
     return {
       status: 'error',
       message: 'Email service configuration error',
-      error: error.message,
+      error: (error as Error).message,
     };
   }
 }

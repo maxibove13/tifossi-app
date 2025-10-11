@@ -1,15 +1,12 @@
-'use strict';
-
 /**
  * Enhanced logging middleware for the Tifossi API
  */
 
-const winston = require('winston');
-const DailyRotateFile = require('winston-daily-rotate-file');
+import winston from 'winston';
 
 // Configure Winston logger
-const createLogger = (config) => {
-  const transports = [
+const createLogger = (config: any) => {
+  const transports: winston.transport[] = [
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
@@ -18,35 +15,42 @@ const createLogger = (config) => {
     }),
   ];
 
-  // Add file logging if enabled
+  // Add file logging if enabled and package is available
   if (process.env.LOG_FILE_ENABLED === 'true') {
-    transports.push(
-      new DailyRotateFile({
-        filename: process.env.LOG_FILE_PATH || './logs/app-%DATE%.log',
-        datePattern: 'YYYY-MM-DD',
-        maxSize: process.env.LOG_MAX_SIZE || '100m',
-        maxFiles: process.env.LOG_MAX_FILES || '14d',
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json()
-        ),
-      })
-    );
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const DailyRotateFile = require('winston-daily-rotate-file');
 
-    // Separate error log
-    transports.push(
-      new DailyRotateFile({
-        filename: process.env.LOG_ERROR_FILE_PATH || './logs/error-%DATE%.log',
-        datePattern: 'YYYY-MM-DD',
-        level: 'error',
-        maxSize: process.env.LOG_MAX_SIZE || '100m',
-        maxFiles: process.env.LOG_MAX_FILES || '30d',
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json()
-        ),
-      })
-    );
+      transports.push(
+        new DailyRotateFile({
+          filename: process.env.LOG_FILE_PATH || './logs/app-%DATE%.log',
+          datePattern: 'YYYY-MM-DD',
+          maxSize: process.env.LOG_MAX_SIZE || '100m',
+          maxFiles: process.env.LOG_MAX_FILES || '14d',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json()
+          ),
+        })
+      );
+
+      // Separate error log
+      transports.push(
+        new DailyRotateFile({
+          filename: process.env.LOG_ERROR_FILE_PATH || './logs/error-%DATE%.log',
+          datePattern: 'YYYY-MM-DD',
+          level: 'error',
+          maxSize: process.env.LOG_MAX_SIZE || '100m',
+          maxFiles: process.env.LOG_MAX_FILES || '30d',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json()
+          ),
+        })
+      );
+    } catch (error) {
+      console.warn('winston-daily-rotate-file not installed. File logging disabled.');
+    }
   }
 
   return winston.createLogger({
@@ -60,16 +64,16 @@ const createLogger = (config) => {
   });
 };
 
-module.exports = (config, { strapi }) => {
+export default (config: any, { strapi }: { strapi: any }) => {
   const logger = createLogger(config);
 
-  return async (ctx, next) => {
+  return async (ctx: any, next: any) => {
     const start = Date.now();
     const { method, url, ip, headers } = ctx.request;
 
     // Generate request ID
-    const requestId = ctx.headers['x-request-id'] || 
-                     ctx.headers['x-correlation-id'] || 
+    const requestId = ctx.headers['x-request-id'] ||
+                     ctx.headers['x-correlation-id'] ||
                      `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     // Add request ID to context
@@ -77,7 +81,7 @@ module.exports = (config, { strapi }) => {
     ctx.set('X-Request-ID', requestId);
 
     // Log request start
-    const requestLog = {
+    const requestLog: any = {
       requestId,
       method,
       url,
@@ -120,10 +124,10 @@ module.exports = (config, { strapi }) => {
         logger.info('HTTP Response', responseLog);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       // Log error response
       const duration = Date.now() - start;
-      const errorLog = {
+      const errorLog: any = {
         requestId,
         method,
         url,
@@ -153,6 +157,6 @@ module.exports = (config, { strapi }) => {
 };
 
 // Export logger instance for use in other parts of the application
-module.exports.logger = createLogger({
+export const logger = createLogger({
   level: process.env.LOG_LEVEL || 'info',
 });

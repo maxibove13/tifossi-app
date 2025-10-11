@@ -1,13 +1,242 @@
-'use strict';
-
-const { randomUUID } = require('crypto');
+import { randomUUID } from 'crypto';
 
 const DEFAULT_SHIPPING_THRESHOLD = 100;
 const DEFAULT_SHIPPING_FEE = 10;
 
-const ensureArray = (arr) => (Array.isArray(arr) ? arr : []);
+// Type definitions
+interface RawAddress {
+  firstName: string;
+  lastName: string;
+  company?: string;
+  street: string;
+  number: string;
+  apartment?: string;
+  city: string;
+  state?: string;
+  country: string;
+  zipCode?: string;
+  phone?: string;
+  isDefault?: boolean;
+}
 
-const toNumber = (value) => {
+interface RawOrderItem {
+  productId: number | string;
+  quantity: number | string;
+  color?: string;
+  size?: string;
+  customizations?: any;
+  notes?: string;
+}
+
+interface RawOrder {
+  shippingMethod?: string;
+  items: RawOrderItem[];
+  discount?: number | string;
+  shippingAddress: RawAddress;
+}
+
+interface AuthUser {
+  id: number;
+  email: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  phone?: string;
+}
+
+interface RequestMeta {
+  userAgent?: string;
+  ip?: string;
+}
+
+interface ProductEntity {
+  id: number;
+  title: string;
+  price: number | string;
+  discountedPrice?: number | string | null;
+  slug: string;
+  longDescription?: string;
+  frontImage?: {
+    url?: string;
+  };
+}
+
+interface ShippingComponent {
+  firstName: string;
+  lastName: string;
+  company: string | null;
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  state: string | null;
+  postalCode: string | null;
+  country: string;
+  phoneNumber: string | null;
+  isDefault: boolean;
+  type: 'both' | 'shipping';
+}
+
+interface ItemForPersistence {
+  product: number;
+  productSnapshot: {
+    id: number;
+    title: string;
+    slug: string;
+    price: number | null;
+    discountedPrice: number | null;
+    description?: string;
+    image: string | null;
+  };
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  selectedColor: string | null;
+  selectedSize: string | null;
+  customizations: any;
+  notes: string | null;
+}
+
+interface ItemForClient {
+  productId: number;
+  productName: string;
+  description: string | null;
+  quantity: number;
+  price: number;
+  discountedPrice?: number;
+  totalPrice: number;
+  size: string | null;
+  color: string | null;
+  imageUrl: string | null;
+}
+
+interface ClientShippingAddress {
+  firstName: string;
+  lastName: string;
+  company: string | null;
+  street: string;
+  number: string;
+  apartment: string | null;
+  city: string;
+  state: string | null;
+  country: string;
+  zipCode: string | null;
+  phone: string | null;
+}
+
+interface MercadoPagoAddress {
+  street: string;
+  number: string;
+  city: string;
+  state?: string;
+  country: string;
+  zipCode?: string;
+}
+
+interface MercadoPagoUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: {
+    areaCode: string;
+    number: string;
+  };
+}
+
+interface OrderMetadata {
+  createdVia: string;
+  userAgent: string;
+  ipAddress: string;
+  correlationId: string;
+}
+
+interface ClientSummary {
+  items: ItemForClient[];
+  shippingAddress: ClientShippingAddress;
+  shippingMethod: string;
+  subtotal: number;
+  discount: number;
+  shippingCost: number;
+  total: number;
+}
+
+interface MercadoPagoPayload {
+  items: Array<{
+    productId: number;
+    productName: string;
+    description: string | null;
+    quantity: number;
+    price: number;
+    size?: string;
+    color?: string;
+  }>;
+  address: MercadoPagoAddress;
+  user: MercadoPagoUser;
+}
+
+interface SanitizedOrderResult {
+  orderNumber: string;
+  shippingMethod: string;
+  subtotal: number;
+  discount: number;
+  shippingCost: number;
+  total: number;
+  metadata: OrderMetadata;
+  itemsForPersistence: ItemForPersistence[];
+  shippingAddressComponent: ShippingComponent;
+  clientSummary: ClientSummary;
+  mercadoPagoPayload: MercadoPagoPayload;
+}
+
+interface OrderEntity {
+  id: number;
+  orderNumber: string;
+  status: string;
+  paymentStatus: string;
+  user?: {
+    id: number;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ClientOrder {
+  id: number;
+  orderNumber: string;
+  status: string;
+  paymentStatus: string;
+  subtotal: number;
+  discount: number;
+  shippingCost: number;
+  total: number;
+  shippingMethod: string;
+  items: ItemForClient[];
+  shippingAddress: ClientShippingAddress;
+  user: {
+    id?: number;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SanitizeOrderPayloadParams {
+  strapi: any;
+  rawOrder: RawOrder;
+  authUser: AuthUser;
+  requestMeta?: RequestMeta;
+}
+
+// Utility functions
+const ensureArray = <T>(arr: T | T[]): T[] => (Array.isArray(arr) ? arr : []);
+
+const toNumber = (value: any): number | null => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) {
     return null;
@@ -15,7 +244,7 @@ const toNumber = (value) => {
   return parsed;
 };
 
-const generateOrderNumber = () => {
+export const generateOrderNumber = (): string => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -25,7 +254,7 @@ const generateOrderNumber = () => {
   return `TIF-${year}${month}${day}-${timestamp}`;
 };
 
-const calculateShippingCost = (shippingMethod, subtotal) => {
+export const calculateShippingCost = (shippingMethod: string, subtotal: number): number => {
   if (shippingMethod === 'pickup') {
     return 0;
   }
@@ -37,12 +266,22 @@ const calculateShippingCost = (shippingMethod, subtotal) => {
   return DEFAULT_SHIPPING_FEE;
 };
 
-const buildShippingComponent = (address, shippingMethod) => {
+export const buildShippingComponent = (
+  address: RawAddress,
+  shippingMethod: string
+): ShippingComponent => {
   if (!address) {
     throw new Error('Shipping address is required');
   }
 
-  const requiredFields = ['firstName', 'lastName', 'street', 'number', 'city', 'country'];
+  const requiredFields: (keyof RawAddress)[] = [
+    'firstName',
+    'lastName',
+    'street',
+    'number',
+    'city',
+    'country',
+  ];
   const missing = requiredFields.filter((field) => !address[field]);
 
   if (missing.length) {
@@ -67,7 +306,7 @@ const buildShippingComponent = (address, shippingMethod) => {
   };
 };
 
-const buildClientShippingAddress = (address) => ({
+export const buildClientShippingAddress = (address: RawAddress): ClientShippingAddress => ({
   firstName: address.firstName,
   lastName: address.lastName,
   company: address.company || null,
@@ -81,7 +320,7 @@ const buildClientShippingAddress = (address) => ({
   phone: address.phone || null,
 });
 
-const buildMercadoPagoAddress = (address) => ({
+export const buildMercadoPagoAddress = (address: RawAddress): MercadoPagoAddress => ({
   street: address.street,
   number: address.number,
   city: address.city,
@@ -90,26 +329,29 @@ const buildMercadoPagoAddress = (address) => ({
   zipCode: address.zipCode || undefined,
 });
 
-const buildMercadoPagoUser = (user) => ({
-  id: String(user.id),
-  firstName: user.firstName || user.username || 'Usuario',
-  lastName: user.lastName || '',
-  email: user.email,
-  phone:
-    user.phoneNumber || user.phone
+export const buildMercadoPagoUser = (user: AuthUser): MercadoPagoUser => {
+  const phoneNumber = user.phoneNumber || user.phone;
+
+  return {
+    id: String(user.id),
+    firstName: user.firstName || user.username || 'Usuario',
+    lastName: user.lastName || '',
+    email: user.email,
+    phone: phoneNumber
       ? {
           areaCode: '598',
-          number: user.phoneNumber || user.phone,
+          number: phoneNumber,
         }
       : undefined,
-});
+  };
+};
 
-const sanitizeOrderPayload = async ({
+export const sanitizeOrderPayload = async ({
   strapi,
   rawOrder,
   authUser,
   requestMeta = {},
-}) => {
+}: SanitizeOrderPayloadParams): Promise<SanitizedOrderResult> => {
   if (!rawOrder || typeof rawOrder !== 'object') {
     throw new Error('Invalid order payload');
   }
@@ -132,7 +374,7 @@ const sanitizeOrderPayload = async ({
     throw new Error('Each item must include a valid productId');
   }
 
-  const products = await strapi.documents('api::product.product').findMany({
+  const products: ProductEntity[] = await strapi.documents('api::product.product').findMany({
     filters: { id: { $in: productIds } },
     fields: ['id', 'title', 'price', 'discountedPrice', 'slug', 'longDescription'],
     populate: { frontImage: true },
@@ -140,8 +382,8 @@ const sanitizeOrderPayload = async ({
 
   const productMap = new Map(products.map((product) => [product.id, product]));
 
-  const itemsForPersistence = [];
-  const itemsForClient = [];
+  const itemsForPersistence: ItemForPersistence[] = [];
+  const itemsForClient: ItemForClient[] = [];
 
   for (const [index, item] of rawItems.entries()) {
     const productId = Number(item.productId);
@@ -208,9 +450,7 @@ const sanitizeOrderPayload = async ({
   const requestedDiscount = toNumber(rawOrder.discount) || 0;
   const discount = Math.max(0, Math.min(requestedDiscount, subtotal));
 
-  const shippingCost = Number(
-    calculateShippingCost(shippingMethod, subtotal).toFixed(2)
-  );
+  const shippingCost = Number(calculateShippingCost(shippingMethod, subtotal).toFixed(2));
 
   const total = Number((subtotal - discount + shippingCost).toFixed(2));
   if (total <= 0) {
@@ -222,7 +462,7 @@ const sanitizeOrderPayload = async ({
     shippingMethod
   );
 
-  const metadata = {
+  const metadata: OrderMetadata = {
     createdVia: 'mobile_app',
     userAgent: requestMeta.userAgent || 'unknown',
     ipAddress: requestMeta.ip || 'unknown',
@@ -264,7 +504,10 @@ const sanitizeOrderPayload = async ({
   };
 };
 
-const buildClientOrder = (orderEntity, clientSummary) => {
+export const buildClientOrder = (
+  orderEntity: OrderEntity | null,
+  clientSummary: ClientSummary
+): ClientOrder | null => {
   if (!orderEntity) {
     return null;
   }
@@ -292,7 +535,13 @@ const buildClientOrder = (orderEntity, clientSummary) => {
   };
 };
 
-module.exports = {
+export default {
   sanitizeOrderPayload,
   buildClientOrder,
+  generateOrderNumber,
+  calculateShippingCost,
+  buildShippingComponent,
+  buildClientShippingAddress,
+  buildMercadoPagoAddress,
+  buildMercadoPagoUser,
 };

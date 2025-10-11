@@ -3,20 +3,79 @@
  * Business logic for payment processing
  */
 
-const { createCoreService } = require('@strapi/strapi').factories;
+import { factories } from '@strapi/strapi';
+import { OrderStatus } from '../../../../../payment/types/orders';
 
-module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
+interface CartItem {
+  productId: string;
+  quantity: number;
+  price: number;
+}
+
+interface ShippingAddress {
+  street: string;
+  city: string;
+  country: string;
+  postalCode?: string;
+  state?: string;
+}
+
+interface CartUser {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+interface CartData {
+  items: CartItem[];
+  user: CartUser;
+  shippingAddress: ShippingAddress;
+  total: number;
+  discount?: number;
+  shippingCost?: number;
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
+interface CalculatedTotals {
+  subtotal: number;
+  discount: number;
+  shippingCost: number;
+  total: number;
+}
+
+interface Order {
+  orderNumber: string;
+  user: CartUser;
+  items: CartItem[];
+  total: number;
+  shippingAddress: ShippingAddress;
+  status: string;
+  estimatedDelivery?: Date;
+}
+
+interface OrderStats {
+  totalOrders: number;
+  totalSpent: number;
+  ordersByStatus: Record<OrderStatus, number>;
+}
+
+export default factories.createCoreService('api::payment.payment', ({ strapi }: { strapi: any }) => ({
   /**
    * Generate unique order number
    * @returns {string} Formatted order number
    */
-  generateOrderNumber() {
+  generateOrderNumber(): string {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const timestamp = now.getTime().toString().slice(-6); // Last 6 digits of timestamp
-    
+
     return `TIF-${year}${month}${day}-${timestamp}`;
   },
 
@@ -25,22 +84,22 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
    * @param {Object} cartData - Cart data to validate
    * @returns {Object} Validation result
    */
-  async validateCartData(cartData) {
-    const errors = [];
-    
+  async validateCartData(cartData: CartData): Promise<ValidationResult> {
+    const errors: string[] = [];
+
     // Required fields validation
     if (!cartData.items || !Array.isArray(cartData.items) || cartData.items.length === 0) {
       errors.push('Cart must contain at least one item');
     }
-    
+
     if (!cartData.user || !cartData.user.id) {
       errors.push('User information is required');
     }
-    
+
     if (!cartData.shippingAddress) {
       errors.push('Shipping address is required');
     }
-    
+
     if (!cartData.total || cartData.total <= 0) {
       errors.push('Invalid total amount');
     }
@@ -49,15 +108,15 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
     if (cartData.items) {
       for (let i = 0; i < cartData.items.length; i++) {
         const item = cartData.items[i];
-        
+
         if (!item.productId) {
           errors.push(`Item ${i + 1}: Product ID is required`);
         }
-        
+
         if (!item.quantity || item.quantity <= 0) {
           errors.push(`Item ${i + 1}: Valid quantity is required`);
         }
-        
+
         if (!item.price || item.price <= 0) {
           errors.push(`Item ${i + 1}: Valid price is required`);
         }
@@ -107,20 +166,20 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
    * @param {Object} cartData - Cart data
    * @returns {Object} Calculated totals
    */
-  calculateTotals(cartData) {
+  calculateTotals(cartData: CartData): CalculatedTotals {
     let subtotal = 0;
-    
+
     // Calculate subtotal from items
     if (cartData.items) {
       subtotal = cartData.items.reduce((sum, item) => {
         return sum + (item.price * item.quantity);
       }, 0);
     }
-    
+
     const discount = cartData.discount || 0;
     const shippingCost = cartData.shippingCost || 0;
     const total = subtotal - discount + shippingCost;
-    
+
     return {
       subtotal: Number(subtotal.toFixed(2)),
       discount: Number(discount.toFixed(2)),
@@ -134,20 +193,20 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
    * @param {Array} items - Order items
    * @returns {Promise<boolean>} Success status
    */
-  async reserveInventory(items) {
+  async reserveInventory(items: CartItem[]): Promise<boolean> {
     try {
       for (const item of items) {
         // This would typically update product inventory
         // For now, we'll just log the reservation
         strapi.log.info(`Reserving ${item.quantity} units of product ${item.productId}`);
-        
+
         // In a real implementation, you would:
         // 1. Check current inventory
         // 2. Update available quantity
         // 3. Create inventory reservation record
         // 4. Set expiration time for reservation
       }
-      
+
       return true;
     } catch (error) {
       strapi.log.error('Error reserving inventory:', error);
@@ -160,17 +219,17 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
    * @param {Array} items - Order items
    * @returns {Promise<boolean>} Success status
    */
-  async releaseInventory(items) {
+  async releaseInventory(items: CartItem[]): Promise<boolean> {
     try {
       for (const item of items) {
         strapi.log.info(`Releasing ${item.quantity} units of product ${item.productId}`);
-        
+
         // In a real implementation, you would:
         // 1. Find inventory reservation
         // 2. Return quantity to available inventory
         // 3. Delete reservation record
       }
-      
+
       return true;
     } catch (error) {
       strapi.log.error('Error releasing inventory:', error);
@@ -183,11 +242,11 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
    * @param {Object} order - Order data
    * @returns {Promise<boolean>} Success status
    */
-  async sendOrderConfirmation(order) {
+  async sendOrderConfirmation(order: Order): Promise<boolean> {
     try {
       // This would integrate with your email service
       strapi.log.info(`Sending order confirmation for order ${order.orderNumber} to ${order.user.email}`);
-      
+
       // Example email content structure:
       const emailData = {
         to: order.user.email,
@@ -202,10 +261,10 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
           estimatedDelivery: order.estimatedDelivery
         }
       };
-      
+
       // Send email using your preferred service (SendGrid, AWS SES, etc.)
       // await emailService.send(emailData);
-      
+
       return true;
     } catch (error) {
       strapi.log.error('Error sending order confirmation:', error);
@@ -219,21 +278,21 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
    * @param {string} status - Payment status
    * @returns {Promise<boolean>} Success status
    */
-  async sendPaymentNotification(order, status) {
+  async sendPaymentNotification(order: Order, status: string): Promise<boolean> {
     try {
-      const statusMessages = {
+      const statusMessages: Record<string, string> = {
         'PAID': 'confirmado',
         'PAYMENT_FAILED': 'rechazado',
         'REFUNDED': 'reembolsado'
       };
-      
+
       const statusMessage = statusMessages[status] || 'actualizado';
-      
+
       strapi.log.info(`Sending payment notification for order ${order.orderNumber}: ${statusMessage}`);
-      
+
       // Send notification email/SMS/push notification
       // Implementation would depend on your notification service
-      
+
       return true;
     } catch (error) {
       strapi.log.error('Error sending payment notification:', error);
@@ -246,37 +305,41 @@ module.exports = createCoreService('api::payment.payment', ({ strapi }) => ({
    * @param {string} userId - User ID
    * @returns {Promise<Object>} Order statistics
    */
-  async getOrderStats(userId) {
+  async getOrderStats(userId: string): Promise<OrderStats> {
     try {
       const orders = await strapi.documents('api::order.order').findMany({
         filters: { user: userId },
         populate: false
       });
-      
-      const stats = {
+
+      const stats: OrderStats = {
         totalOrders: orders.length,
         totalSpent: 0,
         ordersByStatus: {
-          CREATED: 0,
-          PAYMENT_PENDING: 0,
-          PAID: 0,
-          PROCESSING: 0,
-          SHIPPED: 0,
-          DELIVERED: 0,
-          CANCELLED: 0,
-          REFUNDED: 0
+          [OrderStatus.PENDING]: 0,
+          [OrderStatus.PAYMENT_PENDING]: 0,
+          [OrderStatus.PAID]: 0,
+          [OrderStatus.PAYMENT_FAILED]: 0,
+          [OrderStatus.PROCESSING]: 0,
+          [OrderStatus.SHIPPED]: 0,
+          [OrderStatus.DELIVERED]: 0,
+          [OrderStatus.CANCELLED]: 0,
+          [OrderStatus.REFUNDED]: 0,
         }
       };
-      
-      orders.forEach(order => {
-        if (order.status === 'PAID' || order.status === 'PROCESSING' || 
+
+      orders.forEach((order: any) => {
+        if (order.status === 'PAID' || order.status === 'PROCESSING' ||
             order.status === 'SHIPPED' || order.status === 'DELIVERED') {
           stats.totalSpent += order.total;
         }
-        
-        stats.ordersByStatus[order.status] = (stats.ordersByStatus[order.status] || 0) + 1;
+
+        const status = order.status as keyof typeof stats.ordersByStatus;
+        if (status in stats.ordersByStatus) {
+          stats.ordersByStatus[status] = (stats.ordersByStatus[status] || 0) + 1;
+        }
       });
-      
+
       return stats;
     } catch (error) {
       strapi.log.error('Error calculating order stats:', error);

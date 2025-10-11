@@ -3,16 +3,15 @@
  * Routes webhook requests to appropriate handlers
  */
 
-'use strict';
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const mercadopagoWebhook = require('../../../webhooks/mercadopago');
 
-module.exports = {
+export default {
   /**
    * Handle MercadoPago webhook notifications
    * POST /api/webhooks/mercadopago
    */
-  async mercadopago(ctx) {
+  async mercadopago(ctx: any) {
     return await mercadopagoWebhook.handleWebhook(ctx);
   },
 };

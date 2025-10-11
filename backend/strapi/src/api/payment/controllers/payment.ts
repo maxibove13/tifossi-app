@@ -3,16 +3,17 @@
  * Handles MercadoPago integration and order processing
  */
 
-const MercadoPagoService = require('../../../../../payment/mercadopago-service');
-const OrderStateManager = require('../../../../../payment/order-state-manager');
-const { sanitizeOrderPayload, buildClientOrder } = require('../../../utils/order-sanitizer');
+import MercadoPagoService from '../../../../../payment/mercadopago-service';
+import OrderStateManager from '../../../../../payment/order-state-manager';
+import { OrderStatus } from '../../../../../payment/types/orders';
+import { sanitizeOrderPayload, buildClientOrder } from '../../../utils/order-sanitizer';
 
-module.exports = {
+export default {
   /**
    * Create payment preference for an order
    * POST /api/payment/create-preference
    */
-  async createPreference(ctx) {
+  async createPreference(ctx: any) {
     try {
       const authUser = ctx.state.user;
 
@@ -49,7 +50,7 @@ module.exports = {
           total: sanitizedOrder.total,
           paymentMethod: 'mercadopago',
           paymentStatus: 'PENDING',
-          status: 'CREATED',
+          status: 'PENDING',
           notes: rawOrder.notes || null,
           metadata: {
             ...sanitizedOrder.metadata,
@@ -63,12 +64,19 @@ module.exports = {
       });
 
       const preference = await mpService.createPreference({
-        id: orderEntity.id,
         orderNumber: orderEntity.orderNumber,
-        items: sanitizedOrder.mercadoPagoPayload.items,
+        items: sanitizedOrder.mercadoPagoPayload.items.map(item => ({
+          productId: String(item.productId),
+          productName: item.productName,
+          description: item.description || undefined,
+          quantity: item.quantity,
+          price: item.price,
+          size: item.size,
+          color: item.color,
+        })),
         user: sanitizedOrder.mercadoPagoPayload.user,
         shippingAddress: sanitizedOrder.mercadoPagoPayload.address,
-        shippingMethod: sanitizedOrder.shippingMethod,
+        shippingMethod: sanitizedOrder.shippingMethod as 'pickup' | 'delivery',
         shippingCost: sanitizedOrder.shippingCost,
         subtotal: sanitizedOrder.subtotal,
         discount: sanitizedOrder.discount,
@@ -80,7 +88,7 @@ module.exports = {
         data: {
           mpPreferenceId: preference.id,
           status: 'PAYMENT_PENDING',
-        },
+        } as any,
 
         populate: {
           items: { populate: { product: true } },
@@ -88,12 +96,12 @@ module.exports = {
         }
       });
 
-      await orderManager.transitionStatus(orderEntity.id, 'CREATED', 'PAYMENT_PENDING', {
+      await orderManager.transitionStatus(String(orderEntity.id), OrderStatus.PENDING, OrderStatus.PAYMENT_PENDING, {
         triggeredBy: 'system',
         reason: 'MercadoPago preference created',
       });
 
-      const clientOrder = buildClientOrder(updatedOrder, sanitizedOrder.clientSummary);
+      const clientOrder = buildClientOrder(updatedOrder as any, sanitizedOrder.clientSummary);
 
       ctx.body = {
         success: true,
@@ -101,8 +109,8 @@ module.exports = {
           order: clientOrder,
           preference: {
             id: preference.id,
-            initPoint: preference.initPoint,
-            externalReference: preference.externalReference,
+            initPoint: preference.init_point,
+            externalReference: preference.external_reference,
           },
         },
       };
@@ -117,21 +125,18 @@ module.exports = {
    * Verify payment status
    * GET /api/payment/verify/:paymentId
    */
-  async verifyPayment(ctx) {
+  async verifyPayment(ctx: any) {
     try {
       const { paymentId } = ctx.params;
-      
+
       if (!ctx.state.user) {
         return ctx.unauthorized('Authentication required');
       }
 
-      // Initialize MercadoPago service
       const mpService = new MercadoPagoService();
-      
-      // Get payment information from MercadoPago
+
       const paymentInfo = await mpService.getPayment(paymentId);
-      
-      // Find associated order
+
       const orders = await strapi.documents('api::order.order').findMany({
         filters: {
           mpPaymentId: paymentId,
@@ -145,9 +150,8 @@ module.exports = {
       }
 
       const order = orders[0];
-      
-      // Update order with payment information
-      const orderStatus = mpService.mapPaymentStatus(paymentInfo.status, paymentInfo.statusDetail);
+
+      const orderStatus = mpService.mapPaymentStatus(paymentInfo.status, paymentInfo.status_detail);
 
       const updatedOrder = await strapi.documents('api::order.order').update({
         documentId: order.documentId,
@@ -155,19 +159,18 @@ module.exports = {
           mpPaymentId: paymentInfo.id,
           mpPaymentStatus: paymentInfo.status,
           status: orderStatus,
-          paidAt: paymentInfo.status === 'approved' ? paymentInfo.dateApproved : null,
+          paidAt: paymentInfo.status === 'approved' ? paymentInfo.date_approved : null,
           metadata: {
             ...order.metadata,
             lastPaymentCheck: new Date().toISOString(),
-            paymentStatusDetail: paymentInfo.statusDetail
+            paymentStatusDetail: paymentInfo.status_detail
           }
-        }
+        } as any
       });
 
-      // Log status transition if changed
       if (order.status !== orderStatus) {
         const orderManager = new OrderStateManager();
-        await orderManager.transitionStatus(order.id, order.status, orderStatus, {
+        await orderManager.transitionStatus(String(order.id), order.status, orderStatus, {
           triggeredBy: 'user',
           reason: 'Payment status verification'
         });
@@ -182,12 +185,12 @@ module.exports = {
           paymentInfo: {
             id: paymentInfo.id,
             status: paymentInfo.status,
-            statusDetail: paymentInfo.statusDetail,
-            amount: paymentInfo.transactionAmount,
-            currency: paymentInfo.currency,
-            paymentMethod: paymentInfo.paymentMethodId,
-            dateCreated: paymentInfo.dateCreated,
-            dateApproved: paymentInfo.dateApproved
+            statusDetail: paymentInfo.status_detail,
+            amount: paymentInfo.transaction_amount,
+            currency: paymentInfo.currency_id,
+            paymentMethod: paymentInfo.payment_method_id,
+            dateCreated: paymentInfo.date_created,
+            dateApproved: paymentInfo.date_approved
           }
         }
       };
@@ -202,7 +205,7 @@ module.exports = {
    * Get user orders
    * GET /api/payment/orders
    */
-  async getOrders(ctx) {
+  async getOrders(ctx: any) {
     try {
       if (!ctx.state.user) {
         return ctx.unauthorized('Authentication required');
@@ -210,7 +213,7 @@ module.exports = {
 
       const { page = 1, pageSize = 10, status } = ctx.query;
 
-      const filters = {
+      const filters: any = {
         user: ctx.state.user.id
       };
 
@@ -243,7 +246,7 @@ module.exports = {
    * Get specific order details
    * GET /api/payment/orders/:orderId
    */
-  async getOrder(ctx) {
+  async getOrder(ctx: any) {
     try {
       const { orderId } = ctx.params;
 
@@ -278,7 +281,7 @@ module.exports = {
    * Request payment refund
    * POST /api/payment/refund
    */
-  async requestRefund(ctx) {
+  async requestRefund(ctx: any) {
     try {
       const { orderId, reason = 'Customer request' } = ctx.request.body;
 
@@ -286,7 +289,6 @@ module.exports = {
         return ctx.unauthorized('Authentication required');
       }
 
-      // Get order
       const order = await strapi.documents('api::order.order').findOne({
         documentId: orderId,
         populate: ['user'],
@@ -307,14 +309,11 @@ module.exports = {
         return ctx.badRequest('No payment ID found for this order');
       }
 
-      // Initialize services
       const mpService = new MercadoPagoService();
       const orderManager = new OrderStateManager();
 
-      // Process refund with MercadoPago
-      const refundInfo = await mpService.processRefund(order.mpPaymentId, null, reason);
+      const refundInfo = await mpService.createRefund(String(order.mpPaymentId));
 
-      // Update order status
       await strapi.documents('api::order.order').update({
         documentId: order.documentId,
         data: {
@@ -325,11 +324,10 @@ module.exports = {
             refundReason: reason,
             refundDate: new Date().toISOString()
           }
-        }
+        } as any
       });
 
-      // Log status transition
-      await orderManager.transitionStatus(order.id, 'PAID', 'REFUNDED', {
+      await orderManager.transitionStatus(String(order.id), OrderStatus.PAID, OrderStatus.REFUNDED, {
         triggeredBy: 'user',
         reason: `Refund requested: ${reason}`
       });

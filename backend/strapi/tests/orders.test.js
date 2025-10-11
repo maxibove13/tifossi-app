@@ -132,7 +132,7 @@ describe('Order API - Revenue Critical', () => {
       expect(fs.existsSync(orderApiPath)).toBe(true);
 
       // Check for essential order files (Strapi 4 structure)
-      const controllerPath = path.join(orderApiPath, 'controllers', 'order.js');
+      const controllerPath = path.join(orderApiPath, 'controllers', 'order.ts');
       const schemaPath = path.join(orderApiPath, 'content-types', 'order', 'schema.json');
 
       expect(fs.existsSync(controllerPath)).toBe(true);

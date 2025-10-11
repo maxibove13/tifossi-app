@@ -18,8 +18,8 @@ module.exports = {
   // Coverage configuration
   collectCoverage: false,
   collectCoverageFrom: [
-    'src/**/*.js',
-    '!src/**/*.test.js',
+    'src/**/*.{js,ts}',
+    '!src/**/*.test.{js,ts}',
     '!src/**/__tests__/**',
     '!src/**/node_modules/**',
   ],

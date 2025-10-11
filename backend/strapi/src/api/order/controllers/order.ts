@@ -1,10 +1,23 @@
-'use strict';
+import { factories } from '@strapi/strapi';
+import { sanitizeOrderPayload, buildClientOrder } from '../../../utils/order-sanitizer';
 
-const { createCoreController } = require('@strapi/strapi').factories;
-const { sanitizeOrderPayload, buildClientOrder } = require('../../../utils/order-sanitizer');
+interface OrderEntity {
+  id: number;
+  orderNumber: string;
+  status: string;
+  paymentStatus: string;
+  user?: {
+    id: number;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
 
-module.exports = createCoreController('api::order.order', ({ strapi }) => ({
-  async create(ctx) {
+export default factories.createCoreController('api::order.order', ({ strapi }) => ({
+  async create(ctx: any) {
     const authUser = ctx.state.user;
 
     if (!authUser) {
@@ -48,24 +61,24 @@ module.exports = createCoreController('api::order.order', ({ strapi }) => ({
         },
       });
 
-      const clientOrder = buildClientOrder(orderEntity, sanitizedOrder.clientSummary);
+      const clientOrder = buildClientOrder(orderEntity as unknown as OrderEntity, sanitizedOrder.clientSummary);
 
       ctx.status = 201;
       ctx.body = {
         success: true,
         order: clientOrder,
       };
-    } catch (error) {
+    } catch (error: any) {
       strapi.log.error('Order creation failed:', error);
       ctx.badRequest(error.message || 'Unable to create order');
     }
   },
 
-  async update(ctx) {
+  async update(ctx: any) {
     return ctx.forbidden('Order updates are not allowed through this endpoint.');
   },
 
-  async delete(ctx) {
+  async delete(ctx: any) {
     return ctx.forbidden('Order deletion is not allowed through this endpoint.');
   },
 }));

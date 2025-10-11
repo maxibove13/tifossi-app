@@ -3,7 +3,7 @@
  * Registers public webhook endpoints that don't require authentication
  */
 
-module.exports = {
+export default {
   routes: [
     {
       method: 'POST',

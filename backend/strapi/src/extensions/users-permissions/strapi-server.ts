@@ -1,13 +1,13 @@
 /**
  * Strapi Users-Permissions Extension for Firebase Integration
- * 
+ *
  * Extends the default users-permissions plugin to support Firebase authentication
  * with token exchange and user synchronization capabilities.
  */
 
-const { firebaseAdmin } = require('../../../../auth/firebase-admin-setup');
+import { firebaseAdmin } from '../../../../auth/firebase-admin-setup';
 
-module.exports = (plugin) => {
+export default (plugin: any) => {
   // Initialize Firebase Admin when the plugin loads
   const initializeFirebase = async () => {
     try {
@@ -30,11 +30,11 @@ module.exports = (plugin) => {
 
     /**
      * Firebase Token Exchange Endpoint
-     * 
+     *
      * Exchanges a Firebase ID token for a Strapi JWT token
      * Creates or updates user record based on Firebase user data
      */
-    async firebaseExchange(ctx) {
+    async firebaseExchange(ctx: any) {
       try {
         const { firebaseToken, tokenVersion } = ctx.request.body;
 
@@ -154,10 +154,10 @@ module.exports = (plugin) => {
 
     /**
      * Firebase User Sync Endpoint
-     * 
+     *
      * Synchronizes user data between Firebase and Strapi
      */
-    async firebaseSync(ctx) {
+    async firebaseSync(ctx: any) {
       try {
         const user = ctx.state.user;
 
@@ -205,10 +205,10 @@ module.exports = (plugin) => {
 
     /**
      * Token Validation Endpoint
-     * 
+     *
      * Validates Strapi JWT token and returns user data
      */
-    async validate(ctx) {
+    async validate(ctx: any) {
       try {
         const user = ctx.state.user;
 
@@ -246,10 +246,10 @@ module.exports = (plugin) => {
 
     /**
      * Firebase User Deletion
-     * 
+     *
      * Handles user deletion in both Firebase and Strapi
      */
-    async firebaseDelete(ctx) {
+    async firebaseDelete(ctx: any) {
       try {
         const user = ctx.state.user;
 
@@ -331,7 +331,7 @@ module.exports = (plugin) => {
     /**
      * Find user by Firebase UID
      */
-    async findByFirebaseUid(firebaseUid) {
+    async findByFirebaseUid(firebaseUid: string) {
       return await strapi.db.query('plugin::users-permissions.user').findOne({
         where: { firebaseUid }
       });
@@ -340,7 +340,7 @@ module.exports = (plugin) => {
     /**
      * Update user's Firebase data
      */
-    async updateFirebaseData(userId, firebaseData) {
+    async updateFirebaseData(userId: number, firebaseData: any) {
       return await strapi.db.query('plugin::users-permissions.user').update({
         where: { id: userId },
         data: {
@@ -353,9 +353,9 @@ module.exports = (plugin) => {
     /**
      * Enhanced user sanitization with Firebase fields
      */
-    async sanitizeUser(user, ctx) {
+    async sanitizeUser(user: any, ctx?: any) {
       const sanitizedUser = await this.sanitizeUser.call(this, user, ctx);
-      
+
       // Add Firebase-specific fields to response
       return {
         ...sanitizedUser,
@@ -374,7 +374,7 @@ module.exports = (plugin) => {
   plugin.middlewares = {
     ...plugin.middlewares,
 
-    async firebaseAuth(ctx, next) {
+    async firebaseAuth(ctx: any, next: any) {
       try {
         const authorization = ctx.request.header.authorization;
 
@@ -385,7 +385,7 @@ module.exports = (plugin) => {
           if (token.length > 1000) { // Firebase tokens are typically much longer
             try {
               const decodedToken = await firebaseAdmin.verifyIdToken(token);
-              
+
               // Find corresponding Strapi user
               const user = await strapi.db.query('plugin::users-permissions.user').findOne({
                 where: { firebaseUid: decodedToken.uid }

@@ -1,0 +1,7 @@
+# Ignore Docker volumes and runtime data
+postgres_data/
+*.log
+.env
+
+# Docker Compose override files
+docker-compose.override.yml
