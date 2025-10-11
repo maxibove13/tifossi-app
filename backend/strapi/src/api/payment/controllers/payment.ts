@@ -3,9 +3,9 @@
  * Handles MercadoPago integration and order processing
  */
 
-import MercadoPagoService from '../../../../../payment/mercadopago-service';
-import OrderStateManager from '../../../../../payment/order-state-manager';
-import { OrderStatus } from '../../../../../payment/types/orders';
+import MercadoPagoService from '../../../lib/payment/mercadopago-service';
+import OrderStateManager from '../../../lib/payment/order-state-manager';
+import { OrderStatus } from '../../../lib/payment/types/orders';
 import { sanitizeOrderPayload, buildClientOrder } from '../../../utils/order-sanitizer';
 
 export default {

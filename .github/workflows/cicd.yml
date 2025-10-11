@@ -221,7 +221,7 @@ jobs:
 
       - name: Install backend dependencies
         working-directory: backend/strapi
-        run: npm ci --only=production
+        run: npm ci
 
       - name: Build Strapi
         working-directory: backend/strapi

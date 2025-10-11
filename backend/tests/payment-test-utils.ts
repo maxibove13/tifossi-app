@@ -4,10 +4,10 @@
  */
 
 import * as crypto from 'crypto';
-import { OrderData, PaymentPreference, ShippingMethod } from '../payment/types/orders';
-import { MPWebhookPayload, MPWebhookAction } from '../payment/types/mercadopago';
+import { OrderData, PaymentPreference, ShippingMethod } from '../strapi/src/lib/payment/types/orders';
+import { MPWebhookPayload, MPWebhookAction } from '../strapi/src/lib/payment/types/mercadopago';
 
-const MercadoPagoService = require('../payment/mercadopago-service');
+const MercadoPagoService = require('../strapi/src/lib/payment/mercadopago-service');
 
 interface TestConfig {
   accessToken: string;

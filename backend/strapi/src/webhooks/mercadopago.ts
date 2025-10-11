@@ -8,14 +8,14 @@ import {
   MPPaymentResponse,
   MPWebhookPayload,
   MPWebhookType,
-} from '../../../payment/types/mercadopago';
-import { OrderStatus } from '../../../payment/types/orders';
+} from '../lib/payment/types/mercadopago';
+import { OrderStatus } from '../lib/payment/types/orders';
 
 // Declare global strapi for TypeScript
 declare const strapi: any;
 
-const MercadoPagoService = require('../../../payment/mercadopago-service');
-const OrderStateManager = require('../../../payment/order-state-manager');
+const MercadoPagoService = require('../lib/payment/mercadopago-service');
+const OrderStateManager = require('../lib/payment/order-state-manager');
 
 interface StrapiOrder {
   id: number;

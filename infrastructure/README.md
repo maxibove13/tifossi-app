@@ -308,7 +308,7 @@ For infrastructure-related issues:
 After setting up infrastructure:
 
 1. Set up Strapi content types (see `/docs/backend/schemas/`)
-2. Configure MercadoPago integration (see `/docs/backend/payment/`)
+2. Configure MercadoPago integration (see `/docs/MERCADOPAGO_INTEGRATION_GUIDE.md`)
 3. Implement authentication system (see `/docs/backend/auth/`)
 4. Migrate existing data (see `/docs/backend/migration/`)
 5. Set up monitoring and alerts

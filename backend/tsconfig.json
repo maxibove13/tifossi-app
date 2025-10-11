@@ -16,7 +16,6 @@
     "rootDir": "./",
     "baseUrl": "./",
     "paths": {
-      "@payment/*": ["payment/*"],
       "@strapi/*": ["strapi/src/*"],
       "@tests/*": ["tests/*"]
     },
@@ -39,7 +38,6 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "payment/**/*.ts",
     "strapi/**/*.ts",
     "tests/**/*.ts"
   ],

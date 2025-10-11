@@ -32,23 +32,23 @@ Convert the entire backend payment system from JavaScript to TypeScript to achie
 ## ✅ Completed Work
 
 ### 1. Type Definition Files Created
-- ✅ `/backend/payment/types/index.ts` - Main type exports and common interfaces
-- ✅ `/backend/payment/types/mercadopago.ts` - MercadoPago API types (enums, interfaces)
-- ✅ `/backend/payment/types/orders.ts` - Order and payment domain types
+- ✅ `/backend/strapi/src/lib/payment/types/index.ts` - Main type exports and common interfaces
+- ✅ `/backend/strapi/src/lib/payment/types/mercadopago.ts` - MercadoPago API types (enums, interfaces)
+- ✅ `/backend/strapi/src/lib/payment/types/orders.ts` - Order and payment domain types
 
 ### 2. Core Services Converted
-- ✅ `/backend/payment/mercadopago-service.ts` - Full TypeScript conversion with proper typing
-- ✅ `/backend/payment/webhook-handler.ts` - Full TypeScript conversion with Express types
-- ✅ `/backend/payment/order-state-manager.ts` - State machine with typed transitions
-- ✅ `/backend/payment/preference-builder.ts` - Preference builder with typed order data
+- ✅ `/backend/strapi/src/lib/payment/mercadopago-service.ts` - Full TypeScript conversion with proper typing
+- ✅ `/backend/strapi/src/lib/payment/webhook-handler.ts` - Full TypeScript conversion with Express types
+- ✅ `/backend/strapi/src/lib/payment/order-state-manager.ts` - State machine with typed transitions
+- ✅ `/backend/strapi/src/lib/payment/preference-builder.ts` - Preference builder with typed order data
 
 ### 3. Dependencies Added
 - ✅ `@types/express` installed for Express type definitions
 - ✅ `@types/node` installed for Node.js type definitions
 
 ### 4. Backup Files Created
-- ✅ `/backend/payment/mercadopago-service.js.bak` - Original JS backup
-- ✅ `/backend/payment/preference-builder.js.bak` - Original JS backup
+- ✅ `/backend/strapi/src/lib/payment/mercadopago-service.js.bak` - Original JS backup
+- ✅ `/backend/strapi/src/lib/payment/preference-builder.js.bak` - Original JS backup
 
 ### 5. TypeScript Configuration
 - ✅ `/backend/tsconfig.json` created with proper compiler options

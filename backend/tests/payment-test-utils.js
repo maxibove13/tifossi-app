@@ -3,7 +3,7 @@
  * MercadoPago Integration Testing Tools
  */
 
-const MercadoPagoService = require('../payment/mercadopago-service');
+const MercadoPagoService = require('../strapi/src/lib/payment/mercadopago-service');
 
 class PaymentTestUtils {
   constructor() {

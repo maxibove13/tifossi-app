@@ -3,7 +3,7 @@
 ## ✅ Current Alignment (February 2025)
 
 ### 1. Webhook Signature Validation
-- **Backend**: `backend/payment/webhook-handler.ts` and `backend/strapi/src/webhooks/mercadopago.ts` validate signatures using the official manifest format `id:${dataId};request-id:${xRequestId};ts:${timestamp};`.
+- **Backend**: `backend/strapi/src/lib/payment/webhook-handler.ts` and `backend/strapi/src/webhooks/mercadopago.ts` validate signatures using the official manifest format `id:${dataId};request-id:${xRequestId};ts:${timestamp};`.
 - **Shared Validator**: `app/_services/payment/webhookValidator.ts` exports the same logic for tests and automation.
 
 ### 2. Sandbox Test Infrastructure

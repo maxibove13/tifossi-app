@@ -4,7 +4,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { OrderStatus } from '../../../../../payment/types/orders';
+import { OrderStatus } from '../../../lib/payment/types/orders';
 
 interface CartItem {
   productId: string;

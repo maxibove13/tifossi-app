@@ -13,8 +13,8 @@
     "seed": "strapi import",
     "export": "strapi export",
     "lint": "eslint .",
-    "test": "jest --config jest.config.js --watchman=false",
-    "test:ci": "jest --config jest.config.js --ci --coverage --maxWorkers=2 --watchman=false",
+    "test": "npm run build && jest --config jest.config.js --watchman=false",
+    "test:ci": "npm run build && jest --config jest.config.js --ci --coverage --maxWorkers=2 --watchman=false",
     "test:watch": "jest --config jest.config.js --watch --watchman=false",
     "test:coverage": "jest --config jest.config.js --coverage --watchman=false"
   },

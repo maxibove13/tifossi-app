@@ -125,7 +125,7 @@ MercadoPago Checkout Pro is a fully-hosted payment solution that redirects users
 
 ### 1. MercadoPago Service
 
-The service handles all MercadoPago API interactions. Already implemented in `/backend/payment/mercadopago-service.ts`.
+The service handles all MercadoPago API interactions. Already implemented in `/backend/strapi/src/lib/payment/mercadopago-service.ts`.
 
 **Key Methods:**
 

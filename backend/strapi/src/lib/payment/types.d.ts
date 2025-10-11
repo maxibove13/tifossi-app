@@ -95,24 +95,4 @@ export interface OrderStatus {
   REFUNDED: 'REFUNDED';
 }
 
-// For gradual migration - add JSDoc comments to JS files
-declare module '../mercadopago-service' {
-  export class MercadoPagoService {
-    constructor();
-    createPreference(orderData: any): Promise<MercadoPagoPreference>;
-    getPayment(paymentId: string): Promise<MercadoPagoPayment>;
-    verifyWebhookSignature(signature: string, xRequestId: string, dataId: string): boolean;
-    mapPaymentStatus(status: string, statusDetail?: string): keyof OrderStatus;
-  }
-}
-
-declare module '../webhook-handler' {
-  export class WebhookHandler {
-    handleWebhook(req: any, res: any): Promise<void>;
-    validateWebhook(
-      signature: string,
-      requestId: string,
-      dataId: string
-    ): { valid: boolean; status?: number; reason?: string };
-  }
-}
+// Legacy module augmentations removed (implementation converted to TypeScript)
