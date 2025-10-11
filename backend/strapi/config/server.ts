@@ -1,4 +1,4 @@
-module.exports = ({ env }) => {
+export default ({ env }: { env: any }) => {
   const nodeEnv = env('NODE_ENV', 'development');
   const configuredAppKeys = env.array('APP_KEYS');
   const isDevelopment = nodeEnv === 'development';

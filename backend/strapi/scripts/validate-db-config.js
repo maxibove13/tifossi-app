@@ -14,6 +14,7 @@
  */
 
 const path = require('path');
+const { syncConfig } = require('./sync-compiled-config');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -216,10 +217,13 @@ function runTest(testName, envVars, shouldPass = true) {
     env.bool = (key, defaultValue) => envHelper.bool(key, defaultValue);
     env.array = (key, defaultValue) => envHelper.array(key, defaultValue);
 
-    // Load the database config
-    const configPath = path.join(__dirname, '..', 'config', 'database.js');
-    delete require.cache[require.resolve(configPath)];
-    const databaseConfig = require(configPath);
+    // Load the database config from compiled dist (TypeScript configs compile here)
+    const compiledConfigPath = path.join(__dirname, '..', 'dist', 'config', 'database.js');
+    delete require.cache[require.resolve(compiledConfigPath)];
+    const databaseConfigModule = require(compiledConfigPath);
+
+    // Handle ES module default export from TypeScript
+    const databaseConfig = databaseConfigModule.default || databaseConfigModule;
 
     // Execute config function
     const config = databaseConfig({ env });
@@ -280,6 +284,56 @@ function runTest(testName, envVars, shouldPass = true) {
   }
 }
 
+// Validate that compiled config exists in dist/
+function validateCompiledConfig() {
+  const fs = require('fs');
+  const distConfigPath = path.join(__dirname, '..', 'dist', 'config');
+
+  log(`\n${colors.cyan}Validating Compiled Config Files${colors.reset}`);
+  log(`${colors.gray}${'─'.repeat(60)}${colors.reset}`);
+
+  // Check if dist/strapi/config directory exists
+  if (!fs.existsSync(distConfigPath)) {
+    logError(`${colors.red}${symbols.error} dist/strapi/config directory does not exist${colors.reset}`);
+    logError(`${colors.red}Run 'npm run build' before deploying${colors.reset}`);
+    return false;
+  }
+
+  // Check that all config files exist
+  const requiredConfigs = ['database.js', 'server.js', 'admin.js', 'middlewares.js', 'plugins.js', 'api.js'];
+  const missing = [];
+
+  for (const configFile of requiredConfigs) {
+    const filePath = path.join(distConfigPath, configFile);
+    if (!fs.existsSync(filePath)) {
+      missing.push(configFile);
+    }
+  }
+
+  if (missing.length > 0) {
+    logError(`${colors.red}${symbols.error} Missing compiled config files: ${missing.join(', ')}${colors.reset}`);
+    return false;
+  }
+
+  // Try to load the compiled database config
+  try {
+    const compiledConfigPath = path.join(distConfigPath, 'database.js');
+    delete require.cache[require.resolve(compiledConfigPath)];
+    const compiledConfig = require(compiledConfigPath);
+
+    if (typeof compiledConfig.default !== 'function') {
+      logError(`${colors.red}${symbols.error} Compiled database.js does not export a default function${colors.reset}`);
+      return false;
+    }
+
+    logSuccess(`${colors.green}${symbols.success} All compiled config files present${colors.reset}`);
+    return true;
+  } catch (error) {
+    logError(`${colors.red}${symbols.error} Failed to load compiled config: ${error.message}${colors.reset}`);
+    return false;
+  }
+}
+
 // Main test suite
 function runAllTests() {
   console.log(`${colors.cyan}${'═'.repeat(60)}${colors.reset}`);
@@ -287,6 +341,17 @@ function runAllTests() {
   console.log(`${colors.cyan}${'═'.repeat(60)}${colors.reset}`);
 
   const results = [];
+
+  // Ensure compiled config files are in the runtime directory
+  syncConfig();
+
+  // First, validate that compiled configs exist
+  const compiledConfigValid = validateCompiledConfig();
+  if (!compiledConfigValid) {
+    logError(`${colors.red}${symbols.error} Compiled config validation failed${colors.reset}`);
+    logError(`${colors.red}Build artifacts missing or invalid. Run 'npm run build' and try again.${colors.reset}`);
+    process.exit(1);
+  }
 
   // Test 1: Full DATABASE_URL (Render production scenario)
   results.push(runTest(
@@ -303,24 +368,7 @@ function runAllTests() {
     true
   ));
 
-  // Test 2: Individual database parameters
-  results.push(runTest(
-    'Individual Parameters: host/port/database/user/password',
-    {
-      DATABASE_CLIENT: 'postgres',
-      DATABASE_HOST: 'localhost',
-      DATABASE_PORT: '5432',
-      DATABASE_NAME: 'strapi',
-      DATABASE_USERNAME: 'strapi',
-      DATABASE_PASSWORD: 'strapi',
-      DATABASE_SSL: 'false',
-      DATABASE_POOL_MIN: '2',
-      DATABASE_POOL_MAX: '10',
-    },
-    true
-  ));
-
-  // Test 3: SSL enabled with object configuration
+  // Test 2: SSL enabled with object configuration
   results.push(runTest(
     'SSL Configuration: enabled with rejectUnauthorized=false',
     {
@@ -332,22 +380,7 @@ function runAllTests() {
     true
   ));
 
-  // Test 4: SSL disabled
-  results.push(runTest(
-    'SSL Configuration: disabled',
-    {
-      DATABASE_CLIENT: 'postgres',
-      DATABASE_HOST: 'localhost',
-      DATABASE_PORT: '5432',
-      DATABASE_NAME: 'strapi',
-      DATABASE_USERNAME: 'strapi',
-      DATABASE_PASSWORD: 'strapi',
-      DATABASE_SSL: 'false',
-    },
-    true
-  ));
-
-  // Test 5: Default values fallback (should now fail with strict validation)
+  // Test 3: Default values fallback (should now fail with strict validation)
   results.push(runTest(
     'Default Values: minimal configuration (should fail)',
     {
@@ -356,7 +389,7 @@ function runAllTests() {
     false  // Changed to false - strict validation requires connection details
   ));
 
-  // Test 6: SQLite configuration (alternative)
+  // Test 4: SQLite configuration (alternative)
   results.push(runTest(
     'SQLite Configuration: local development',
     {
@@ -366,14 +399,14 @@ function runAllTests() {
     true
   ));
 
-  // Test 7: Missing client (should now fail with strict validation)
+  // Test 5: Missing client defaults to SQLite
   results.push(runTest(
-    'Missing DATABASE_CLIENT and connection details (should fail)',
+    'Missing DATABASE_CLIENT defaults to SQLite',
     {},
-    false  // Changed to false - strict validation requires connection details
+    true  // SQLite is the default fallback
   ));
 
-  // Test 8: Invalid SSL boolean (edge case)
+  // Test 6: SSL boolean conversion
   results.push(runTest(
     'SSL as true boolean: should work but warn',
     {

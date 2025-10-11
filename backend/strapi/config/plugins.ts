@@ -1,4 +1,4 @@
-module.exports = ({ env }) => ({
+export default ({ env }: { env: any }) => ({
   // Users & Permissions Plugin
   'users-permissions': {
     config: {
@@ -118,7 +118,7 @@ module.exports = ({ env }) => ({
         },
       },
       'x-strapi-config': {
-        mutateDocumentation: (generatedDoc) => {
+        mutateDocumentation: (generatedDoc: any) => {
           // Custom documentation modifications
           generatedDoc.info['x-logo'] = {
             url: 'https://tifossi.app/logo.png',

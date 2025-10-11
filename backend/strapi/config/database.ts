@@ -1,4 +1,4 @@
-module.exports = ({ env }) => {
+export default ({ env }: { env: any }) => {
   const client = env('DATABASE_CLIENT', 'sqlite');
 
   // Use different configurations based on client

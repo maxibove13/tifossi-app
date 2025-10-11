@@ -1,8 +1,8 @@
-module.exports = ({ env }) => {
+export default ({ env }: { env: any }) => {
   const nodeEnv = env('NODE_ENV', 'development');
   const isDevelopment = nodeEnv === 'development';
 
-  const resolveSecret = (name, devFallback) => {
+  const resolveSecret = (name: string, devFallback: string) => {
     const value = env(name);
     const isPlaceholder = typeof value === 'string' && value.startsWith('default-');
 
