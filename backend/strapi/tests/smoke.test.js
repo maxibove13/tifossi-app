@@ -78,8 +78,8 @@ describe('Strapi Backend Smoke Tests', () => {
     });
 
     it('should support PostgreSQL in production', () => {
-      // Load compiled config from dist (TypeScript configs are compiled here)
-      const dbConfigModule = require('../dist/config/database.js');
+      // Load TypeScript source directly (Jest transforms it with Babel)
+      const dbConfigModule = require('../config/database.ts');
       const dbConfig = dbConfigModule.default || dbConfigModule;
 
       // Test that the config exports a function

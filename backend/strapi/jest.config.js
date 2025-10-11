@@ -39,9 +39,12 @@ module.exports = {
 
   // Transform files
   transform: {
-    '^.+\\.js$': 'babel-jest',
+    '^.+\\.(ts|js)$': 'babel-jest',
   },
-  
+
+  // Module file extensions
+  moduleFileExtensions: ['ts', 'js', 'json'],
+
   // Ignore patterns
   testPathIgnorePatterns: [
     '/node_modules/',
