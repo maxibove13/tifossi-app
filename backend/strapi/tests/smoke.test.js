@@ -73,12 +73,14 @@ describe('Strapi Backend Smoke Tests', () => {
       const fs = require('fs');
       const path = require('path');
 
-      const dbConfigPath = path.join(__dirname, '..', 'config', 'database.js');
+      const dbConfigPath = path.join(__dirname, '..', 'config', 'database.ts');
       expect(fs.existsSync(dbConfigPath)).toBe(true);
     });
 
     it('should support PostgreSQL in production', () => {
-      const dbConfig = require('../config/database.js');
+      // Load compiled config from dist (TypeScript configs are compiled here)
+      const dbConfigModule = require('../dist/config/database.js');
+      const dbConfig = dbConfigModule.default || dbConfigModule;
 
       // Test that the config exports a function
       expect(typeof dbConfig).toBe('function');
