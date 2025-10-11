@@ -119,6 +119,12 @@ jobs:
         run: npm run test:ci
         env:
           NODE_ENV: test
+          # Dummy values for build - same as build-backend job
+          APP_KEYS: build-key-1,build-key-2,build-key-3,build-key-4
+          JWT_SECRET: build-jwt-secret
+          API_TOKEN_SALT: build-api-token-salt
+          ADMIN_JWT_SECRET: build-admin-jwt-secret
+          TRANSFER_TOKEN_SALT: build-transfer-token-salt
 
       - name: Upload test coverage
         if: always()
