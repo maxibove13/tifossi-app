@@ -39,18 +39,12 @@ services:
         value: https://tifossi.app,https://www.tifossi.app,https://admin.tifossi.app
       - key: UPLOAD_PROVIDER
         value: cloudinary
-      - key: RATE_LIMIT_ENABLED
+      - key: AUTH_RATE_LIMIT_ENABLED
         value: true
-      - key: RATE_LIMIT_MAX_REQUESTS
-        value: 100
-      - key: RATE_LIMIT_WINDOW_MS
-        value: 900000
-      - key: LOG_LEVEL
-        value: warn
-      - key: LOG_FORMAT
-        value: json
-      - key: LOG_FILE_ENABLED
-        value: true
+      - key: AUTH_RATE_LIMIT_MAX
+        value: 5
+      - key: AUTH_RATE_LIMIT_DURATION
+        value: 60000
       - key: FEATURE_PAYMENTS_ENABLED
         value: true
       - key: FEATURE_EMAIL_NOTIFICATIONS

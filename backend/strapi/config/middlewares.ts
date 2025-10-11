@@ -70,19 +70,4 @@ export default ({ env }: { env: any }) => [
   'strapi::session',
   'strapi::favicon',
   'strapi::public',
-  {
-    name: 'global::rate-limit',
-    config: {
-      enabled: env.bool('RATE_LIMIT_ENABLED', false),
-      max: env.int('RATE_LIMIT_MAX_REQUESTS', 1000),
-      duration: env.int('RATE_LIMIT_WINDOW_MS', 900000), // 15 minutes
-    },
-  },
-  {
-    name: 'global::logging',
-    config: {
-      enabled: true,
-      level: env('LOG_LEVEL', 'info'),
-    },
-  },
 ];

@@ -9,7 +9,7 @@ export default ({ env }: { env: any }) => ({
         expiresIn: env('JWT_SECRET_EXPIRES', '7d'),
       },
       ratelimit: {
-        enabled: env.bool('RATE_LIMIT_ENABLED', false),
+        enabled: env.bool('AUTH_RATE_LIMIT_ENABLED', true),
         max: env.int('AUTH_RATE_LIMIT_MAX', 5),
         duration: env.int('AUTH_RATE_LIMIT_DURATION', 60000),
       },

@@ -9,8 +9,8 @@ A production-ready Strapi v4 backend for the Tifossi e-commerce mobile applicati
 - **User Management**: Extended user profiles with e-commerce specific fields
 - **Order Management**: Complete order lifecycle with status tracking
 - **Media Management**: Cloudinary integration for optimized media delivery
-- **Security**: Rate limiting, CORS configuration, and security headers
-- **Monitoring**: Health checks and structured logging
+- **Security**: CORS configuration and security headers
+- **Monitoring**: Health checks
 - **Scalability**: Redis caching and production-ready configuration
 
 ## 📋 Requirements
@@ -133,9 +133,6 @@ src/
 │   └── store/             # Store-related components
 ├── extensions/            # Plugin extensions
 │   └── users-permissions/ # Extended user model
-├── middlewares/           # Custom middlewares
-│   ├── rate-limit.js      # Rate limiting
-│   └── logging.js         # Enhanced logging
 └── services/              # Business logic services
 ```
 
@@ -324,7 +321,7 @@ If you encounter database connection errors:
 
 ## 🔒 Security Features
 
-- **Rate Limiting**: Configurable rate limits per IP
+- **Rate Limiting**: Handled at infrastructure level (Render, Cloudfront)
 - **CORS**: Strict CORS configuration for mobile apps
 - **Security Headers**: Helmet.js for security headers
 - **Input Validation**: Joi validation for all inputs
@@ -340,9 +337,7 @@ If you encounter database connection errors:
 
 ### Logging
 
-- **Console Logging**: Colorized console output for development
-- **File Logging**: Rotating file logs for production
-- **Structured Logging**: JSON format with request correlation IDs
+Strapi includes built-in logging for request/response tracking and error monitoring. Configure logging level via the `LOG_LEVEL` environment variable if needed.
 
 ### Error Tracking
 
