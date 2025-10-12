@@ -21,8 +21,7 @@
     "./src/**/*.ts",
     "./config/**/*.ts",
     "./database/**/*.ts",
-    "./types/**/*.ts",
-    "../auth/**/*.ts"
+    "./types/**/*.ts"
   ],
   "exclude": [
     "node_modules/",

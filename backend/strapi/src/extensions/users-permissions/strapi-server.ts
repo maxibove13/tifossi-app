@@ -5,7 +5,7 @@
  * with token exchange and user synchronization capabilities.
  */
 
-import { firebaseAdmin } from '../../../../auth/firebase-admin-setup';
+import { firebaseAdmin } from '../../lib/auth/firebase-admin-setup';
 
 export default (plugin: any) => {
   // Initialize Firebase Admin when the plugin loads

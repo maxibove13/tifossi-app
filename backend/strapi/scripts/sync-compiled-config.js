@@ -51,6 +51,14 @@ function syncDirectory(sourceName, targetName) {
 }
 
 function syncAll() {
+  // Check if dist/strapi exists (needed when compiling external dependencies)
+  const strapiDistExists = fs.existsSync(path.join(distRoot, 'strapi'));
+
+  if (!strapiDistExists) {
+    console.log('[sync-compiled-config] No dist/strapi directory - compilation output is already in correct location');
+    return true;
+  }
+
   let allSuccess = true;
 
   for (const { source, target } of syncPaths) {
