@@ -1,18 +1,21 @@
 #!/usr/bin/env node
 
 /**
- * Copy compiled Strapi config files into the directory that runtime expects.
- * Strapi loads configuration from <distDir>/config, but the TypeScript build
- * currently places the compiled files under dist/strapi/config because the
- * project imports shared code outside of the Strapi directory.
+ * Copy compiled Strapi files into the directory that runtime expects.
+ * Strapi loads configuration from <distDir>/config and src from <distDir>/src,
+ * but the TypeScript build places the compiled files under dist/strapi/* because
+ * the project imports shared code outside of the Strapi directory.
  */
 
 const fs = require('fs');
 const path = require('path');
 
 const distRoot = path.resolve(__dirname, '..', 'dist');
-const sourceDir = path.join(distRoot, 'strapi', 'config');
-const targetDir = path.join(distRoot, 'config');
+
+const syncPaths = [
+  { source: 'config', target: 'config' },
+  { source: 'src', target: 'src' }
+];
 
 function copyRecursive(src, dest) {
   const stats = fs.statSync(src);
@@ -32,22 +35,39 @@ function copyRecursive(src, dest) {
   fs.copyFileSync(src, dest);
 }
 
-function syncConfig() {
+function syncDirectory(sourceName, targetName) {
+  const sourceDir = path.join(distRoot, 'strapi', sourceName);
+  const targetDir = path.join(distRoot, targetName);
+
   if (!fs.existsSync(sourceDir)) {
-    console.warn('[sync-compiled-config] Source directory missing:', sourceDir);
+    console.warn(`[sync-compiled-config] Source directory missing: ${sourceDir}`);
     return false;
   }
 
   fs.rmSync(targetDir, { recursive: true, force: true });
   copyRecursive(sourceDir, targetDir);
+  console.log(`[sync-compiled-config] Synced ${sourceName} -> ${targetName}`);
   return true;
 }
 
+function syncAll() {
+  let allSuccess = true;
+
+  for (const { source, target } of syncPaths) {
+    const success = syncDirectory(source, target);
+    if (!success) {
+      allSuccess = false;
+    }
+  }
+
+  return allSuccess;
+}
+
 if (require.main === module) {
-  const ok = syncConfig();
+  const ok = syncAll();
   if (!ok) {
     process.exitCode = 1;
   }
 }
 
-module.exports = { syncConfig };
+module.exports = { syncAll };
