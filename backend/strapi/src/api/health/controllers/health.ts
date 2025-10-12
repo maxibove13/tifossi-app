@@ -2,6 +2,8 @@
  * Health check controller
  */
 
+import { buildBasicHealthPayload } from '../../../utils/health-response';
+
 export default {
   /**
    * Basic health check endpoint
@@ -9,16 +11,8 @@ export default {
   async healthCheck(ctx: any) {
     try {
       // Basic health check - just return OK if the server is running
-      const healthStatus = {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: process.env.NODE_ENV || 'development',
-        version: process.env.npm_package_version || '1.0.0',
-      };
-
       ctx.status = 200;
-      ctx.body = healthStatus;
+      ctx.body = buildBasicHealthPayload();
 
     } catch (error) {
       strapi.log.error('Health check failed:', error);

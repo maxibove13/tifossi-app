@@ -20,7 +20,8 @@
   "include": [
     "./src/**/*.ts",
     "./config/**/*.ts",
-    "./database/**/*.ts"
+    "./database/**/*.ts",
+    "./types/**/*.ts"
   ],
   "exclude": [
     "node_modules/",

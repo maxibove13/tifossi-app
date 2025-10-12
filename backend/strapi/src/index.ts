@@ -1,3 +1,6 @@
+import Router from '@koa/router';
+import { buildBasicHealthPayload } from './utils/health-response';
+
 export default {
   /**
    * An asynchronous register function that runs before
@@ -5,7 +8,27 @@ export default {
    *
    * This gives you an opportunity to extend code.
    */
-  register({ strapi }: { strapi: any }) {},
+  register({ strapi }: { strapi: any }) {
+    const healthPathEnv = process.env.HEALTH_CHECK_PATH || '/api/health';
+    const healthPath = healthPathEnv.startsWith('/') ? healthPathEnv : `/${healthPathEnv}`;
+
+    const router = new Router();
+
+    router.get(healthPath, (ctx: any) => {
+      ctx.status = 200;
+      ctx.set('Cache-Control', 'no-store');
+      ctx.body = buildBasicHealthPayload();
+    });
+
+    router.head(healthPath, (ctx: any) => {
+      ctx.status = 200;
+    });
+
+    strapi.server.use(router.routes());
+    strapi.server.use(router.allowedMethods());
+
+    strapi.log.info(`Health check route registered at ${healthPath}`);
+  },
 
   /**
    * An asynchronous bootstrap function that runs before
