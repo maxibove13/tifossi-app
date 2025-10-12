@@ -1,19 +1,15 @@
 name: CI/CD Pipeline
 
 # Required GitHub Secrets:
-# - RENDER_SERVICE_ID: Render service ID (srv-...)
-# - RENDER_API_KEY: Render API key for deployments
-# - DATABASE_URL: PostgreSQL external connection string (with .oregon-postgres.render.com)
-# - DATABASE_CLIENT: Database client type (postgres)
-# - DATABASE_SSL: Enable SSL for database (true)
-# - DATABASE_SSL_REJECT_UNAUTHORIZED: Reject unauthorized SSL certificates (false)
-# - CLOUDINARY_NAME: Cloudinary cloud name
-# - CLOUDINARY_KEY: Cloudinary API key
-# - CLOUDINARY_SECRET: Cloudinary API secret
+# - RENDER_DEPLOY_HOOK_URL: Deploy hook URL from Render service settings (fire-and-forget deployment)
+#
+# Note: Environment variables (database, API keys, etc.) should be configured directly
+# in Render Dashboard → Service Settings → Environment. They are NOT synced via CI/CD.
+#
+# Optional GitHub Secrets (for payment tests):
 # - MP_TEST_ACCESS_TOKEN: MercadoPago test access token (TEST-...)
 # - MP_TEST_PUBLIC_KEY: MercadoPago test public key (TEST-...)
 # - MP_WEBHOOK_SECRET: MercadoPago webhook secret
-# - WEBHOOK_URL: Webhook URL for MercadoPago notifications
 
 on:
   push:
@@ -274,159 +270,43 @@ jobs:
       url: https://tifossi-strapi-backend.onrender.com
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set deployment environment
-        id: set-env
+      - name: Validate deploy hook
         run: |
-          echo "environment=production" >> $GITHUB_OUTPUT
-          echo "service_url=https://tifossi-strapi-backend.onrender.com" >> $GITHUB_OUTPUT
-
-      - name: Validate deployment prerequisites
-        run: |
-          MISSING_SECRETS=()
-
-          # Check for Render credentials
-          [ -z "${{ secrets.RENDER_SERVICE_ID }}" ] && MISSING_SECRETS+=("RENDER_SERVICE_ID")
-          [ -z "${{ secrets.RENDER_API_KEY }}" ] && MISSING_SECRETS+=("RENDER_API_KEY")
-
-          # Check for Database credentials
-          [ -z "${{ secrets.DATABASE_URL }}" ] && MISSING_SECRETS+=("DATABASE_URL")
-          [ -z "${{ secrets.DATABASE_CLIENT }}" ] && MISSING_SECRETS+=("DATABASE_CLIENT")
-          [ -z "${{ secrets.DATABASE_SSL }}" ] && MISSING_SECRETS+=("DATABASE_SSL")
-          [ -z "${{ secrets.DATABASE_SSL_REJECT_UNAUTHORIZED }}" ] && MISSING_SECRETS+=("DATABASE_SSL_REJECT_UNAUTHORIZED")
-
-          # Check for Cloudinary credentials
-          [ -z "${{ secrets.CLOUDINARY_NAME }}" ] && MISSING_SECRETS+=("CLOUDINARY_NAME")
-          [ -z "${{ secrets.CLOUDINARY_KEY }}" ] && MISSING_SECRETS+=("CLOUDINARY_KEY")
-          [ -z "${{ secrets.CLOUDINARY_SECRET }}" ] && MISSING_SECRETS+=("CLOUDINARY_SECRET")
-
-          # Check for MercadoPago credentials (MP_* prefix used by backend)
-          [ -z "${{ secrets.MP_TEST_ACCESS_TOKEN }}" ] && MISSING_SECRETS+=("MP_TEST_ACCESS_TOKEN")
-          [ -z "${{ secrets.MP_TEST_PUBLIC_KEY }}" ] && MISSING_SECRETS+=("MP_TEST_PUBLIC_KEY")
-          [ -z "${{ secrets.MP_WEBHOOK_SECRET }}" ] && MISSING_SECRETS+=("MP_WEBHOOK_SECRET")
-          [ -z "${{ secrets.WEBHOOK_URL }}" ] && MISSING_SECRETS+=("WEBHOOK_URL")
-
-          # Check for Strapi security secrets
-          [ -z "${{ secrets.APP_KEYS }}" ] && MISSING_SECRETS+=("APP_KEYS")
-          [ -z "${{ secrets.API_TOKEN_SALT }}" ] && MISSING_SECRETS+=("API_TOKEN_SALT")
-          [ -z "${{ secrets.ADMIN_JWT_SECRET }}" ] && MISSING_SECRETS+=("ADMIN_JWT_SECRET")
-          [ -z "${{ secrets.TRANSFER_TOKEN_SALT }}" ] && MISSING_SECRETS+=("TRANSFER_TOKEN_SALT")
-          [ -z "${{ secrets.JWT_SECRET }}" ] && MISSING_SECRETS+=("JWT_SECRET")
-
-          if [ ${#MISSING_SECRETS[@]} -ne 0 ]; then
-            echo "❌ ERROR: Missing required GitHub Secrets:"
-            printf '%s\n' "${MISSING_SECRETS[@]}"
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+            echo "❌ ERROR: RENDER_DEPLOY_HOOK_URL secret not configured"
             echo ""
-            echo "Please add these secrets to your repository settings"
-            echo "Run './scripts/setup-github-secrets.sh' to generate and set Strapi secrets"
+            echo "To set up the deploy hook:"
+            echo "1. Go to Render Dashboard → Your Service → Settings"
+            echo "2. Find the 'Deploy Hook' section"
+            echo "3. Copy the deploy hook URL"
+            echo "4. Add it as a GitHub Secret named RENDER_DEPLOY_HOOK_URL"
+            echo ""
+            echo "Note: Environment variables should be configured directly in Render Dashboard"
             exit 1
           fi
 
-          echo "✅ All required secrets configured"
-
-      - name: Install jq
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
-
-      - name: Sync environment variables to Render
-        run: |
-          chmod +x scripts/sync-render-env.sh
-
-          # Export secrets as environment variables for the script
-          export DATABASE_URL="${{ secrets.DATABASE_URL }}"
-          export DATABASE_CLIENT="${{ secrets.DATABASE_CLIENT }}"
-          export DATABASE_SSL="${{ secrets.DATABASE_SSL }}"
-          export DATABASE_SSL_REJECT_UNAUTHORIZED="${{ secrets.DATABASE_SSL_REJECT_UNAUTHORIZED }}"
-          export CLOUDINARY_NAME="${{ secrets.CLOUDINARY_NAME }}"
-          export CLOUDINARY_KEY="${{ secrets.CLOUDINARY_KEY }}"
-          export CLOUDINARY_SECRET="${{ secrets.CLOUDINARY_SECRET }}"
-          export MP_TEST_ACCESS_TOKEN="${{ secrets.MP_TEST_ACCESS_TOKEN }}"
-          export MP_TEST_PUBLIC_KEY="${{ secrets.MP_TEST_PUBLIC_KEY }}"
-          export MP_WEBHOOK_SECRET="${{ secrets.MP_WEBHOOK_SECRET }}"
-          export WEBHOOK_URL="${{ secrets.WEBHOOK_URL }}"
-          export APP_KEYS="${{ secrets.APP_KEYS }}"
-          export API_TOKEN_SALT="${{ secrets.API_TOKEN_SALT }}"
-          export ADMIN_JWT_SECRET="${{ secrets.ADMIN_JWT_SECRET }}"
-          export TRANSFER_TOKEN_SALT="${{ secrets.TRANSFER_TOKEN_SALT }}"
-          export JWT_SECRET="${{ secrets.JWT_SECRET }}"
-
-          # Run sync script
-          ./scripts/sync-render-env.sh \
-            "${{ secrets.RENDER_SERVICE_ID }}" \
-            "${{ secrets.RENDER_API_KEY }}"
+          echo "✅ Deploy hook configured"
 
       - name: Deploy to Render
-        id: deploy
         run: |
           echo "Triggering deployment to Render..."
+          echo "Service: https://tifossi-strapi-backend.onrender.com"
+          echo ""
 
-          DEPLOY_RESPONSE=$(curl -s -X POST \
-            "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -H "Content-Type: application/json")
+          # Trigger deployment using deploy hook (fire and forget)
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
 
-          DEPLOY_ID=$(echo "$DEPLOY_RESPONSE" | jq -r '.id')
-
-          if [ -z "$DEPLOY_ID" ] || [ "$DEPLOY_ID" = "null" ]; then
-            echo "❌ Failed to trigger deployment"
-            echo "$DEPLOY_RESPONSE"
-            exit 1
-          fi
-
-          echo "✅ Deployment triggered successfully"
-          echo "Deploy ID: $DEPLOY_ID"
-          echo "deploy_id=$DEPLOY_ID" >> $GITHUB_OUTPUT
-
-          # Wait for deployment to complete
-          echo "Waiting for deployment to complete..."
-          MAX_WAIT=600  # 10 minutes
-          ELAPSED=0
-
-          while [ $ELAPSED -lt $MAX_WAIT ]; do
-            DEPLOY_STATUS=$(curl -s \
-              "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys/$DEPLOY_ID" \
-              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" | jq -r '.status')
-
-            echo "Status: $DEPLOY_STATUS (${ELAPSED}s elapsed)"
-
-            if [ "$DEPLOY_STATUS" = "live" ]; then
-              echo "✅ Deployment completed successfully"
-              exit 0
-            elif [ "$DEPLOY_STATUS" = "build_failed" ] || [ "$DEPLOY_STATUS" = "deactivated" ]; then
-              echo "❌ Deployment failed with status: $DEPLOY_STATUS"
-              exit 1
-            fi
-
-            sleep 30
-            ELAPSED=$((ELAPSED + 30))
-          done
-
-          echo "⚠️ Deployment timeout - check Render dashboard"
-          exit 1
-
-      - name: Set deployment URL
-        id: set-url
-        run: |
-          echo "service_url=https://tifossi-strapi-backend.onrender.com" >> $GITHUB_OUTPUT
-
-      - name: Verify deployment health
-        run: |
-          SERVICE_URL="https://tifossi-strapi-backend.onrender.com"
-
-          echo "Verifying deployment health at $SERVICE_URL..."
-
-          # Give the service a moment to stabilize
-          sleep 5
-
-          # Check health endpoint
-          if curl -f "$SERVICE_URL/api/health" --max-time 10; then
-            echo "✅ Health check passed!"
+          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 202 ]; then
+            echo "✅ Deployment triggered successfully (HTTP $HTTP_CODE)"
+            echo ""
+            echo "Render is now building and deploying your application."
+            echo "This process happens asynchronously and typically takes 5-10 minutes."
+            echo ""
+            echo "Monitor deployment progress:"
+            echo "→ Render Dashboard: https://dashboard.render.com"
+            echo "→ Service Logs: https://tifossi-strapi-backend.onrender.com (once live)"
           else
-            echo "⚠️ Health check failed - service may still be initializing"
-            echo "Check Render dashboard for more details"
+            echo "❌ Failed to trigger deployment (HTTP $HTTP_CODE)"
             exit 1
           fi
 
@@ -438,7 +318,12 @@ jobs:
           echo "======================================"
           echo "Environment: production"
           echo "Service URL: https://tifossi-strapi-backend.onrender.com"
-          echo "Deployment Status: ${{ steps.deploy.outcome }}"
+          echo "Status: Deploy triggered (building asynchronously)"
+          echo ""
+          echo "Next steps:"
+          echo "→ Check Render dashboard for build progress"
+          echo "→ Verify health endpoint after ~5-10 minutes"
+          echo "→ Health check: https://tifossi-strapi-backend.onrender.com/api/health"
           echo "======================================"
 
   # ============================
