@@ -47,7 +47,7 @@ services:
       - NODE_ENV=production
       - LOG_LEVEL=warn
       - LOG_FORMAT=json
-      - RATE_LIMIT_ENABLED=true
+      - AUTH_RATE_LIMIT_ENABLED=true
       - SECURITY_HEADERS_ENABLED=true
       - HSTS_ENABLED=true
       - FEATURE_DEBUG_TOOLBAR=false

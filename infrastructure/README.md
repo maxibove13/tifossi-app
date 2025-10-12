@@ -133,14 +133,14 @@ NODE_ENV=development
 DATABASE_CLIENT=postgres
 DATABASE_HOST=localhost
 CORS_ORIGINS=http://localhost:8081,exp://localhost:8081
-RATE_LIMIT_ENABLED=false
+AUTH_RATE_LIMIT_ENABLED=false
 ```
 
 #### Staging
 ```bash
 NODE_ENV=staging
 CORS_ORIGINS=https://staging.tifossi.app,exp://staging.tifossi.app
-RATE_LIMIT_ENABLED=true
+AUTH_RATE_LIMIT_ENABLED=true
 MERCADO_PAGO_SANDBOX=true
 ```
 
@@ -148,7 +148,7 @@ MERCADO_PAGO_SANDBOX=true
 ```bash
 NODE_ENV=production
 CORS_ORIGINS=https://tifossi.app,https://www.tifossi.app
-RATE_LIMIT_ENABLED=true
+AUTH_RATE_LIMIT_ENABLED=true
 MERCADO_PAGO_SANDBOX=false
 SECURITY_HEADERS_ENABLED=true
 ```

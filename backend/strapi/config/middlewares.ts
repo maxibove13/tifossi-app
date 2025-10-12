@@ -29,7 +29,6 @@ export default ({ env }: { env: any }) => [
   {
     name: 'strapi::cors',
     config: {
-      enabled: true,
       header: '*',
       origin: env.array('CORS_ORIGINS', [
         'http://localhost:3000',

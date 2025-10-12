@@ -27,7 +27,7 @@ services:
       - TRANSFER_TOKEN_SALT=dev-transfer-token-salt
       - JWT_SECRET=dev-jwt-secret
       - CORS_ORIGINS=http://localhost:3000,http://localhost:8081,exp://localhost:8081
-      - RATE_LIMIT_ENABLED=false
+      - AUTH_RATE_LIMIT_ENABLED=false
       - LOG_LEVEL=debug
       - FEATURE_PAYMENTS_ENABLED=true
       - FEATURE_EMAIL_NOTIFICATIONS=true

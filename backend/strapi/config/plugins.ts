@@ -40,9 +40,8 @@ export default ({ env }: { env: any }) => ({
           upload: {},
           uploadStream: {},
         },
-      } : {
-        sizeLimit: env.int('UPLOAD_SIZE_LIMIT', 200 * 1024 * 1024), // 200MB
-      },
+      } : {},
+      sizeLimit: env.int('UPLOAD_SIZE_LIMIT', 200 * 1024 * 1024), // 200MB
       actionOptions: {
         upload: {},
         uploadStream: {},
@@ -58,29 +57,32 @@ export default ({ env }: { env: any }) => ({
     },
   },
 
-  // Email Plugin Configuration
-  email: {
-    config: {
-      provider: 'nodemailer',
-      providerOptions: {
-        host: env('SMTP_HOST', 'localhost'),
-        port: env.int('SMTP_PORT', 587),
-        auth: {
-          user: env('SMTP_USERNAME'),
-          pass: env('SMTP_PASSWORD'),
+  // Email Plugin Configuration (Optional - requires SMTP)
+  // Only loads when SMTP_HOST is configured
+  ...(env('SMTP_HOST') && {
+    email: {
+      config: {
+        provider: 'nodemailer',
+        providerOptions: {
+          host: env('SMTP_HOST'),
+          port: env.int('SMTP_PORT', 587),
+          auth: {
+            user: env('SMTP_USERNAME'),
+            pass: env('SMTP_PASSWORD'),
+          },
+          secure: env.bool('SMTP_SECURE', false),
+          tls: {
+            rejectUnauthorized: env.bool('SMTP_REJECT_UNAUTHORIZED', true),
+          },
         },
-        secure: env.bool('SMTP_SECURE', false),
-        tls: {
-          rejectUnauthorized: env.bool('SMTP_REJECT_UNAUTHORIZED', true),
+        settings: {
+          defaultFrom: env('EMAIL_FROM', 'noreply@tifossi.com'),
+          defaultReplyTo: env('EMAIL_REPLY_TO', 'support@tifossi.com'),
+          testAddress: env('EMAIL_TEST_ADDRESS'),
         },
-      },
-      settings: {
-        defaultFrom: env('EMAIL_FROM', 'noreply@tifossi.com'),
-        defaultReplyTo: env('EMAIL_REPLY_TO', 'support@tifossi.com'),
-        testAddress: env('EMAIL_TEST_ADDRESS'),
       },
     },
-  },
+  }),
 
   // GraphQL Plugin (Optional)
   graphql: {

@@ -134,7 +134,7 @@ COPY backend/.env.staging ./.env
 ENV NODE_ENV=staging
 ENV LOG_LEVEL=info
 ENV FEATURE_DEBUG_TOOLBAR=false
-ENV RATE_LIMIT_ENABLED=true
+ENV AUTH_RATE_LIMIT_ENABLED=true
 
 # Staging command
 CMD ["npm", "run", "start"]

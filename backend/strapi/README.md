@@ -328,6 +328,29 @@ If you encounter database connection errors:
 - **Authentication**: JWT-based authentication
 - **Password Hashing**: Bcrypt for password security
 
+### Admin Authentication
+
+**Method**: Email + Password (no SMTP required)
+
+The Strapi admin panel uses email/password authentication without requiring email configuration. This pragmatic approach prioritizes deployment simplicity:
+
+- **Email Plugin**: Conditional (only loads when `SMTP_HOST` is set)
+- **Password Reset**: Manual process (see ADMIN_AUTH.md)
+- **Mobile Users**: Authenticate via Firebase (separate system)
+
+**Key Points:**
+- Admins can log in immediately without SMTP setup
+- Password reset requires manual database intervention
+- Email functionality can be enabled later by configuring SMTP credentials
+
+For detailed information on:
+- Creating admin users
+- Resetting forgotten passwords
+- Enabling email functionality
+- Security best practices
+
+See **[ADMIN_AUTH.md](./ADMIN_AUTH.md)** for the complete guide.
+
 ## 📈 Monitoring
 
 ### Health Checks

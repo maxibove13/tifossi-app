@@ -48,7 +48,7 @@ services:
       - key: FEATURE_PAYMENTS_ENABLED
         value: true
       - key: FEATURE_EMAIL_NOTIFICATIONS
-        value: true
+        value: false
       - key: ADMIN_PANEL_ENABLED
         value: true
       - key: API_DOCUMENTATION_ENABLED

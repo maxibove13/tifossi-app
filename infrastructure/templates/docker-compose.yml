@@ -235,13 +235,13 @@ x-development: &development
     STRAPI_TELEMETRY_DISABLED: true
     WATCH_MODE: true
 
-# Staging Override  
+# Staging Override
 x-staging: &staging
   profiles: [staging]
   environment:
     NODE_ENV: staging
     LOG_LEVEL: info
-    RATE_LIMIT_ENABLED: true
+    AUTH_RATE_LIMIT_ENABLED: true
 
 # Production Override
 x-production: &production
@@ -249,5 +249,5 @@ x-production: &production
   environment:
     NODE_ENV: production
     LOG_LEVEL: warn
-    RATE_LIMIT_ENABLED: true
+    AUTH_RATE_LIMIT_ENABLED: true
     SECURITY_HEADERS_ENABLED: true
