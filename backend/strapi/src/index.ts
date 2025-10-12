@@ -8,7 +8,19 @@ export default {
    *
    * This gives you an opportunity to extend code.
    */
-  register({ strapi }: { strapi: any }) {
+  register({ strapi }: { strapi: any }) {},
+
+  /**
+   * An asynchronous bootstrap function that runs before
+   * your application gets started.
+   *
+   * This gives you an opportunity to set up your data model,
+   * run jobs, or perform some special logic.
+   */
+  async bootstrap({ strapi }: { strapi: any }) {
+    // Bootstrap logic for Tifossi e-commerce
+
+    // Register health check route FIRST (before other initialization)
     const healthPathEnv = process.env.HEALTH_CHECK_PATH || '/api/health';
     const healthPath = healthPathEnv.startsWith('/') ? healthPathEnv : `/${healthPathEnv}`;
 
@@ -24,22 +36,10 @@ export default {
       ctx.status = 200;
     });
 
-    strapi.server.use(router.routes());
-    strapi.server.use(router.allowedMethods());
+    strapi.server.app.use(router.routes());
+    strapi.server.app.use(router.allowedMethods());
 
-    strapi.log.info(`Health check route registered at ${healthPath}`);
-  },
-
-  /**
-   * An asynchronous bootstrap function that runs before
-   * your application gets started.
-   *
-   * This gives you an opportunity to set up your data model,
-   * run jobs, or perform some special logic.
-   */
-  async bootstrap({ strapi }: { strapi: any }) {
-    // Bootstrap logic for Tifossi e-commerce
-
+    console.log(`Health check route registered at ${healthPath}`);
     console.log('Tifossi Strapi Backend is starting up...');
 
     // Initialize default data if needed
