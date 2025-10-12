@@ -1,4 +1,4 @@
-import { buildBasicHealthPayload } from '../../utils/health-response';
+import { buildBasicHealthPayload } from '../utils/health-response';
 
 const allowedMethods = new Set(['GET', 'HEAD']);
 
