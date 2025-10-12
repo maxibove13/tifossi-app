@@ -24,6 +24,7 @@
     "@strapi/plugin-graphql": "5.24.2",
     "@strapi/plugin-users-permissions": "5.24.2",
     "@strapi/strapi": "5.24.2",
+    "better-sqlite3": "^12.4.1",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",

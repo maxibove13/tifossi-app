@@ -1,4 +1,5 @@
 export default ({ env }: { env: any }) => [
+  'global::health-check',
   'strapi::logger',
   'strapi::errors',
   {

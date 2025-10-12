@@ -6,7 +6,7 @@ services:
     plan: starter
     rootDir: backend/strapi  # For monorepo - all paths relative to this
     branch: main  # Deploy from main branch
-    autoDeployTrigger: commit  # Auto-deploy on push to main
+    autoDeployTrigger: manual  # Deployments triggered via GitHub Actions
     buildCommand: npm ci && npm run build
     startCommand: npm run start:debug
     healthCheckPath: /api/health

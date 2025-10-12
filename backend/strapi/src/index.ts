@@ -1,6 +1,3 @@
-import Router from '@koa/router';
-import { buildBasicHealthPayload } from './utils/health-response';
-
 export default {
   /**
    * An asynchronous register function that runs before
@@ -20,27 +17,7 @@ export default {
   async bootstrap({ strapi }: { strapi: any }) {
     // Bootstrap logic for Tifossi e-commerce
 
-    // Register health check route FIRST (before other initialization)
-    const healthPathEnv = process.env.HEALTH_CHECK_PATH || '/api/health';
-    const healthPath = healthPathEnv.startsWith('/') ? healthPathEnv : `/${healthPathEnv}`;
-
-    const router = new Router();
-
-    router.get(healthPath, (ctx: any) => {
-      ctx.status = 200;
-      ctx.set('Cache-Control', 'no-store');
-      ctx.body = buildBasicHealthPayload();
-    });
-
-    router.head(healthPath, (ctx: any) => {
-      ctx.status = 200;
-    });
-
-    strapi.server.app.use(router.routes());
-    strapi.server.app.use(router.allowedMethods());
-
-    console.log(`Health check route registered at ${healthPath}`);
-    console.log('Tifossi Strapi Backend is starting up...');
+    strapi.log.info('Tifossi Strapi Backend is starting up...');
 
     // Initialize default data if needed
     await initializeDefaultData(strapi);
@@ -51,7 +28,7 @@ export default {
     // Initialize external services
     await initializeExternalServices(strapi);
 
-    console.log('Tifossi Strapi Backend bootstrap completed');
+    strapi.log.info('Tifossi Strapi Backend bootstrap completed');
   },
 };
 
