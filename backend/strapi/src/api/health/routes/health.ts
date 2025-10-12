@@ -6,7 +6,7 @@ export default {
   routes: [
     {
       method: 'GET',
-      path: '/',
+      path: '/health',
       handler: 'health.healthCheck',
       config: {
         auth: false,
@@ -16,7 +16,7 @@ export default {
     },
     {
       method: 'GET',
-      path: '/detailed',
+      path: '/health/detailed',
       handler: 'health.detailedHealthCheck',
       config: {
         auth: false,
