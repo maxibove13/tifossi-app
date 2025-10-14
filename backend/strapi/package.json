@@ -5,7 +5,7 @@
   "description": "Tifossi Expo Backend API",
   "scripts": {
     "build": "strapi build",
-    "postbuild": "node scripts/sync-compiled-config.js",
+    "postbuild": "node dist/scripts/sync-compiled-config.js",
     "develop": "strapi develop",
     "start": "strapi start",
     "start:debug": "node scripts/test-db-connection.js && strapi start",
