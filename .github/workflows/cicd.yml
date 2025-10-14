@@ -3,7 +3,19 @@ name: CI/CD Pipeline
 # Required GitHub Secrets:
 # - RENDER_DEPLOY_HOOK_URL: Deploy hook URL from Render service settings (fire-and-forget deployment)
 #
-# Note: Environment variables (database, API keys, etc.) should be configured directly
+# Required Firebase Credentials (add ONE of these options):
+# Option 1 (Recommended):
+#   - FIREBASE_SERVICE_ACCOUNT_KEY: Full Firebase service account JSON
+# Option 2 (Individual fields):
+#   - FIREBASE_PROJECT_ID: Firebase project ID
+#   - FIREBASE_PRIVATE_KEY: Firebase service account private key
+#   - FIREBASE_CLIENT_EMAIL: Firebase service account email
+#
+# Note: Firebase credentials MUST ALSO be configured in Render Dashboard → Environment.
+# GitHub Secrets are used for CI/CD validation only. The actual values used at runtime
+# come from Render environment variables.
+#
+# Note: All environment variables (database, API keys, etc.) should be configured directly
 # in Render Dashboard → Service Settings → Environment. They are NOT synced via CI/CD.
 #
 # Optional GitHub Secrets (for payment tests):
@@ -286,6 +298,56 @@ jobs:
           fi
 
           echo "✅ Deploy hook configured"
+
+      - name: Validate Firebase credentials
+        run: |
+          echo "Validating Firebase Admin credentials..."
+          echo ""
+
+          MISSING_SECRETS=()
+
+          # Check for Firebase credentials (Option 1: Full JSON)
+          if [ -z "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}" ]; then
+            # Check for Firebase credentials (Option 2: Individual fields)
+            if [ -z "${{ secrets.FIREBASE_PROJECT_ID }}" ]; then
+              MISSING_SECRETS+=("FIREBASE_PROJECT_ID")
+            fi
+            if [ -z "${{ secrets.FIREBASE_PRIVATE_KEY }}" ]; then
+              MISSING_SECRETS+=("FIREBASE_PRIVATE_KEY")
+            fi
+            if [ -z "${{ secrets.FIREBASE_CLIENT_EMAIL }}" ]; then
+              MISSING_SECRETS+=("FIREBASE_CLIENT_EMAIL")
+            fi
+          fi
+
+          if [ ${#MISSING_SECRETS[@]} -gt 0 ] && [ -z "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}" ]; then
+            echo "❌ ERROR: Firebase Admin credentials not configured"
+            echo ""
+            echo "Firebase credentials are REQUIRED for authentication to work."
+            echo "The /auth/firebase-exchange endpoint needs these to verify mobile app tokens."
+            echo ""
+            echo "Missing secrets: ${MISSING_SECRETS[*]}"
+            echo ""
+            echo "To configure Firebase credentials, add ONE of these options:"
+            echo ""
+            echo "Option 1 (Recommended) - Add to GitHub Secrets AND Render Environment:"
+            echo "  FIREBASE_SERVICE_ACCOUNT_KEY='{\"type\":\"service_account\",\"project_id\":\"...\"}'"
+            echo ""
+            echo "Option 2 - Add individual fields to GitHub Secrets AND Render Environment:"
+            echo "  FIREBASE_PROJECT_ID=your-project-id"
+            echo "  FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\\n..."
+            echo "  FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com"
+            echo ""
+            echo "To get these credentials:"
+            echo "1. Go to Firebase Console → Project Settings → Service Accounts"
+            echo "2. Click 'Generate new private key'"
+            echo "3. Download the JSON file"
+            echo "4. Add the values to BOTH GitHub Secrets AND Render Dashboard Environment"
+            echo ""
+            exit 1
+          fi
+
+          echo "✅ Firebase Admin credentials configured"
 
       - name: Deploy to Render
         run: |

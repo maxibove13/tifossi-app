@@ -91,9 +91,9 @@ databases:
     # Free tier: 1GB, Paid: multiples of 5GB at $0.30/GB/month
 
 # Environment Variables for External Services
-# These are synced automatically via CI/CD from GitHub Secrets
+# These must be configured manually via Render Dashboard → Service Settings → Environment
 #
-# Required Environment Variables (Synced via CI/CD):
+# REQUIRED Environment Variables (Must be configured in Render Dashboard):
 # - DATABASE_URL (external connection string from Render PostgreSQL)
 # - DATABASE_CLIENT (postgres)
 # - DATABASE_SSL (true for Render)
@@ -105,6 +105,19 @@ databases:
 # - MP_TEST_PUBLIC_KEY (test MercadoPago public key)
 # - MP_WEBHOOK_SECRET (webhook secret for MercadoPago)
 # - WEBHOOK_URL (webhook callback URL)
+#
+# REQUIRED Firebase Admin Credentials (Choose ONE option):
+# Option 1 (Recommended):
+#   - FIREBASE_SERVICE_ACCOUNT_KEY (full JSON from Firebase Console)
+# Option 2 (Individual fields):
+#   - FIREBASE_PROJECT_ID (from Firebase Console)
+#   - FIREBASE_PRIVATE_KEY (from service account JSON, escape newlines as \n)
+#   - FIREBASE_CLIENT_EMAIL (from service account JSON)
+#
+# To get Firebase credentials:
+# 1. Go to Firebase Console → Project Settings → Service Accounts
+# 2. Click "Generate new private key" and download JSON
+# 3. Add to Render Dashboard (escape newlines in private key with \n)
 #
 # Optional Environment Variables (Manual configuration via Render Dashboard):
 # - MERCADO_PAGO_ACCESS_TOKEN (production MercadoPago token)

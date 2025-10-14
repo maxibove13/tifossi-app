@@ -8,21 +8,28 @@
 import { firebaseAdmin } from '../../lib/auth/firebase-admin-setup';
 
 export default (plugin: any) => {
-  // Initialize Firebase Admin when the plugin loads
   const initializeFirebase = async () => {
-    try {
-      await firebaseAdmin.initialize({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        serviceAccountPath: process.env.FIREBASE_SERVICE_ACCOUNT_PATH,
-      });
-      console.log('[Strapi Firebase] Firebase Admin initialized successfully');
-    } catch (error) {
-      console.error('[Strapi Firebase] Failed to initialize Firebase Admin:', error);
+    const hasCredentials =
+      process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
+      (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) ||
+      process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+
+    if (!hasCredentials) {
+      throw new Error('[Strapi Firebase] Firebase Admin credentials are not configured');
     }
+
+    await firebaseAdmin.initialize({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      serviceAccountPath: process.env.FIREBASE_SERVICE_ACCOUNT_PATH,
+    });
+
+    strapi.log.info('[Strapi Firebase] Firebase Admin initialized successfully');
   };
 
-  // Initialize on plugin load
-  initializeFirebase();
+  initializeFirebase().catch((error) => {
+    strapi.log.error('[Strapi Firebase] Failed to initialize Firebase Admin:', error);
+    throw error;
+  });
 
   // Extend the auth controller
   plugin.controllers.auth = {
