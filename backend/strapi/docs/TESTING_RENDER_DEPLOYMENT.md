@@ -5,6 +5,7 @@ This guide explains how to use the local testing tools to validate your Strapi c
 ## Problem Statement
 
 Strapi deployments to Render have been failing with database configuration errors:
+
 ```
 Cannot destructure property 'client' of 'db.config.connection' as it is undefined
 ```
@@ -20,6 +21,7 @@ With no local testing capability, this forced trial-and-error deployments (15+ a
 **Purpose**: Validates the database configuration file without requiring a running database.
 
 **What it tests**:
+
 - Database config structure matches Strapi v5 expectations
 - Environment variable parsing works correctly
 - SSL configuration is properly formatted
@@ -27,12 +29,14 @@ With no local testing capability, this forced trial-and-error deployments (15+ a
 - Multiple scenarios (DATABASE_URL, individual params, SSL on/off)
 
 **Usage**:
+
 ```bash
 cd backend/strapi
 node scripts/validate-db-config.js
 ```
 
 **Output**:
+
 - Green checkmarks for passing tests
 - Red X for failures
 - Warnings for potential issues
@@ -40,6 +44,7 @@ node scripts/validate-db-config.js
 - Clear PASS/FAIL summary
 
 **When to use**:
+
 - After modifying `config/database.js`
 - Before committing database config changes
 - As a pre-deployment sanity check
@@ -53,6 +58,7 @@ node scripts/validate-db-config.js
 **Purpose**: Simulates Render's exact environment and runs the build/start process locally.
 
 **What it tests**:
+
 - Environment variables match Render's format
 - `npm ci` installs dependencies correctly
 - `npm run build` completes without errors
@@ -60,17 +66,20 @@ node scripts/validate-db-config.js
 - (Optional) `npm run start` succeeds with a real database
 
 **Usage**:
+
 ```bash
 cd backend/strapi
 ./scripts/test-with-render-env.sh
 ```
 
 **Requirements**:
+
 - Node.js 18+
 - PostgreSQL running locally (optional, for full test)
 - OpenSSL (for generating test secrets)
 
 **What happens**:
+
 1. Sets environment variables exactly like Render
 2. Generates random secrets (APP_KEYS, JWT_SECRET, etc.)
 3. Runs `npm ci` to install dependencies
@@ -79,6 +88,7 @@ cd backend/strapi
 6. Shows clear success/failure messages
 
 **When to use**:
+
 - Before pushing to Render
 - After changing build configuration
 - To test with Render-like environment variables
@@ -92,6 +102,7 @@ cd backend/strapi
 **Purpose**: Complete Docker environment that mirrors Render's infrastructure.
 
 **What it includes**:
+
 - PostgreSQL 16 (same as Render)
 - Node 18 (same as Render)
 - Production build process
@@ -99,6 +110,7 @@ cd backend/strapi
 - Health checks
 
 **Usage**:
+
 ```bash
 cd backend/strapi
 
@@ -122,11 +134,13 @@ cd backend/strapi
 ```
 
 **Requirements**:
+
 - Docker Desktop installed and running
 - 2GB free disk space
 - Ports 1337 and 5432 available
 
 **What happens**:
+
 1. Builds a Docker image matching Render's Node environment
 2. Starts PostgreSQL 16 in a container
 3. Runs `npm ci && npm run build && npm run start`
@@ -134,6 +148,7 @@ cd backend/strapi
 5. Allows interactive debugging via shell access
 
 **When to use**:
+
 - For the most comprehensive testing
 - When you need to test database migrations
 - To debug startup issues in a production-like environment
@@ -144,18 +159,21 @@ cd backend/strapi
 ## Recommended Testing Workflow
 
 ### Quick Pre-Commit Check
+
 ```bash
 # Fast validation (no database required)
 node scripts/validate-db-config.js
 ```
 
 ### Before Deploying to Render
+
 ```bash
 # Test with Render-like environment
 ./scripts/test-with-render-env.sh
 ```
 
 ### For Major Changes or Troubleshooting
+
 ```bash
 # Full Docker environment test
 ./docker/test-render-env/test-env.sh start
@@ -171,11 +189,13 @@ node scripts/validate-db-config.js
 **Cause**: Database config returns invalid structure.
 
 **Test with**:
+
 ```bash
 node scripts/validate-db-config.js
 ```
 
 **Look for**:
+
 - Missing `connection.client` property
 - Incorrect nesting of config objects
 - Type mismatches (object vs string)
@@ -187,11 +207,13 @@ node scripts/validate-db-config.js
 **Cause**: Environment variables differ between local and Render.
 
 **Test with**:
+
 ```bash
 ./scripts/test-with-render-env.sh
 ```
 
 **Check**:
+
 - DATABASE_URL format matches Render's format
 - All required secrets are present
 - NODE_ENV is set to 'production'
@@ -203,12 +225,14 @@ node scripts/validate-db-config.js
 **Cause**: SSL configuration, connection string format, or network issues.
 
 **Test with**:
+
 ```bash
 ./docker/test-render-env/test-env.sh start
 ./docker/test-render-env/test-env.sh logs
 ```
 
 **Check**:
+
 - PostgreSQL is accessible
 - SSL settings match environment (false for local, true for Render)
 - Connection string format is correct
@@ -253,6 +277,7 @@ node scripts/validate-db-config.js
 These are the key environment variables tested by these tools:
 
 ### Database Configuration
+
 - `DATABASE_URL` - Full PostgreSQL connection string (Render provides this)
 - `DATABASE_CLIENT` - Database type (postgres, sqlite)
 - `DATABASE_SSL` - Enable SSL (true/false)
@@ -266,6 +291,7 @@ These are the key environment variables tested by these tools:
 - `DATABASE_POOL_MAX` - Maximum connections in pool (default: 10)
 
 ### Strapi Secrets (Auto-generated by Render)
+
 - `APP_KEYS` - Comma-separated list of app keys
 - `API_TOKEN_SALT` - Salt for API tokens
 - `ADMIN_JWT_SECRET` - JWT secret for admin panel
@@ -273,6 +299,7 @@ These are the key environment variables tested by these tools:
 - `JWT_SECRET` - Main JWT secret
 
 ### Application Configuration
+
 - `NODE_ENV` - Environment (production/development)
 - `HOST` - Server host (0.0.0.0)
 - `PORT` - Server port (10000 on Render, 1337 locally)
@@ -305,6 +332,7 @@ These are the key environment variables tested by these tools:
 **Cause**: Path resolution using `__dirname` breaks in TypeScript compiled builds.
 
 **Test with**:
+
 ```bash
 # Build and check if middleware can find favicon
 npm run build
@@ -324,12 +352,14 @@ export default ({ env }: { env: any }) => {
 ```
 
 **Why this works**:
+
 - `process.cwd()` always returns the project root directory
 - Works correctly in both dev (ts-node) and production (compiled JS)
 - Allows configuration via `PUBLIC_DIR` environment variable
 - Eliminates path resolution issues in compiled TypeScript projects
 
 **Verify**:
+
 ```bash
 # Check favicon exists
 ls -la backend/strapi/public/favicon.ico
@@ -338,6 +368,53 @@ ls -la backend/strapi/public/favicon.ico
 NODE_ENV=production npm run build && npm run start
 curl http://localhost:1337/favicon.ico  # Should return 200, not 500
 ```
+
+---
+
+### Issue: Strapi Admin Panel 500 Errors Behind Reverse Proxy
+
+**Cause**: Custom session middleware configuration conflicts with Strapi's built-in proxy detection.
+
+**Symptoms**:
+
+- Admin panel returns 500 Internal Server Error
+- Logs show "Cannot send secure cookie over unencrypted connection"
+- Proxy detection diagnostic shows `koa=false` despite `config=true`
+
+**Solution**:
+
+1. **Remove custom session configuration** - Let Strapi handle proxy detection automatically
+
+   In `config/middlewares.ts`, do NOT add custom session configuration. Let Strapi use its defaults.
+
+2. **Verify proxy settings in config/server.ts**:
+
+   ```typescript
+   proxy: env.bool('IS_PROXIED', env('NODE_ENV') === 'production');
+   ```
+
+3. **Trust-proxy middleware** - Ensures x-forwarded-proto headers are set:
+
+   The trust-proxy middleware automatically injects HTTPS headers when behind a proxy.
+   See: `backend/strapi/src/middlewares/trust-proxy.ts`
+
+4. **Check diagnostic logging at startup**:
+   ```
+   [info] Reverse proxy trusted: config=true koa=true (IS_PROXIED=true)
+   ```
+
+**Verify**:
+
+```bash
+# Check proxy detection works
+curl -I https://your-app.onrender.com/admin
+# Should return 200, not 500
+
+# Check logs for proxy status
+# Look for: "Reverse proxy trusted: config=true koa=true"
+```
+
+**Related commits**: 847323c, 91c1719, 7b77ec4
 
 ---
 
@@ -371,6 +448,7 @@ If you encounter issues with these testing tools:
 5. Review tool-specific README files
 
 For Render-specific deployment issues:
+
 1. Check Render dashboard logs
 2. Verify environment variables in Render
 3. Ensure DATABASE_URL is set correctly

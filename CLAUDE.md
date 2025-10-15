@@ -1,13 +1,16 @@
 # Tifossi Expo Project Guidelines
 
 ## PROJECT STATUS
+
 **Status**: Code Complete - Awaiting Deployment
-**Ground Truth Documents**: 
+**Ground Truth Documents**:
+
 - FUNCIONALIDADES_APP_TIFOSSI.md (client deliverables)
 - COSTOS_OPERATIVOS_URUGUAY_2025.md (infrastructure costs)
 - TIFOSSI_DELIVERY_PLAN.md (execution roadmap)
 
 ## DEPLOYMENT REQUIREMENTS
+
 1. Deploy Strapi backend to Render.com
 2. Apple Sign-In: ✅ Implemented via Firebase (expo-apple-authentication)
 3. Update bundle identifiers to production values (awaiting Apple/Google accounts)
@@ -15,13 +18,16 @@
 5. Remove all TODO/placeholder content
 
 ## PROGRESS TRACKING
+
 **IMPORTANT**: TIFOSSI_DELIVERY_PLAN.md is the SINGLE SOURCE OF TRUTH for:
+
 - Project delivery goals vs current state
 - All current issues and blockers
 - Implementation status tracking
 - Gap analysis between commitments and reality
 
 After completing ANY task or making significant changes:
+
 1. Check alignment with TIFOSSI_DELIVERY_PLAN.md
 2. Update status in the plan (Implemented/Code Complete/Awaiting Credentials)
 3. Mark completed tasks with ✅ in the execution checklist
@@ -29,11 +35,13 @@ After completing ANY task or making significant changes:
 5. Keep clear distinction between GOAL (deliverables) and CURRENT STATE (actual status)
 
 **File Roles**:
+
 - FUNCIONALIDADES_APP_TIFOSSI.md: Client commitments and deliverables (THE GOAL)
 - TIFOSSI_DELIVERY_PLAN.md: Current status, issues, and gap analysis (THE REALITY)
 - COSTOS_OPERATIVOS_URUGUAY_2025.md: Infrastructure costs and scaling
 
 ## IMPORTANT GUIDELINES
+
 - NEVER commit changes to git without being expressly asked to do so
 - Always run linters and type checkers before submitting changes
 - NEVER test the application by running it directly; only make code changes
@@ -44,6 +52,7 @@ After completing ANY task or making significant changes:
 - ALWAYS check related components or how components are used before finishing
 
 ## Client Commitments
+
 - **Mobile App**: React Native/Expo with Firebase auth, MercadoPago payments
 - **Backend**: Strapi CMS with product/order management
 - **Infrastructure**: $35/month Render hosting + MercadoPago fees (5.23%)
@@ -51,12 +60,14 @@ After completing ANY task or making significant changes:
 - **NOT Included**: CFE invoice integration (client responsibility)
 
 ## Authentication Setup
+
 - **Firebase Required**: The app uses Firebase Authentication for user management
 - **Apple Sign-In**: ✅ Implemented via Firebase (required for App Store submission)
 - **Setup Guide**: See `FIREBASE_SETUP_GUIDE.md` for detailed client instructions
 - **Current Status**: Firebase authentication implemented, awaiting production credentials
 
 ## Build Commands
+
 - `npm install` - Install dependencies
 - `npm run lint` - Run ESLint
 - `npm run typecheck` - Run TypeScript type checking
@@ -67,6 +78,7 @@ After completing ANY task or making significant changes:
 - `npx expo run:ios` - This is how we usually run the app
 
 ## Code Style
+
 - **TypeScript**: Use strict mode with proper type annotations
 - **Components**: Functional components with hooks
 - **File Structure**: Group related components in directories (/ui, /store, /common)
@@ -82,6 +94,7 @@ After completing ANY task or making significant changes:
 - **Card Components**: Follow dimensions and styling in product_card.md
 
 ## Implementation Principles
+
 - **Mobile First**: Always design and implement with iOS as the primary platform
 - **Design Fidelity**: Follow Figma designs closely (check raw-components for reference)
 - **Visual Verification**: Use screenshots as visual confirmation when implementing components
@@ -101,6 +114,7 @@ After completing ANY task or making significant changes:
 - **Functional Equivalence**: Ensure that any cleanup or refactoring maintains exact functional equivalence
 
 ## Development Workflow
+
 - Check for inconsistencies or potential issues in each module
 - Propose improvements based on software engineering best practices
 - Consider how components are being used in the broader context
@@ -108,22 +122,24 @@ After completing ANY task or making significant changes:
 - Use raw-components folder to understand design intent and implementation details
 
 ## Expo Router Configuration
+
 The app uses a combination of approaches to prevent utility files from being treated as routes:
 
 1. **Naming convention approach:**
-   - Files that should not be routes are prefixed with underscore (_filename.ts)
-   - Declaration files (.d.ts) are placed in an _excluded directory
+   - Files that should not be routes are prefixed with underscore (\_filename.ts)
+   - Declaration files (.d.ts) are placed in an \_excluded directory
    - This follows Expo Router's convention where `_` prefixed files are not treated as routes
 
 2. **Default export approach:**
    - Utility files include a default export with metadata:
+
      ```typescript
      // Add default export to fix router warnings
      const utilityExport = {
        name: 'UtilityName',
-       version: '1.0.0'
+       version: '1.0.0',
      };
-     
+
      export default utilityExport;
      ```
 
@@ -132,16 +148,20 @@ The app uses a combination of approaches to prevent utility files from being tre
    - Move declaration files (.d.ts) to appropriate subdirectories to avoid routing conflicts
 
 After making changes:
+
 - Clean the build cache: `npx expo start --clear`
 - Verify TypeScript still works: `npm run typecheck`
 
 ## Cleaning iOS Build
+
 If you encounter iOS build issues, use this command to clean everything:
+
 ```
 cd ios && pod deintegrate && pod cache clean --all && rm -rf Pods Podfile.lock ~/Library/Developer/Xcode/DerivedData && cd .. && npm install && cd ios && pod install && cd ..
 ```
 
 ## Linting and Code Quality
+
 The project uses a comprehensive code quality setup:
 
 1. **ESLint Configuration**:
@@ -162,17 +182,20 @@ The project uses a comprehensive code quality setup:
    - `npm run fix-imports`: Fix unused imports automatically
 
 Always run both linting and type checking before submitting changes:
+
 ```
 npm run lint && npm run typecheck
 ```
 
 ## Backend Commands
+
 - `cd backend && npm install` - Install Strapi dependencies
 - `npm run develop` - Run Strapi in development mode
 - `npm run build` - Build Strapi for production
 - `npm run start` - Start Strapi in production mode
 
 ## Deployment
+
 - **Backend**: Deploy to Render.com using render.yaml configuration
 - **Frontend**: Build with EAS for App Store and Google Play
 - **Environment**: Use .env files for configuration (never commit secrets)

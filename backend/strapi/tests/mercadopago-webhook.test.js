@@ -131,15 +131,22 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       const path = require('path');
 
       // Check for webhook routes
-      const customRoutesPath = path.join(__dirname, '..', 'src', 'api', 'order', 'routes', 'custom-order.js');
+      const customRoutesPath = path.join(
+        __dirname,
+        '..',
+        'src',
+        'api',
+        'order',
+        'routes',
+        'custom-order.js'
+      );
 
       if (fs.existsSync(customRoutesPath)) {
         const routes = require(customRoutesPath);
 
         // Check if webhook route exists
-        const webhookRoute = routes.routes?.find(route =>
-          route.path?.includes('webhook') &&
-          route.path?.includes('mercadopago')
+        const webhookRoute = routes.routes?.find(
+          (route) => route.path?.includes('webhook') && route.path?.includes('mercadopago')
         );
 
         expect(webhookRoute).toBeDefined();
@@ -177,14 +184,11 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       const data = {
         id: 12345,
         type: 'payment',
-        data: { id: 'payment-123' }
+        data: { id: 'payment-123' },
       };
 
       const payload = JSON.stringify(data);
-      const signature = crypto
-        .createHmac('sha256', secret)
-        .update(payload)
-        .digest('hex');
+      const signature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
 
       expect(signature).toBeDefined();
       expect(signature).toHaveLength(64); // SHA256 produces 64 hex characters
@@ -192,8 +196,8 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
     it('should validate webhook timestamp to prevent replay', () => {
       const now = Date.now();
-      const fiveMinutesAgo = now - (5 * 60 * 1000);
-      const oneHourAgo = now - (60 * 60 * 1000);
+      const fiveMinutesAgo = now - 5 * 60 * 1000;
+      const oneHourAgo = now - 60 * 60 * 1000;
 
       // Helper function to check if timestamp is recent
       const isRecentTimestamp = (timestamp, maxAgeMs = 10 * 60 * 1000) => {

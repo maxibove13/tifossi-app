@@ -13,7 +13,6 @@ export default {
       // Basic health check - just return OK if the server is running
       ctx.status = 200;
       ctx.body = buildBasicHealthPayload();
-
     } catch (error) {
       strapi.log.error('Health check failed:', error);
 
@@ -55,8 +54,9 @@ export default {
       };
 
       // Check if any service is unhealthy
-      const unhealthyServices = Object.entries(healthChecks.services)
-        .filter(([, service]) => service.status !== 'ok');
+      const unhealthyServices = Object.entries(healthChecks.services).filter(
+        ([, service]) => service.status !== 'ok'
+      );
 
       if (unhealthyServices.length > 0) {
         healthChecks.status = 'degraded';
@@ -66,7 +66,6 @@ export default {
       }
 
       ctx.body = healthChecks;
-
     } catch (error) {
       strapi.log.error('Detailed health check failed:', error);
 
@@ -110,7 +109,7 @@ async function checkDatabaseHealth() {
  */
 async function checkUploadHealth() {
   try {
-    const uploadConfig = strapi.config.get("plugin::upload");
+    const uploadConfig = strapi.config.get('plugin::upload');
 
     return {
       status: 'ok',
@@ -131,7 +130,7 @@ async function checkUploadHealth() {
  */
 async function checkEmailHealth() {
   try {
-    const emailConfig = strapi.config.get("plugin::email");
+    const emailConfig = strapi.config.get('plugin::email');
 
     if (!emailConfig || !(emailConfig as any).provider) {
       return {

@@ -85,7 +85,7 @@ describe('Shopping Flow', () => {
     it('should allow filtering products by price range', async () => {
       // Open filters
       await element(by.id('filter-button')).tap();
-      
+
       await waitFor(element(by.id('filter-overlay')))
         .toBeVisible()
         .withTimeout(3000);
@@ -103,7 +103,7 @@ describe('Shopping Flow', () => {
     it('should allow sorting products by price', async () => {
       // Open sort options
       await element(by.id('sort-button')).tap();
-      
+
       await waitFor(element(by.id('sort-overlay')))
         .toBeVisible()
         .withTimeout(3000);
@@ -147,7 +147,7 @@ describe('Shopping Flow', () => {
 
       // Navigate to cart
       await element(by.id('cart-tab')).tap();
-      
+
       await waitFor(element(by.id('cart-screen')))
         .toBeVisible()
         .withTimeout(5000);
@@ -170,7 +170,7 @@ describe('Shopping Flow', () => {
 
       // Navigate to cart
       await element(by.id('cart-tab')).tap();
-      
+
       await waitFor(element(by.id('cart-screen')))
         .toBeVisible()
         .withTimeout(5000);
@@ -193,7 +193,7 @@ describe('Shopping Flow', () => {
 
       // Navigate to cart
       await element(by.id('cart-tab')).tap();
-      
+
       await waitFor(element(by.id('cart-screen')))
         .toBeVisible()
         .withTimeout(5000);
@@ -233,7 +233,7 @@ describe('Shopping Flow', () => {
 
       // Navigate to favorites
       await element(by.id('favorites-tab')).tap();
-      
+
       await waitFor(element(by.id('favorites-screen')))
         .toBeVisible()
         .withTimeout(5000);
@@ -255,14 +255,14 @@ describe('Shopping Flow', () => {
 
       // Browse products as guest
       await element(by.id('product-card-0')).tap();
-      
+
       await waitFor(element(by.id('product-detail-screen')))
         .toBeVisible()
         .withTimeout(5000);
 
       // Add to cart as guest
       await element(by.id('add-to-cart-button')).tap();
-      
+
       // Verify success
       await waitFor(element(by.text('Added to cart')))
         .toBeVisible()
@@ -270,7 +270,7 @@ describe('Shopping Flow', () => {
 
       // Navigate to cart
       await element(by.id('cart-tab')).tap();
-      
+
       // Verify guest cart works
       await expect(element(by.id('cart-item-0'))).toBeVisible();
     });

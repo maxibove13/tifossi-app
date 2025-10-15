@@ -7,14 +7,16 @@ The Tifossi project uses a unified CI/CD pipeline (`.github/workflows/cicd.yml`)
 ## Workflow Structure
 
 ### Triggers
+
 - **Push to main branch**: Runs full CI/CD pipeline
 - **Pull requests to main**: Runs quality checks and tests
-- **Git tags (v*)**: Triggers mobile app builds
+- **Git tags (v\*)**: Triggers mobile app builds
 - **Manual dispatch**: Run specific jobs on demand
 
 ### Jobs
 
 #### 1. Quality Checks (Always runs)
+
 - Frontend linting and type checking
 - Unit test execution
 - Backend linting
@@ -22,12 +24,14 @@ The Tifossi project uses a unified CI/CD pipeline (`.github/workflows/cicd.yml`)
 - **Required for**: All other jobs
 
 #### 2. Payment Tests (Conditional)
+
 - MercadoPago integration tests
 - Webhook validation
 - **Runs when**: Payment-related files change or manual trigger
 - **Requires**: MercadoPago sandbox credentials in GitHub Secrets
 
 #### 3. Build Backend
+
 - Strapi production build verification
 - Dependency installation
 - Build artifact verification
@@ -35,6 +39,7 @@ The Tifossi project uses a unified CI/CD pipeline (`.github/workflows/cicd.yml`)
 - **Required for**: Backend deployment
 
 #### 4. Deploy Backend (Production only)
+
 - Deploys Strapi to Render.com
 - Updates environment variables
 - Health check verification
@@ -42,12 +47,14 @@ The Tifossi project uses a unified CI/CD pipeline (`.github/workflows/cicd.yml`)
 - **Requires**: Render API credentials
 
 #### 5. Build Mobile
+
 - EAS builds for iOS/Android
 - App store submission (on tags)
 - **Runs when**: Git tags or manual trigger
 - **Requires**: Expo credentials
 
 #### 6. Notifications
+
 - Slack notifications (optional)
 - GitHub workflow summary
 - **Runs**: Always (after all jobs)
@@ -58,34 +65,37 @@ The workflow can be triggered manually with specific options:
 
 ```yaml
 Job Options:
-- all: Run entire pipeline
-- quality-checks: Only run tests and linting
-- payment-tests: Test payment integration
-- build-backend: Build Strapi backend
-- deploy-backend: Deploy to Render
-- build-mobile: Build mobile apps
+  - all: Run entire pipeline
+  - quality-checks: Only run tests and linting
+  - payment-tests: Test payment integration
+  - build-backend: Build Strapi backend
+  - deploy-backend: Deploy to Render
+  - build-mobile: Build mobile apps
 
 Mobile Platform:
-- all (default)
-- ios
-- android
+  - all (default)
+  - ios
+  - android
 
 Build Profile:
-- production (default)
-- preview
-- development
+  - production (default)
+  - preview
+  - development
 ```
 
 ## Required GitHub Secrets
 
 ### Core Secrets
+
 - `NODE_ENV`: Environment (production)
 
 ### Render Deployment
+
 - `RENDER_API_KEY`: Render.com API key
 - `RENDER_SERVICE_ID`: Production service ID
 
 ### Strapi Configuration
+
 - `STRAPI_APP_KEYS`: Comma-separated app keys
 - `STRAPI_API_TOKEN_SALT`: API token salt
 - `STRAPI_ADMIN_JWT_SECRET`: Admin JWT secret
@@ -93,11 +103,13 @@ Build Profile:
 - `STRAPI_JWT_SECRET`: JWT secret
 
 ### Cloudinary
+
 - `CLOUDINARY_NAME`: Cloud name (dbkt9lqw2)
 - `CLOUDINARY_KEY`: API key
 - `CLOUDINARY_SECRET`: API secret
 
 ### MercadoPago
+
 - `MP_ACCESS_TOKEN`: Production access token
 - `MP_PUBLIC_KEY`: Production public key
 - `MP_WEBHOOK_SECRET`: Webhook secret
@@ -105,11 +117,13 @@ Build Profile:
 - `MP_TEST_PUBLIC_KEY`: Sandbox public key (for testing)
 
 ### Mobile Build
+
 - `EXPO_TOKEN`: Expo access token
 - `IOS_BUNDLE_ID`: iOS bundle identifier (optional)
 - `ANDROID_PACKAGE`: Android package name (optional)
 
 ### Notifications (Optional)
+
 - `SLACK_WEBHOOK_URL`: Slack webhook for notifications
 
 ## Setting Up the Pipeline
@@ -158,17 +172,20 @@ GitHub → Actions → CI/CD Pipeline
 ## Workflow Optimization
 
 ### Parallel Execution
+
 - Quality checks run in parallel with payment tests when possible
 - Mobile builds run independently of backend deployment
 - All jobs use dependency caching for faster execution
 
 ### Conditional Execution
+
 - Payment tests only run when payment files change
 - Backend deployment only on main branch
 - Mobile builds only on version tags
 - Manual dispatch allows selective job execution
 
 ### Performance Features
+
 - Node modules caching
 - Conditional job execution
 - Parallel test execution
@@ -179,24 +196,28 @@ GitHub → Actions → CI/CD Pipeline
 ### Common Issues
 
 #### 1. Render Deployment Fails
+
 ```bash
 Error: RENDER_API_KEY not configured
 Solution: Add RENDER_API_KEY to GitHub Secrets
 ```
 
 #### 2. Payment Tests Skipped
+
 ```bash
 Warning: MercadoPago test credentials not configured
 Solution: Add MP_TEST_ACCESS_TOKEN, MP_TEST_PUBLIC_KEY to GitHub Secrets
 ```
 
 #### 3. Mobile Build Not Triggered
+
 ```bash
 Issue: Build doesn't start on push
 Solution: Ensure you're pushing a tag (git tag v1.0.0 && git push --tags)
 ```
 
 #### 4. Health Check Fails
+
 ```bash
 Error: Health check failed after deployment
 Solution: Check Render logs for startup errors
@@ -205,6 +226,7 @@ Solution: Check Render logs for startup errors
 ## Best Practices
 
 1. **Always test locally first**
+
    ```bash
    npm run lint
    npm run typecheck
@@ -216,6 +238,7 @@ Solution: Check Render logs for startup errors
    - Merge to main triggers deployment
 
 3. **Version tags for releases**
+
    ```bash
    git tag v1.0.0
    git push origin v1.0.0
@@ -254,12 +277,14 @@ Push/PR/Tag/Manual
 ## Maintenance
 
 ### Updating the Workflow
+
 1. Edit `.github/workflows/cicd.yml`
 2. Test changes in a feature branch
 3. Create PR for review
 4. Merge to main to activate
 
 ### Adding New Jobs
+
 ```yaml
 new-job:
   name: New Job
@@ -273,6 +298,7 @@ new-job:
 ```
 
 ### Environment-Specific Configuration
+
 - Production: Auto-deploy on main branch
 - Staging: Manual trigger with environment selection
 - Development: Local testing only
@@ -280,6 +306,7 @@ new-job:
 ## Support
 
 For issues with the CI/CD pipeline:
+
 1. Check GitHub Actions logs
 2. Verify all secrets are configured
 3. Review this documentation

@@ -432,7 +432,8 @@ export const verifyIdToken = (token: string, checkRevoked?: boolean) =>
 export const getUser = (uid: string) => firebaseAdmin.getUser(uid);
 export const getUserByEmail = (email: string) => firebaseAdmin.getUserByEmail(email);
 export const createUser = (userData: CreateUserData) => firebaseAdmin.createUser(userData);
-export const updateUser = (uid: string, updates: UpdateRequest) => firebaseAdmin.updateUser(uid, updates);
+export const updateUser = (uid: string, updates: UpdateRequest) =>
+  firebaseAdmin.updateUser(uid, updates);
 export const deleteUser = (uid: string) => firebaseAdmin.deleteUser(uid);
 export const setCustomClaims = (uid: string, claims: Record<string, unknown>) =>
   firebaseAdmin.setCustomClaims(uid, claims);

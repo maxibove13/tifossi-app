@@ -121,12 +121,14 @@ These secrets MUST be set or the app will not build/function:
 You may want different values for different environments:
 
 ### Production
+
 ```
 EXPO_PUBLIC_API_BASE_URL=https://tifossi-strapi-backend.onrender.com
 EXPO_PUBLIC_MERCADOPAGO_PUBLIC_KEY=APP_USR-production-key
 ```
 
 ### Staging
+
 ```
 EXPO_PUBLIC_API_BASE_URL=https://staging-tifossi-strapi.onrender.com
 EXPO_PUBLIC_MERCADOPAGO_PUBLIC_KEY=TEST-staging-key
@@ -170,21 +172,25 @@ After setting up secrets:
 ## 🔍 Troubleshooting
 
 ### Build fails with "Missing critical secrets"
+
 - Ensure all required secrets from the Critical section are set
 - Check for typos in secret names
 - Verify secrets are added to the correct repository
 
 ### App can't connect to backend
+
 - Verify `EXPO_PUBLIC_API_BASE_URL` is correct
 - Check if backend is deployed and running
 - Ensure URL includes protocol (`https://`)
 
 ### Authentication not working
+
 - Verify all Firebase secrets are set correctly
 - Check Firebase project configuration
 - Ensure bundle IDs match Firebase app configuration
 
 ### Payments not working
+
 - Verify `EXPO_PUBLIC_MERCADOPAGO_PUBLIC_KEY` is set
 - Use TEST key for testing, APP_USR key for production
 - Check MercadoPago account configuration
@@ -198,6 +204,7 @@ After setting up secrets:
 ## 🆘 Support
 
 If you need help with secrets setup:
+
 1. Check the workflow logs for specific error messages
 2. Verify all required secrets are set
 3. Contact your DevOps team for production credentials

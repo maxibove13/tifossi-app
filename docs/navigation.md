@@ -72,6 +72,7 @@ app/
 ### Root Layout (`app/_layout.tsx`)
 
 The root layout component handles:
+
 - Font loading with `useFonts`
 - Splash screen management
 - GestureHandler setup for gestures throughout the app
@@ -81,15 +82,15 @@ The root layout component handles:
 export default function Layout() {
   const [showSplash, setShowSplash] = useState(true);
   const [fontsLoaded] = useFonts({
-    'Roboto': Roboto_500Medium,
-    'Inter': Inter_500Medium,
+    Roboto: Roboto_500Medium,
+    Inter: Inter_500Medium,
   });
 
   // Splash screen logic
   useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
-      
+
       const timer = setTimeout(() => {
         setShowSplash(false);
       }, 2000);
@@ -117,6 +118,7 @@ export default function Layout() {
 ### Tab Layout (`app/(tabs)/_layout.tsx`)
 
 The tab layout component manages:
+
 - Tab navigation with Expo Router's `Tabs` component
 - Custom `TabBar` component for the UI
 - Tab routing configuration
@@ -131,7 +133,7 @@ export default function TabLayout() {
           headerShown: false,
         }}
         tabBar={({ state, navigation }) => (
-          <TabBar 
+          <TabBar
             activeRoute={getActiveRoute(state.index)}
             onChangeRoute={(route) => {
               const routeMap: Record<TabRoute, string> = {
@@ -152,8 +154,8 @@ export default function TabLayout() {
         <Tabs.Screen name="tiffosiExplore" options={{ href: '/tiffosiExplore' }} />
         <Tabs.Screen name="cart" options={{ href: '/cart' }} />
         <Tabs.Screen name="profile" options={{ href: '/profile' }} />
-        <Tabs.Screen 
-          name="product" 
+        <Tabs.Screen
+          name="product"
           options={{
             tabBarButton: () => null, // Hide from tab bar
           }}
@@ -167,6 +169,7 @@ export default function TabLayout() {
 ### Custom TabBar (`components/navigation/TabBar.tsx`)
 
 The TabBar component provides:
+
 - Custom bottom navigation UI
 - Active state management
 - Tab icons and labels
@@ -174,21 +177,16 @@ The TabBar component provides:
 - Center logo tab
 
 ```tsx
-export type TabRoute = 'store' | 'favorites' | 'tiffosi' | 'cart' | 'profile'
+export type TabRoute = 'store' | 'favorites' | 'tiffosi' | 'cart' | 'profile';
 
 interface TabBarProps {
-  activeRoute: TabRoute
-  onChangeRoute: (route: TabRoute) => void
-  cartItemCount?: number
-  isDark?: boolean
+  activeRoute: TabRoute;
+  onChangeRoute: (route: TabRoute) => void;
+  cartItemCount?: number;
+  isDark?: boolean;
 }
 
-const TabBar = ({
-  activeRoute,
-  onChangeRoute,
-  cartItemCount = 0,
-  isDark = false,
-}: TabBarProps) => {
+const TabBar = ({ activeRoute, onChangeRoute, cartItemCount = 0, isDark = false }: TabBarProps) => {
   // Tab rendering implementation
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
@@ -198,13 +196,14 @@ const TabBar = ({
       {renderTab('cart')}
       {renderTab('profile')}
     </View>
-  )
-}
+  );
+};
 ```
 
 ### Category Navigation (`components/navigation/category/CategoryNavigation.tsx`)
 
 Horizontal scrolling category navigation:
+
 - Scrollable categories
 - Gradient button backgrounds
 - Category name and item count
@@ -213,11 +212,11 @@ Horizontal scrolling category navigation:
 ```tsx
 interface CategoryNavigationProps {
   categories: {
-    id: string
-    name: string
-    itemCount?: number
-  }[]
-  onSelectCategory: (id: string) => void
+    id: string;
+    name: string;
+    itemCount?: number;
+  }[];
+  onSelectCategory: (id: string) => void;
 }
 
 export const CategoryNavigation = ({ categories, onSelectCategory }: CategoryNavigationProps) => {
@@ -250,8 +249,8 @@ export const CategoryNavigation = ({ categories, onSelectCategory }: CategoryNav
         </TouchableOpacity>
       ))}
     </ScrollView>
-  )
-}
+  );
+};
 ```
 
 ## Route Types and Type Safety
@@ -299,7 +298,7 @@ Pass parameters to screens:
 // Navigate to the product screen with product data
 router.navigate({
   pathname: '/product',
-  params: { product: productData }
+  params: { product: productData },
 });
 ```
 
@@ -330,19 +329,21 @@ The app supports deep linking to specific screens:
 ## Navigation Best Practices
 
 1. **Type Safety**: Always use typed navigation parameters
+
    ```tsx
    // Define route params in types/navigation.ts
    const goToProduct = (product: Product) => {
      router.navigate({
        pathname: '/product',
-       params: { product }
+       params: { product },
      });
    };
    ```
 
 2. **Tab Navigation**: Use the TabBar component for consistent UI
+
    ```tsx
-   <TabBar 
+   <TabBar
      activeRoute={activeRoute}
      onChangeRoute={handleRouteChange}
      cartItemCount={cartItems.length}
@@ -350,16 +351,17 @@ The app supports deep linking to specific screens:
    ```
 
 3. **Navigation Logic**: Keep navigation logic in hooks or utilities
+
    ```tsx
    // Create a navigation hook
    export function useAppNavigation() {
      const navigateToProduct = (product: Product) => {
        router.navigate({
          pathname: '/product',
-         params: { product }
+         params: { product },
        });
      };
-     
+
      return {
        navigateToProduct,
      };
@@ -367,6 +369,7 @@ The app supports deep linking to specific screens:
    ```
 
 4. **Screen Organization**: Use route groups (`(group)`) to organize related screens
+
    ```
    app/
    ├── (auth)/              # Authentication screens group
@@ -390,6 +393,7 @@ The app supports deep linking to specific screens:
 ## Accessibility Considerations
 
 1. **Screen Reader Support**: Ensure tab bar items have proper accessibility labels
+
    ```tsx
    <TouchableOpacity
      accessibilityLabel={`${label} Tab`}
@@ -411,28 +415,32 @@ The app supports deep linking to specific screens:
 ## Performance Optimization
 
 1. **Lazy Loading**: Use dynamic imports for heavy screens
+
    ```tsx
    // In _layout.tsx
    <Stack.Screen name="heavy-screen" lazy />
    ```
 
 2. **State Persistence**: Preserve state during navigation
+
    ```tsx
    <Tabs screenOptions={{ unmountOnBlur: false }} />
    ```
 
 3. **Navigation Caching**: Cache screens to prevent unnecessary re-renders
+
    ```tsx
    <Tabs screenOptions={{ lazy: true }} />
    ```
 
 4. **Optimized Bottom Sheet Transitions**: For performance-critical components like SwipeableEdge
+
    ```tsx
    // Use device-based dimension caching
    const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState(
      headerHeightCache[deviceWidth] || null
    );
-   
+
    // Cache measurements after first render
    useEffect(() => {
      if (measuredHeaderHeight !== null) {

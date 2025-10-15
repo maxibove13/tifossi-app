@@ -89,7 +89,9 @@ const sslRejectUnauthorized = process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== '
 
 console.log('SSL Configuration:');
 console.log(`  - DATABASE_SSL: ${process.env.DATABASE_SSL || 'not set (defaulting to false)'}`);
-console.log(`  - DATABASE_SSL_REJECT_UNAUTHORIZED: ${process.env.DATABASE_SSL_REJECT_UNAUTHORIZED || 'not set (defaulting to true)'}`);
+console.log(
+  `  - DATABASE_SSL_REJECT_UNAUTHORIZED: ${process.env.DATABASE_SSL_REJECT_UNAUTHORIZED || 'not set (defaulting to true)'}`
+);
 console.log(`  - Effective SSL: ${sslEnabled ? 'enabled' : 'disabled'}`);
 if (sslEnabled) {
   console.log(`  - Reject Unauthorized: ${sslRejectUnauthorized}`);
@@ -99,9 +101,11 @@ console.log('');
 // Create PostgreSQL client
 const pgClient = new Client({
   connectionString: dbUrl,
-  ssl: sslEnabled ? {
-    rejectUnauthorized: sslRejectUnauthorized,
-  } : false,
+  ssl: sslEnabled
+    ? {
+        rejectUnauthorized: sslRejectUnauthorized,
+      }
+    : false,
   connectionTimeoutMillis: 10000, // 10 second timeout
 });
 
@@ -131,11 +135,14 @@ console.log('');
 
     // Test schema access
     console.log('Testing schema access...');
-    const schemaResult = await pgClient.query(`
+    const schemaResult = await pgClient.query(
+      `
       SELECT schema_name
       FROM information_schema.schemata
       WHERE schema_name = $1
-    `, ['public']);
+    `,
+      ['public']
+    );
 
     if (schemaResult.rows && schemaResult.rows.length > 0) {
       console.log('✓ Schema access verified (public schema exists)');
@@ -175,7 +182,6 @@ console.log('');
     console.log('Database is accessible and ready for Strapi');
     console.log('');
     process.exit(0);
-
   } catch (error) {
     console.error('✗ Database connection FAILED');
     console.error('');

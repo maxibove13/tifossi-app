@@ -3,7 +3,7 @@
 /**
  * Rollback Script
  * Emergency rollback procedures for the migration process
- * 
+ *
  * Usage:
  *   node rollback-script.js --type=emergency --reason="Critical API failures"
  *   node rollback-script.js --type=controlled --percentage=50
@@ -22,14 +22,14 @@ class RollbackScript {
     this.appUrl = process.env.APP_URL || 'https://api.tifossi.app';
     this.configServiceUrl = process.env.CONFIG_SERVICE_URL || 'https://config.tifossi.app';
     this.backupDir = process.env.BACKUP_DIR || path.join(__dirname, '../../backups');
-    
+
     this.rollbackLog = {
       timestamp: new Date().toISOString(),
       type: null,
       reason: null,
       steps: [],
       success: false,
-      duration: 0
+      duration: 0,
     };
   }
 
@@ -44,7 +44,7 @@ class RollbackScript {
   async emergencyRollback(reason) {
     console.log('🚨 EXECUTING EMERGENCY ROLLBACK');
     console.log(`📝 Reason: ${reason}`);
-    
+
     this.rollbackLog.type = 'emergency';
     this.rollbackLog.reason = reason;
     const startTime = Date.now();
@@ -89,7 +89,6 @@ class RollbackScript {
 
       console.log(`✅ Emergency rollback completed in ${this.rollbackLog.duration}ms`);
       await this.logRollback();
-
     } catch (error) {
       this.rollbackLog.success = false;
       this.rollbackLog.duration = Date.now() - startTime;
@@ -97,7 +96,7 @@ class RollbackScript {
 
       console.error('❌ Emergency rollback failed:', error.message);
       await this.logRollback();
-      
+
       // Send critical failure alert
       await this.sendCriticalFailureAlert(error.message);
       throw error;
@@ -107,7 +106,7 @@ class RollbackScript {
   async controlledRollback(targetPercentage = 0) {
     console.log('⏪ EXECUTING CONTROLLED ROLLBACK');
     console.log(`🎯 Target Percentage: ${targetPercentage}%`);
-    
+
     this.rollbackLog.type = 'controlled';
     this.rollbackLog.reason = `Reducing Strapi traffic to ${targetPercentage}%`;
     const startTime = Date.now();
@@ -123,19 +122,16 @@ class RollbackScript {
 
       // Calculate rollback steps
       const steps = Math.max(1, Math.floor((currentPercentage - targetPercentage) / 10));
-      
+
       for (let i = 0; i < steps; i++) {
-        const newPercentage = Math.max(
-          targetPercentage,
-          currentPercentage - ((i + 1) * 10)
-        );
+        const newPercentage = Math.max(targetPercentage, currentPercentage - (i + 1) * 10);
 
         await this.executeStep(`Reduce to ${newPercentage}%`, async () => {
           await this.updateRolloutPercentage(newPercentage);
-          
+
           // Monitor for 2 minutes
           await this.monitorForDuration(120000, newPercentage);
-          
+
           const metrics = await this.collectHealthMetrics();
           if (metrics.errorRate > 0.02) {
             console.warn(`⚠️ Error rate still high at ${newPercentage}%`);
@@ -148,9 +144,10 @@ class RollbackScript {
       this.rollbackLog.success = true;
       this.rollbackLog.duration = Date.now() - startTime;
 
-      console.log(`✅ Controlled rollback completed in ${(this.rollbackLog.duration / 1000).toFixed(1)}s`);
+      console.log(
+        `✅ Controlled rollback completed in ${(this.rollbackLog.duration / 1000).toFixed(1)}s`
+      );
       await this.logRollback();
-
     } catch (error) {
       this.rollbackLog.success = false;
       this.rollbackLog.duration = Date.now() - startTime;
@@ -174,25 +171,27 @@ class RollbackScript {
       const currentPercentage = await this.getCurrentRolloutPercentage();
       const reductionSteps = [
         { from: 100, to: 75, duration: 300000 }, // 5 minutes
-        { from: 75, to: 50, duration: 300000 },  // 5 minutes
-        { from: 50, to: 25, duration: 300000 },  // 5 minutes
-        { from: 25, to: 0, duration: 300000 }    // 5 minutes
+        { from: 75, to: 50, duration: 300000 }, // 5 minutes
+        { from: 50, to: 25, duration: 300000 }, // 5 minutes
+        { from: 25, to: 0, duration: 300000 }, // 5 minutes
       ];
 
       for (const step of reductionSteps) {
         if (currentPercentage > step.from && step.to >= targetPercentage) {
           const actualTarget = Math.max(targetPercentage, step.to);
-          
+
           await this.executeStep(`Progressive ${step.from}% → ${actualTarget}%`, async () => {
             await this.updateRolloutPercentage(actualTarget);
-            
+
             // Monitor during transition
             await this.monitorForDuration(step.duration, actualTarget);
-            
+
             // Health check
             const health = await this.performHealthCheck();
             if (!health.healthy) {
-              throw new Error(`Health check failed at ${actualTarget}%: ${health.issues.join(', ')}`);
+              throw new Error(
+                `Health check failed at ${actualTarget}%: ${health.issues.join(', ')}`
+              );
             }
           });
 
@@ -205,9 +204,10 @@ class RollbackScript {
       this.rollbackLog.success = true;
       this.rollbackLog.duration = Date.now() - startTime;
 
-      console.log(`✅ Progressive rollback completed in ${(this.rollbackLog.duration / 60000).toFixed(1)} minutes`);
+      console.log(
+        `✅ Progressive rollback completed in ${(this.rollbackLog.duration / 60000).toFixed(1)} minutes`
+      );
       await this.logRollback();
-
     } catch (error) {
       this.rollbackLog.success = false;
       this.rollbackLog.duration = Date.now() - startTime;
@@ -226,24 +226,24 @@ class RollbackScript {
     try {
       await stepFunction();
       const stepDuration = Date.now() - stepStart;
-      
+
       this.rollbackLog.steps.push({
         name: stepName,
         duration: stepDuration,
         success: true,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       console.log(`✅ ${stepName} completed (${stepDuration}ms)`);
     } catch (error) {
       const stepDuration = Date.now() - stepStart;
-      
+
       this.rollbackLog.steps.push({
         name: stepName,
         duration: stepDuration,
         success: false,
         error: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       console.error(`❌ ${stepName} failed: ${error.message}`);
@@ -271,14 +271,15 @@ class RollbackScript {
 
   async updateFeatureFlag(flagName, value) {
     try {
-      await axios.put(`${this.configServiceUrl}/flags/${flagName}`, 
+      await axios.put(
+        `${this.configServiceUrl}/flags/${flagName}`,
         { value },
         {
           headers: {
-            'Authorization': `Bearer ${process.env.CONFIG_SERVICE_TOKEN}`,
-            'Content-Type': 'application/json'
+            Authorization: `Bearer ${process.env.CONFIG_SERVICE_TOKEN}`,
+            'Content-Type': 'application/json',
           },
-          timeout: 5000
+          timeout: 5000,
         }
       );
     } catch (error) {
@@ -291,9 +292,9 @@ class RollbackScript {
     try {
       const response = await axios.get(`${this.configServiceUrl}/flags/strapi_rollout_percentage`, {
         headers: {
-          'Authorization': `Bearer ${process.env.CONFIG_SERVICE_TOKEN}`
+          Authorization: `Bearer ${process.env.CONFIG_SERVICE_TOKEN}`,
         },
-        timeout: 5000
+        timeout: 5000,
       });
       return response.data.value || 0;
     } catch (error) {
@@ -310,13 +311,17 @@ class RollbackScript {
   async clearStrapiCache() {
     try {
       // Clear application cache
-      await axios.post(`${this.appUrl}/api/cache/clear`, {}, {
-        headers: {
-          'Authorization': `Bearer ${process.env.APP_API_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 10000
-      });
+      await axios.post(
+        `${this.appUrl}/api/cache/clear`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.APP_API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000,
+        }
+      );
       console.log('🗑️ Strapi cache cleared');
     } catch (error) {
       console.warn(`⚠️ Could not clear cache: ${error.message}`);
@@ -325,18 +330,19 @@ class RollbackScript {
 
   async broadcastAppRefresh(message) {
     try {
-      await axios.post(`${this.appUrl}/api/broadcast/refresh`, 
-        { 
+      await axios.post(
+        `${this.appUrl}/api/broadcast/refresh`,
+        {
           message,
           force: true,
-          priority: 'high'
+          priority: 'high',
         },
         {
           headers: {
-            'Authorization': `Bearer ${process.env.APP_API_TOKEN}`,
-            'Content-Type': 'application/json'
+            Authorization: `Bearer ${process.env.APP_API_TOKEN}`,
+            'Content-Type': 'application/json',
           },
-          timeout: 10000
+          timeout: 10000,
         }
       );
       console.log('📱 App refresh broadcast sent');
@@ -347,12 +353,12 @@ class RollbackScript {
 
   async rollbackDatabase() {
     console.log('🗄️ Starting database rollback...');
-    
+
     try {
       // Find latest backup
       const backupFiles = await fs.readdir(this.backupDir);
       const sqlBackups = backupFiles
-        .filter(file => file.endsWith('.sql'))
+        .filter((file) => file.endsWith('.sql'))
         .sort()
         .reverse();
 
@@ -362,13 +368,13 @@ class RollbackScript {
 
       const latestBackup = sqlBackups[0];
       const backupPath = path.join(this.backupDir, latestBackup);
-      
+
       console.log(`📥 Restoring from backup: ${latestBackup}`);
 
       // Execute database restore
       const { spawn } = require('child_process');
       const restore = spawn('psql', [process.env.DATABASE_URL], {
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
 
       const backupContent = await fs.readFile(backupPath, 'utf8');
@@ -386,7 +392,6 @@ class RollbackScript {
       });
 
       console.log('✅ Database rollback completed');
-      
     } catch (error) {
       console.error('❌ Database rollback failed:', error.message);
       throw error;
@@ -395,7 +400,7 @@ class RollbackScript {
 
   async validateRollbackSuccess() {
     console.log('✅ Validating rollback success...');
-    
+
     const validationTests = [
       {
         name: 'Feature flags updated',
@@ -403,26 +408,28 @@ class RollbackScript {
           const useStrapi = await this.getFeatureFlag('use_strapi_backend');
           const useLocal = await this.getFeatureFlag('use_local_data');
           return !useStrapi && useLocal;
-        }
+        },
       },
       {
         name: 'API responding',
         test: async () => {
           const response = await axios.get(`${this.appUrl}/api/health`, { timeout: 5000 });
           return response.status === 200;
-        }
+        },
       },
       {
         name: 'Local data accessible',
         test: async () => {
-          const response = await axios.get(`${this.appUrl}/api/products?source=local`, { timeout: 5000 });
+          const response = await axios.get(`${this.appUrl}/api/products?source=local`, {
+            timeout: 5000,
+          });
           return response.data && response.data.length > 0;
-        }
-      }
+        },
+      },
     ];
 
     const results = [];
-    
+
     for (const test of validationTests) {
       try {
         const success = await test.test();
@@ -434,8 +441,8 @@ class RollbackScript {
       }
     }
 
-    const allPassed = results.every(r => r.success);
-    
+    const allPassed = results.every((r) => r.success);
+
     if (!allPassed) {
       throw new Error('Rollback validation failed');
     }
@@ -448,9 +455,9 @@ class RollbackScript {
     try {
       const response = await axios.get(`${this.configServiceUrl}/flags/${flagName}`, {
         headers: {
-          'Authorization': `Bearer ${process.env.CONFIG_SERVICE_TOKEN}`
+          Authorization: `Bearer ${process.env.CONFIG_SERVICE_TOKEN}`,
         },
-        timeout: 5000
+        timeout: 5000,
       });
       return response.data.value;
     } catch (error) {
@@ -461,24 +468,24 @@ class RollbackScript {
 
   async monitorForDuration(duration, percentage) {
     console.log(`👀 Monitoring for ${duration / 1000}s at ${percentage}%...`);
-    
+
     const startTime = Date.now();
     const checkInterval = 30000; // 30 seconds
-    
+
     while (Date.now() - startTime < duration) {
       const metrics = await this.collectHealthMetrics();
-      
+
       if (metrics.errorRate > 0.05) {
         throw new Error(`High error rate detected: ${(metrics.errorRate * 100).toFixed(1)}%`);
       }
-      
+
       if (metrics.responseTime > 5000) {
         throw new Error(`High response time detected: ${metrics.responseTime}ms`);
       }
-      
-      await new Promise(resolve => setTimeout(resolve, checkInterval));
+
+      await new Promise((resolve) => setTimeout(resolve, checkInterval));
     }
-    
+
     console.log('✅ Monitoring period completed successfully');
   }
 
@@ -486,15 +493,15 @@ class RollbackScript {
     try {
       const response = await axios.get(`${this.appUrl}/api/metrics/health`, {
         headers: {
-          'Authorization': `Bearer ${process.env.APP_API_TOKEN}`
+          Authorization: `Bearer ${process.env.APP_API_TOKEN}`,
         },
-        timeout: 5000
+        timeout: 5000,
       });
-      
+
       return {
         errorRate: response.data.errorRate || 0,
         responseTime: response.data.avgResponseTime || 0,
-        activeUsers: response.data.activeUsers || 0
+        activeUsers: response.data.activeUsers || 0,
       };
     } catch (error) {
       console.warn(`⚠️ Could not collect health metrics: ${error.message}`);
@@ -509,22 +516,24 @@ class RollbackScript {
         check: async () => {
           const response = await axios.get(`${this.appUrl}/api/health`, { timeout: 5000 });
           return response.status === 200;
-        }
+        },
       },
       {
         name: 'Database Health',
         check: async () => {
           const response = await axios.get(`${this.appUrl}/api/db/health`, { timeout: 5000 });
           return response.status === 200;
-        }
+        },
       },
       {
         name: 'Local Data Health',
         check: async () => {
-          const response = await axios.get(`${this.appUrl}/api/products?source=local`, { timeout: 5000 });
+          const response = await axios.get(`${this.appUrl}/api/products?source=local`, {
+            timeout: 5000,
+          });
           return response.data && response.data.length > 0;
-        }
-      }
+        },
+      },
     ];
 
     const results = [];
@@ -534,7 +543,7 @@ class RollbackScript {
       try {
         const healthy = await healthCheck.check();
         results.push({ name: healthCheck.name, healthy });
-        
+
         if (!healthy) {
           issues.push(healthCheck.name);
         }
@@ -547,7 +556,7 @@ class RollbackScript {
     return {
       healthy: issues.length === 0,
       issues,
-      details: results
+      details: results,
     };
   }
 
@@ -557,16 +566,16 @@ class RollbackScript {
       message: `Rollback initiated due to: ${reason}`,
       severity: 'critical',
       timestamp: new Date().toISOString(),
-      channels: ['slack', 'email', 'sms']
+      channels: ['slack', 'email', 'sms'],
     };
 
     try {
       await axios.post(`${this.appUrl}/api/notifications/emergency`, notification, {
         headers: {
-          'Authorization': `Bearer ${process.env.APP_API_TOKEN}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${process.env.APP_API_TOKEN}`,
+          'Content-Type': 'application/json',
         },
-        timeout: 10000
+        timeout: 10000,
       });
       console.log('📢 Emergency notification sent');
     } catch (error) {
@@ -580,16 +589,16 @@ class RollbackScript {
       message: `Rollback procedure failed: ${error}`,
       severity: 'critical',
       requiresImmediate: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     try {
       await axios.post(`${this.appUrl}/api/alerts/critical`, alert, {
         headers: {
-          'Authorization': `Bearer ${process.env.APP_API_TOKEN}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${process.env.APP_API_TOKEN}`,
+          'Content-Type': 'application/json',
         },
-        timeout: 10000
+        timeout: 10000,
       });
       console.log('🚨 Critical failure alert sent');
     } catch (alertError) {
@@ -609,28 +618,28 @@ class RollbackScript {
 
   async validateRollbackCapability() {
     console.log('🧪 Validating rollback capability...');
-    
+
     const checks = [
       {
         name: 'Feature flags service accessible',
         check: async () => {
           const response = await axios.get(`${this.configServiceUrl}/health`, { timeout: 5000 });
           return response.status === 200;
-        }
+        },
       },
       {
         name: 'App API accessible',
         check: async () => {
           const response = await axios.get(`${this.appUrl}/api/health`, { timeout: 5000 });
           return response.status === 200;
-        }
+        },
       },
       {
         name: 'Backup files available',
         check: async () => {
           const backupFiles = await fs.readdir(this.backupDir);
-          return backupFiles.some(file => file.endsWith('.sql'));
-        }
+          return backupFiles.some((file) => file.endsWith('.sql'));
+        },
       },
       {
         name: 'Local data source available',
@@ -638,12 +647,12 @@ class RollbackScript {
           const localDataPath = path.join(__dirname, '../../app/_data/products.ts');
           await fs.access(localDataPath);
           return true;
-        }
-      }
+        },
+      },
     ];
 
     const results = [];
-    
+
     for (const check of checks) {
       try {
         const success = await check.check();
@@ -655,13 +664,13 @@ class RollbackScript {
       }
     }
 
-    const readiness = results.filter(r => r.success).length / results.length;
+    const readiness = results.filter((r) => r.success).length / results.length;
     console.log(`\\n📊 Rollback readiness: ${(readiness * 100).toFixed(1)}%`);
-    
+
     if (readiness < 1.0) {
       console.warn('⚠️ Rollback capability compromised');
-      const failures = results.filter(r => !r.success);
-      failures.forEach(failure => {
+      const failures = results.filter((r) => !r.success);
+      failures.forEach((failure) => {
         console.warn(`  - ${failure.name}: ${failure.error || 'Failed'}`);
       });
     } else {
@@ -674,35 +683,34 @@ class RollbackScript {
   async run(type, options = {}) {
     try {
       await this.initialize();
-      
+
       console.log(`\\n🚨 Starting rollback type: ${type}`);
-      
+
       switch (type) {
         case 'emergency':
           const reason = options.reason || 'Emergency rollback requested';
           await this.emergencyRollback(reason);
           break;
-          
+
         case 'controlled':
           const percentage = options.percentage || 0;
           await this.controlledRollback(percentage);
           break;
-          
+
         case 'progressive':
           const target = options.target || 0;
           await this.progressiveRollback(target);
           break;
-          
+
         case 'validate':
           await this.validateRollbackCapability();
           break;
-          
+
         default:
           throw new Error(`Unknown rollback type: ${type}`);
       }
-      
+
       console.log('\\n✅ Rollback operation completed successfully!');
-      
     } catch (error) {
       console.error('\\n❌ Rollback operation failed:', error.message);
       process.exit(1);
@@ -713,26 +721,26 @@ class RollbackScript {
 // CLI interface
 if (require.main === module) {
   const args = process.argv.slice(2);
-  const typeArg = args.find(arg => arg.startsWith('--type='));
-  const reasonArg = args.find(arg => arg.startsWith('--reason='));
-  const percentageArg = args.find(arg => arg.startsWith('--percentage='));
-  const targetArg = args.find(arg => arg.startsWith('--target='));
-  
+  const typeArg = args.find((arg) => arg.startsWith('--type='));
+  const reasonArg = args.find((arg) => arg.startsWith('--reason='));
+  const percentageArg = args.find((arg) => arg.startsWith('--percentage='));
+  const targetArg = args.find((arg) => arg.startsWith('--target='));
+
   const type = typeArg ? typeArg.split('=')[1] : 'validate';
   const options = {};
-  
+
   if (reasonArg) {
     options.reason = reasonArg.split('=')[1];
   }
-  
+
   if (percentageArg) {
     options.percentage = parseInt(percentageArg.split('=')[1]);
   }
-  
+
   if (targetArg) {
     options.target = parseInt(targetArg.split('=')[1]);
   }
-  
+
   const rollback = new RollbackScript();
   rollback.run(type, options);
 }

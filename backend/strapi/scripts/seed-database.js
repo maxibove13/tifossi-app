@@ -14,7 +14,7 @@ async function seedDatabase() {
   try {
     // Set up environment
     process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-    
+
     // Bootstrap Strapi
     const strapi = require('@strapi/strapi');
     const app = await strapi().load();
@@ -23,26 +23,25 @@ async function seedDatabase() {
 
     // Seed Categories
     await seedCategories(app);
-    
+
     // Seed Product Models
     await seedProductModels(app);
-    
+
     // Seed Product Statuses
     await seedProductStatuses(app);
-    
+
     // Seed Store Locations
     await seedStoreLocations(app);
-    
+
     // Seed Sample Products (optional)
     if (process.env.SEED_SAMPLE_PRODUCTS === 'true') {
       await seedSampleProducts(app);
     }
 
     console.log('✅ Database seeding completed successfully!');
-    
+
     await app.destroy();
     process.exit(0);
-    
   } catch (error) {
     console.error('❌ Database seeding failed:', error);
     process.exit(1);
@@ -54,7 +53,7 @@ async function seedDatabase() {
  */
 async function seedCategories(strapi) {
   console.log('📂 Seeding categories...');
-  
+
   const categories = [
     {
       name: 'Camisetas',
@@ -66,7 +65,7 @@ async function seedCategories(strapi) {
     },
     {
       name: 'Pantalones',
-      slug: 'pantalones', 
+      slug: 'pantalones',
       displayOrder: 2,
       description: 'Pantalones y shorts deportivos',
       isActive: true,
@@ -111,7 +110,7 @@ async function seedCategories(strapi) {
  */
 async function seedProductModels(strapi) {
   console.log('🏃 Seeding product models...');
-  
+
   const categories = await strapi.db.query('api::category.category').findMany();
   const categoryMap = categories.reduce((acc, cat) => {
     acc[cat.slug] = cat.id;
@@ -169,7 +168,7 @@ async function seedProductModels(strapi) {
  */
 async function seedProductStatuses(strapi) {
   console.log('🏷️ Seeding product statuses...');
-  
+
   const statuses = [
     {
       name: 'new',
@@ -244,7 +243,7 @@ async function seedProductStatuses(strapi) {
  */
 async function seedStoreLocations(strapi) {
   console.log('🏪 Seeding store locations...');
-  
+
   const storeLocations = [
     {
       name: 'Tifossi Montevideo Centro',
@@ -317,7 +316,7 @@ async function seedStoreLocations(strapi) {
  */
 async function seedSampleProducts(strapi) {
   console.log('👕 Seeding sample products...');
-  
+
   const categories = await strapi.db.query('api::category.category').findMany();
   const models = await strapi.db.query('api::product-model.product-model').findMany();
   const statuses = await strapi.db.query('api::product-status.product-status').findMany();
@@ -336,10 +335,11 @@ async function seedSampleProducts(strapi) {
         line1: 'Camiseta deportiva de alta calidad',
         line2: 'Perfecta para entrenamientos',
       },
-      longDescription: 'Camiseta deportiva de la línea Fast, fabricada con materiales de primera calidad...',
-      category: categories.find(c => c.slug === 'camisetas')?.id,
-      model: models.find(m => m.slug === 'fast')?.id,
-      statuses: statuses.filter(s => ['new', 'featured'].includes(s.name)).map(s => s.id),
+      longDescription:
+        'Camiseta deportiva de la línea Fast, fabricada con materiales de primera calidad...',
+      category: categories.find((c) => c.slug === 'camisetas')?.id,
+      model: models.find((m) => m.slug === 'fast')?.id,
+      statuses: statuses.filter((s) => ['new', 'featured'].includes(s.name)).map((s) => s.id),
       colors: [
         { name: 'Rojo', hexCode: '#FF0000', isActive: true, displayOrder: 1 },
         { name: 'Azul', hexCode: '#0000FF', isActive: true, displayOrder: 2 },

@@ -22,23 +22,25 @@ const ciMode = args.includes('--ci');
 const quietMode = args.includes('--quiet');
 
 // ANSI color codes for terminal output (disabled in CI mode)
-const colors = ciMode ? {
-  reset: '',
-  green: '',
-  red: '',
-  yellow: '',
-  blue: '',
-  cyan: '',
-  gray: '',
-} : {
-  reset: '\x1b[0m',
-  green: '\x1b[32m',
-  red: '\x1b[31m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  cyan: '\x1b[36m',
-  gray: '\x1b[90m',
-};
+const colors = ciMode
+  ? {
+      reset: '',
+      green: '',
+      red: '',
+      yellow: '',
+      blue: '',
+      cyan: '',
+      gray: '',
+    }
+  : {
+      reset: '\x1b[0m',
+      green: '\x1b[32m',
+      red: '\x1b[31m',
+      yellow: '\x1b[33m',
+      blue: '\x1b[34m',
+      cyan: '\x1b[36m',
+      gray: '\x1b[90m',
+    };
 
 const symbols = {
   success: '✓',
@@ -98,7 +100,7 @@ class EnvHelper {
     const value = this.envVars[key];
     if (value === undefined) return defaultValue;
     if (Array.isArray(value)) return value;
-    return value.split(',').map(v => v.trim());
+    return value.split(',').map((v) => v.trim());
   }
 }
 
@@ -115,7 +117,11 @@ function maskSensitive(obj) {
   const masked = {};
   for (const [key, value] of Object.entries(obj)) {
     const lowerKey = key.toLowerCase();
-    if (lowerKey.includes('password') || lowerKey.includes('secret') || lowerKey.includes('token')) {
+    if (
+      lowerKey.includes('password') ||
+      lowerKey.includes('secret') ||
+      lowerKey.includes('token')
+    ) {
       masked[key] = '***MASKED***';
     } else if (typeof value === 'object' && value !== null) {
       masked[key] = maskSensitive(value);
@@ -164,14 +170,18 @@ function validateConfigStructure(config, testName) {
       const hasIndividualParams = !!(conn.host && conn.port && conn.database && conn.user);
 
       if (!hasConnectionString && !hasIndividualParams) {
-        errors.push('Postgres connection requires either connectionString OR (host, port, database, user)');
+        errors.push(
+          'Postgres connection requires either connectionString OR (host, port, database, user)'
+        );
       }
 
       // Check SSL configuration
       if (conn.ssl !== undefined) {
         if (typeof conn.ssl === 'boolean') {
           if (conn.ssl) {
-            warnings.push('SSL is set to boolean true, should be an object with rejectUnauthorized property');
+            warnings.push(
+              'SSL is set to boolean true, should be an object with rejectUnauthorized property'
+            );
           }
         } else if (typeof conn.ssl === 'object') {
           if (conn.ssl.rejectUnauthorized === undefined) {
@@ -239,14 +249,14 @@ function runTest(testName, envVars, shouldPass = true) {
 
     // Display warnings
     if (warnings.length > 0 && !quietMode) {
-      warnings.forEach(warning => {
+      warnings.forEach((warning) => {
         log(`${colors.yellow}${symbols.warning} Warning: ${warning}${colors.reset}`);
       });
     }
 
     // Display errors
     if (errors.length > 0) {
-      errors.forEach(error => {
+      errors.forEach((error) => {
         logError(`${colors.red}${symbols.error} Error: ${error}${colors.reset}`);
       });
 
@@ -254,7 +264,9 @@ function runTest(testName, envVars, shouldPass = true) {
         logError(`${colors.red}${symbols.error} FAIL: ${testName}${colors.reset}`);
         return false;
       } else {
-        logSuccess(`${colors.green}${symbols.success} PASS: ${testName} (failed as expected)${colors.reset}`);
+        logSuccess(
+          `${colors.green}${symbols.success} PASS: ${testName} (failed as expected)${colors.reset}`
+        );
         return true;
       }
     }
@@ -264,12 +276,15 @@ function runTest(testName, envVars, shouldPass = true) {
       logSuccess(`${colors.green}${symbols.success} PASS: ${testName}${colors.reset}`);
       return true;
     } else {
-      logError(`${colors.red}${symbols.error} FAIL: ${testName} (expected to fail but passed)${colors.reset}`);
+      logError(
+        `${colors.red}${symbols.error} FAIL: ${testName} (expected to fail but passed)${colors.reset}`
+      );
       return false;
     }
-
   } catch (error) {
-    logError(`${colors.red}${symbols.error} Exception in ${testName}: ${error.message}${colors.reset}`);
+    logError(
+      `${colors.red}${symbols.error} Exception in ${testName}: ${error.message}${colors.reset}`
+    );
     if (!quietMode) {
       logError(`${colors.gray}${error.stack}${colors.reset}`);
     }
@@ -278,7 +293,9 @@ function runTest(testName, envVars, shouldPass = true) {
       logError(`${colors.red}${symbols.error} FAIL: ${testName}${colors.reset}`);
       return false;
     } else {
-      logSuccess(`${colors.green}${symbols.success} PASS: ${testName} (failed as expected)${colors.reset}`);
+      logSuccess(
+        `${colors.green}${symbols.success} PASS: ${testName} (failed as expected)${colors.reset}`
+      );
       return true;
     }
   }
@@ -294,13 +311,22 @@ function validateCompiledConfig() {
 
   // Check if dist/strapi/config directory exists
   if (!fs.existsSync(distConfigPath)) {
-    logError(`${colors.red}${symbols.error} dist/strapi/config directory does not exist${colors.reset}`);
+    logError(
+      `${colors.red}${symbols.error} dist/strapi/config directory does not exist${colors.reset}`
+    );
     logError(`${colors.red}Run 'npm run build' before deploying${colors.reset}`);
     return false;
   }
 
   // Check that all config files exist
-  const requiredConfigs = ['database.js', 'server.js', 'admin.js', 'middlewares.js', 'plugins.js', 'api.js'];
+  const requiredConfigs = [
+    'database.js',
+    'server.js',
+    'admin.js',
+    'middlewares.js',
+    'plugins.js',
+    'api.js',
+  ];
   const missing = [];
 
   for (const configFile of requiredConfigs) {
@@ -311,7 +337,9 @@ function validateCompiledConfig() {
   }
 
   if (missing.length > 0) {
-    logError(`${colors.red}${symbols.error} Missing compiled config files: ${missing.join(', ')}${colors.reset}`);
+    logError(
+      `${colors.red}${symbols.error} Missing compiled config files: ${missing.join(', ')}${colors.reset}`
+    );
     return false;
   }
 
@@ -322,14 +350,20 @@ function validateCompiledConfig() {
     const compiledConfig = require(compiledConfigPath);
 
     if (typeof compiledConfig.default !== 'function') {
-      logError(`${colors.red}${symbols.error} Compiled database.js does not export a default function${colors.reset}`);
+      logError(
+        `${colors.red}${symbols.error} Compiled database.js does not export a default function${colors.reset}`
+      );
       return false;
     }
 
-    logSuccess(`${colors.green}${symbols.success} All compiled config files present${colors.reset}`);
+    logSuccess(
+      `${colors.green}${symbols.success} All compiled config files present${colors.reset}`
+    );
     return true;
   } catch (error) {
-    logError(`${colors.red}${symbols.error} Failed to load compiled config: ${error.message}${colors.reset}`);
+    logError(
+      `${colors.red}${symbols.error} Failed to load compiled config: ${error.message}${colors.reset}`
+    );
     return false;
   }
 }
@@ -349,77 +383,91 @@ function runAllTests() {
   const compiledConfigValid = validateCompiledConfig();
   if (!compiledConfigValid) {
     logError(`${colors.red}${symbols.error} Compiled config validation failed${colors.reset}`);
-    logError(`${colors.red}Build artifacts missing or invalid. Run 'npm run build' and try again.${colors.reset}`);
+    logError(
+      `${colors.red}Build artifacts missing or invalid. Run 'npm run build' and try again.${colors.reset}`
+    );
     process.exit(1);
   }
 
   // Test 1: Full DATABASE_URL (Render production scenario)
-  results.push(runTest(
-    'Render Production: DATABASE_URL with SSL',
-    {
-      DATABASE_CLIENT: 'postgres',
-      DATABASE_URL: 'postgresql://user:password@postgres.render.com:5432/dbname',
-      DATABASE_SSL: 'true',
-      DATABASE_SSL_REJECT_UNAUTHORIZED: 'false',
-      DATABASE_POOL_MIN: '2',
-      DATABASE_POOL_MAX: '10',
-      DATABASE_CONNECTION_TIMEOUT: '60000',
-    },
-    true
-  ));
+  results.push(
+    runTest(
+      'Render Production: DATABASE_URL with SSL',
+      {
+        DATABASE_CLIENT: 'postgres',
+        DATABASE_URL: 'postgresql://user:password@postgres.render.com:5432/dbname',
+        DATABASE_SSL: 'true',
+        DATABASE_SSL_REJECT_UNAUTHORIZED: 'false',
+        DATABASE_POOL_MIN: '2',
+        DATABASE_POOL_MAX: '10',
+        DATABASE_CONNECTION_TIMEOUT: '60000',
+      },
+      true
+    )
+  );
 
   // Test 2: SSL enabled with object configuration
-  results.push(runTest(
-    'SSL Configuration: enabled with rejectUnauthorized=false',
-    {
-      DATABASE_CLIENT: 'postgres',
-      DATABASE_URL: 'postgresql://user:password@db.example.com:5432/mydb',
-      DATABASE_SSL: 'true',
-      DATABASE_SSL_REJECT_UNAUTHORIZED: 'false',
-    },
-    true
-  ));
+  results.push(
+    runTest(
+      'SSL Configuration: enabled with rejectUnauthorized=false',
+      {
+        DATABASE_CLIENT: 'postgres',
+        DATABASE_URL: 'postgresql://user:password@db.example.com:5432/mydb',
+        DATABASE_SSL: 'true',
+        DATABASE_SSL_REJECT_UNAUTHORIZED: 'false',
+      },
+      true
+    )
+  );
 
   // Test 3: Default values fallback (should now fail with strict validation)
-  results.push(runTest(
-    'Default Values: minimal configuration (should fail)',
-    {
-      DATABASE_CLIENT: 'postgres',
-    },
-    false  // Changed to false - strict validation requires connection details
-  ));
+  results.push(
+    runTest(
+      'Default Values: minimal configuration (should fail)',
+      {
+        DATABASE_CLIENT: 'postgres',
+      },
+      false // Changed to false - strict validation requires connection details
+    )
+  );
 
   // Test 4: SQLite configuration (alternative)
-  results.push(runTest(
-    'SQLite Configuration: local development',
-    {
-      DATABASE_CLIENT: 'sqlite',
-      DATABASE_FILENAME: '.tmp/test.db',
-    },
-    true
-  ));
+  results.push(
+    runTest(
+      'SQLite Configuration: local development',
+      {
+        DATABASE_CLIENT: 'sqlite',
+        DATABASE_FILENAME: '.tmp/test.db',
+      },
+      true
+    )
+  );
 
   // Test 5: Missing client defaults to SQLite
-  results.push(runTest(
-    'Missing DATABASE_CLIENT defaults to SQLite',
-    {},
-    true  // SQLite is the default fallback
-  ));
+  results.push(
+    runTest(
+      'Missing DATABASE_CLIENT defaults to SQLite',
+      {},
+      true // SQLite is the default fallback
+    )
+  );
 
   // Test 6: SSL boolean conversion
-  results.push(runTest(
-    'SSL as true boolean: should work but warn',
-    {
-      DATABASE_CLIENT: 'postgres',
-      DATABASE_URL: 'postgresql://user:password@db.example.com:5432/mydb',
-      DATABASE_SSL: 'true',
-    },
-    true
-  ));
+  results.push(
+    runTest(
+      'SSL as true boolean: should work but warn',
+      {
+        DATABASE_CLIENT: 'postgres',
+        DATABASE_URL: 'postgresql://user:password@db.example.com:5432/mydb',
+        DATABASE_SSL: 'true',
+      },
+      true
+    )
+  );
 
   // Print summary
-  const passed = results.filter(r => r).length;
-  const failed = results.filter(r => !r).length;
+  const passed = results.filter((r) => r).length;
+  const failed = results.filter((r) => !r).length;
   const total = results.length;
 
   if (ciMode) {
@@ -440,9 +488,13 @@ function runAllTests() {
     log(`${colors.red}${symbols.error} Failed: ${failed}${colors.reset}`);
 
     if (failed === 0) {
-      log(`\n${colors.green}${symbols.success} All tests passed! Configuration is valid.${colors.reset}`);
+      log(
+        `\n${colors.green}${symbols.success} All tests passed! Configuration is valid.${colors.reset}`
+      );
     } else {
-      log(`\n${colors.red}${symbols.error} Some tests failed. Please review the errors above.${colors.reset}`);
+      log(
+        `\n${colors.red}${symbols.error} Some tests failed. Please review the errors above.${colors.reset}`
+      );
     }
   }
 

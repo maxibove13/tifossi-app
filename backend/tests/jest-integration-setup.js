@@ -1,6 +1,6 @@
 /**
  * Jest Integration Setup for Tifossi Backend Testing
- * 
+ *
  * This module integrates all mock services and test utilities with the existing
  * Jest configuration, providing a seamless testing environment for the
  * Tifossi backend migration.
@@ -22,13 +22,13 @@ class JestTestEnvironment {
     this.mockServices = {
       strapi: null,
       firebase: null,
-      mercadopago: null
+      mercadopago: null,
     };
-    
+
     this.testManagers = {
       dataGenerator: null,
       e2eManager: null,
-      loadTestConfig: null
+      loadTestConfig: null,
     };
 
     this.testData = null;
@@ -52,13 +52,13 @@ class JestTestEnvironment {
       mockServices: {
         firebase: { errorRate: 0, responseDelay: 50 },
         mercadopago: { errorRate: 0, responseDelay: 100 },
-        strapi: { errorRate: 0, responseDelay: 100 }
+        strapi: { errorRate: 0, responseDelay: 100 },
       },
       testData: {
         products: 50,
         users: 25,
-        orders: 100
-      }
+        orders: 100,
+      },
     };
 
     const finalConfig = { ...defaultConfig, ...config };
@@ -87,7 +87,7 @@ class JestTestEnvironment {
   async initializeMockServices(serviceConfigs) {
     // Initialize Mock Firebase Auth
     this.mockServices.firebase = new MockFirebaseAuth(serviceConfigs.firebase);
-    
+
     // Initialize Mock MercadoPago
     this.mockServices.mercadopago = new MockMercadoPagoService(serviceConfigs.mercadopago);
 
@@ -105,13 +105,13 @@ class JestTestEnvironment {
     this.testManagers.dataGenerator = new TestDataGenerator({
       products: config.testData,
       users: config.testData,
-      orders: config.testData
+      orders: config.testData,
     });
 
     // Initialize E2E test manager
     this.testManagers.e2eManager = new E2ETestManager({
       environment: config.environment,
-      timeout: 30000
+      timeout: 30000,
     });
 
     // Initialize load test configuration
@@ -125,12 +125,12 @@ class JestTestEnvironment {
    */
   async generateTestData(dataConfig) {
     console.log('[Jest Setup] Generating test data...');
-    
+
     this.testData = this.testManagers.dataGenerator.generateCompleteDataset(dataConfig);
-    
+
     // Populate mock services with test data
     await this.populateMockServices(this.testData);
-    
+
     console.log('[Jest Setup] Test data generated and populated');
   }
 
@@ -139,7 +139,7 @@ class JestTestEnvironment {
    */
   async populateMockServices(testData) {
     // Populate Firebase Auth with test users
-    testData.users.forEach(user => {
+    testData.users.forEach((user) => {
       if (!this.mockServices.firebase.users.has(user.email)) {
         this.mockServices.firebase.users.set(user.email, {
           uid: user.id,
@@ -153,13 +153,15 @@ class JestTestEnvironment {
           customClaims: { role: 'customer' },
           createdAt: user.createdAt,
           lastSignInTime: null,
-          providerData: [{
-            uid: user.email,
-            displayName: user.name,
-            email: user.email,
-            photoURL: user.profilePicture,
-            providerId: 'password'
-          }]
+          providerData: [
+            {
+              uid: user.email,
+              displayName: user.name,
+              email: user.email,
+              photoURL: user.profilePicture,
+              providerId: 'password',
+            },
+          ],
         });
       }
     });
@@ -182,7 +184,9 @@ class JestTestEnvironment {
 
     // MercadoPago events
     this.mockServices.mercadopago.on('payment.created', (payment) => {
-      console.log(`[Test Debug] MercadoPago: Payment created - ${payment.id} (${payment.transaction_amount} UYU)`);
+      console.log(
+        `[Test Debug] MercadoPago: Payment created - ${payment.id} (${payment.transaction_amount} UYU)`
+      );
     });
 
     this.mockServices.mercadopago.on('payment.updated', (payment) => {
@@ -206,7 +210,7 @@ class JestTestEnvironment {
       createTestPayment: this.createTestPayment.bind(this),
       createTestOrder: this.createTestOrder.bind(this),
       waitFor: this.waitFor.bind(this),
-      resetServices: this.resetServices.bind(this)
+      resetServices: this.resetServices.bind(this),
     };
 
     console.log('[Jest Setup] Global utilities configured');
@@ -219,7 +223,7 @@ class JestTestEnvironment {
     const defaultUserData = {
       email: `test-${Date.now()}@tifossi.com`,
       password: 'Test123!',
-      displayName: 'Test User'
+      displayName: 'Test User',
     };
 
     const finalUserData = { ...defaultUserData, ...userData };
@@ -235,9 +239,9 @@ class JestTestEnvironment {
         user: result.user,
         tokens: {
           idToken: result.idToken,
-          refreshToken: result.refreshToken
+          refreshToken: result.refreshToken,
         },
-        credentials: finalUserData
+        credentials: finalUserData,
       };
     } catch (error) {
       console.error('[Jest Setup] Failed to create test user:', error.message);
@@ -251,13 +255,13 @@ class JestTestEnvironment {
   async authenticateTestUser(email, password = 'Test123!') {
     try {
       const result = await this.mockServices.firebase.signInWithEmailAndPassword(email, password);
-      
+
       return {
         user: result.user,
         tokens: {
           idToken: result.idToken,
-          refreshToken: result.refreshToken
-        }
+          refreshToken: result.refreshToken,
+        },
       };
     } catch (error) {
       console.error('[Jest Setup] Failed to authenticate test user:', error.message);
@@ -277,8 +281,8 @@ class JestTestEnvironment {
       payer: {
         email: 'test@tifossi.com',
         first_name: 'Test',
-        last_name: 'User'
-      }
+        last_name: 'User',
+      },
     };
 
     // Create a test card token first
@@ -288,14 +292,14 @@ class JestTestEnvironment {
       expiration_month: '12',
       expiration_year: '2025',
       cardholder: {
-        name: 'TEST USER'
-      }
+        name: 'TEST USER',
+      },
     });
 
     const finalPaymentData = {
       ...defaultPaymentData,
       ...paymentData,
-      token: cardToken.id
+      token: cardToken.id,
     };
 
     try {
@@ -316,17 +320,19 @@ class JestTestEnvironment {
 
     const defaultOrderData = {
       id: `test-order-${Date.now()}`,
-      items: [{
-        productId: randomProduct?.id || 'prod_test_001',
-        quantity: 1,
-        price: randomProduct?.price || 2500,
-        size: 'M',
-        color: 'Negro'
-      }],
+      items: [
+        {
+          productId: randomProduct?.id || 'prod_test_001',
+          quantity: 1,
+          price: randomProduct?.price || 2500,
+          size: 'M',
+          color: 'Negro',
+        },
+      ],
       total: randomProduct?.price || 2500,
       currency: 'UYU',
       status: 'pending',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     return { ...defaultOrderData, ...orderData };
@@ -337,14 +343,14 @@ class JestTestEnvironment {
    */
   async waitFor(conditionFn, timeout = 5000, interval = 100) {
     const startTime = Date.now();
-    
+
     while (Date.now() - startTime < timeout) {
       if (await conditionFn()) {
         return true;
       }
-      await new Promise(resolve => setTimeout(resolve, interval));
+      await new Promise((resolve) => setTimeout(resolve, interval));
     }
-    
+
     throw new Error(`Wait condition timed out after ${timeout}ms`);
   }
 
@@ -355,7 +361,7 @@ class JestTestEnvironment {
     if (this.mockServices.firebase) {
       this.mockServices.firebase.reset();
     }
-    
+
     if (this.mockServices.mercadopago) {
       this.mockServices.mercadopago.reset();
     }
@@ -407,17 +413,17 @@ class JestTestEnvironment {
       initialized: this.isInitialized,
       services: {
         firebase: !!this.mockServices.firebase,
-        mercadopago: !!this.mockServices.mercadopago
+        mercadopago: !!this.mockServices.mercadopago,
       },
       testData: {
         products: this.testData?.products?.length || 0,
         users: this.testData?.users?.length || 0,
-        orders: this.testData?.orders?.length || 0
+        orders: this.testData?.orders?.length || 0,
       },
       metrics: {
         firebase: this.mockServices.firebase?.getMetrics(),
-        mercadopago: this.mockServices.mercadopago?.getMetrics()
-      }
+        mercadopago: this.mockServices.mercadopago?.getMetrics(),
+      },
     };
   }
 }
@@ -432,8 +438,8 @@ const TestProfiles = {
     generateTestData: false,
     mockServices: {
       firebase: { errorRate: 0, responseDelay: 10 },
-      mercadopago: { errorRate: 0, responseDelay: 10 }
-    }
+      mercadopago: { errorRate: 0, responseDelay: 10 },
+    },
   },
 
   integration: {
@@ -441,13 +447,13 @@ const TestProfiles = {
     generateTestData: true,
     mockServices: {
       firebase: { errorRate: 0, responseDelay: 50 },
-      mercadopago: { errorRate: 0, responseDelay: 100 }
+      mercadopago: { errorRate: 0, responseDelay: 100 },
     },
     testData: {
       products: 100,
       users: 50,
-      orders: 200
-    }
+      orders: 200,
+    },
   },
 
   e2e: {
@@ -455,13 +461,13 @@ const TestProfiles = {
     generateTestData: true,
     mockServices: {
       firebase: { errorRate: 0.01, responseDelay: 200 },
-      mercadopago: { errorRate: 0.02, responseDelay: 500 }
+      mercadopago: { errorRate: 0.02, responseDelay: 500 },
     },
     testData: {
       products: 500,
       users: 200,
-      orders: 1000
-    }
+      orders: 1000,
+    },
   },
 
   performance: {
@@ -469,14 +475,14 @@ const TestProfiles = {
     generateTestData: true,
     mockServices: {
       firebase: { errorRate: 0.05, responseDelay: 100 },
-      mercadopago: { errorRate: 0.05, responseDelay: 300 }
+      mercadopago: { errorRate: 0.05, responseDelay: 300 },
     },
     testData: {
       products: 1000,
       users: 500,
-      orders: 2000
-    }
-  }
+      orders: 2000,
+    },
+  },
 };
 
 /**
@@ -547,7 +553,7 @@ const JestSetupHelpers = {
 
       testFn(testEnvironment);
     });
-  }
+  },
 };
 
 /**
@@ -583,7 +589,7 @@ const TestDataAssertions = {
     expect(payment.id).toBeDefined();
     expect(payment.status).toBeDefined();
     expect(payment.transaction_amount).toBeGreaterThan(0);
-  }
+  },
 };
 
 // Create and export global test environment instance
@@ -594,7 +600,7 @@ module.exports = {
   TestProfiles,
   JestSetupHelpers,
   TestDataAssertions,
-  globalTestEnvironment
+  globalTestEnvironment,
 };
 
 // Export default environment

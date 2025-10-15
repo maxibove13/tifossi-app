@@ -67,6 +67,7 @@ JWT_SECRET=test-jwt-secret
 ### Container fails to start
 
 Check logs:
+
 ```bash
 ./test-env.sh logs
 ```
@@ -74,11 +75,13 @@ Check logs:
 ### Database connection errors
 
 Verify PostgreSQL is running:
+
 ```bash
 docker-compose ps
 ```
 
 Access database directly:
+
 ```bash
 ./test-env.sh db
 ```
@@ -86,6 +89,7 @@ Access database directly:
 ### Build failures
 
 Open a shell in the container:
+
 ```bash
 ./test-env.sh shell
 cd /app
@@ -95,6 +99,7 @@ npm run build
 ### Port already in use
 
 Stop any existing Strapi instances:
+
 ```bash
 docker-compose down
 # Or kill processes on port 1337

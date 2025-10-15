@@ -1,6 +1,6 @@
 /**
  * Tifossi Entry Point
- * 
+ *
  * First import gesture handler, then initialize Reanimated.
  * This order is critical for both to work properly.
  */

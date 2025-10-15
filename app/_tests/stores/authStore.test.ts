@@ -11,12 +11,22 @@ import { useAuthStore } from '../../_stores/authStore';
 // Get references to the mocked functions
 const mockLogin = authService.login as jest.MockedFunction<typeof authService.login>;
 const mockRegister = authService.register as jest.MockedFunction<typeof authService.register>;
-const mockLoginWithGoogle = authService.loginWithGoogle as jest.MockedFunction<typeof authService.loginWithGoogle>;
-const mockLoginWithApple = authService.loginWithApple as jest.MockedFunction<typeof authService.loginWithApple>;
+const mockLoginWithGoogle = authService.loginWithGoogle as jest.MockedFunction<
+  typeof authService.loginWithGoogle
+>;
+const mockLoginWithApple = authService.loginWithApple as jest.MockedFunction<
+  typeof authService.loginWithApple
+>;
 const mockLogout = authService.logout as jest.MockedFunction<typeof authService.logout>;
-const mockSendPasswordResetEmail = authService.sendPasswordResetEmail as jest.MockedFunction<typeof authService.sendPasswordResetEmail>;
-const mockChangePassword = authService.changePassword as jest.MockedFunction<typeof authService.changePassword>;
-const mockValidateToken = authService.validateToken as jest.MockedFunction<typeof authService.validateToken>;
+const mockSendPasswordResetEmail = authService.sendPasswordResetEmail as jest.MockedFunction<
+  typeof authService.sendPasswordResetEmail
+>;
+const mockChangePassword = authService.changePassword as jest.MockedFunction<
+  typeof authService.changePassword
+>;
+const mockValidateToken = authService.validateToken as jest.MockedFunction<
+  typeof authService.validateToken
+>;
 const mockInitialize = authService.initialize as jest.MockedFunction<typeof authService.initialize>;
 
 describe('authStore', () => {
@@ -63,7 +73,10 @@ describe('authStore', () => {
         await result.current.login({ email: 'test@example.com', password: 'password123' });
       });
 
-      expect(mockLogin).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' });
+      expect(mockLogin).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password123',
+      });
       expect(result.current.isLoggedIn).toBe(true);
       expect(result.current.user).toEqual(mockUser);
       expect(result.current.token).toBe('test-token');
@@ -104,7 +117,13 @@ describe('authStore', () => {
       await act(async () => {
         resolveLogin({
           token: 'test-token',
-          user: { id: '1', email: 'test@example.com', name: 'Test', profilePicture: null, isEmailVerified: true },
+          user: {
+            id: '1',
+            email: 'test@example.com',
+            name: 'Test',
+            profilePicture: null,
+            isEmailVerified: true,
+          },
         });
 
         await loginPromise;
@@ -132,7 +151,11 @@ describe('authStore', () => {
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.register({ name: 'New User', email: 'newuser@example.com', password: 'password123' });
+        await result.current.register({
+          name: 'New User',
+          email: 'newuser@example.com',
+          password: 'password123',
+        });
       });
 
       expect(mockRegister).toHaveBeenCalledWith({
@@ -150,7 +173,11 @@ describe('authStore', () => {
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.register({ name: 'User', email: 'existing@example.com', password: 'password123' });
+        await result.current.register({
+          name: 'User',
+          email: 'existing@example.com',
+          password: 'password123',
+        });
       });
 
       expect(result.current.isLoggedIn).toBe(false);
@@ -220,9 +247,9 @@ describe('authStore', () => {
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await expect(
-          result.current.sendPasswordReset('nonexistent@example.com')
-        ).rejects.toThrow('User not found');
+        await expect(result.current.sendPasswordReset('nonexistent@example.com')).rejects.toThrow(
+          'User not found'
+        );
       });
 
       expect(result.current.error).toBe('User not found');
@@ -424,7 +451,13 @@ describe('authStore', () => {
 
       // Set some data first
       act(() => {
-        result.current.setUser({ id: '1', email: 'test@test.com', name: 'Test', profilePicture: null, isEmailVerified: true });
+        result.current.setUser({
+          id: '1',
+          email: 'test@test.com',
+          name: 'Test',
+          profilePicture: null,
+          isEmailVerified: true,
+        });
         result.current.setToken('token');
       });
 
@@ -449,7 +482,13 @@ describe('authStore', () => {
 
       mockLogin.mockResolvedValue({
         token: 'test-token',
-        user: { id: '1', email: 'test@test.com', name: 'Test', profilePicture: null, isEmailVerified: true },
+        user: {
+          id: '1',
+          email: 'test@test.com',
+          name: 'Test',
+          profilePicture: null,
+          isEmailVerified: true,
+        },
       });
 
       const { result } = renderHook(() => useAuthStore());

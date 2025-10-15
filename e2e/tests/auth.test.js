@@ -16,7 +16,7 @@ describe('Authentication Flow', () => {
     it('should allow new user to register successfully', async () => {
       // Navigate to signup screen
       await element(by.id('signup-button')).tap();
-      
+
       // Wait for signup screen to load
       await waitFor(element(by.id('signup-screen')))
         .toBeVisible()
@@ -46,7 +46,7 @@ describe('Authentication Flow', () => {
 
     it('should show validation errors for invalid input', async () => {
       await element(by.id('signup-button')).tap();
-      
+
       await waitFor(element(by.id('signup-screen')))
         .toBeVisible()
         .withTimeout(5000);
@@ -62,7 +62,7 @@ describe('Authentication Flow', () => {
 
     it('should show error for existing email', async () => {
       await element(by.id('signup-button')).tap();
-      
+
       await waitFor(element(by.id('signup-screen')))
         .toBeVisible()
         .withTimeout(5000);
@@ -90,7 +90,7 @@ describe('Authentication Flow', () => {
 
       // Verify successful login by checking for home screen
       await expect(element(by.id('home-screen'))).toBeVisible();
-      
+
       // Verify user is logged in by checking profile tab
       await element(by.id('profile-tab')).tap();
       await expect(element(by.text('test@tifossi.com'))).toBeVisible();
@@ -98,7 +98,7 @@ describe('Authentication Flow', () => {
 
     it('should show error for invalid credentials', async () => {
       await element(by.id('login-button')).tap();
-      
+
       await waitFor(element(by.id('login-screen')))
         .toBeVisible()
         .withTimeout(5000);
@@ -116,7 +116,7 @@ describe('Authentication Flow', () => {
 
     it('should handle forgot password flow', async () => {
       await element(by.id('login-button')).tap();
-      
+
       await waitFor(element(by.id('login-screen')))
         .toBeVisible()
         .withTimeout(5000);
@@ -148,7 +148,7 @@ describe('Authentication Flow', () => {
     it('should allow user to logout successfully', async () => {
       // Navigate to profile tab
       await element(by.id('profile-tab')).tap();
-      
+
       // Tap logout button
       await element(by.id('logout-button')).tap();
 
@@ -174,7 +174,7 @@ describe('Authentication Flow', () => {
       // 4. Confirming account activation
 
       await element(by.id('signup-button')).tap();
-      
+
       // Fill minimal registration form
       await element(by.id('email-input')).typeText('verify@example.com');
       await element(by.id('password-input')).typeText('SecurePass123!');

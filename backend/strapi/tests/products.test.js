@@ -13,7 +13,7 @@ describe('Products API', () => {
 
   beforeAll(async () => {
     strapi = await setupStrapi();
-    
+
     // Create test user and authenticate
     const testUser = await createTestUser({
       username: 'producttest',
@@ -62,9 +62,7 @@ describe('Products API', () => {
 
   describe('GET /api/products', () => {
     it('should return empty products list initially', async () => {
-      const response = await request(strapi.server.httpServer)
-        .get('/api/products')
-        .expect(200);
+      const response = await request(strapi.server.httpServer).get('/api/products').expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('meta');
@@ -95,9 +93,7 @@ describe('Products API', () => {
         },
       });
 
-      const response = await request(strapi.server.httpServer)
-        .get('/api/products')
-        .expect(200);
+      const response = await request(strapi.server.httpServer).get('/api/products').expect(200);
 
       expect(response.body.data).toHaveLength(1);
       expect(response.body.data[0]).toHaveProperty('id');
@@ -124,10 +120,7 @@ describe('Products API', () => {
         },
       };
 
-      await request(strapi.server.httpServer)
-        .post('/api/products')
-        .send(productData)
-        .expect(401);
+      await request(strapi.server.httpServer).post('/api/products').send(productData).expect(401);
     });
 
     it('should create product with valid data when authenticated', async () => {
@@ -199,9 +192,7 @@ describe('Products API', () => {
     });
 
     it('should return 404 for non-existent product', async () => {
-      await request(strapi.server.httpServer)
-        .get('/api/products/99999')
-        .expect(404);
+      await request(strapi.server.httpServer).get('/api/products/99999').expect(404);
     });
   });
 

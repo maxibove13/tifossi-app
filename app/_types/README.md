@@ -15,6 +15,7 @@ This directory contains all TypeScript type definitions used throughout the appl
 ## Usage Guidelines
 
 1. Import types from the central `index.ts` when possible:
+
    ```typescript
    import { Product, ProductCardProps, ButtonProps } from '../types';
    ```

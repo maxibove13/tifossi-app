@@ -7,11 +7,12 @@ This guide explains how to deploy the Tifossi backend to Render.com and configur
 ## Backend Deployment URL
 
 When deployed to Render.com, your Strapi backend will be available at:
+
 ```
 https://tifossi-strapi-backend.onrender.com
 ```
 
-*Note: The actual URL may vary if the service name is changed during deployment.*
+_Note: The actual URL may vary if the service name is changed during deployment._
 
 ## Environment Variables Configuration
 
@@ -84,6 +85,7 @@ EMAIL_REPLY_TO=support@tifossi.com
 #### Generate Security Keys
 
 Use this Node.js command to generate secure random keys:
+
 ```javascript
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
@@ -190,11 +192,13 @@ export default {
 ### 2. Configure Mobile App
 
 1. Update `.env` file with production URL:
+
 ```bash
 EXPO_PUBLIC_API_BASE_URL=https://tifossi-strapi-backend.onrender.com
 ```
 
 2. Build the app for production:
+
 ```bash
 # iOS
 eas build --platform ios --profile production
@@ -206,6 +210,7 @@ eas build --platform android --profile production
 ### 3. Configure Webhooks
 
 After deployment, configure MercadoPago webhooks to point to:
+
 ```
 https://tifossi-strapi-backend.onrender.com/api/webhooks/mercadopago
 ```
@@ -215,6 +220,7 @@ https://tifossi-strapi-backend.onrender.com/api/webhooks/mercadopago
 ### From Development Environment
 
 Test the API connection:
+
 ```bash
 # Check health endpoint
 curl https://tifossi-strapi-backend.onrender.com/api/health
@@ -226,6 +232,7 @@ curl https://tifossi-strapi-backend.onrender.com/api/products
 ### From Mobile App
 
 Set environment variable and restart Expo:
+
 ```bash
 export EXPO_PUBLIC_API_BASE_URL=https://tifossi-strapi-backend.onrender.com
 npx expo start --clear
@@ -267,6 +274,7 @@ npx expo start --clear
    - **Symptom**: API endpoints return 404 or content type errors after deployment
    - **Cause**: Missing `index.ts` file in content-type directory
    - **Solution**:
+
      ```bash
      # Check locally first
      npm run build
@@ -275,6 +283,7 @@ npx expo start --clear
      # If missing, add index.ts to the content-type folder:
      # backend/strapi/src/api/{api}/content-types/{type}/index.ts
      ```
+
    - See "Pre-Deployment Validation" section above for details
 
 7. **Build fails on Render with TypeScript errors**
@@ -308,24 +317,27 @@ npx expo start --clear
      ```
 
 10. **Policy not found errors**
-   - **Symptom**: Routes fail with "Policy global::policy-name not found"
-   - **Cause**: Policy file missing or incorrect reference
-   - **Solution**:
-     - Ensure policy is in `src/policies/{policy-name}.ts`
-     - Reference as `global::policy-name` in routes (not just `policy-name`)
-     - Verify policy export format matches Strapi v5 requirements
+
+- **Symptom**: Routes fail with "Policy global::policy-name not found"
+- **Cause**: Policy file missing or incorrect reference
+- **Solution**:
+  - Ensure policy is in `src/policies/{policy-name}.ts`
+  - Reference as `global::policy-name` in routes (not just `policy-name`)
+  - Verify policy export format matches Strapi v5 requirements
 
 ## Monitoring
 
 ### Render Dashboard
 
 Monitor your services at:
+
 - Web Service: `https://dashboard.render.com/web/srv-xxxxx`
 - Database: `https://dashboard.render.com/database/dpg-xxxxx`
 
 ### Health Checks
 
 The backend exposes these endpoints for monitoring:
+
 - `/api/health` - Basic health check
 - `/api/health/detailed` - Detailed system status (authenticated)
 
@@ -340,6 +352,7 @@ The backend exposes these endpoints for monitoring:
 ## Support
 
 For deployment issues:
+
 - Render Support: https://render.com/support
 - Strapi Documentation: https://docs.strapi.io
 - Expo Documentation: https://docs.expo.dev
@@ -347,6 +360,7 @@ For deployment issues:
 ## Next Steps
 
 After successful deployment:
+
 1. Configure custom domain (optional)
 2. Set up SSL certificates (automatic on Render)
 3. Configure backup strategy

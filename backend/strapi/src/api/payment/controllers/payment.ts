@@ -21,7 +21,8 @@ export default {
         return ctx.unauthorized('Authentication required');
       }
 
-      const rawOrder = ctx.request.body?.orderData || ctx.request.body?.data || ctx.request.body || {};
+      const rawOrder =
+        ctx.request.body?.orderData || ctx.request.body?.data || ctx.request.body || {};
 
       const sanitizedOrder = await sanitizeOrderPayload({
         strapi,
@@ -65,7 +66,7 @@ export default {
 
       const preference = await mpService.createPreference({
         orderNumber: orderEntity.orderNumber,
-        items: sanitizedOrder.mercadoPagoPayload.items.map(item => ({
+        items: sanitizedOrder.mercadoPagoPayload.items.map((item) => ({
           productId: String(item.productId),
           productName: item.productName,
           description: item.description || undefined,
@@ -93,13 +94,18 @@ export default {
         populate: {
           items: { populate: { product: true } },
           user: true,
-        }
+        },
       });
 
-      await orderManager.transitionStatus(String(orderEntity.id), OrderStatus.PENDING, OrderStatus.PAYMENT_PENDING, {
-        triggeredBy: 'system',
-        reason: 'MercadoPago preference created',
-      });
+      await orderManager.transitionStatus(
+        String(orderEntity.id),
+        OrderStatus.PENDING,
+        OrderStatus.PAYMENT_PENDING,
+        {
+          triggeredBy: 'system',
+          reason: 'MercadoPago preference created',
+        }
+      );
 
       const clientOrder = buildClientOrder(updatedOrder as any, sanitizedOrder.clientSummary);
 
@@ -114,7 +120,6 @@ export default {
           },
         },
       };
-
     } catch (error) {
       strapi.log.error('Error creating payment preference:', error);
       ctx.internalServerError('Failed to create payment preference');
@@ -140,9 +145,9 @@ export default {
       const orders = await strapi.documents('api::order.order').findMany({
         filters: {
           mpPaymentId: paymentId,
-          user: ctx.state.user.id
+          user: ctx.state.user.id,
         },
-        populate: ['user']
+        populate: ['user'],
       });
 
       if (!orders || orders.length === 0) {
@@ -163,16 +168,16 @@ export default {
           metadata: {
             ...order.metadata,
             lastPaymentCheck: new Date().toISOString(),
-            paymentStatusDetail: paymentInfo.status_detail
-          }
-        } as any
+            paymentStatusDetail: paymentInfo.status_detail,
+          },
+        } as any,
       });
 
       if (order.status !== orderStatus) {
         const orderManager = new OrderStateManager();
         await orderManager.transitionStatus(String(order.id), order.status, orderStatus, {
           triggeredBy: 'user',
-          reason: 'Payment status verification'
+          reason: 'Payment status verification',
         });
       }
 
@@ -190,11 +195,10 @@ export default {
             currency: paymentInfo.currency_id,
             paymentMethod: paymentInfo.payment_method_id,
             dateCreated: paymentInfo.date_created,
-            dateApproved: paymentInfo.date_approved
-          }
-        }
+            dateApproved: paymentInfo.date_approved,
+          },
+        },
       };
-
     } catch (error) {
       strapi.log.error('Error verifying payment:', error);
       ctx.internalServerError('Failed to verify payment');
@@ -214,7 +218,7 @@ export default {
       const { page = 1, pageSize = 10, status } = ctx.query;
 
       const filters: any = {
-        user: ctx.state.user.id
+        user: ctx.state.user.id,
       };
 
       if (status) {
@@ -226,16 +230,15 @@ export default {
         populate: ['user'],
         pagination: {
           page: parseInt(page),
-          pageSize: parseInt(pageSize)
+          pageSize: parseInt(pageSize),
         },
-        sort: { createdAt: 'desc' }
+        sort: { createdAt: 'desc' },
       });
 
       ctx.body = {
         success: true,
-        data: orders
+        data: orders,
       };
-
     } catch (error) {
       strapi.log.error('Error fetching orders:', error);
       ctx.internalServerError('Failed to fetch orders');
@@ -258,8 +261,8 @@ export default {
         documentId: orderId,
         populate: ['user'],
         filters: {
-          user: ctx.state.user.id
-        }
+          user: ctx.state.user.id,
+        },
       });
 
       if (!order) {
@@ -268,9 +271,8 @@ export default {
 
       ctx.body = {
         success: true,
-        data: order
+        data: order,
       };
-
     } catch (error) {
       strapi.log.error('Error fetching order:', error);
       ctx.internalServerError('Failed to fetch order');
@@ -293,8 +295,8 @@ export default {
         documentId: orderId,
         populate: ['user'],
         filters: {
-          user: ctx.state.user.id
-        }
+          user: ctx.state.user.id,
+        },
       });
 
       if (!order) {
@@ -322,15 +324,20 @@ export default {
             ...order.metadata,
             refundId: refundInfo.id,
             refundReason: reason,
-            refundDate: new Date().toISOString()
-          }
-        } as any
+            refundDate: new Date().toISOString(),
+          },
+        } as any,
       });
 
-      await orderManager.transitionStatus(String(order.id), OrderStatus.PAID, OrderStatus.REFUNDED, {
-        triggeredBy: 'user',
-        reason: `Refund requested: ${reason}`
-      });
+      await orderManager.transitionStatus(
+        String(order.id),
+        OrderStatus.PAID,
+        OrderStatus.REFUNDED,
+        {
+          triggeredBy: 'user',
+          reason: `Refund requested: ${reason}`,
+        }
+      );
 
       ctx.body = {
         success: true,
@@ -338,13 +345,12 @@ export default {
           orderId: order.id,
           refundId: refundInfo.id,
           status: 'REFUNDED',
-          message: 'Refund processed successfully'
-        }
+          message: 'Refund processed successfully',
+        },
       };
-
     } catch (error) {
       strapi.log.error('Error processing refund:', error);
       ctx.internalServerError('Failed to process refund');
     }
-  }
+  },
 };

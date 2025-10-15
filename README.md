@@ -52,6 +52,7 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 ## Development
 
 ### Quality Assurance
+
 - **Linting**: `npm run lint`
 - **Type checking**: `npm run typecheck`
 - **Testing**: `npm test`
@@ -59,6 +60,7 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 - **Fix imports**: `npm run fix-imports`
 
 ### Build Management
+
 - **Version bump**: `./scripts/version-bump.sh [major|minor|patch]`
 - **Environment check**: `./scripts/check-environment.js`
 - **Bundle analysis**: `./scripts/bundle-analyzer.js`

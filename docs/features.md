@@ -7,6 +7,7 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 ## App Screens & User Features
 
 ### Home Screen
+
 - **Hero Section**: Featured products carousel
 - **Categories Navigation**: Quick access to product categories
 - **Featured Products**: Highlight of trending/promoted items
@@ -14,12 +15,14 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Footer Section**: Store locations and brand information
 
 ### Catalog & Product Discovery
-- **Category Navigation Screen**: Browse products by sport/category 
+
+- **Category Navigation Screen**: Browse products by sport/category
 - **Product Grid View**: Visual catalog of available products
 - **Product Filtering**: Filter by size, color, price range, and product labels
 - **Search Overlay**: Text-based product search with instant results
 
 ### Product Details Screen
+
 - **Product Gallery**: Multiple product images
 - **Color Selector**: Visual selection of available color variants
 - **Size Selector**: Size options selection
@@ -29,6 +32,7 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Related Products**: Horizontal scroll of complementary items
 
 ### Shopping Cart
+
 - **Cart Screen**: Complete list of items in cart with details
 - **Quantity Adjustments**: Increase/decrease product quantities
 - **Remove Items**: Delete with 3-second undo capability
@@ -37,12 +41,14 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Empty Cart View**: Custom view for empty cart state
 
 ### Favorites Management
+
 - **Favorites Screen**: Grid of saved products
 - **View Product**: Navigate to product details from favorites
 - **Remove from Favorites**: One-tap removal
 - **Empty Favorites View**: Custom view for empty state
 
 ### Checkout Flow
+
 - **Shipping Address Screen**: Add/select delivery address
 - **Pickup/Delivery Option**: Choose between shipping or in-store pickup
 - **Store Selection Screen**: Choose pickup location (if applicable)
@@ -51,11 +57,13 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Success Confirmation**: Order placed confirmation (planned)
 
 ### Store Locations
+
 - **Store Finder**: Browse physical store locations
 - **City/Zone Navigation**: Hierarchical location browsing
 - **Store Details**: Basic store information
 
 ### User Account & Authentication
+
 - **Profile Screen**: User information with profile picture display and account options
 - **Authentication System**:
   - Email-based registration and login
@@ -76,6 +84,7 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 ## Technical Implementation
 
 ### Frontend Architecture
+
 - **React Native**: Cross-platform mobile development framework
 - **Expo SDK 49+**: Development toolkit for streamlined native builds
 - **TypeScript**: Static typing system for improved code quality
@@ -83,17 +92,20 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **React Hooks**: Functional component patterns throughout the app
 
 ### State Management
-- **Zustand Stores**: 
+
+- **Zustand Stores**:
   - `cartStore.ts`: Shopping cart with optimistic updates
   - `favoritesStore.ts`: Favorites management
   - `authStore.ts`: Authentication state
 
 ### Data Persistence
+
 - **MMKV Storage**: High-performance key-value storage for cart and favorites
 - **Expo SecureStore**: Secure storage for authentication tokens
 - **Cross-session Restoration**: Automatic state restoration between app launches
 
 ### UI Components
+
 - **Custom Component Library**: Purpose-built UI components
 - **Advanced Animations**: Polished micro-interactions and transitions
 - **Skeleton Screens**: Progressive loading patterns for all data-dependent screens
@@ -101,6 +113,7 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Multiple Card Variants**: Specialized product cards for different contexts
 
 ### Performance Optimizations
+
 - **Lazy Loading**: On-demand asset and data loading
 - **List Virtualization**: Efficient handling of long product lists
 - **Image Optimization**: Progressive and cached image loading
@@ -108,6 +121,7 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Debounced Search**: Performance-optimized text search
 
 ### API & Data Handling
+
 - **Mock API Layer**: Simulated backend with realistic delays
 - **TypeScript Interfaces**: Strong typing for all data models
 - **Error Handling**: Comprehensive error states with recovery
@@ -115,6 +129,7 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Synchronized State**: Background synchronization of local state
 
 ### Product Status System
+
 - **Status Types**: 8 distinct product status categories:
   - `NEW`: New arrivals and recently added products
   - `SALE`: Products with discounted pricing
@@ -129,6 +144,7 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Filtering Support**: Category-like filtering by product status
 
 ### Development Tools
+
 - **ESLint/Prettier**: Code quality and formatting tools
 - **Jest Testing**: Unit and component testing framework
 - **Husky Hooks**: Pre-commit code quality checks
@@ -141,15 +157,17 @@ This feature set represents the current state of the Tifossi app, with ongoing d
 The following features are explicitly excluded from the current scope of the application:
 
 ### General App Features
+
 - **Accessibility Features**: Screen reader support, dynamic text sizing, and other accessibility optimizations
 - **Push Notifications**: Remote notifications for order status, promotions, etc.
 - **Analytics Integration**: User behavior tracking and reporting
-- **Deep Linking (Deferred)**: Handling links when the app is *not* installed (i.e., redirecting to the App/Play Store and then navigating post-install). *Standard deep linking (opening links when the app is installed) is IN scope.*
+- **Deep Linking (Deferred)**: Handling links when the app is _not_ installed (i.e., redirecting to the App/Play Store and then navigating post-install). _Standard deep linking (opening links when the app is installed) is IN scope._
 - **Personalized Recommendations**: User-specific product recommendations based on browsing/purchase history
 - **Alternative Home Screens**: Specialized home screens (e.g., "Tiffosi Sport")
 - **Custom Designs**: Any components or designs outside of what was specified in the approved designs
 
 ### User Support & Engagement Features
+
 - **Chat Support**: Live chat with customer service representatives
 - **Support/FAQ Section**: Help articles and frequently asked questions
 - **Call Feature**: Direct calling functionality to customer service
@@ -158,10 +176,12 @@ The following features are explicitly excluded from the current scope of the app
 - **Messages Feature**: In-app messaging system
 
 ### Promotional Features
+
 - **Coupon System**: Discount code entry and processing
 - **Gift Cards**: Purchase and redemption of gift cards
 
 ### Payment Platform Integration
+
 - **MercadoPago Checkout Pro**: Hosted payment solution that handles all payment methods available in Uruguay
 - **Security**: PCI-DSS compliance managed by MercadoPago
 - **Supported Methods**: All credit/debit cards, MercadoPago wallet, and local payment methods

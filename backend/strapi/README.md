@@ -141,6 +141,7 @@ src/
 ### Content Types
 
 #### Core Entities
+
 - **Product**: E-commerce products with variants, media, and relationships
 - **Category**: Product categorization system
 - **Product Model**: Model variants (fast, classic, sport)
@@ -150,6 +151,7 @@ src/
 - **User**: Extended user profiles with e-commerce fields
 
 #### Components
+
 - **Product Components**: Colors, sizes, dimensions, short descriptions
 - **Shared Components**: Address, SEO metadata
 - **Order Components**: Order items
@@ -170,6 +172,7 @@ src/api/{api-name}/content-types/{type-name}/
 ```
 
 **index.ts format**:
+
 ```typescript
 import schema from './schema.json';
 
@@ -190,6 +193,7 @@ src/components/{category}/{component-name}.ts      # TypeScript export (REQUIRED
 ```
 
 **component.ts format**:
+
 ```typescript
 import schema from './{component-name}.json';
 
@@ -222,6 +226,7 @@ If any content-types or components are missing from `dist/`, check that their `i
 ### API Endpoints
 
 #### Products
+
 ```
 GET    /api/products              # List products with filters
 GET    /api/products/:id          # Get single product
@@ -231,12 +236,14 @@ DELETE /api/products/:id          # Delete product (admin)
 ```
 
 #### Categories
+
 ```
 GET    /api/categories            # List categories
 GET    /api/categories/:id        # Get category with products
 ```
 
 #### Orders
+
 ```
 GET    /api/orders                # User's orders
 POST   /api/orders                # Create order
@@ -245,6 +252,7 @@ PUT    /api/orders/:id            # Update order status
 ```
 
 #### Health Checks
+
 ```
 GET    /api/health                # Basic health check
 GET    /api/health/detailed       # Detailed health information
@@ -301,7 +309,9 @@ NODE_ENV=production npm run start
 **Cause**: Missing `index.ts` file in content-type directory (Strapi v5 requirement)
 
 **Solution**:
+
 1. Check that every content-type has `index.ts` alongside `schema.json`:
+
    ```bash
    find src/api -name "schema.json" | while read schema; do
      dir=$(dirname "$schema")
@@ -312,6 +322,7 @@ NODE_ENV=production npm run start
    ```
 
 2. Create the missing `index.ts` file:
+
    ```typescript
    import schema from './schema.json';
 
@@ -333,6 +344,7 @@ NODE_ENV=production npm run start
 **Cause**: Policy file missing or incorrectly located
 
 **Solution**:
+
 1. Ensure policy files are in `src/policies/{policy-name}.ts`
 2. Reference policies in routes as `global::policy-name` (not just `policy-name`)
 3. Verify policy export format:
@@ -349,6 +361,7 @@ NODE_ENV=production npm run start
 **Cause**: Controller not registered in plugin extension file
 
 **Solution**: In plugin extension file (`src/extensions/{plugin}/strapi-server.ts`):
+
 ```typescript
 import customController from './controllers/custom';
 
@@ -368,6 +381,7 @@ export default (plugin: Plugin) => {
 **Symptom**: Build process fails during `npm run build`
 
 **Solution**:
+
 1. Run `npm run build` locally first to identify issues
 2. Check build logs for specific TypeScript errors
 3. Verify all content-types have `index.ts` files
@@ -380,13 +394,16 @@ export default (plugin: Plugin) => {
 **Cause**: Component missing TypeScript export file or nested in subdirectory
 
 **Solution**:
+
 1. Ensure components use FLAT structure:
+
    ```
    src/components/{category}/{component-name}.json  ✓ Correct
    src/components/{category}/{component-name}/schema.json  ✗ Wrong
    ```
 
 2. Create `.ts` export for each component:
+
    ```typescript
    import schema from './{component-name}.json';
 
@@ -436,6 +453,7 @@ npm run develop
 ```
 
 The `.env.postgres` file includes:
+
 - `DATABASE_URL` (connection string format used on Render)
 - `DATABASE_SSL=false` (for local testing)
 - All individual DB parameters as fallback
@@ -445,6 +463,7 @@ This configuration tests the exact same code path that runs in production on Ren
 #### 3. Verify Database Connection
 
 Check the Strapi startup logs for:
+
 ```
 ✔ Connected to database
 ✔ Database migrations completed
@@ -467,6 +486,7 @@ docker-compose down -v
 If you encounter database connection errors:
 
 1. **Check PostgreSQL is running**:
+
    ```bash
    docker-compose logs postgres
    ```
@@ -476,6 +496,7 @@ If you encounter database connection errors:
    - Example: `postgresql://strapi:strapi123@localhost:5432/tifossi_dev`
 
 3. **Test connection directly**:
+
    ```bash
    psql "postgresql://strapi:strapi123@localhost:5432/tifossi_dev"
    ```
@@ -506,11 +527,13 @@ The Strapi admin panel uses email/password authentication without requiring emai
 - **Mobile Users**: Authenticate via Firebase (separate system)
 
 **Key Points:**
+
 - Admins can log in immediately without SMTP setup
 - Password reset requires manual database intervention
 - Email functionality can be enabled later by configuring SMTP credentials
 
 For detailed information on:
+
 - Creating admin users
 - Resetting forgotten passwords
 - Enabling email functionality
@@ -541,6 +564,7 @@ SENTRY_ENVIRONMENT=production
 ## 🛡️ Best Practices
 
 ### Security
+
 - Use environment variables for all secrets
 - Enable HTTPS in production
 - Configure proper CORS origins
@@ -548,12 +572,14 @@ SENTRY_ENVIRONMENT=production
 - Regular security audits
 
 ### Performance
+
 - Enable Redis caching in production
 - Use Cloudinary for media optimization
 - Configure proper database indexes
 - Monitor memory and CPU usage
 
 ### Development
+
 - Use TypeScript for better code quality
 - Follow ESLint rules
 - Write comprehensive tests
@@ -577,6 +603,7 @@ This project is licensed under the MIT License.
 ## 🆘 Support
 
 For support and questions:
+
 - Email: dev@tifossi.com
 - Documentation: Check the `/docs` directory
 - Issues: Create GitHub issues for bug reports

@@ -4,7 +4,11 @@
  */
 
 import * as crypto from 'crypto';
-import { OrderData, PaymentPreference, ShippingMethod } from '../strapi/src/lib/payment/types/orders';
+import {
+  OrderData,
+  PaymentPreference,
+  ShippingMethod,
+} from '../strapi/src/lib/payment/types/orders';
 import { MPWebhookPayload, MPWebhookAction } from '../strapi/src/lib/payment/types/mercadopago';
 
 const MercadoPagoService = require('../strapi/src/lib/payment/mercadopago-service');

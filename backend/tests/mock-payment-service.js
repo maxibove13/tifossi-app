@@ -1,6 +1,6 @@
 /**
  * Mock Payment Service for MercadoPago Integration Testing
- * 
+ *
  * This service provides a comprehensive mock implementation of MercadoPago's
  * payment processing API, supporting all major payment flows, error scenarios,
  * and webhook handling for testing the Tifossi backend migration.
@@ -16,7 +16,7 @@ const crypto = require('crypto');
 class MockMercadoPagoService extends EventEmitter {
   constructor(config = {}) {
     super();
-    
+
     this.config = {
       accessToken: 'TEST-mock-access-token-123456',
       publicKey: 'TEST-mock-public-key-654321',
@@ -26,7 +26,7 @@ class MockMercadoPagoService extends EventEmitter {
       enableWebhooks: config.enableWebhooks !== false,
       responseDelay: config.responseDelay || 500,
       errorRate: config.errorRate || 0.02,
-      ...config
+      ...config,
     };
 
     // Service state
@@ -40,7 +40,7 @@ class MockMercadoPagoService extends EventEmitter {
 
     // Initialize test data
     this.initializeTestData();
-    
+
     // Start webhook processing if enabled
     if (this.config.enableWebhooks) {
       this.startWebhookProcessor();
@@ -54,24 +54,28 @@ class MockMercadoPagoService extends EventEmitter {
     // Test card numbers with predictable behaviors
     this.testCards = {
       // Approved cards
-      '4111111111111111': { type: 'visa', result: 'approved', processingTime: 1000 },
-      '5555555555554444': { type: 'mastercard', result: 'approved', processingTime: 1200 },
-      '378282246310005': { type: 'amex', result: 'approved', processingTime: 1500 },
-      
+      4111111111111111: { type: 'visa', result: 'approved', processingTime: 1000 },
+      5555555555554444: { type: 'mastercard', result: 'approved', processingTime: 1200 },
+      378282246310005: { type: 'amex', result: 'approved', processingTime: 1500 },
+
       // Declined cards
-      '4000000000000002': { type: 'visa', result: 'declined', error: 'insufficient_funds' },
-      '4000000000000036': { type: 'visa', result: 'declined', error: 'expired_card' },
-      '4000000000000069': { type: 'visa', result: 'declined', error: 'card_declined' },
-      
+      4000000000000002: { type: 'visa', result: 'declined', error: 'insufficient_funds' },
+      4000000000000036: { type: 'visa', result: 'declined', error: 'expired_card' },
+      4000000000000069: { type: 'visa', result: 'declined', error: 'card_declined' },
+
       // Processing errors
-      '4000000000000119': { type: 'visa', result: 'processing_error', error: 'processing_error' },
-      '4000000000000127': { type: 'visa', result: 'invalid_security_code', error: 'invalid_security_code' },
-      
+      4000000000000119: { type: 'visa', result: 'processing_error', error: 'processing_error' },
+      4000000000000127: {
+        type: 'visa',
+        result: 'invalid_security_code',
+        error: 'invalid_security_code',
+      },
+
       // Slow processing (for timeout testing)
-      '4000000000000259': { type: 'visa', result: 'approved', processingTime: 10000 },
-      
+      4000000000000259: { type: 'visa', result: 'approved', processingTime: 10000 },
+
       // Fraud detection
-      '4100000000000019': { type: 'visa', result: 'requires_action', error: 'fraud_detected' }
+      4100000000000019: { type: 'visa', result: 'requires_action', error: 'fraud_detected' },
     };
 
     // Mock merchant data
@@ -85,39 +89,39 @@ class MockMercadoPagoService extends EventEmitter {
       fees: {
         credit_card: 0.04, // 4%
         debit_card: 0.025, // 2.5%
-        bank_transfer: 0.015 // 1.5%
-      }
+        bank_transfer: 0.015, // 1.5%
+      },
     });
 
     // Payment method configurations
     this.paymentMethods = {
-      'visa': {
+      visa: {
         id: 'visa',
         name: 'Visa',
         type: 'credit_card',
         status: 'active',
         min_amount: 100,
         max_amount: 1000000,
-        processing_time: '2-5 minutes'
+        processing_time: '2-5 minutes',
       },
-      'mastercard': {
-        id: 'mastercard', 
+      mastercard: {
+        id: 'mastercard',
         name: 'Mastercard',
         type: 'credit_card',
         status: 'active',
         min_amount: 100,
         max_amount: 1000000,
-        processing_time: '2-5 minutes'
+        processing_time: '2-5 minutes',
       },
-      'banco_transfer': {
+      banco_transfer: {
         id: 'banco_transfer',
         name: 'Bank Transfer',
         type: 'bank_transfer',
         status: 'active',
         min_amount: 500,
         max_amount: 500000,
-        processing_time: '1-3 business days'
-      }
+        processing_time: '1-3 business days',
+      },
     };
   }
 
@@ -130,12 +134,20 @@ class MockMercadoPagoService extends EventEmitter {
 
     // Validate service health
     if (this.serviceHealth === 'down') {
-      throw new MercadoPagoError('service_unavailable', 'Payment service is currently unavailable', 503);
+      throw new MercadoPagoError(
+        'service_unavailable',
+        'Payment service is currently unavailable',
+        503
+      );
     }
 
     // Simulate random errors based on error rate
     if (this.shouldSimulateError()) {
-      throw new MercadoPagoError('payment_creation_failed', 'Temporary payment processing error', 500);
+      throw new MercadoPagoError(
+        'payment_creation_failed',
+        'Temporary payment processing error',
+        500
+      );
     }
 
     // Validate required fields
@@ -149,35 +161,41 @@ class MockMercadoPagoService extends EventEmitter {
       date_created: new Date().toISOString(),
       date_last_updated: new Date().toISOString(),
       money_release_date: this.calculateReleaseDate(),
-      
+
       // Financial details
       currency_id: paymentData.currency_id || 'UYU',
       transaction_amount: paymentData.transaction_amount,
       transaction_amount_refunded: 0,
       coupon_amount: paymentData.coupon_amount || 0,
-      
+
       // Transaction details
       transaction_details: {
         payment_method_reference_id: null,
-        net_received_amount: this.calculateNetAmount(paymentData.transaction_amount, paymentData.payment_method_id),
+        net_received_amount: this.calculateNetAmount(
+          paymentData.transaction_amount,
+          paymentData.payment_method_id
+        ),
         total_paid_amount: paymentData.transaction_amount,
         overpaid_amount: 0,
         installment_amount: paymentData.transaction_amount / (paymentData.installments || 1),
-        financial_institution: this.getFinancialInstitution(paymentData.payment_method_id)
+        financial_institution: this.getFinancialInstitution(paymentData.payment_method_id),
       },
 
       // Fee calculation
-      fee_details: this.calculateFees(paymentData.transaction_amount, paymentData.payment_method_id),
+      fee_details: this.calculateFees(
+        paymentData.transaction_amount,
+        paymentData.payment_method_id
+      ),
 
       // Payment configuration
       captured: true,
       binary_mode: false,
       live_mode: false,
-      
+
       // Order reference
       order: {
         type: 'mercadopago',
-        id: paymentData.order?.id || null
+        id: paymentData.order?.id || null,
       },
       external_reference: paymentData.external_reference || null,
       description: paymentData.description || 'Tifossi Purchase',
@@ -192,23 +210,23 @@ class MockMercadoPagoService extends EventEmitter {
       payment_method: {
         id: paymentData.payment_method_id,
         type: this.getPaymentType(paymentData.payment_method_id),
-        issuer_id: paymentData.issuer_id || null
+        issuer_id: paymentData.issuer_id || null,
       },
 
       // Card information (if applicable)
       card: paymentData.token ? this.getCardInfo(paymentData.token) : null,
-      
+
       installments: paymentData.installments || 1,
       statement_descriptor: 'TIFOSSI',
-      
+
       // Notification configuration
       notification_url: paymentData.notification_url || this.config.webhookUrl,
-      
+
       // Processing info
       processor_response: null,
       authorization_code: null,
-      
-      refunds: []
+
+      refunds: [],
     };
 
     // Store payment
@@ -229,7 +247,7 @@ class MockMercadoPagoService extends EventEmitter {
   async schedulePaymentProcessing(paymentId, originalData) {
     const cardNumber = originalData.token ? this.extractCardNumber(originalData.token) : null;
     const cardBehavior = this.testCards[cardNumber] || { result: 'approved', processingTime: 1000 };
-    
+
     setTimeout(() => {
       this.processPayment(paymentId, cardBehavior);
     }, cardBehavior.processingTime || 1000);
@@ -251,7 +269,7 @@ class MockMercadoPagoService extends EventEmitter {
         statusDetail = 'accredited';
         processorResponse = {
           code: '00',
-          message: 'Transaction approved'
+          message: 'Transaction approved',
         };
         payment.authorization_code = this.generateAuthorizationCode();
         break;
@@ -261,7 +279,7 @@ class MockMercadoPagoService extends EventEmitter {
         statusDetail = this.getDeclineReason(cardBehavior.error);
         processorResponse = {
           code: '05',
-          message: cardBehavior.error || 'Card declined'
+          message: cardBehavior.error || 'Card declined',
         };
         break;
 
@@ -270,7 +288,7 @@ class MockMercadoPagoService extends EventEmitter {
         statusDetail = 'cc_rejected_other_reason';
         processorResponse = {
           code: '96',
-          message: 'Processing error'
+          message: 'Processing error',
         };
         break;
 
@@ -279,7 +297,7 @@ class MockMercadoPagoService extends EventEmitter {
         statusDetail = 'cc_rejected_bad_filled_security_code';
         processorResponse = {
           code: '14',
-          message: 'Invalid security code'
+          message: 'Invalid security code',
         };
         break;
 
@@ -288,7 +306,7 @@ class MockMercadoPagoService extends EventEmitter {
         statusDetail = 'pending_review_manual';
         processorResponse = {
           code: '07',
-          message: 'Transaction requires manual review'
+          message: 'Transaction requires manual review',
         };
         // Schedule final approval after review period
         setTimeout(() => {
@@ -301,7 +319,7 @@ class MockMercadoPagoService extends EventEmitter {
         statusDetail = 'accredited';
         processorResponse = {
           code: '00',
-          message: 'Transaction approved'
+          message: 'Transaction approved',
         };
     }
 
@@ -327,12 +345,14 @@ class MockMercadoPagoService extends EventEmitter {
         api_version: 'v1',
         action: 'payment.updated',
         data: {
-          id: payment.id
-        }
+          id: payment.id,
+        },
       });
     }
 
-    console.log(`[Mock MercadoPago] Payment ${paymentId} processed: ${originalStatus} -> ${newStatus}`);
+    console.log(
+      `[Mock MercadoPago] Payment ${paymentId} processed: ${originalStatus} -> ${newStatus}`
+    );
   }
 
   /**
@@ -398,7 +418,8 @@ class MockMercadoPagoService extends EventEmitter {
       );
     }
 
-    const refundAmount = refundData.amount || (payment.transaction_amount - payment.transaction_amount_refunded);
+    const refundAmount =
+      refundData.amount || payment.transaction_amount - payment.transaction_amount_refunded;
     const availableAmount = payment.transaction_amount - payment.transaction_amount_refunded;
 
     if (refundAmount > availableAmount) {
@@ -417,14 +438,14 @@ class MockMercadoPagoService extends EventEmitter {
       source: {
         id: 'collector',
         name: 'Collector',
-        type: 'collector'
+        type: 'collector',
       },
       date_created: new Date().toISOString(),
       unique_sequence_number: null,
       refund_mode: 'standard',
       adjustment_amount: 0,
       status: 'approved',
-      reason: refundData.reason || 'seller_decision'
+      reason: refundData.reason || 'seller_decision',
     };
 
     // Update payment
@@ -470,7 +491,7 @@ class MockMercadoPagoService extends EventEmitter {
       due_date: null,
       live_mode: false,
       require_esc: false,
-      
+
       // Card info (masked)
       card_number_length: cardData.card_number.length,
       first_six_digits: cardData.card_number.substring(0, 6),
@@ -478,21 +499,21 @@ class MockMercadoPagoService extends EventEmitter {
       security_code_length: cardData.security_code ? cardData.security_code.length : 0,
       expiration_month: parseInt(cardData.expiration_month),
       expiration_year: parseInt(cardData.expiration_year),
-      
+
       cardholder: {
         name: cardData.cardholder?.name || 'CARDHOLDER NAME',
         identification: {
           number: cardData.cardholder?.identification?.number || '12345678',
-          type: cardData.cardholder?.identification?.type || 'CI'
-        }
-      }
+          type: cardData.cardholder?.identification?.type || 'CI',
+        },
+      },
     };
 
     // Store card data securely (for testing purposes)
     this.cards.set(token.id, {
       ...cardData,
       token,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     });
 
     return token;
@@ -534,7 +555,8 @@ class MockMercadoPagoService extends EventEmitter {
         installment_amount: Math.round(installmentAmount * 100) / 100,
         total_amount: Math.round(totalAmount * 100) / 100,
         interest_rate: interestRate,
-        recommended_message: i === 1 ? 'Sin interés' : `${i} cuotas de $${Math.round(totalAmount / i)}`
+        recommended_message:
+          i === 1 ? 'Sin interés' : `${i} cuotas de $${Math.round(totalAmount / i)}`,
       });
     }
 
@@ -552,7 +574,7 @@ class MockMercadoPagoService extends EventEmitter {
       signature: this.generateWebhookSignature(webhookData),
       attempts: 0,
       max_attempts: 3,
-      sent_at: new Date().toISOString()
+      sent_at: new Date().toISOString(),
     };
 
     this.webhooks.push(webhook);
@@ -567,15 +589,15 @@ class MockMercadoPagoService extends EventEmitter {
    */
   startWebhookProcessor() {
     setInterval(() => {
-      const pendingWebhooks = this.webhooks.filter(w => w.attempts < w.max_attempts);
-      
-      pendingWebhooks.forEach(webhook => {
+      const pendingWebhooks = this.webhooks.filter((w) => w.attempts < w.max_attempts);
+
+      pendingWebhooks.forEach((webhook) => {
         webhook.attempts++;
         webhook.last_attempt = new Date().toISOString();
-        
+
         // Simulate webhook delivery success/failure
         const success = Math.random() > 0.05; // 95% success rate
-        
+
         if (success) {
           webhook.delivered = true;
           webhook.delivered_at = new Date().toISOString();
@@ -593,10 +615,13 @@ class MockMercadoPagoService extends EventEmitter {
 
   validatePaymentRequest(paymentData) {
     const required = ['transaction_amount', 'payment_method_id'];
-    const missing = required.filter(field => !paymentData[field]);
-    
+    const missing = required.filter((field) => !paymentData[field]);
+
     if (missing.length > 0) {
-      throw new MercadoPagoError('missing_required_fields', `Missing required fields: ${missing.join(', ')}`);
+      throw new MercadoPagoError(
+        'missing_required_fields',
+        `Missing required fields: ${missing.join(', ')}`
+      );
     }
 
     if (paymentData.transaction_amount <= 0) {
@@ -608,10 +633,12 @@ class MockMercadoPagoService extends EventEmitter {
       throw new MercadoPagoError('invalid_payment_method', 'Invalid payment method');
     }
 
-    if (paymentData.transaction_amount < paymentMethod.min_amount ||
-        paymentData.transaction_amount > paymentMethod.max_amount) {
+    if (
+      paymentData.transaction_amount < paymentMethod.min_amount ||
+      paymentData.transaction_amount > paymentMethod.max_amount
+    ) {
       throw new MercadoPagoError(
-        'invalid_amount', 
+        'invalid_amount',
         `Amount must be between ${paymentMethod.min_amount} and ${paymentMethod.max_amount}`
       );
     }
@@ -621,22 +648,22 @@ class MockMercadoPagoService extends EventEmitter {
     if (!cardData.card_number || !this.validateLuhn(cardData.card_number)) {
       return false;
     }
-    
+
     if (!cardData.expiration_month || !cardData.expiration_year) {
       return false;
     }
-    
+
     const month = parseInt(cardData.expiration_month);
     const year = parseInt(cardData.expiration_year);
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
-    
+
     if (month < 1 || month > 12) return false;
     if (year < currentYear || (year === currentYear && month < currentMonth)) {
       return false;
     }
-    
+
     return true;
   }
 
@@ -644,19 +671,19 @@ class MockMercadoPagoService extends EventEmitter {
     const digits = cardNumber.replace(/\D/g, '').split('').map(Number);
     let sum = 0;
     let isEven = false;
-    
+
     for (let i = digits.length - 1; i >= 0; i--) {
       let digit = digits[i];
-      
+
       if (isEven) {
         digit *= 2;
         if (digit > 9) digit -= 9;
       }
-      
+
       sum += digit;
       isEven = !isEven;
     }
-    
+
     return sum % 10 === 0;
   }
 
@@ -666,25 +693,25 @@ class MockMercadoPagoService extends EventEmitter {
       email: payerData?.email || 'customer@example.com',
       identification: {
         type: payerData?.identification?.type || 'CI',
-        number: payerData?.identification?.number || '12345678'
+        number: payerData?.identification?.number || '12345678',
       },
       type: 'customer',
       first_name: payerData?.first_name || 'Customer',
       last_name: payerData?.last_name || 'Test',
       phone: {
         area_code: '598',
-        number: payerData?.phone || '99123456'
+        number: payerData?.phone || '99123456',
       },
-      address: payerData?.address || {}
+      address: payerData?.address || {},
     };
   }
 
   calculateNetAmount(amount, paymentMethodId) {
     const merchant = this.merchants.get('merchant-test-001');
     const paymentMethod = this.paymentMethods[paymentMethodId];
-    
+
     if (!paymentMethod || !merchant) return amount;
-    
+
     const feeRate = merchant.fees[paymentMethod.type] || 0.04;
     return Math.round(amount * (1 - feeRate));
   }
@@ -692,17 +719,19 @@ class MockMercadoPagoService extends EventEmitter {
   calculateFees(amount, paymentMethodId) {
     const merchant = this.merchants.get('merchant-test-001');
     const paymentMethod = this.paymentMethods[paymentMethodId];
-    
+
     if (!paymentMethod || !merchant) return [];
-    
+
     const feeRate = merchant.fees[paymentMethod.type] || 0.04;
     const feeAmount = Math.round(amount * feeRate);
-    
-    return [{
-      type: 'mercadopago_fee',
-      amount: feeAmount,
-      fee_payer: 'collector'
-    }];
+
+    return [
+      {
+        type: 'mercadopago_fee',
+        amount: feeAmount,
+        fee_payer: 'collector',
+      },
+    ];
   }
 
   calculateReleaseDate() {
@@ -717,18 +746,18 @@ class MockMercadoPagoService extends EventEmitter {
 
   getFinancialInstitution(paymentMethodId) {
     const institutions = {
-      'visa': 'Visa International',
-      'mastercard': 'Mastercard Worldwide',
-      'banco_transfer': 'Banco República'
+      visa: 'Visa International',
+      mastercard: 'Mastercard Worldwide',
+      banco_transfer: 'Banco República',
     };
     return institutions[paymentMethodId] || null;
   }
 
   getDeclineReason(error) {
     const reasons = {
-      'insufficient_funds': 'cc_rejected_insufficient_amount',
-      'expired_card': 'cc_rejected_card_disabled',
-      'card_declined': 'cc_rejected_other_reason'
+      insufficient_funds: 'cc_rejected_insufficient_amount',
+      expired_card: 'cc_rejected_card_disabled',
+      card_declined: 'cc_rejected_other_reason',
     };
     return reasons[error] || 'cc_rejected_other_reason';
   }
@@ -746,7 +775,7 @@ class MockMercadoPagoService extends EventEmitter {
       date_created: cardData.created_at,
       date_last_updated: cardData.created_at,
       cardholder: cardData.cardholder,
-      customer_id: null
+      customer_id: null,
     };
   }
 
@@ -777,20 +806,17 @@ class MockMercadoPagoService extends EventEmitter {
 
   generateWebhookSignature(data) {
     const payload = JSON.stringify(data);
-    return crypto
-      .createHmac('sha256', this.config.webhookSecret)
-      .update(payload)
-      .digest('hex');
+    return crypto.createHmac('sha256', this.config.webhookSecret).update(payload).digest('hex');
   }
 
   async simulateDelay(customDelay = null) {
     const delay = customDelay || this.config.responseDelay;
-    
+
     // Simulate service degradation
     if (this.serviceHealth === 'degraded') {
-      await new Promise(resolve => setTimeout(resolve, delay * 2));
+      await new Promise((resolve) => setTimeout(resolve, delay * 2));
     } else {
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
@@ -819,19 +845,19 @@ class MockMercadoPagoService extends EventEmitter {
       paymentCount: this.payments.size,
       cardTokenCount: this.cards.size,
       webhookCount: this.webhooks.length,
-      successfulWebhooks: this.webhooks.filter(w => w.delivered).length,
-      failedWebhooks: this.webhooks.filter(w => w.failed).length,
+      successfulWebhooks: this.webhooks.filter((w) => w.delivered).length,
+      failedWebhooks: this.webhooks.filter((w) => w.failed).length,
       serviceHealth: this.serviceHealth,
       errorRate: this.config.errorRate,
-      responseDelay: this.config.responseDelay
+      responseDelay: this.config.responseDelay,
     };
   }
 
   getPaymentStats() {
     const payments = Array.from(this.payments.values());
     const statusCounts = {};
-    
-    payments.forEach(payment => {
+
+    payments.forEach((payment) => {
       statusCounts[payment.status] = (statusCounts[payment.status] || 0) + 1;
     });
 
@@ -839,8 +865,10 @@ class MockMercadoPagoService extends EventEmitter {
       total: payments.length,
       statusBreakdown: statusCounts,
       totalAmount: payments.reduce((sum, p) => sum + p.transaction_amount, 0),
-      averageAmount: payments.length > 0 ? 
-        payments.reduce((sum, p) => sum + p.transaction_amount, 0) / payments.length : 0
+      averageAmount:
+        payments.length > 0
+          ? payments.reduce((sum, p) => sum + p.transaction_amount, 0) / payments.length
+          : 0,
     };
   }
 
@@ -872,7 +900,7 @@ class MercadoPagoError extends Error {
       error: this.code,
       message: this.message,
       status: this.status,
-      timestamp: this.timestamp
+      timestamp: this.timestamp,
     };
   }
 }
@@ -887,42 +915,42 @@ class MockPaymentServiceFactory {
       normal: {
         errorRate: 0.02,
         responseDelay: 500,
-        enableWebhooks: true
+        enableWebhooks: true,
       },
-      
+
       high_error: {
         errorRate: 0.15,
         responseDelay: 1000,
-        enableWebhooks: true
+        enableWebhooks: true,
       },
-      
+
       slow_network: {
         errorRate: 0.02,
         responseDelay: 3000,
-        enableWebhooks: true
+        enableWebhooks: true,
       },
-      
+
       degraded_service: {
         errorRate: 0.08,
         responseDelay: 2000,
         enableWebhooks: true,
-        initialHealth: 'degraded'
+        initialHealth: 'degraded',
       },
-      
+
       fast_testing: {
         errorRate: 0,
         responseDelay: 50,
-        enableWebhooks: false
-      }
+        enableWebhooks: false,
+      },
     };
 
     const config = scenarios[scenario] || scenarios.normal;
     const service = new MockMercadoPagoService(config);
-    
+
     if (config.initialHealth) {
       service.setServiceHealth(config.initialHealth);
     }
-    
+
     return service;
   }
 }
@@ -930,7 +958,7 @@ class MockPaymentServiceFactory {
 module.exports = {
   MockMercadoPagoService,
   MercadoPagoError,
-  MockPaymentServiceFactory
+  MockPaymentServiceFactory,
 };
 
 // Export default instance

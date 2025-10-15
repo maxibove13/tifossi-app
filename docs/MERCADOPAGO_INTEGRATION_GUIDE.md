@@ -106,6 +106,7 @@ MercadoPago Checkout Pro is a fully-hosted payment solution that redirects users
 ### Required NPM Packages
 
 **Backend (already installed):**
+
 ```json
 {
   "mercadopago": "^2.0.15"
@@ -113,6 +114,7 @@ MercadoPago Checkout Pro is a fully-hosted payment solution that redirects users
 ```
 
 **Frontend (already installed):**
+
 ```json
 {
   "expo-web-browser": "~13.0.3"
@@ -759,13 +761,16 @@ See `/docs/MERCADOPAGO_CREDENTIAL_SETUP.md` for detailed instructions.
 ### Test Cards (Uruguay)
 
 **Credit Cards:**
+
 - Mastercard: `5031 7557 3453 0604` (CVV: 123, Exp: 11/30)
 - Visa: `4509 9535 6623 3704` (CVV: 123, Exp: 11/30)
 
 **Debit Card:**
+
 - Visa Debit: `4213 0163 1470 6756` (CVV: 123, Exp: 11/30)
 
 **Cardholder Names (Control Payment Outcome):**
+
 - `APRO`: Payment approved
 - `FUND`: Rejected - insufficient funds
 - `OTHE`: Rejected - general error
@@ -842,6 +847,7 @@ See `/docs/MERCADOPAGO_TESTING_PLAN.md` for complete testing documentation.
 - Refund rate
 
 **MercadoPago Dashboard:**
+
 - Check daily transaction reports
 - Monitor chargebacks and disputes
 - Review payment method usage
@@ -853,19 +859,19 @@ See `/docs/MERCADOPAGO_TESTING_PLAN.md` for complete testing documentation.
 strapi.log.info('Payment created:', {
   orderId: order.id,
   amount: order.total,
-  status: 'PAYMENT_PENDING'
+  status: 'PAYMENT_PENDING',
 });
 
 strapi.log.info('Payment approved:', {
   orderId: order.id,
   paymentId: paymentInfo.id,
-  amount: paymentInfo.transaction_amount
+  amount: paymentInfo.transaction_amount,
 });
 
 strapi.log.error('Payment failed:', {
   orderId: order.id,
   status: paymentInfo.status,
-  statusDetail: paymentInfo.status_detail
+  statusDetail: paymentInfo.status_detail,
 });
 ```
 
@@ -876,6 +882,7 @@ strapi.log.error('Payment failed:', {
 ### Backend Security
 
 1. **Always Validate Webhook Signatures**
+
    ```typescript
    if (!mpService.verifyWebhookSignature(signature, requestId, dataId)) {
      return ctx.unauthorized('Invalid signature');
@@ -899,6 +906,7 @@ strapi.log.error('Payment failed:', {
 ### Frontend Security
 
 1. **Validate Deep Links**
+
    ```typescript
    // Verify scheme and host
    if (urlObj.protocol !== 'tifossi:' || urlObj.hostname !== 'payment') {
@@ -918,11 +926,13 @@ strapi.log.error('Payment failed:', {
 ### Environment Variables
 
 **DO:**
+
 - Use environment variables for all credentials
 - Rotate webhook secrets periodically
 - Use different credentials for test/production
 
 **DON'T:**
+
 - Commit credentials to Git
 - Share webhook secrets
 - Log credentials in production
@@ -935,10 +945,12 @@ strapi.log.error('Payment failed:', {
 ### 1. Webhook Not Receiving Notifications
 
 **Symptoms:**
+
 - Payment completes but order status doesn't update
 - No webhook logs in backend
 
 **Solutions:**
+
 - Verify webhook URL is publicly accessible (HTTPS)
 - Check webhook URL configuration in MercadoPago dashboard
 - Verify webhook secret matches
@@ -949,10 +961,12 @@ strapi.log.error('Payment failed:', {
 ### 2. Deep Link Not Working
 
 **Symptoms:**
+
 - App doesn't open after payment
 - User stuck on MercadoPago success page
 
 **Solutions:**
+
 - Verify app.json scheme configuration
 - Check iOS associated domains
 - Verify Android intent filters
@@ -962,9 +976,11 @@ strapi.log.error('Payment failed:', {
 ### 3. Signature Verification Failing
 
 **Symptoms:**
+
 - All webhooks rejected with "Invalid signature"
 
 **Solutions:**
+
 - Verify webhook secret matches dashboard
 - Check manifest format: `id:${dataId};request-id:${xRequestId};ts:${ts};`
 - Ensure using correct hash algorithm (HMAC SHA256)
@@ -974,10 +990,12 @@ strapi.log.error('Payment failed:', {
 ### 4. Payment Stuck in Pending
 
 **Symptoms:**
+
 - Order status remains PAYMENT_PENDING
 - User completed payment but no confirmation
 
 **Solutions:**
+
 - Check if webhook was delivered
 - Verify payment status manually via API
 - Check MercadoPago dashboard for payment status
@@ -987,10 +1005,12 @@ strapi.log.error('Payment failed:', {
 ### 5. Wrong Environment Credentials
 
 **Symptoms:**
+
 - "Invalid credentials" errors
 - Payments not appearing in dashboard
 
 **Solutions:**
+
 - Verify using TEST- prefix for sandbox
 - Check NODE_ENV environment variable
 - Ensure credentials match selected environment
@@ -999,10 +1019,12 @@ strapi.log.error('Payment failed:', {
 ### 6. Preference Expiration
 
 **Symptoms:**
+
 - "Preference expired" error
 - User can't complete payment
 
 **Solutions:**
+
 - Set reasonable expiration time (30 minutes)
 - Handle expired preferences in frontend
 - Allow user to recreate preference
@@ -1011,10 +1033,12 @@ strapi.log.error('Payment failed:', {
 ### 7. Currency Mismatch
 
 **Symptoms:**
+
 - Payment rejected
 - Amount doesn't match order total
 
 **Solutions:**
+
 - Always use 'UYU' for Uruguay
 - Ensure all amounts in same currency
 - Check shipping cost currency
@@ -1027,6 +1051,7 @@ strapi.log.error('Payment failed:', {
 ### MercadoPago API Endpoints
 
 **Create Preference:**
+
 ```
 POST https://api.mercadopago.com/checkout/preferences
 Authorization: Bearer ACCESS_TOKEN
@@ -1034,12 +1059,14 @@ Content-Type: application/json
 ```
 
 **Get Payment:**
+
 ```
 GET https://api.mercadopago.com/v1/payments/{id}
 Authorization: Bearer ACCESS_TOKEN
 ```
 
 **Create Refund:**
+
 ```
 POST https://api.mercadopago.com/v1/payments/{id}/refunds
 Authorization: Bearer ACCESS_TOKEN
@@ -1049,6 +1076,7 @@ Content-Type: application/json
 ### Strapi API Endpoints
 
 **Create Payment Preference:**
+
 ```
 POST /api/payment/create-preference
 Authorization: Bearer JWT_TOKEN
@@ -1056,18 +1084,21 @@ Content-Type: application/json
 ```
 
 **Verify Payment:**
+
 ```
 GET /api/payment/verify/:paymentId
 Authorization: Bearer JWT_TOKEN
 ```
 
 **Get Orders:**
+
 ```
 GET /api/payment/orders?page=1&pageSize=10&status=PAID
 Authorization: Bearer JWT_TOKEN
 ```
 
 **Request Refund:**
+
 ```
 POST /api/payment/refund
 Authorization: Bearer JWT_TOKEN
@@ -1079,6 +1110,7 @@ Content-Type: application/json
 ## Additional Resources
 
 ### Official Documentation
+
 - [MercadoPago Uruguay Developers](https://www.mercadopago.com.uy/developers/)
 - [Checkout Pro Documentation](https://www.mercadopago.com.uy/developers/en/docs/checkout-pro/overview)
 - [API Reference](https://www.mercadopago.com.uy/developers/en/reference)
@@ -1086,11 +1118,13 @@ Content-Type: application/json
 - [Test Cards](https://www.mercadopago.com.uy/developers/en/docs/your-integrations/test/cards)
 
 ### Tifossi Documentation
+
 - `/docs/MERCADOPAGO_CREDENTIAL_SETUP.md` - Credential setup guide
 - `/docs/MERCADOPAGO_TESTING_PLAN.md` - Testing strategy
 - `/docs/MERCADOPAGO_ALIGNMENT_STATUS.md` - Implementation status
 
 ### Support
+
 - MercadoPago Support: https://www.mercadopago.com.uy/developers/support
 - API Status: https://status.mercadopago.com/
 - Community Forum: https://forum.mercadopago.com/
@@ -1108,6 +1142,7 @@ This guide covers the complete MercadoPago Checkout Pro integration for the Tifo
 5. **Production**: Deployment checklist and monitoring guidelines
 
 The codebase already has a production-ready implementation. This guide serves as documentation for:
+
 - Understanding the payment flow
 - Configuring credentials
 - Troubleshooting issues
@@ -1115,6 +1150,7 @@ The codebase already has a production-ready implementation. This guide serves as
 - Maintaining the integration
 
 **Next Steps:**
+
 1. Obtain production MercadoPago credentials
 2. Configure webhook URL in Render.com
 3. Update environment variables in hosting service

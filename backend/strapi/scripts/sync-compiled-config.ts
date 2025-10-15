@@ -20,7 +20,7 @@ interface SyncPath {
 
 const syncPaths: SyncPath[] = [
   { source: 'config', target: 'config' },
-  { source: 'src', target: 'src' }
+  { source: 'src', target: 'src' },
 ];
 
 /**
@@ -79,9 +79,7 @@ function mergeDirectory(src: string, dest: string): void {
  * Fails loudly if artifacts are missing so we can fix the build at source.
  */
 function validateBuildOutput(): boolean {
-  const requiredDirs = [
-    path.join(distRoot, 'strapi', 'src', 'api'),
-  ];
+  const requiredDirs = [path.join(distRoot, 'strapi', 'src', 'api')];
 
   // Optional but expected directories (warn if missing)
   const expectedDirs = [
@@ -104,7 +102,9 @@ function validateBuildOutput(): boolean {
   for (const dir of expectedDirs) {
     if (!fs.existsSync(dir)) {
       console.warn(`[sync-compiled-config] WARNING: Expected directory missing: ${dir}`);
-      console.warn('[sync-compiled-config] This may cause runtime issues if these modules are used');
+      console.warn(
+        '[sync-compiled-config] This may cause runtime issues if these modules are used'
+      );
     }
   }
 
@@ -151,8 +151,12 @@ function syncRuntimeDirectories(): void {
       // If Strapi didn't compile it, log warning (may be empty directory)
       const srcDir = path.join(srcRoot, dirName);
       if (fs.existsSync(srcDir) && fs.readdirSync(srcDir).length > 0) {
-        console.warn(`[sync-compiled-config] WARNING: ${dirName} not in Strapi build output, but exists in source`);
-        console.warn(`[sync-compiled-config] This may cause runtime errors. Check Strapi build configuration.`);
+        console.warn(
+          `[sync-compiled-config] WARNING: ${dirName} not in Strapi build output, but exists in source`
+        );
+        console.warn(
+          `[sync-compiled-config] This may cause runtime errors. Check Strapi build configuration.`
+        );
       }
     }
   }
@@ -166,7 +170,9 @@ function syncAll(): boolean {
   const strapiDistExists = fs.existsSync(path.join(distRoot, 'strapi'));
 
   if (!strapiDistExists) {
-    console.log('[sync-compiled-config] No dist/strapi directory - compilation output is already in correct location');
+    console.log(
+      '[sync-compiled-config] No dist/strapi directory - compilation output is already in correct location'
+    );
     return true;
   }
 

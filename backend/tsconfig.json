@@ -20,7 +20,7 @@
       "@tests/*": ["tests/*"]
     },
     "types": ["node"],
-  "typeRoots": ["../node_modules/@types", "node_modules/@types"],
+    "typeRoots": ["../node_modules/@types", "node_modules/@types"],
     "moduleResolution": "node",
     "allowJs": true,
     "checkJs": false,
@@ -37,15 +37,6 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": [
-    "strapi/**/*.ts",
-    "tests/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ]
+  "include": ["strapi/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["node_modules", "dist", "build", "**/*.spec.ts", "**/*.test.ts"]
 }

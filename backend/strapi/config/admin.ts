@@ -36,11 +36,7 @@ export default ({ env }: { env: any }) => {
     url: env('ADMIN_URL', '/admin'),
     serveAdminPanel: env.bool('ADMIN_PANEL_ENABLED', true),
     autoOpen: env.bool('ADMIN_AUTO_OPEN', false),
-    watchIgnoreFiles: [
-      './src/**/*.ts',
-      './dist/**/*',
-      './.cache/**/*',
-    ],
+    watchIgnoreFiles: ['./src/**/*.ts', './dist/**/*', './.cache/**/*'],
     host: env('ADMIN_HOST', 'localhost'),
     port: env.int('ADMIN_PORT', 1337),
   };

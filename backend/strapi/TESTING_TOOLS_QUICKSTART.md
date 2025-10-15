@@ -32,6 +32,7 @@ node scripts/validate-db-config.js
 ```
 
 **Success looks like**:
+
 ```
 ✓ PASS: Render Production: DATABASE_URL with SSL
 ✓ PASS: Individual Parameters: host/port/database/user/password
@@ -52,6 +53,7 @@ node scripts/validate-db-config.js
 ```
 
 **Success looks like**:
+
 ```
 ✓ Environment variables set
 ✓ Dependencies installed
@@ -79,6 +81,7 @@ node scripts/validate-db-config.js
 ```
 
 **Success looks like**:
+
 ```
 ✓ PostgreSQL is ready
 ✓ Strapi container is running
@@ -89,27 +92,30 @@ node scripts/validate-db-config.js
 
 ## When to Use Each Tool
 
-| Scenario | Tool to Use |
-|----------|-------------|
-| Quick pre-commit check | Tool 1: Config Validator |
-| Before deploying to Render | Tool 2: Render Simulator |
-| Major config changes | Tool 3: Docker Environment |
+| Scenario                      | Tool to Use                |
+| ----------------------------- | -------------------------- |
+| Quick pre-commit check        | Tool 1: Config Validator   |
+| Before deploying to Render    | Tool 2: Render Simulator   |
+| Major config changes          | Tool 3: Docker Environment |
 | Debugging deployment failures | Tool 3: Docker Environment |
-| CI/CD pipeline | Tool 1 + Tool 2 |
+| CI/CD pipeline                | Tool 1 + Tool 2            |
 
 ---
 
 ## Common Errors
 
 ### "Cannot destructure property 'client'"
+
 **Run**: `node scripts/validate-db-config.js`
 **Fix**: Check `config/database.js` structure
 
 ### Build fails on Render but works locally
+
 **Run**: `./scripts/test-with-render-env.sh`
 **Fix**: Ensure environment variables match Render
 
 ### Database connection errors
+
 **Run**: `./docker/test-render-env/test-env.sh start`
 **Fix**: Check SSL settings, connection string format
 

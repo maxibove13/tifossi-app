@@ -52,7 +52,9 @@ const registerFirebaseRoutes = () => {
   }
 
   if (!strapi.server?.api) {
-    strapi.log.warn('[Strapi Firebase] Strapi server API not ready; skipping Firebase route registration for now');
+    strapi.log.warn(
+      '[Strapi Firebase] Strapi server API not ready; skipping Firebase route registration for now'
+    );
     return false;
   }
 
@@ -84,7 +86,9 @@ const extendUserService = (plugin: Plugin) => {
   const userService = plugin.services?.user;
 
   if (!userService) {
-    strapi.log.warn('[Strapi Firebase] users-permissions user service missing; Firebase sanitiser not applied');
+    strapi.log.warn(
+      '[Strapi Firebase] users-permissions user service missing; Firebase sanitiser not applied'
+    );
     return;
   }
 
@@ -107,7 +111,9 @@ const extendUserService = (plugin: Plugin) => {
       };
     };
   } else {
-    strapi.log.warn('[Strapi Firebase] users-permissions user service missing sanitizeUser implementation');
+    strapi.log.warn(
+      '[Strapi Firebase] users-permissions user service missing sanitizeUser implementation'
+    );
   }
 
   Object.assign(userService, {
@@ -139,7 +145,9 @@ export default (plugin: Plugin) => {
       process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
 
     if (!hasCredentials) {
-      strapi.log.warn('[Strapi Firebase] Firebase credentials not configured - Firebase auth features disabled');
+      strapi.log.warn(
+        '[Strapi Firebase] Firebase credentials not configured - Firebase auth features disabled'
+      );
       return;
     }
 
@@ -151,7 +159,10 @@ export default (plugin: Plugin) => {
 
       strapi.log.info('[Strapi Firebase] Firebase Admin initialized successfully');
     } catch (error: any) {
-      strapi.log.warn('[Strapi Firebase] Failed to initialize Firebase Admin:', error?.message ?? error);
+      strapi.log.warn(
+        '[Strapi Firebase] Failed to initialize Firebase Admin:',
+        error?.message ?? error
+      );
     }
   };
 

@@ -59,7 +59,9 @@ class MediaUploader {
       const existing = JSON.parse(content);
 
       this.mediaMapping = existing;
-      console.log(`📋 Loaded existing mapping with ${Object.keys(existing.images || {}).length} images and ${Object.keys(existing.videos || {}).length} videos`);
+      console.log(
+        `📋 Loaded existing mapping with ${Object.keys(existing.images || {}).length} images and ${Object.keys(existing.videos || {}).length} videos`
+      );
     } catch {
       this.mediaMapping = { images: {}, videos: {} };
       console.log('📋 Starting with empty mapping');
@@ -77,11 +79,11 @@ class MediaUploader {
       method,
       url: `${this.strapiUrl}${endpoint}`,
       headers: {
-        'Authorization': `Bearer ${this.strapiToken}`,
-        ...headers
+        Authorization: `Bearer ${this.strapiToken}`,
+        ...headers,
       },
       maxBodyLength: Infinity,
-      maxContentLength: Infinity
+      maxContentLength: Infinity,
     };
 
     if (data) {
@@ -93,7 +95,9 @@ class MediaUploader {
       return response.data;
     } catch (error) {
       if (error.response) {
-        throw new Error(`Strapi API Error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+        throw new Error(
+          `Strapi API Error: ${error.response.status} - ${JSON.stringify(error.response.data)}`
+        );
       }
       throw error;
     }
@@ -120,12 +124,7 @@ class MediaUploader {
       form.append('files', createReadStream(filePath), fileName);
       form.append('folder', folder);
 
-      const response = await this.makeRequest(
-        'POST',
-        '/api/upload',
-        form,
-        form.getHeaders()
-      );
+      const response = await this.makeRequest('POST', '/api/upload', form, form.getHeaders());
 
       if (response && response[0]) {
         const uploadedFile = response[0];
@@ -139,7 +138,7 @@ class MediaUploader {
           url: mediaUrl,
           name: uploadedFile.name,
           hash: uploadedFile.hash,
-          ext: uploadedFile.ext
+          ext: uploadedFile.ext,
         };
       }
 
@@ -157,7 +156,7 @@ class MediaUploader {
 
     try {
       const files = await fs.readdir(imagePath);
-      const imageFiles = files.filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f));
+      const imageFiles = files.filter((f) => /\.(png|jpg|jpeg|webp)$/i.test(f));
 
       console.log(`Found ${imageFiles.length} image files to process`);
 
@@ -176,7 +175,7 @@ class MediaUploader {
         await this.saveMapping();
 
         // Small delay to avoid overwhelming the server
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
       console.log(`✅ Uploaded ${imageFiles.length} images successfully`);
@@ -193,7 +192,7 @@ class MediaUploader {
 
     try {
       const files = await fs.readdir(videoPath);
-      const videoFiles = files.filter(f => /\.(mov|mp4|webm)$/i.test(f));
+      const videoFiles = files.filter((f) => /\.(mov|mp4|webm)$/i.test(f));
 
       console.log(`Found ${videoFiles.length} video files to process`);
 
@@ -220,7 +219,7 @@ class MediaUploader {
         await this.saveMapping();
 
         // Longer delay for videos as they're larger
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       console.log(`✅ Uploaded ${videoFiles.length} videos successfully`);
@@ -259,7 +258,7 @@ class MediaUploader {
     await this.initialize();
 
     try {
-      switch(type) {
+      switch (type) {
         case 'images':
           await this.uploadImages();
           break;
@@ -277,7 +276,6 @@ class MediaUploader {
       await this.generateReport();
       console.log('\n✅ Media upload completed successfully!');
       console.log(`📁 Mapping file saved at: ${path.join(__dirname, 'media-url-mapping.json')}`);
-
     } catch (error) {
       console.error('\n❌ Media upload failed:', error.message);
       process.exit(1);
@@ -287,12 +285,12 @@ class MediaUploader {
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-const typeArg = args.find(arg => arg.startsWith('--type='));
+const typeArg = args.find((arg) => arg.startsWith('--type='));
 const uploadType = typeArg ? typeArg.split('=')[1] : 'all';
 
 // Run the uploader
 const uploader = new MediaUploader();
-uploader.run(uploadType).catch(error => {
+uploader.run(uploadType).catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });

@@ -20,6 +20,9 @@ export default {
     strapi.log.info('Tifossi Strapi Backend is starting up...');
 
     const proxyEnabled = strapi.config.get('server.proxy', false);
+    if (proxyEnabled && strapi.server?.app && strapi.server.app.proxy !== true) {
+      strapi.server.app.proxy = true;
+    }
     const koaProxy = strapi.server?.app?.proxy ?? false;
     strapi.log.info(
       `Reverse proxy trusted: config=${proxyEnabled} koa=${koaProxy} (IS_PROXIED=${process.env.IS_PROXIED ?? 'undefined'})`
@@ -100,7 +103,6 @@ async function initializeDefaultData(strapi: any) {
 
       console.log('Default product statuses created');
     }
-
   } catch (error) {
     console.error('Error initializing default data:', error);
   }
@@ -138,7 +140,6 @@ function setupCronJobs(strapi: any) {
     });
 
     console.log('Cron jobs initialized');
-
   } catch (error) {
     console.error('Error setting up cron jobs:', error);
   }
@@ -166,7 +167,6 @@ async function initializeExternalServices(strapi: any) {
     console.log('Database connection established');
 
     console.log('External services initialized');
-
   } catch (error) {
     console.error('Error initializing external services:', error);
     // Don't throw - let the app start even if some services fail

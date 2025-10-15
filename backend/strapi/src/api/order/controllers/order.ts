@@ -61,7 +61,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         },
       });
 
-      const clientOrder = buildClientOrder(orderEntity as unknown as OrderEntity, sanitizedOrder.clientSummary);
+      const clientOrder = buildClientOrder(
+        orderEntity as unknown as OrderEntity,
+        sanitizedOrder.clientSummary
+      );
 
       ctx.status = 201;
       ctx.body = {

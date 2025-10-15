@@ -70,14 +70,14 @@ runTest('Verify Strapi env helper is available', () => {
 
 // Test 2: Check all DATABASE_* environment variables
 runTest('Check DATABASE_* environment variables', () => {
-  const dbVars = Object.keys(process.env).filter(key => key.startsWith('DATABASE_'));
+  const dbVars = Object.keys(process.env).filter((key) => key.startsWith('DATABASE_'));
 
   if (dbVars.length === 0) {
     throw new Error('No DATABASE_* environment variables found!');
   }
 
   console.log(`  Found ${dbVars.length} DATABASE_* variables:`);
-  dbVars.forEach(varName => {
+  dbVars.forEach((varName) => {
     // Mask sensitive values
     let value = process.env[varName];
     if (varName.includes('PASSWORD') || varName.includes('URL')) {
@@ -88,7 +88,7 @@ runTest('Check DATABASE_* environment variables', () => {
 
   // Check required variables
   const required = ['DATABASE_CLIENT'];
-  const missing = required.filter(v => !process.env[v]);
+  const missing = required.filter((v) => !process.env[v]);
 
   if (missing.length > 0) {
     throw new Error(`Missing required variables: ${missing.join(', ')}`);
@@ -120,7 +120,9 @@ runTest('Validate DATABASE_URL (if using postgres)', () => {
 
       // Validate it looks like a postgres URL
       if (!url.protocol.startsWith('postgres')) {
-        throw new Error(`Invalid protocol: ${url.protocol} (expected postgres:// or postgresql://)`);
+        throw new Error(
+          `Invalid protocol: ${url.protocol} (expected postgres:// or postgresql://)`
+        );
       }
 
       if (!url.hostname) {
@@ -233,7 +235,9 @@ runTest('Validate configuration structure', () => {
   console.log(`  - config.connection.client: "${config.connection.client}"`);
   console.log(`  - config.connection.connection: ${typeof config.connection.connection}`);
   console.log(`  - config.connection.pool: ${config.connection.pool ? 'present' : 'absent'}`);
-  console.log(`  - config.connection.acquireConnectionTimeout: ${config.connection.acquireConnectionTimeout || 'not set'}`);
+  console.log(
+    `  - config.connection.acquireConnectionTimeout: ${config.connection.acquireConnectionTimeout || 'not set'}`
+  );
 
   // Validate client-specific requirements
   if (config.connection.client === 'postgres') {
@@ -260,7 +264,7 @@ console.log('Test Summary');
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 console.log('');
 
-tests.forEach(test => {
+tests.forEach((test) => {
   const status = test.passed ? '✓' : '✗';
   console.log(`${status} ${test.name}`);
   if (!test.passed && test.error) {
@@ -270,8 +274,8 @@ tests.forEach(test => {
 
 console.log('');
 console.log(`Total: ${tests.length} tests`);
-console.log(`Passed: ${tests.filter(t => t.passed).length}`);
-console.log(`Failed: ${tests.filter(t => !t.passed).length}`);
+console.log(`Passed: ${tests.filter((t) => t.passed).length}`);
+console.log(`Failed: ${tests.filter((t) => !t.passed).length}`);
 console.log('');
 
 if (allPassed) {

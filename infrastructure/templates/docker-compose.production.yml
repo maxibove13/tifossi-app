@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+      POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=C --lc-ctype=C'
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
     deploy:
@@ -76,7 +76,8 @@ services:
     volumes:
       - strapi_uploads_prod:/app/public/uploads
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1337/api/health"]
+      test:
+        ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:1337/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -88,8 +89,8 @@ services:
     container_name: tifossi-nginx-prod
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80'
+      - '443:443'
     volumes:
       - ./infrastructure/docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
       - ./infrastructure/docker/nginx/conf.d:/etc/nginx/conf.d:ro
@@ -110,7 +111,7 @@ services:
           memory: 128M
           cpus: '0.1'
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -120,7 +121,7 @@ services:
   backup:
     image: postgres:15-alpine
     container_name: tifossi-backup-prod
-    restart: "no"
+    restart: 'no'
     environment:
       PGPASSWORD: ${DATABASE_PASSWORD}
     volumes:
@@ -130,7 +131,7 @@ services:
       - postgres
     networks:
       - tifossi-network
-    command: ["/backup.sh"]
+    command: ['/backup.sh']
     profiles:
       - backup
 
@@ -143,8 +144,8 @@ services:
       - ./infrastructure/docker/fluentd/fluent.conf:/fluentd/etc/fluent.conf:ro
       - strapi_logs:/var/log/strapi
     ports:
-      - "24224:24224"
-      - "24224:24224/udp"
+      - '24224:24224'
+      - '24224:24224/udp'
     networks:
       - tifossi-network
     profiles:
@@ -157,28 +158,28 @@ volumes:
       type: none
       o: bind
       device: /var/lib/docker/volumes/tifossi_postgres_prod/_data
-  
+
   redis_data_prod:
     driver: local
     driver_opts:
       type: none
       o: bind
       device: /var/lib/docker/volumes/tifossi_redis_prod/_data
-  
+
   strapi_uploads_prod:
     driver: local
     driver_opts:
       type: none
       o: bind
       device: /var/lib/docker/volumes/tifossi_uploads_prod/_data
-  
+
   backup_data:
     driver: local
     driver_opts:
       type: none
       o: bind
       device: /var/lib/docker/volumes/tifossi_backup_prod/_data
-  
+
   strapi_logs:
     driver: local
 

@@ -9,14 +9,16 @@ The Tifossi app implements a dual-layer tab navigation system in the catalog scr
 ### 1. Primary Navigation (Categories and Labels)
 
 The catalog screen implements a horizontal scrolling tab bar for the main product navigation options including:
+
 - Regular product categories (Medias, Gorros, etc.)
 - Product label categories (Nuevos, Destacados, etc.)
 - All products category ("Todo")
 
 This primary navigation system has the following characteristics:
+
 - **Data Source**: `CategoryData.mainCategories` which combines:
   - Regular product categories from `productCategories`
-  - Product label categories from `labelCategories` 
+  - Product label categories from `labelCategories`
   - The "Todo" category at the beginning
 - **Default Selection**: First category ("Todo") or the category specified in URL parameters
 - **Behavior**: Selecting a category or label filters products and updates the available models
@@ -52,8 +54,20 @@ export const productCategories: Category[] = [
 // Special categories based on product labels
 export const labelCategories: Category[] = [
   { id: 'new', name: 'Nuevos', slug: 'nuevos', isLabel: true, labelType: ProductLabel.NEW },
-  { id: 'featured', name: 'Destacados', slug: 'destacados', isLabel: true, labelType: ProductLabel.FEATURED },
-  { id: 'opportunity', name: 'Oportunidades', slug: 'oportunidades', isLabel: true, labelType: ProductLabel.OPPORTUNITY },
+  {
+    id: 'featured',
+    name: 'Destacados',
+    slug: 'destacados',
+    isLabel: true,
+    labelType: ProductLabel.FEATURED,
+  },
+  {
+    id: 'opportunity',
+    name: 'Oportunidades',
+    slug: 'oportunidades',
+    isLabel: true,
+    labelType: ProductLabel.OPPORTUNITY,
+  },
   // More label categories...
 ];
 
@@ -85,9 +99,9 @@ The ProductModel interface defines the structure for model data:
 
 ```typescript
 export interface ProductModel {
-  id: string;         // Unique identifier
-  name: string;       // Display name
-  slug: string;       // URL-friendly version of name
+  id: string; // Unique identifier
+  name: string; // Display name
+  slug: string; // URL-friendly version of name
   categoryId: string; // Associated category
 }
 ```
@@ -98,11 +112,11 @@ The Category interface has been extended to support label-based categories:
 
 ```typescript
 export interface Category {
-  id: string;         // Unique identifier
-  name: string;       // Display name
-  slug: string;       // URL-friendly version of name
+  id: string; // Unique identifier
+  name: string; // Display name
+  slug: string; // URL-friendly version of name
   displayOrder?: number; // Optional sorting
-  isLabel?: boolean;  // Whether this category is based on product labels
+  isLabel?: boolean; // Whether this category is based on product labels
   labelType?: ProductLabel; // The associated product label (if isLabel is true)
 }
 ```
@@ -116,8 +130,8 @@ export interface Product {
   id: string;
   title: string;
   price: number;
-  categoryId: string; 
-  modelId: string;  // Model identifier for grouping similar products
+  categoryId: string;
+  modelId: string; // Model identifier for grouping similar products
   // Other product properties...
 }
 ```
@@ -142,7 +156,7 @@ const TabBar = <T extends { id: string; name: string }>({
   activeUnderlineStyle,
 }: TabBarProps<T>) => {
   // Implementation details...
-}
+};
 ```
 
 The component uses generics to work with both Category and ProductModel types, which both implement the necessary `id` and `name` properties.
@@ -160,16 +174,16 @@ The catalog screen dynamically updates its title based on the current selection:
 ```typescript
 // Define mapping between section names and their corresponding titles
 const SECTION_TO_TITLE_MAP: Record<string, string> = {
-  'Tienda': 'Productos Recomendados',
-  'Destacados': 'Productos Destacados',
-  'Tendencias': 'Tendencias',
+  Tienda: 'Productos Recomendados',
+  Destacados: 'Productos Destacados',
+  Tendencias: 'Tendencias',
   'Lanzamientos & Oportunidades': 'Lanzamientos & Oportunidades',
 };
 ```
 
 ## Navigation Flow
 
-1. **Initial Load**: 
+1. **Initial Load**:
    - Load with default category "Todo" or from URL parameters
    - Secondary tabs are hidden for "Todo" category or label-based categories
    - Display appropriate models for regular product categories
@@ -246,17 +260,17 @@ export const getProductsByCategory = (categoryId: string): Product[] => {
   if (categoryId === 'todo') {
     return products;
   }
-  
+
   // Handle special categories based on product labels
   switch (categoryId) {
     case 'new':
-      return products.filter(product => product.label === ProductLabel.NEW);
+      return products.filter((product) => product.label === ProductLabel.NEW);
     case 'featured':
-      return products.filter(product => product.label === ProductLabel.FEATURED);
+      return products.filter((product) => product.label === ProductLabel.FEATURED);
     // Other label categories...
     // Regular product categories
     default:
-      return products.filter(product => product.categoryId === categoryId);
+      return products.filter((product) => product.categoryId === categoryId);
   }
 };
 
@@ -290,9 +304,9 @@ The availability of models is controlled by the category change effect:
 ```typescript
 useEffect(() => {
   // Check if the selected category is a regular product category or a label-based category
-  const selectedCategory = CategoryData.mainCategories.find(cat => cat.id === activeCategoryId);
+  const selectedCategory = CategoryData.mainCategories.find((cat) => cat.id === activeCategoryId);
   const isLabelCategory = selectedCategory?.isLabel || activeCategoryId === 'todo';
-  
+
   // Don't show secondary tabs for "Todo" or label-based categories
   if (isLabelCategory) {
     setAvailableModels([]);
@@ -305,6 +319,7 @@ useEffect(() => {
 ```
 
 This ensures that:
+
 1. Secondary tabs are hidden when there's only one model available (no choice needed)
 2. Secondary tabs are hidden when the "Todo" category is selected
 3. Secondary tabs are hidden when a label-based category is selected
@@ -319,21 +334,15 @@ export function getModelsByCategory(categoryId: string): ProductModel[] {
   if (categoryId === 'todo') {
     return []; // No models for 'todo' category
   }
-  
-  const categoryModels = productModels.filter(model => model.categoryId === categoryId);
-  
+
+  const categoryModels = productModels.filter((model) => model.categoryId === categoryId);
+
   // Add "Todos" model at the beginning
-  return [
-    { id: 'all', name: 'Todos', slug: 'todos', categoryId },
-    ...categoryModels
-  ];
+  return [{ id: 'all', name: 'Todos', slug: 'todos', categoryId }, ...categoryModels];
 }
 
 // Get products by category and model
-export const getProductsByCategoryAndModel = (
-  categoryId: string,
-  modelId: string
-): Product[] => {
+export const getProductsByCategoryAndModel = (categoryId: string, modelId: string): Product[] => {
   let categoryProducts = getProductsByCategory(categoryId);
 
   if (modelId === 'all') {

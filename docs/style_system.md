@@ -377,7 +377,7 @@ Optimizing animations is crucial for a smooth user experience, particularly in c
 
 ### Animation Performance Best Practices
 
-1. **Use Simple Components**: 
+1. **Use Simple Components**:
    - Replace `LinearGradient` with simple `View` components for backgrounds in animated elements
    - When visual fidelity can be maintained, choose the simpler implementation
 
@@ -385,15 +385,16 @@ Optimizing animations is crucial for a smooth user experience, particularly in c
    - Cache layout measurements based on device dimensions
    - Avoid measuring components on each render
    - Use `useRef` and `useState` to store measurements
+
    ```typescript
    // Example from SwipeableEdge.tsx
    const headerHeightCache: Record<number, number> = {};
-   
+
    // Helper function to get cached height or null
    const getHeaderHeight = (deviceWidth: number): number | null => {
      return headerHeightCache[deviceWidth] || null;
    };
-   
+
    // Helper function to save height calculation
    const saveHeaderHeight = (deviceWidth: number, height: number): void => {
      if (!headerHeightCache[deviceWidth] && height > 0) {
@@ -416,7 +417,6 @@ Optimizing animations is crucial for a smooth user experience, particularly in c
    - Use `React.memo` for pure components
    - Properly memoize expensive calculations
    - Use `useCallback` for event handlers
-   
 6. **Proper Animation Techniques**:
    - Use `react-native-reanimated` for complex animations
    - Run animations on the UI thread with worklets when possible
@@ -425,6 +425,7 @@ Optimizing animations is crucial for a smooth user experience, particularly in c
 ### Example: Performance-Optimized SwipeableEdge
 
 The SwipeableEdge component demonstrates these practices by:
+
 - Replacing LinearGradient with a simple View component
 - Implementing device-width based caching for header heights
 - Removing console logs to reduce overhead

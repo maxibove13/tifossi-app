@@ -1,6 +1,6 @@
 /**
  * Comprehensive Test Data Generator for Tifossi Backend Migration
- * 
+ *
  * This module generates realistic test data for all entities in the Tifossi
  * e-commerce system, supporting various testing scenarios including load testing,
  * integration testing, and E2E testing.
@@ -23,14 +23,23 @@ class ProductDataGenerator {
       brands: ['Tiffosi', 'Tiffosi Sport', 'Tiffosi Active'],
       priceRange: { min: 500, max: 15000 }, // UYU
       currency: 'UYU',
-      ...options
+      ...options,
     };
 
-    this.productStatuses = ['NEW', 'SALE', 'FEATURED', 'POPULAR', 'OPPORTUNITY', 'RECOMMENDED', 'APP_EXCLUSIVE', 'HIGHLIGHTED'];
+    this.productStatuses = [
+      'NEW',
+      'SALE',
+      'FEATURED',
+      'POPULAR',
+      'OPPORTUNITY',
+      'RECOMMENDED',
+      'APP_EXCLUSIVE',
+      'HIGHLIGHTED',
+    ];
     this.sizes = {
       clothing: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
       footwear: ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'],
-      accessories: ['Único']
+      accessories: ['Único'],
     };
     this.colors = [
       { name: 'Negro', hex: '#000000' },
@@ -40,7 +49,7 @@ class ProductDataGenerator {
       { name: 'Verde', hex: '#00CC66' },
       { name: 'Gris', hex: '#666666' },
       { name: 'Amarillo', hex: '#FFD700' },
-      { name: 'Rosa', hex: '#FF69B4' }
+      { name: 'Rosa', hex: '#FF69B4' },
     ];
   }
 
@@ -60,7 +69,9 @@ class ProductDataGenerator {
       id: this.generateProductId(),
       title: this.generateProductTitle(brand, productType, category),
       price: price,
-      discountedPrice: isOnSale ? Math.floor(price * faker.datatype.float({ min: 0.6, max: 0.9 })) : null,
+      discountedPrice: isOnSale
+        ? Math.floor(price * faker.datatype.float({ min: 0.6, max: 0.9 }))
+        : null,
       categoryId: category,
       modelId: this.generateModelId(category, productType),
       frontImage: this.generateImageUrl('front'),
@@ -69,7 +80,7 @@ class ProductDataGenerator {
       statuses: selectedStatuses,
       shortDescription: {
         line1: this.generateShortDescription(productType, 'line1'),
-        line2: this.generateShortDescription(productType, 'line2')
+        line2: this.generateShortDescription(productType, 'line2'),
       },
       longDescription: this.generateLongDescription(productType, brand),
       isCustomizable: faker.datatype.boolean(0.4), // 40% customizable
@@ -83,7 +94,7 @@ class ProductDataGenerator {
       brand: brand,
       sku: this.generateSKU(category, brand),
       createdAt: faker.date.past(2).toISOString(),
-      updatedAt: faker.date.recent().toISOString()
+      updatedAt: faker.date.recent().toISOString(),
     };
 
     return { ...product, ...overrides };
@@ -94,7 +105,7 @@ class ProductDataGenerator {
    */
   generateProductBatch(count = 100, options = {}) {
     const products = [];
-    
+
     for (let i = 0; i < count; i++) {
       const product = this.generateProduct(options);
       products.push(product);
@@ -115,21 +126,21 @@ class ProductDataGenerator {
    */
   generateProductsWithStatusDistribution(count = 100) {
     const statusDistribution = {
-      'NEW': 0.15,
-      'SALE': 0.25,
-      'FEATURED': 0.10,
-      'POPULAR': 0.30,
-      'REGULAR': 0.20
+      NEW: 0.15,
+      SALE: 0.25,
+      FEATURED: 0.1,
+      POPULAR: 0.3,
+      REGULAR: 0.2,
     };
 
     const products = [];
-    
+
     Object.entries(statusDistribution).forEach(([status, percentage]) => {
       const productCount = Math.floor(count * percentage);
-      
+
       for (let i = 0; i < productCount; i++) {
         const product = this.generateProduct({
-          statuses: status === 'REGULAR' ? [] : [status]
+          statuses: status === 'REGULAR' ? [] : [status],
         });
         products.push(product);
       }
@@ -150,7 +161,7 @@ class ProductDataGenerator {
   generateProductTitle(brand, productType, category) {
     const adjectives = ['Clásico', 'Deportivo', 'Profesional', 'Casual', 'Premium', 'Básico'];
     const adjective = faker.helpers.arrayElement(adjectives);
-    
+
     return `${brand} ${productType} ${adjective} ${category.charAt(0).toUpperCase() + category.slice(1)}`;
   }
 
@@ -159,26 +170,28 @@ class ProductDataGenerator {
       'Máxima comodidad y estilo',
       'Diseño moderno y funcional',
       'Calidad premium garantizada',
-      'Ideal para uso diario'
+      'Ideal para uso diario',
     ];
-    
+
     const line2Options = [
       'Materiales de alta calidad',
       'Disponible en varios colores',
       'Ajuste perfecto',
-      'Tecnología avanzada'
+      'Tecnología avanzada',
     ];
-    
-    return lineNumber === 'line1' ? 
-      faker.helpers.arrayElement(line1Options) : 
-      faker.helpers.arrayElement(line2Options);
+
+    return lineNumber === 'line1'
+      ? faker.helpers.arrayElement(line1Options)
+      : faker.helpers.arrayElement(line2Options);
   }
 
   generateLongDescription(productType, brand) {
-    return `${productType} de ${brand} fabricado con materiales de primera calidad. ` +
-           `Diseñado para ofrecer la máxima comodidad y durabilidad en cada uso. ` +
-           `Ideal para deportistas y personas activas que buscan lo mejor en equipamiento deportivo. ` +
-           `Disponible en múltiples tallas y colores para adaptarse a todos los gustos y necesidades.`;
+    return (
+      `${productType} de ${brand} fabricado con materiales de primera calidad. ` +
+      `Diseñado para ofrecer la máxima comodidad y durabilidad en cada uso. ` +
+      `Ideal para deportistas y personas activas que buscan lo mejor en equipamiento deportivo. ` +
+      `Disponible en múltiples tallas y colores para adaptarse a todos los gustos y necesidades.`
+    );
   }
 
   generateProductColors() {
@@ -188,7 +201,7 @@ class ProductDataGenerator {
 
   generateProductSizes(category) {
     let availableSizes;
-    
+
     switch (category) {
       case 'football':
       case 'basketball':
@@ -202,7 +215,7 @@ class ProductDataGenerator {
       default:
         availableSizes = this.sizes.accessories;
     }
-    
+
     const sizeCount = faker.datatype.number({ min: 3, max: availableSizes.length });
     return faker.helpers.arrayElements(availableSizes, sizeCount);
   }
@@ -230,7 +243,7 @@ class ProductDataGenerator {
       '6 meses de garantía',
       '1 año de garantía',
       '2 años de garantía',
-      'Sin garantía específica'
+      'Sin garantía específica',
     ];
     return faker.helpers.arrayElement(warranties);
   }
@@ -239,7 +252,7 @@ class ProductDataGenerator {
     return {
       height: `${faker.datatype.number({ min: 5, max: 50 })}cm`,
       width: `${faker.datatype.number({ min: 10, max: 40 })}cm`,
-      depth: `${faker.datatype.number({ min: 2, max: 20 })}cm`
+      depth: `${faker.datatype.number({ min: 2, max: 20 })}cm`,
     };
   }
 
@@ -256,9 +269,9 @@ class ProductDataGenerator {
       basketball: ['Camiseta', 'Short', 'Zapatillas', 'Pelota', 'Accesorios'],
       running: ['Remera', 'Calza', 'Zapatillas', 'Accesorios'],
       fitness: ['Top', 'Leggings', 'Zapatillas', 'Pesas', 'Accesorios'],
-      casual: ['Remera', 'Pantalón', 'Zapatillas', 'Buzo', 'Campera']
+      casual: ['Remera', 'Pantalón', 'Zapatillas', 'Buzo', 'Campera'],
     };
-    
+
     return faker.helpers.arrayElement(productTypes[category] || ['Producto']);
   }
 }
@@ -272,10 +285,18 @@ class UserDataGenerator {
     this.options = {
       domains: ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com', 'tifossi.com'],
       uruguayanDepartments: [
-        'Montevideo', 'Canelones', 'Maldonado', 'Colonia', 'San José',
-        'Paysandú', 'Salto', 'Rivera', 'Tacuarembó', 'Artigas'
+        'Montevideo',
+        'Canelones',
+        'Maldonado',
+        'Colonia',
+        'San José',
+        'Paysandú',
+        'Salto',
+        'Rivera',
+        'Tacuarembó',
+        'Artigas',
       ],
-      ...options
+      ...options,
     };
 
     this.userArchetypes = {
@@ -284,29 +305,29 @@ class UserDataGenerator {
         favoriteCount: { min: 0, max: 3 },
         cartItems: { min: 0, max: 2 },
         isEmailVerified: false,
-        weight: 0.3
+        weight: 0.3,
       },
       casual_shopper: {
         orderCount: { min: 1, max: 5 },
         favoriteCount: { min: 3, max: 10 },
         cartItems: { min: 1, max: 5 },
         isEmailVerified: true,
-        weight: 0.4
+        weight: 0.4,
       },
       frequent_buyer: {
         orderCount: { min: 6, max: 20 },
         favoriteCount: { min: 10, max: 30 },
         cartItems: { min: 2, max: 8 },
         isEmailVerified: true,
-        weight: 0.25
+        weight: 0.25,
       },
       power_user: {
         orderCount: { min: 21, max: 100 },
         favoriteCount: { min: 20, max: 50 },
         cartItems: { min: 3, max: 15 },
         isEmailVerified: true,
-        weight: 0.05
-      }
+        weight: 0.05,
+      },
     };
   }
 
@@ -316,11 +337,11 @@ class UserDataGenerator {
   generateUser(archetypeOverride = null, overrides = {}) {
     const archetype = archetypeOverride || this.selectRandomArchetype();
     const archetypeData = this.userArchetypes[archetype];
-    
+
     const firstName = faker.name.firstName();
     const lastName = faker.name.lastName();
     const email = this.generateEmail(firstName, lastName);
-    
+
     const user = {
       id: this.generateUserId(),
       email: email,
@@ -336,11 +357,11 @@ class UserDataGenerator {
       preferences: {
         newsletter: faker.datatype.boolean(0.7),
         notifications: faker.datatype.boolean(0.8),
-        language: faker.helpers.arrayElement(['es', 'en'])
+        language: faker.helpers.arrayElement(['es', 'en']),
       },
       addresses: this.generateUserAddresses(),
       favoriteProducts: [], // Will be populated later
-      archetype: archetype
+      archetype: archetype,
     };
 
     return { ...user, ...overrides };
@@ -351,10 +372,10 @@ class UserDataGenerator {
    */
   generateUserBatch(count = 100) {
     const users = [];
-    
+
     Object.entries(this.userArchetypes).forEach(([archetype, data]) => {
       const archetypeCount = Math.floor(count * data.weight);
-      
+
       for (let i = 0; i < archetypeCount; i++) {
         users.push(this.generateUser(archetype));
       }
@@ -374,11 +395,11 @@ class UserDataGenerator {
   generateUserWithHistory(archetype = 'frequent_buyer') {
     const user = this.generateUser(archetype);
     const archetypeData = this.userArchetypes[archetype];
-    
+
     // Generate order history
     const orderCount = faker.datatype.number(archetypeData.orderCount);
     const orders = [];
-    
+
     for (let i = 0; i < orderCount; i++) {
       orders.push(this.generateUserOrder(user.id));
     }
@@ -390,7 +411,7 @@ class UserDataGenerator {
     return {
       user,
       orders,
-      favorites
+      favorites,
     };
   }
 
@@ -405,15 +426,25 @@ class UserDataGenerator {
       `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${domain}`,
       `${firstName.toLowerCase()}${lastName.toLowerCase()}@${domain}`,
       `${firstName.toLowerCase()}${faker.datatype.number({ min: 10, max: 999 })}@${domain}`,
-      `${firstName.toLowerCase()}_${lastName.toLowerCase()}@${domain}`
+      `${firstName.toLowerCase()}_${lastName.toLowerCase()}@${domain}`,
     ];
-    
+
     return faker.helpers.arrayElement(variations);
   }
 
   generateUruguayanPhone() {
     // Uruguayan mobile format: +598 9X XXX XXXX
-    const areaCode = faker.helpers.arrayElement(['91', '92', '93', '94', '95', '96', '97', '98', '99']);
+    const areaCode = faker.helpers.arrayElement([
+      '91',
+      '92',
+      '93',
+      '94',
+      '95',
+      '96',
+      '97',
+      '98',
+      '99',
+    ]);
     const number = faker.datatype.number({ min: 100000, max: 999999 });
     return `+598 ${areaCode} ${Math.floor(number / 1000)} ${number % 1000}`;
   }
@@ -421,7 +452,7 @@ class UserDataGenerator {
   generateUserAddresses() {
     const addressCount = faker.datatype.number({ min: 1, max: 3 });
     const addresses = [];
-    
+
     for (let i = 0; i < addressCount; i++) {
       addresses.push({
         id: faker.datatype.uuid(),
@@ -432,10 +463,10 @@ class UserDataGenerator {
         postalCode: faker.datatype.number({ min: 10000, max: 99999 }).toString(),
         country: 'Uruguay',
         isDefault: i === 0,
-        createdAt: faker.date.past().toISOString()
+        createdAt: faker.date.past().toISOString(),
       });
     }
-    
+
     return addresses;
   }
 
@@ -443,32 +474,38 @@ class UserDataGenerator {
     const itemCount = faker.datatype.number({ min: 1, max: 5 });
     const items = [];
     let subtotal = 0;
-    
+
     for (let i = 0; i < itemCount; i++) {
       const price = faker.datatype.number({ min: 1000, max: 8000 });
       const quantity = faker.datatype.number({ min: 1, max: 3 });
       const itemTotal = price * quantity;
-      
+
       items.push({
         productId: `prod_${faker.datatype.uuid()}`,
         quantity: quantity,
         price: price,
         size: faker.helpers.arrayElement(['S', 'M', 'L']),
         color: faker.helpers.arrayElement(['Negro', 'Blanco', 'Azul']),
-        total: itemTotal
+        total: itemTotal,
       });
-      
+
       subtotal += itemTotal;
     }
-    
+
     const shipping = faker.datatype.number({ min: 200, max: 500 });
     const taxes = Math.floor(subtotal * 0.22); // 22% IVA
     const total = subtotal + shipping + taxes;
-    
+
     return {
       id: `order_${faker.datatype.uuid()}`,
       userId: userId,
-      status: faker.helpers.arrayElement(['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']),
+      status: faker.helpers.arrayElement([
+        'pending',
+        'confirmed',
+        'shipped',
+        'delivered',
+        'cancelled',
+      ]),
       items: items,
       subtotal: subtotal,
       taxes: taxes,
@@ -478,7 +515,7 @@ class UserDataGenerator {
       paymentMethod: faker.helpers.arrayElement(['credit_card', 'debit_card', 'bank_transfer']),
       paymentStatus: faker.helpers.arrayElement(['pending', 'approved', 'rejected']),
       createdAt: faker.date.past().toISOString(),
-      updatedAt: faker.date.recent().toISOString()
+      updatedAt: faker.date.recent().toISOString(),
     };
   }
 
@@ -493,14 +530,14 @@ class UserDataGenerator {
   selectRandomArchetype() {
     const rand = Math.random();
     let cumulative = 0;
-    
+
     for (const [archetype, data] of Object.entries(this.userArchetypes)) {
       cumulative += data.weight;
       if (rand <= cumulative) {
         return archetype;
       }
     }
-    
+
     return 'casual_shopper'; // fallback
   }
 }
@@ -515,24 +552,24 @@ class OrderDataGenerator {
       currencies: ['UYU'],
       paymentMethods: ['credit_card', 'debit_card', 'bank_transfer', 'mercadopago'],
       shippingMethods: ['standard', 'express', 'pickup'],
-      ...options
+      ...options,
     };
 
     this.orderStatuses = {
-      'pending': 0.10,
-      'confirmed': 0.15,
-      'processing': 0.15,
-      'shipped': 0.20,
-      'delivered': 0.35,
-      'cancelled': 0.04,
-      'refunded': 0.01
+      pending: 0.1,
+      confirmed: 0.15,
+      processing: 0.15,
+      shipped: 0.2,
+      delivered: 0.35,
+      cancelled: 0.04,
+      refunded: 0.01,
     };
 
     this.paymentStatuses = {
-      'pending': 0.05,
-      'approved': 0.85,
-      'rejected': 0.08,
-      'refunded': 0.02
+      pending: 0.05,
+      approved: 0.85,
+      rejected: 0.08,
+      refunded: 0.02,
     };
   }
 
@@ -545,8 +582,9 @@ class OrderDataGenerator {
     const subtotal = items.reduce((sum, item) => sum + item.total, 0);
     const shipping = this.calculateShipping(subtotal);
     const taxes = Math.floor(subtotal * 0.22); // 22% IVA Uruguay
-    const discount = faker.datatype.boolean(0.15) ? 
-      Math.floor(subtotal * faker.datatype.float({ min: 0.05, max: 0.20 })) : 0;
+    const discount = faker.datatype.boolean(0.15)
+      ? Math.floor(subtotal * faker.datatype.float({ min: 0.05, max: 0.2 }))
+      : 0;
     const total = subtotal + shipping + taxes - discount;
 
     const order = {
@@ -571,7 +609,7 @@ class OrderDataGenerator {
       createdAt: faker.date.past().toISOString(),
       updatedAt: faker.date.recent().toISOString(),
       shippedAt: faker.datatype.boolean(0.6) ? faker.date.recent().toISOString() : null,
-      deliveredAt: faker.datatype.boolean(0.4) ? faker.date.recent().toISOString() : null
+      deliveredAt: faker.datatype.boolean(0.4) ? faker.date.recent().toISOString() : null,
     };
 
     return { ...order, ...overrides };
@@ -582,15 +620,13 @@ class OrderDataGenerator {
    */
   generateOrderBatch(count = 100, userIds = []) {
     const orders = [];
-    
+
     for (let i = 0; i < count; i++) {
-      const userId = userIds.length > 0 ? 
-        faker.helpers.arrayElement(userIds) : 
-        null;
-      
+      const userId = userIds.length > 0 ? faker.helpers.arrayElement(userIds) : null;
+
       orders.push(this.generateOrder(userId));
     }
-    
+
     return orders;
   }
 
@@ -600,24 +636,27 @@ class OrderDataGenerator {
   generateLoadTestOrders(count = 1000, pattern = 'realistic') {
     const patterns = {
       realistic: () => this.generateOrder(),
-      high_value: () => this.generateOrder(null, { 
-        subtotal: faker.datatype.number({ min: 10000, max: 50000 }) 
-      }),
-      bulk_orders: () => this.generateOrder(null, {
-        items: this.generateOrderItems(faker.datatype.number({ min: 5, max: 15 }))
-      }),
-      international: () => this.generateOrder(null, {
-        shippingAddress: this.generateInternationalAddress()
-      })
+      high_value: () =>
+        this.generateOrder(null, {
+          subtotal: faker.datatype.number({ min: 10000, max: 50000 }),
+        }),
+      bulk_orders: () =>
+        this.generateOrder(null, {
+          items: this.generateOrderItems(faker.datatype.number({ min: 5, max: 15 })),
+        }),
+      international: () =>
+        this.generateOrder(null, {
+          shippingAddress: this.generateInternationalAddress(),
+        }),
     };
 
     const orders = [];
     const generator = patterns[pattern] || patterns.realistic;
-    
+
     for (let i = 0; i < count; i++) {
       orders.push(generator());
     }
-    
+
     return orders;
   }
 
@@ -628,12 +667,12 @@ class OrderDataGenerator {
 
   generateOrderItems(count) {
     const items = [];
-    
+
     for (let i = 0; i < count; i++) {
       const price = faker.datatype.number({ min: 500, max: 12000 });
       const quantity = faker.datatype.number({ min: 1, max: 4 });
       const total = price * quantity;
-      
+
       items.push({
         id: faker.datatype.uuid(),
         productId: `prod_${faker.datatype.uuid()}`,
@@ -643,10 +682,10 @@ class OrderDataGenerator {
         total: total,
         size: faker.helpers.arrayElement(['XS', 'S', 'M', 'L', 'XL']),
         color: faker.helpers.arrayElement(['Negro', 'Blanco', 'Azul', 'Rojo']),
-        sku: faker.random.alphaNumeric(10).toUpperCase()
+        sku: faker.random.alphaNumeric(10).toUpperCase(),
       });
     }
-    
+
     return items;
   }
 
@@ -661,11 +700,15 @@ class OrderDataGenerator {
       name: faker.name.fullName(),
       street: faker.address.streetAddress(),
       city: faker.helpers.arrayElement([
-        'Montevideo', 'Punta del Este', 'Maldonado', 'Colonia', 'Paysandú'
+        'Montevideo',
+        'Punta del Este',
+        'Maldonado',
+        'Colonia',
+        'Paysandú',
       ]),
       postalCode: faker.datatype.number({ min: 10000, max: 99999 }).toString(),
       country: 'Uruguay',
-      phone: `+598 9${faker.datatype.number({ min: 1000000, max: 9999999 })}`
+      phone: `+598 9${faker.datatype.number({ min: 1000000, max: 9999999 })}`,
     };
   }
 
@@ -676,34 +719,34 @@ class OrderDataGenerator {
   generateInternationalAddress() {
     const countries = ['Argentina', 'Brasil', 'Paraguay', 'Chile'];
     const country = faker.helpers.arrayElement(countries);
-    
+
     return {
       name: faker.name.fullName(),
       street: faker.address.streetAddress(),
       city: faker.address.city(),
       postalCode: faker.address.zipCode(),
       country: country,
-      phone: faker.phone.phoneNumber()
+      phone: faker.phone.phoneNumber(),
     };
   }
 
   generateTrackingNumber() {
-    return faker.datatype.boolean(0.7) ? 
-      `TF${faker.datatype.number({ min: 1000000000, max: 9999999999 })}` : 
-      null;
+    return faker.datatype.boolean(0.7)
+      ? `TF${faker.datatype.number({ min: 1000000000, max: 9999999999 })}`
+      : null;
   }
 
   selectWeightedStatus(statusWeights) {
     const rand = Math.random();
     let cumulative = 0;
-    
+
     for (const [status, weight] of Object.entries(statusWeights)) {
       cumulative += weight;
       if (rand <= cumulative) {
         return status;
       }
     }
-    
+
     return Object.keys(statusWeights)[0]; // fallback
   }
 }
@@ -715,26 +758,26 @@ class OrderDataGenerator {
 class CategoryDataGenerator {
   constructor() {
     this.categoryStructure = {
-      'football': {
+      football: {
         name: 'Fútbol',
-        subcategories: ['Camisetas', 'Shorts', 'Medias', 'Botines', 'Accesorios']
+        subcategories: ['Camisetas', 'Shorts', 'Medias', 'Botines', 'Accesorios'],
       },
-      'basketball': {
+      basketball: {
         name: 'Basketball',
-        subcategories: ['Camisetas', 'Shorts', 'Zapatillas', 'Pelotas', 'Accesorios']
+        subcategories: ['Camisetas', 'Shorts', 'Zapatillas', 'Pelotas', 'Accesorios'],
       },
-      'running': {
+      running: {
         name: 'Running',
-        subcategories: ['Remeras', 'Calzas', 'Zapatillas', 'Accesorios']
+        subcategories: ['Remeras', 'Calzas', 'Zapatillas', 'Accesorios'],
       },
-      'fitness': {
+      fitness: {
         name: 'Fitness',
-        subcategories: ['Tops', 'Leggings', 'Calzado', 'Equipamiento']
+        subcategories: ['Tops', 'Leggings', 'Calzado', 'Equipamiento'],
       },
-      'casual': {
+      casual: {
         name: 'Casual',
-        subcategories: ['Remeras', 'Pantalones', 'Zapatillas', 'Buzos', 'Camperas']
-      }
+        subcategories: ['Remeras', 'Pantalones', 'Zapatillas', 'Buzos', 'Camperas'],
+      },
     };
   }
 
@@ -755,7 +798,7 @@ class CategoryDataGenerator {
         sortOrder: categoryId,
         seoTitle: `${data.name} - Tifossi`,
         seoDescription: `Encuentra los mejores productos de ${data.name.toLowerCase()} en Tifossi`,
-        productCount: faker.datatype.number({ min: 10, max: 100 })
+        productCount: faker.datatype.number({ min: 10, max: 100 }),
       };
 
       categories.push(category);
@@ -773,7 +816,7 @@ class CategoryDataGenerator {
           sortOrder: index + 1,
           seoTitle: `${subName} ${data.name} - Tifossi`,
           seoDescription: `${subName} de ${data.name.toLowerCase()} de las mejores marcas`,
-          productCount: faker.datatype.number({ min: 5, max: 50 })
+          productCount: faker.datatype.number({ min: 5, max: 50 }),
         });
       });
     });
@@ -792,18 +835,18 @@ class StoreLocationGenerator {
       {
         city: 'Montevideo',
         zones: ['Centro', 'Pocitos', 'Punta Carretas', 'Cordón', 'Villa Biarritz'],
-        coordinates: { lat: -34.9032, lng: -56.1882 }
+        coordinates: { lat: -34.9032, lng: -56.1882 },
       },
       {
         city: 'Punta del Este',
         zones: ['Centro', 'La Barra', 'José Ignacio'],
-        coordinates: { lat: -34.9489, lng: -54.9574 }
+        coordinates: { lat: -34.9489, lng: -54.9574 },
       },
       {
         city: 'Maldonado',
         zones: ['Centro', 'San Carlos'],
-        coordinates: { lat: -34.9042, lng: -54.9637 }
-      }
+        coordinates: { lat: -34.9042, lng: -54.9637 },
+      },
     ];
   }
 
@@ -811,8 +854,8 @@ class StoreLocationGenerator {
     const stores = [];
     let storeId = 1;
 
-    this.uruguayanStores.forEach(cityData => {
-      cityData.zones.forEach(zone => {
+    this.uruguayanStores.forEach((cityData) => {
+      cityData.zones.forEach((zone) => {
         stores.push({
           id: storeId++,
           name: `Tifossi ${cityData.city} ${zone}`,
@@ -828,17 +871,20 @@ class StoreLocationGenerator {
             thursday: { open: '09:00', close: '20:00' },
             friday: { open: '09:00', close: '20:00' },
             saturday: { open: '09:00', close: '18:00' },
-            sunday: { open: '10:00', close: '16:00' }
+            sunday: { open: '10:00', close: '16:00' },
           },
           coordinates: {
             lat: cityData.coordinates.lat + faker.datatype.float({ min: -0.1, max: 0.1 }),
-            lng: cityData.coordinates.lng + faker.datatype.float({ min: -0.1, max: 0.1 })
+            lng: cityData.coordinates.lng + faker.datatype.float({ min: -0.1, max: 0.1 }),
           },
           services: faker.helpers.arrayElements([
-            'pickup', 'returns', 'repairs', 'personal_shopping'
+            'pickup',
+            'returns',
+            'repairs',
+            'personal_shopping',
           ]),
           isActive: true,
-          createdAt: faker.date.past().toISOString()
+          createdAt: faker.date.past().toISOString(),
         });
       });
     });
@@ -870,24 +916,24 @@ class TestDataGenerator {
       orders: 2000,
       includeCategories: true,
       includeStores: true,
-      relateData: true
+      relateData: true,
     };
 
     const finalConfig = { ...defaultConfig, ...config };
-    
+
     console.log('Generating complete test dataset...');
-    
-    const categories = finalConfig.includeCategories ? 
-      this.categoryGenerator.generateCategories() : [];
-    
-    const stores = finalConfig.includeStores ? 
-      this.storeGenerator.generateStores() : [];
-    
+
+    const categories = finalConfig.includeCategories
+      ? this.categoryGenerator.generateCategories()
+      : [];
+
+    const stores = finalConfig.includeStores ? this.storeGenerator.generateStores() : [];
+
     const products = this.productGenerator.generateProductBatch(finalConfig.products);
     const users = this.userGenerator.generateUserBatch(finalConfig.users);
-    
+
     // Generate orders with user relationships
-    const userIds = users.map(u => u.id);
+    const userIds = users.map((u) => u.id);
     const orders = this.orderGenerator.generateOrderBatch(finalConfig.orders, userIds);
 
     // Create relationships if requested
@@ -909,9 +955,9 @@ class TestDataGenerator {
           stores: stores.length,
           products: products.length,
           users: users.length,
-          orders: orders.length
-        }
-      }
+          orders: orders.length,
+        },
+      },
     };
 
     console.log('Test dataset generation complete:', dataset.metadata.counts);
@@ -923,24 +969,24 @@ class TestDataGenerator {
    */
   generateScenarioData(scenario) {
     const scenarios = {
-      'load_testing': {
+      load_testing: {
         products: 10000,
         users: 5000,
         orders: 20000,
-        relateData: true
+        relateData: true,
       },
-      'integration_testing': {
+      integration_testing: {
         products: 100,
         users: 50,
         orders: 200,
-        relateData: true
+        relateData: true,
       },
-      'unit_testing': {
+      unit_testing: {
         products: 10,
         users: 5,
         orders: 20,
-        relateData: false
-      }
+        relateData: false,
+      },
     };
 
     const config = scenarios[scenario];
@@ -956,17 +1002,17 @@ class TestDataGenerator {
    */
   createDataRelationships(products, users, orders) {
     // Assign favorite products to users
-    users.forEach(user => {
+    users.forEach((user) => {
       const favoriteCount = faker.datatype.number({ min: 0, max: 10 });
       user.favoriteProducts = faker.helpers.arrayElements(
-        products.map(p => p.id), 
+        products.map((p) => p.id),
         favoriteCount
       );
     });
 
     // Ensure order items reference existing products
-    orders.forEach(order => {
-      order.items.forEach(item => {
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
         const randomProduct = faker.helpers.arrayElement(products);
         item.productId = randomProduct.id;
         item.productName = randomProduct.title;
@@ -987,18 +1033,18 @@ class TestDataGenerator {
   exportToJSON(dataset, filename = 'test-data.json') {
     const fs = require('fs');
     const path = require('path');
-    
+
     const outputPath = path.join(process.cwd(), 'backend/tests/fixtures', filename);
-    
+
     // Ensure directory exists
     const dir = path.dirname(outputPath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    
+
     fs.writeFileSync(outputPath, JSON.stringify(dataset, null, 2));
     console.log(`Test data exported to: ${outputPath}`);
-    
+
     return outputPath;
   }
 
@@ -1008,9 +1054,9 @@ class TestDataGenerator {
   exportToCSV(dataset) {
     const fs = require('fs');
     const path = require('path');
-    
+
     const csvDir = path.join(process.cwd(), 'backend/tests/fixtures/csv');
-    
+
     // Ensure directory exists
     if (!fs.existsSync(csvDir)) {
       fs.mkdirSync(csvDir, { recursive: true });
@@ -1031,20 +1077,20 @@ class TestDataGenerator {
    */
   arrayToCSV(array) {
     if (array.length === 0) return '';
-    
+
     const headers = Object.keys(array[0]);
     const csvRows = [headers.join(',')];
-    
-    array.forEach(row => {
-      const values = headers.map(header => {
+
+    array.forEach((row) => {
+      const values = headers.map((header) => {
         const value = row[header];
         if (value === null || value === undefined) return '';
         if (typeof value === 'object') return JSON.stringify(value);
         return String(value).replace(/"/g, '""');
       });
-      csvRows.push(values.map(value => `"${value}"`).join(','));
+      csvRows.push(values.map((value) => `"${value}"`).join(','));
     });
-    
+
     return csvRows.join('\n');
   }
 }
@@ -1056,7 +1102,7 @@ module.exports = {
   UserDataGenerator,
   OrderDataGenerator,
   CategoryDataGenerator,
-  StoreLocationGenerator
+  StoreLocationGenerator,
 };
 
 // CLI usage

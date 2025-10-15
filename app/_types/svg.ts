@@ -6,12 +6,12 @@ export type SvgComponent = React.FC<SvgProps>;
 
 // Helper function to handle SVG props
 export function withSvgProps(Component: SvgComponent, props: Partial<SvgProps>): SvgComponent {
-  const WrappedSvgComponent = (componentProps: SvgProps) => 
+  const WrappedSvgComponent = (componentProps: SvgProps) =>
     React.createElement(Component, { ...props, ...componentProps });
-  
+
   // Add display name to fix the display name warning
   WrappedSvgComponent.displayName = `WithSvgProps(${Component.displayName || Component.name || 'SvgComponent'})`;
-  
+
   return WrappedSvgComponent;
 }
 
@@ -19,7 +19,7 @@ export function withSvgProps(Component: SvgComponent, props: Partial<SvgProps>):
 const svgUtils = {
   name: 'SvgUtils',
   version: '1.0.0',
-  withSvgProps
+  withSvgProps,
 };
 
 export default svgUtils;

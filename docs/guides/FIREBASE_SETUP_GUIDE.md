@@ -5,6 +5,7 @@ This guide will help you set up Firebase for your Tifossi mobile app, including 
 ## Prerequisites
 
 Before starting, make sure you have:
+
 - ✅ Apple Developer account (active membership required)
 - ✅ Google account for Firebase Console access
 - ✅ Access to Xcode on macOS (for iOS configuration)
@@ -56,7 +57,6 @@ Before starting, make sure you have:
    - Enable **Email/Password**:
      - Toggle "Enable"
      - Click "Save"
-   
    - Enable **Apple** (for iOS):
      - Click on "Apple" in the sign-in providers list
      - Toggle "Enable"
@@ -125,6 +125,7 @@ EXPO_PUBLIC_ENVIRONMENT=production
 ## Step 6: Update App Configuration
 
 1. **Update Bundle Identifier** (in `app.json`):
+
    ```json
    {
      "expo": {
@@ -155,6 +156,7 @@ EXPO_PUBLIC_ENVIRONMENT=production
 ## Step 7: Test Configuration
 
 1. **Install and Run**:
+
    ```bash
    npm install
    npx expo run:ios
@@ -173,6 +175,7 @@ EXPO_PUBLIC_ENVIRONMENT=production
 ## Step 8: Security Configuration
 
 1. **Add to .gitignore**:
+
    ```
    .env.local
    GoogleService-Info.plist
@@ -187,11 +190,13 @@ EXPO_PUBLIC_ENVIRONMENT=production
 ## Costs and Billing
 
 ### Firebase Authentication Pricing:
+
 - **Free Tier**: Up to 10,000 verifications per month
 - **Paid Tier**: $0.06 per verification after free limit
 - **Tifossi Expected Volume**: Should remain within free tier initially
 
 ### Monthly Cost Estimate:
+
 - **0-10,000 users**: Free
 - **10,000+ users**: ~$6 per additional 1,000 verifications
 - **Total with current infrastructure**: $35/month (Render) + Firebase costs

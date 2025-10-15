@@ -119,7 +119,7 @@ app/
 ├── _data/              # Mock data and content
 │   ├── products.ts     # Mock product data
 │   ├── categories.ts   # Category definitions
-│   ├── models.ts       # Model definitions 
+│   ├── models.ts       # Model definitions
 │   └── stores.ts       # Store location data
 ├── not-found.tsx       # 404 error page
 ├── _layout.tsx         # Root layout component
@@ -299,6 +299,7 @@ The app uses Expo Router with a tab-based navigation structure:
 ## Component Categories
 
 ### UI Components
+
 1. **Layout Components**
    - Grid system for responsive layouts
    - Section containers with consistent spacing
@@ -320,6 +321,7 @@ The app uses Expo Router with a tab-based navigation structure:
    - Icon buttons for compact actions
 
 ### Store Components
+
 1. **Product Cards**
    - Default cards (small/large)
    - Featured cards for highlights
@@ -338,6 +340,7 @@ The app uses Expo Router with a tab-based navigation structure:
    - Review cards with user info
 
 ### Common Components
+
 1. **Utility Components**
    - Error boundaries for error handling
    - Video backgrounds
@@ -353,6 +356,7 @@ The app uses Expo Router with a tab-based navigation structure:
 The app uses TypeScript with a well-structured type system. Key type categories include:
 
 ### Product Types
+
 Product data structures and related types for consistent product representation:
 
 ```typescript
@@ -376,6 +380,7 @@ interface Product {
 ```
 
 ### UI Component Types
+
 Consistent prop types for UI components:
 
 ```typescript
@@ -391,6 +396,7 @@ interface TextComponentProps {
 ```
 
 ### Card Types
+
 Type system for product cards:
 
 ```typescript
@@ -407,29 +413,34 @@ interface CardDimensions {
 ## Development Guidelines
 
 ### Debugging and Problem Solving
+
 - **Always read this document first** before searching the codebase
 - Refer to the component hierarchy for understanding relationships
 - Use the style system documentation for visual styling guidance
 - Look at the imports to understand dependencies
 
 ### Mobile-First iOS Development
+
 - Always design and implement with iOS as the primary platform
 - Follow iOS-native interaction patterns
 - Test on iOS devices/simulators first
 - Consider iOS system features (safe area, notch, etc.)
 
 ### Visual Verification
+
 - Always check that components match both JSX reference and screenshots
 - Refer to design tokens in the styles directory for accurate styling
 - Verify spacing, typography, and colors match the Figma specs
 
 ### Code Organization Principles
+
 - Modular component architecture
 - Clear separation of concerns
 - Consistent naming and file structure
 - Type safety throughout the codebase
 
 ### Simplicity Over Complexity
+
 - Prefer simple solutions when possible
 - Avoid premature optimization
 - Keep component logic focused
@@ -438,6 +449,7 @@ interface CardDimensions {
 ## Implementation Status
 
 ✅ **Fully Implemented**
+
 - Core UI Components
 - Product Card System
 - Navigation Structure
@@ -457,6 +469,7 @@ interface CardDimensions {
 - Profile Management (Password change, profile picture)
 
 🟡 **Partially Implemented**
+
 - Form Components
 - Review System
 - Server State Integration
@@ -478,4 +491,3 @@ interface CardDimensions {
 - See [state_management_implementation.md](./state_management_implementation.md) for implementation status of state management
 
 ## Notes
-

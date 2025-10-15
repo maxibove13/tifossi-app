@@ -10,11 +10,11 @@ services:
       POSTGRES_PASSWORD: strapi_password
       POSTGRES_DB: strapi_test
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U strapi_user -d strapi_test"]
+      test: ['CMD-SHELL', 'pg_isready -U strapi_user -d strapi_test']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,7 +22,7 @@ services:
   # Strapi application - simulating Render's environment
   strapi:
     build:
-      context: ../../  # Build from the Strapi root directory
+      context: ../../ # Build from the Strapi root directory
       dockerfile: docker/test-render-env/Dockerfile
     container_name: strapi-test-app
     depends_on:
@@ -37,8 +37,8 @@ services:
       # Database configuration (simulating Render's DATABASE_URL)
       DATABASE_URL: postgresql://strapi_user:strapi_password@postgres:5432/strapi_test
       DATABASE_CLIENT: postgres
-      DATABASE_SSL: "false"
-      DATABASE_SSL_REJECT_UNAUTHORIZED: "false"
+      DATABASE_SSL: 'false'
+      DATABASE_SSL_REJECT_UNAUTHORIZED: 'false'
 
       # Strapi secrets (auto-generated in Render, hardcoded here for testing)
       APP_KEYS: test-key-1,test-key-2,test-key-3,test-key-4
@@ -49,10 +49,10 @@ services:
 
       # Optional configuration
       CORS_ORIGINS: http://localhost:19006,http://localhost:19000
-      STRAPI_TELEMETRY_DISABLED: "true"
+      STRAPI_TELEMETRY_DISABLED: 'true'
 
     ports:
-      - "1337:1337"
+      - '1337:1337'
     volumes:
       # Mount source code for development testing
       - ../../:/app

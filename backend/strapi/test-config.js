@@ -4,7 +4,8 @@ dotenv.config();
 // Simulate Strapi's env function
 const env = (key, defaultValue) => process.env[key] || defaultValue;
 env.int = (key, defaultValue) => parseInt(process.env[key] || defaultValue, 10);
-env.bool = (key, defaultValue) => process.env[key] === 'true' || (process.env[key] === undefined && defaultValue);
+env.bool = (key, defaultValue) =>
+  process.env[key] === 'true' || (process.env[key] === undefined && defaultValue);
 
 // Load the database config
 const databaseConfig = require('./config/database.js')({ env });
@@ -15,7 +16,7 @@ console.log(JSON.stringify(databaseConfig, null, 2));
 console.log('\n=== What Strapi sees after spreading ===');
 const strapiConfig = {
   ...databaseConfig,
-  models: []  // Strapi adds models
+  models: [], // Strapi adds models
 };
 console.log(JSON.stringify(strapiConfig, null, 2));
 

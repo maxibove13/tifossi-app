@@ -11,30 +11,34 @@ module.exports = {
   verbose: true,
   reporters: [
     'default',
-    ['jest-html-reporters', {
-      publicPath: './e2e/reports',
-      filename: 'e2e-report.html',
-      openReport: false,
-      pageTitle: 'Tifossi E2E Test Report'
-    }]
+    [
+      'jest-html-reporters',
+      {
+        publicPath: './e2e/reports',
+        filename: 'e2e-report.html',
+        openReport: false,
+        pageTitle: 'Tifossi E2E Test Report',
+      },
+    ],
   ],
   collectCoverageFrom: [
     'app/**/*.{js,jsx,ts,tsx}',
     '!**/node_modules/**',
     '!**/__tests__/**',
-    '!**/e2e/**'
+    '!**/e2e/**',
   ],
   coverageDirectory: '<rootDir>/e2e/coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', {
-      presets: [
-        ['@babel/preset-env', { targets: { node: 'current' } }],
-        '@babel/preset-typescript'
-      ]
-    }]
+    '^.+\\.(js|jsx|ts|tsx)$': [
+      'babel-jest',
+      {
+        presets: [
+          ['@babel/preset-env', { targets: { node: 'current' } }],
+          '@babel/preset-typescript',
+        ],
+      },
+    ],
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(@react-native|react-native|@expo|expo-.*)/)'
-  ]
+  transformIgnorePatterns: ['node_modules/(?!(@react-native|react-native|@expo|expo-.*)/)'],
 };

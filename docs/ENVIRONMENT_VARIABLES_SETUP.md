@@ -72,6 +72,7 @@ The GitHub Actions workflow automatically injects secrets:
 ```
 
 Trigger a build:
+
 ```bash
 # Manual trigger from GitHub Actions UI
 # OR
@@ -134,10 +135,12 @@ The app will log its configuration on startup:
 ### 2. Fail-Fast Behavior
 
 In production/staging, the app will:
+
 - **FAIL TO START** if `EXPO_PUBLIC_API_BASE_URL` is not set
 - Show error: `API_URL_NOT_CONFIGURED: Missing required environment variable`
 
 In development, the app will:
+
 - Show a warning but continue with `http://localhost:1337`
 
 ### 3. Runtime Validation
@@ -146,12 +149,12 @@ All backend service calls use the centralized configuration:
 
 ```typescript
 // All these services use endpoints.baseUrl
-- tokenManager.ts
-- mercadoPago.ts
-- cartService.ts
-- orderService.ts
-- addressService.ts
-- httpClient.ts
+-tokenManager.ts -
+  mercadoPago.ts -
+  cartService.ts -
+  orderService.ts -
+  addressService.ts -
+  httpClient.ts;
 ```
 
 ## Troubleshooting
@@ -159,6 +162,7 @@ All backend service calls use the centralized configuration:
 ### Issue: App crashes with "API_URL_NOT_CONFIGURED"
 
 **Solution**: Ensure `EXPO_PUBLIC_API_BASE_URL` is set:
+
 ```bash
 export EXPO_PUBLIC_API_BASE_URL=https://tifossi-strapi-backend.onrender.com
 npx expo start --clear
@@ -167,6 +171,7 @@ npx expo start --clear
 ### Issue: GitHub Actions build fails
 
 **Solution**: Check that all required secrets are set in GitHub:
+
 ```bash
 # These must be set in GitHub Secrets:
 EXPO_PUBLIC_API_BASE_URL
@@ -178,6 +183,7 @@ FIREBASE_API_KEY
 ### Issue: EAS build doesn't pick up environment variables
 
 **Solution**: Use one of these methods:
+
 1. EAS Secrets: `eas secret:create`
 2. GitHub Actions workflow (recommended)
 3. Add to eas.json (not for sensitive data)
@@ -185,6 +191,7 @@ FIREBASE_API_KEY
 ### Issue: Different URL for staging vs production
 
 **Solution**: Use build profiles:
+
 ```json
 // eas.json
 {
@@ -222,6 +229,7 @@ FIREBASE_API_KEY
 6. **If validation fails** → App shows clear error message
 
 This ensures that:
+
 - No hardcoded URLs in the codebase
 - Production always uses the correct backend URL
 - Configuration errors are caught early

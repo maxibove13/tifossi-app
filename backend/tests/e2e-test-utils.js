@@ -1,6 +1,6 @@
 /**
  * End-to-End Test Utilities for Tifossi Backend Migration
- * 
+ *
  * This module provides comprehensive utilities for E2E testing, including
  * user journey helpers, data setup/teardown, assertion helpers, and
  * integration testing utilities for the Tifossi mobile app.
@@ -21,13 +21,13 @@ class E2ETestManager {
       timeout: config.timeout || 30000,
       retryAttempts: config.retryAttempts || 3,
       screenshotOnFailure: config.screenshotOnFailure !== false,
-      ...config
+      ...config,
     };
 
     this.testData = new TestDataGenerator();
     this.mockPayments = new MockMercadoPagoService();
     this.mockAuth = new MockFirebaseAuth();
-    
+
     this.testSessions = new Map();
     this.cleanup = [];
   }
@@ -37,7 +37,7 @@ class E2ETestManager {
    */
   async initialize() {
     console.log('Initializing E2E test environment...');
-    
+
     // Generate test data
     const dataset = this.testData.generateScenarioData('integration_testing');
     this.testProducts = dataset.products;
@@ -46,7 +46,7 @@ class E2ETestManager {
 
     // Setup mock services
     await this.setupMockServices();
-    
+
     console.log('E2E test environment initialized');
     return dataset;
   }
@@ -85,7 +85,7 @@ class E2ETestManager {
       users: [],
       orders: [],
       payments: [],
-      cleanup: []
+      cleanup: [],
     };
 
     this.testSessions.set(sessionId, session);
@@ -109,11 +109,11 @@ class E2ETestManager {
     }
 
     // Remove test data
-    session.users.forEach(user => {
+    session.users.forEach((user) => {
       this.mockAuth.users.delete(user.email);
     });
 
-    session.payments.forEach(payment => {
+    session.payments.forEach((payment) => {
       this.mockPayments.payments.delete(payment.id);
     });
 
@@ -165,7 +165,7 @@ class UserJourneyHelper {
       color: 'Negro',
       paymentMethod: 'visa',
       shippingAddress: this.generateTestAddress(),
-      ...journeyConfig
+      ...journeyConfig,
     };
 
     const session = this.testManager.testSessions.get(sessionId);
@@ -173,7 +173,7 @@ class UserJourneyHelper {
       id: `guest_checkout_${Date.now()}`,
       steps: [],
       startTime: new Date(),
-      config
+      config,
     };
 
     try {
@@ -181,12 +181,14 @@ class UserJourneyHelper {
       journey.steps.push(await this.browseProducts(sessionId));
 
       // Step 2: Add to cart
-      journey.steps.push(await this.addToCart(sessionId, {
-        productId: config.productId,
-        quantity: config.quantity,
-        size: config.size,
-        color: config.color
-      }));
+      journey.steps.push(
+        await this.addToCart(sessionId, {
+          productId: config.productId,
+          quantity: config.quantity,
+          size: config.size,
+          color: config.color,
+        })
+      );
 
       // Step 3: View cart
       journey.steps.push(await this.viewCart(sessionId));
@@ -201,10 +203,12 @@ class UserJourneyHelper {
       journey.steps.push(await this.selectPaymentMethod(sessionId, config.paymentMethod));
 
       // Step 7: Complete payment
-      journey.steps.push(await this.completePayment(sessionId, {
-        paymentMethod: config.paymentMethod,
-        amount: 2500 * config.quantity
-      }));
+      journey.steps.push(
+        await this.completePayment(sessionId, {
+          paymentMethod: config.paymentMethod,
+          amount: 2500 * config.quantity,
+        })
+      );
 
       // Step 8: Verify order confirmation
       journey.steps.push(await this.verifyOrderConfirmation(sessionId));
@@ -215,7 +219,6 @@ class UserJourneyHelper {
 
       console.log(`[E2E] Guest checkout journey completed successfully in ${journey.duration}ms`);
       return journey;
-
     } catch (error) {
       journey.success = false;
       journey.error = error;
@@ -237,7 +240,7 @@ class UserJourneyHelper {
       useExistingUser: true,
       addToFavorites: true,
       useSavedAddress: true,
-      ...journeyConfig
+      ...journeyConfig,
     };
 
     const session = this.testManager.testSessions.get(sessionId);
@@ -245,22 +248,26 @@ class UserJourneyHelper {
       id: `auth_user_journey_${Date.now()}`,
       steps: [],
       startTime: new Date(),
-      config
+      config,
     };
 
     try {
       // Step 1: User login/registration
       if (config.useExistingUser) {
-        journey.steps.push(await this.loginUser(sessionId, {
-          email: config.userEmail,
-          password: config.userPassword
-        }));
+        journey.steps.push(
+          await this.loginUser(sessionId, {
+            email: config.userEmail,
+            password: config.userPassword,
+          })
+        );
       } else {
-        journey.steps.push(await this.registerUser(sessionId, {
-          email: config.userEmail,
-          password: config.userPassword,
-          displayName: 'Test User'
-        }));
+        journey.steps.push(
+          await this.registerUser(sessionId, {
+            email: config.userEmail,
+            password: config.userPassword,
+            displayName: 'Test User',
+          })
+        );
       }
 
       // Step 2: Browse products with personalization
@@ -268,14 +275,18 @@ class UserJourneyHelper {
 
       // Step 3: Add items to favorites (if enabled)
       if (config.addToFavorites) {
-        journey.steps.push(await this.addToFavorites(sessionId, ['prod_test_001', 'prod_test_002']));
+        journey.steps.push(
+          await this.addToFavorites(sessionId, ['prod_test_001', 'prod_test_002'])
+        );
       }
 
       // Step 4: Add favorited item to cart
-      journey.steps.push(await this.addToCart(sessionId, {
-        productId: 'prod_test_001',
-        quantity: 1
-      }));
+      journey.steps.push(
+        await this.addToCart(sessionId, {
+          productId: 'prod_test_001',
+          quantity: 1,
+        })
+      );
 
       // Step 5: Proceed to authenticated checkout
       journey.steps.push(await this.proceedToCheckout(sessionId, 'authenticated'));
@@ -288,11 +299,13 @@ class UserJourneyHelper {
       }
 
       // Step 7: Complete payment with saved preferences
-      journey.steps.push(await this.completePayment(sessionId, {
-        paymentMethod: 'visa',
-        amount: 2500,
-        savePaymentMethod: true
-      }));
+      journey.steps.push(
+        await this.completePayment(sessionId, {
+          paymentMethod: 'visa',
+          amount: 2500,
+          savePaymentMethod: true,
+        })
+      );
 
       // Step 8: Verify order is linked to user account
       journey.steps.push(await this.verifyUserOrderHistory(sessionId));
@@ -303,7 +316,6 @@ class UserJourneyHelper {
 
       console.log(`[E2E] Authenticated user journey completed in ${journey.duration}ms`);
       return journey;
-
     } catch (error) {
       journey.success = false;
       journey.error = error;
@@ -324,14 +336,14 @@ class UserJourneyHelper {
       category: 'football',
       priceRange: [1000, 5000],
       expectedResults: 5,
-      ...journeyConfig
+      ...journeyConfig,
     };
 
     const journey = {
       id: `product_discovery_${Date.now()}`,
       steps: [],
       startTime: new Date(),
-      config
+      config,
     };
 
     try {
@@ -339,15 +351,19 @@ class UserJourneyHelper {
       journey.steps.push(await this.searchProducts(sessionId, config.searchTerm));
 
       // Step 2: Apply category filter
-      journey.steps.push(await this.applyProductFilters(sessionId, {
-        category: config.category
-      }));
+      journey.steps.push(
+        await this.applyProductFilters(sessionId, {
+          category: config.category,
+        })
+      );
 
       // Step 3: Apply price filter
-      journey.steps.push(await this.applyProductFilters(sessionId, {
-        priceMin: config.priceRange[0],
-        priceMax: config.priceRange[1]
-      }));
+      journey.steps.push(
+        await this.applyProductFilters(sessionId, {
+          priceMin: config.priceRange[0],
+          priceMax: config.priceRange[1],
+        })
+      );
 
       // Step 4: Sort results
       journey.steps.push(await this.sortProducts(sessionId, 'price_asc'));
@@ -363,7 +379,6 @@ class UserJourneyHelper {
       journey.duration = journey.endTime - journey.startTime;
 
       return journey;
-
     } catch (error) {
       journey.success = false;
       journey.error = error;
@@ -378,17 +393,17 @@ class UserJourneyHelper {
 
   async browseProducts(sessionId, options = {}) {
     const startTime = Date.now();
-    
+
     // Simulate API call to fetch products
     const products = this.testManager.testProducts.slice(0, 20);
-    
+
     const step = {
       name: 'browse_products',
       startTime,
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { products: products.length, personalized: options.personalized || false },
-      success: true
+      success: true,
     };
 
     return step;
@@ -396,9 +411,9 @@ class UserJourneyHelper {
 
   async addToCart(sessionId, itemData) {
     const startTime = Date.now();
-    
+
     // Validate product exists
-    const product = this.testManager.testProducts.find(p => p.id === itemData.productId);
+    const product = this.testManager.testProducts.find((p) => p.id === itemData.productId);
     if (!product) {
       throw new Error(`Product ${itemData.productId} not found`);
     }
@@ -406,14 +421,14 @@ class UserJourneyHelper {
     // Simulate cart addition
     const session = this.testManager.testSessions.get(sessionId);
     if (!session.cart) session.cart = [];
-    
+
     session.cart.push({
       productId: itemData.productId,
       quantity: itemData.quantity || 1,
       size: itemData.size,
       color: itemData.color,
       price: product.discountedPrice || product.price,
-      addedAt: new Date().toISOString()
+      addedAt: new Date().toISOString(),
     });
 
     return {
@@ -422,18 +437,18 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: itemData,
-      success: true
+      success: true,
     };
   }
 
   async viewCart(sessionId) {
     const startTime = Date.now();
     const session = this.testManager.testSessions.get(sessionId);
-    
+
     const cartData = {
       items: session.cart || [],
       itemCount: (session.cart || []).length,
-      subtotal: (session.cart || []).reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      subtotal: (session.cart || []).reduce((sum, item) => sum + item.price * item.quantity, 0),
     };
 
     return {
@@ -442,7 +457,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: cartData,
-      success: true
+      success: true,
     };
   }
 
@@ -455,7 +470,7 @@ class UserJourneyHelper {
     }
 
     // Calculate totals
-    const subtotal = session.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = session.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const taxes = Math.floor(subtotal * 0.22); // 22% IVA Uruguay
     const shipping = subtotal > 5000 ? 0 : 400; // Free shipping over $5000
     const total = subtotal + taxes + shipping;
@@ -467,7 +482,7 @@ class UserJourneyHelper {
       shipping,
       total,
       items: session.cart,
-      startedAt: new Date().toISOString()
+      startedAt: new Date().toISOString(),
     };
 
     return {
@@ -476,7 +491,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { checkoutType, total },
-      success: true
+      success: true,
     };
   }
 
@@ -496,7 +511,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { address: shippingAddress },
-      success: true
+      success: true,
     };
   }
 
@@ -516,7 +531,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { paymentMethod },
-      success: true
+      success: true,
     };
   }
 
@@ -535,8 +550,8 @@ class UserJourneyHelper {
       expiration_month: '12',
       expiration_year: '2025',
       cardholder: {
-        name: 'TEST USER'
-      }
+        name: 'TEST USER',
+      },
     });
 
     // Process payment
@@ -549,8 +564,8 @@ class UserJourneyHelper {
       payer: {
         email: 'test@tifossi.com',
         first_name: 'Test',
-        last_name: 'User'
-      }
+        last_name: 'User',
+      },
     });
 
     session.payments.push(payment);
@@ -566,7 +581,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { paymentId: payment.id, amount: paymentData.amount },
-      success: true
+      success: true,
     };
   }
 
@@ -580,7 +595,7 @@ class UserJourneyHelper {
 
     // Check payment status
     const payment = await this.mockPayments.getPayment(session.checkout.paymentId);
-    
+
     if (payment.status !== 'approved') {
       throw new Error(`Payment not approved: ${payment.status}`);
     }
@@ -592,7 +607,7 @@ class UserJourneyHelper {
       total: session.checkout.total,
       status: 'confirmed',
       items: session.checkout.items,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     session.orders.push(order);
@@ -603,7 +618,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { orderId: order.id, status: order.status },
-      success: true
+      success: true,
     };
   }
 
@@ -619,7 +634,7 @@ class UserJourneyHelper {
     session.user = result.user;
     session.authTokens = {
       idToken: result.idToken,
-      refreshToken: result.refreshToken
+      refreshToken: result.refreshToken,
     };
 
     return {
@@ -628,7 +643,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { email: credentials.email, uid: result.user.uid },
-      success: true
+      success: true,
     };
   }
 
@@ -645,7 +660,7 @@ class UserJourneyHelper {
     session.user = result.user;
     session.authTokens = {
       idToken: result.idToken,
-      refreshToken: result.refreshToken
+      refreshToken: result.refreshToken,
     };
 
     // Add to cleanup
@@ -659,7 +674,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { email: userData.email, uid: result.user.uid },
-      success: true
+      success: true,
     };
   }
 
@@ -680,15 +695,15 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { productIds, count: productIds.length },
-      success: true
+      success: true,
     };
   }
 
   async searchProducts(sessionId, searchTerm) {
     const startTime = Date.now();
-    
+
     // Simulate search
-    const results = this.testManager.testProducts.filter(product =>
+    const results = this.testManager.testProducts.filter((product) =>
       product.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -698,25 +713,27 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { searchTerm, resultCount: results.length },
-      success: true
+      success: true,
     };
   }
 
   async applyProductFilters(sessionId, filters) {
     const startTime = Date.now();
-    
+
     // Simulate filter application
     let filteredProducts = this.testManager.testProducts;
 
     if (filters.category) {
-      filteredProducts = filteredProducts.filter(p => p.categoryId === filters.category);
+      filteredProducts = filteredProducts.filter((p) => p.categoryId === filters.category);
     }
 
     if (filters.priceMin || filters.priceMax) {
-      filteredProducts = filteredProducts.filter(p => {
+      filteredProducts = filteredProducts.filter((p) => {
         const price = p.discountedPrice || p.price;
-        return (!filters.priceMin || price >= filters.priceMin) &&
-               (!filters.priceMax || price <= filters.priceMax);
+        return (
+          (!filters.priceMin || price >= filters.priceMin) &&
+          (!filters.priceMax || price <= filters.priceMax)
+        );
       });
     }
 
@@ -726,13 +743,13 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { filters, resultCount: filteredProducts.length },
-      success: true
+      success: true,
     };
   }
 
   async sortProducts(sessionId, sortBy) {
     const startTime = Date.now();
-    
+
     // Simulate sorting logic
     return {
       name: 'sort_products',
@@ -740,18 +757,18 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { sortBy },
-      success: true
+      success: true,
     };
   }
 
   async viewProductDetails(sessionId, productIdentifier) {
     const startTime = Date.now();
-    
+
     let product;
     if (productIdentifier === 'first_result') {
       product = this.testManager.testProducts[0];
     } else {
-      product = this.testManager.testProducts.find(p => p.id === productIdentifier);
+      product = this.testManager.testProducts.find((p) => p.id === productIdentifier);
     }
 
     if (!product) {
@@ -764,13 +781,13 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { productId: product.id, title: product.title },
-      success: true
+      success: true,
     };
   }
 
   async viewRelatedProducts(sessionId) {
     const startTime = Date.now();
-    
+
     // Simulate related products fetch
     const relatedProducts = this.testManager.testProducts.slice(1, 6);
 
@@ -780,7 +797,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { count: relatedProducts.length },
-      success: true
+      success: true,
     };
   }
 
@@ -801,7 +818,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { address: savedAddress },
-      success: true
+      success: true,
     };
   }
 
@@ -819,7 +836,7 @@ class UserJourneyHelper {
       endTime: Date.now(),
       duration: Date.now() - startTime,
       data: { orderCount: session.orders.length },
-      success: true
+      success: true,
     };
   }
 
@@ -827,15 +844,15 @@ class UserJourneyHelper {
 
   async waitForPaymentProcessing(paymentId, timeout = 10000) {
     const startTime = Date.now();
-    
+
     while (Date.now() - startTime < timeout) {
       const payment = await this.mockPayments.getPayment(paymentId);
       if (payment.status !== 'pending') {
         return payment;
       }
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
-    
+
     throw new Error('Payment processing timeout');
   }
 
@@ -846,7 +863,7 @@ class UserJourneyHelper {
       city: 'Montevideo',
       postalCode: '11200',
       country: 'Uruguay',
-      phone: '+598 99 123 456'
+      phone: '+598 99 123 456',
     };
   }
 }
@@ -862,7 +879,7 @@ class E2EAssertionHelper {
     }
 
     // Check that all steps completed successfully
-    const failedSteps = journey.steps.filter(step => !step.success);
+    const failedSteps = journey.steps.filter((step) => !step.success);
     if (failedSteps.length > 0) {
       throw new Error(`Journey had ${failedSteps.length} failed steps`);
     }
@@ -920,7 +937,7 @@ class E2EPerformanceMonitor {
       pageLoad: 3000,
       apiResponse: 500,
       paymentProcessing: 10000,
-      searchResponse: 1000
+      searchResponse: 1000,
     };
   }
 
@@ -928,7 +945,7 @@ class E2EPerformanceMonitor {
     this.metrics.set(operationId, {
       startTime: Date.now(),
       endTime: null,
-      duration: null
+      duration: null,
     });
   }
 
@@ -946,9 +963,9 @@ class E2EPerformanceMonitor {
   checkThreshold(operationId, thresholdKey) {
     const metric = this.metrics.get(operationId);
     const threshold = this.thresholds[thresholdKey];
-    
+
     if (!metric || !threshold) return false;
-    
+
     return metric.duration <= threshold;
   }
 
@@ -957,19 +974,19 @@ class E2EPerformanceMonitor {
       totalOperations: this.metrics.size,
       averageDuration: 0,
       thresholdViolations: 0,
-      operations: []
+      operations: [],
     };
 
     let totalDuration = 0;
-    
+
     for (const [operationId, metric] of this.metrics.entries()) {
       if (metric.duration) {
         totalDuration += metric.duration;
-        
+
         const operation = {
           id: operationId,
           duration: metric.duration,
-          thresholdViolations: []
+          thresholdViolations: [],
         };
 
         // Check against all thresholds
@@ -978,7 +995,7 @@ class E2EPerformanceMonitor {
             operation.thresholdViolations.push({
               threshold: thresholdKey,
               limit: thresholdValue,
-              actual: metric.duration
+              actual: metric.duration,
             });
             report.thresholdViolations++;
           }
@@ -988,8 +1005,8 @@ class E2EPerformanceMonitor {
       }
     }
 
-    report.averageDuration = report.totalOperations > 0 ? 
-      totalDuration / report.totalOperations : 0;
+    report.averageDuration =
+      report.totalOperations > 0 ? totalDuration / report.totalOperations : 0;
 
     return report;
   }
@@ -1003,7 +1020,7 @@ module.exports = {
   E2ETestManager,
   UserJourneyHelper,
   E2EAssertionHelper,
-  E2EPerformanceMonitor
+  E2EPerformanceMonitor,
 };
 
 // Export default manager

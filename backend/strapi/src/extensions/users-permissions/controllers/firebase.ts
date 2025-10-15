@@ -36,7 +36,7 @@ export default ({ strapi }: { strapi: any }) => ({
         email,
         name,
         picture: photoURL,
-        email_verified: emailVerified
+        email_verified: emailVerified,
       } = decodedToken;
 
       if (!email) {
@@ -46,11 +46,8 @@ export default ({ strapi }: { strapi: any }) => ({
       // Check if user exists in Strapi
       let user = await strapi.db.query('plugin::users-permissions.user').findOne({
         where: {
-          $or: [
-            { email },
-            { firebaseUid }
-          ]
-        }
+          $or: [{ email }, { firebaseUid }],
+        },
       });
 
       const userService = strapi.plugin('users-permissions').service('user');
@@ -68,18 +65,21 @@ export default ({ strapi }: { strapi: any }) => ({
             blocked: false,
             lastLoginAt: new Date(),
             // Update profile data if available
-            ...(name && { firstName: name.split(' ')[0], lastName: name.split(' ').slice(1).join(' ') }),
+            ...(name && {
+              firstName: name.split(' ')[0],
+              lastName: name.split(' ').slice(1).join(' '),
+            }),
             ...(photoURL && { avatar: photoURL }),
             // Track token version for security
-            tokenVersion: tokenVersion || 1
-          }
+            tokenVersion: tokenVersion || 1,
+          },
         });
 
         console.log('[Strapi Firebase] Updated existing user:', email);
       } else {
         // Create new user from Firebase data
         const defaultRole = await strapi.db.query('plugin::users-permissions.role').findOne({
-          where: { type: 'authenticated' }
+          where: { type: 'authenticated' },
         });
 
         if (!defaultRole) {
@@ -98,11 +98,14 @@ export default ({ strapi }: { strapi: any }) => ({
             createdAt: new Date(),
             lastLoginAt: new Date(),
             // Profile data from Firebase
-            ...(name && { firstName: name.split(' ')[0], lastName: name.split(' ').slice(1).join(' ') }),
+            ...(name && {
+              firstName: name.split(' ')[0],
+              lastName: name.split(' ').slice(1).join(' '),
+            }),
             ...(photoURL && { avatar: photoURL }),
             // Track token version for security
-            tokenVersion: tokenVersion || 1
-          }
+            tokenVersion: tokenVersion || 1,
+          },
         });
 
         console.log('[Strapi Firebase] Created new user:', email);
@@ -112,7 +115,7 @@ export default ({ strapi }: { strapi: any }) => ({
       const strapiJwt = jwtService.issue({
         id: user.id,
         firebaseUid: user.firebaseUid,
-        tokenVersion: user.tokenVersion
+        tokenVersion: user.tokenVersion,
       });
 
       // Sanitize user data for response
@@ -122,9 +125,8 @@ export default ({ strapi }: { strapi: any }) => ({
       ctx.send({
         jwt: strapiJwt,
         user: sanitizedUser,
-        message: 'Authentication successful'
+        message: 'Authentication successful',
       });
-
     } catch (error) {
       console.error('[Strapi Firebase] Token exchange error:', error);
       ctx.internalServerError('Authentication failed');
@@ -162,10 +164,10 @@ export default ({ strapi }: { strapi: any }) => ({
           lastSyncAt: new Date(),
           ...(firebaseUser.displayName && {
             firstName: firebaseUser.displayName.split(' ')[0],
-            lastName: firebaseUser.displayName.split(' ').slice(1).join(' ')
+            lastName: firebaseUser.displayName.split(' ').slice(1).join(' '),
           }),
-          ...(firebaseUser.photoURL && { avatar: firebaseUser.photoURL })
-        }
+          ...(firebaseUser.photoURL && { avatar: firebaseUser.photoURL }),
+        },
       });
 
       const userService = strapi.plugin('users-permissions').service('user');
@@ -173,9 +175,8 @@ export default ({ strapi }: { strapi: any }) => ({
 
       ctx.send({
         user: sanitizedUser,
-        message: 'User data synchronized successfully'
+        message: 'User data synchronized successfully',
       });
-
     } catch (error) {
       console.error('[Strapi Firebase] User sync error:', error);
       ctx.internalServerError('User synchronization failed');
@@ -204,8 +205,8 @@ export default ({ strapi }: { strapi: any }) => ({
       await strapi.db.query('plugin::users-permissions.user').update({
         where: { id: user.id },
         data: {
-          lastActivityAt: new Date()
-        }
+          lastActivityAt: new Date(),
+        },
       });
 
       const userService = strapi.plugin('users-permissions').service('user');
@@ -214,9 +215,8 @@ export default ({ strapi }: { strapi: any }) => ({
       ctx.send({
         user: sanitizedUser,
         valid: true,
-        message: 'Token is valid'
+        message: 'Token is valid',
       });
-
     } catch (error) {
       console.error('[Strapi Firebase] Token validation error:', error);
       ctx.unauthorized('Token validation failed');
@@ -247,18 +247,17 @@ export default ({ strapi }: { strapi: any }) => ({
 
       // Delete user from Strapi
       await strapi.db.query('plugin::users-permissions.user').delete({
-        where: { id: user.id }
+        where: { id: user.id },
       });
 
       console.log('[Strapi Firebase] User deleted from Strapi:', user.id);
 
       ctx.send({
-        message: 'User deleted successfully'
+        message: 'User deleted successfully',
       });
-
     } catch (error) {
       console.error('[Strapi Firebase] User deletion error:', error);
       ctx.internalServerError('User deletion failed');
     }
-  }
+  },
 });

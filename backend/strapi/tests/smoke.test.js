@@ -39,14 +39,9 @@ describe('Strapi Backend Smoke Tests', () => {
       const fs = require('fs');
       const path = require('path');
 
-      const requiredDirs = [
-        'src',
-        'src/api',
-        'config',
-        'tests'
-      ];
+      const requiredDirs = ['src', 'src/api', 'config', 'tests'];
 
-      requiredDirs.forEach(dir => {
+      requiredDirs.forEach((dir) => {
         const dirPath = path.join(__dirname, '..', dir);
         expect(fs.existsSync(dirPath)).toBe(true);
       });
@@ -93,19 +88,16 @@ describe('Strapi Backend Smoke Tests', () => {
       process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
 
       // Database config uses PostgreSQL when DATABASE_CLIENT is set to postgres
-      const mockEnv = Object.assign(
-        (key, defaultValue) => process.env[key] || defaultValue,
-        {
-          bool: (key, defaultValue) => {
-            const val = process.env[key];
-            return val === undefined ? defaultValue : val === 'true' || val === '1';
-          },
-          int: (key, defaultValue) => {
-            const val = process.env[key];
-            return val === undefined ? defaultValue : parseInt(val, 10);
-          }
-        }
-      );
+      const mockEnv = Object.assign((key, defaultValue) => process.env[key] || defaultValue, {
+        bool: (key, defaultValue) => {
+          const val = process.env[key];
+          return val === undefined ? defaultValue : val === 'true' || val === '1';
+        },
+        int: (key, defaultValue) => {
+          const val = process.env[key];
+          return val === undefined ? defaultValue : parseInt(val, 10);
+        },
+      });
       const testConfig = dbConfig({ env: mockEnv });
 
       // The config returns postgres as the client when configured

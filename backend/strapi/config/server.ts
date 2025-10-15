@@ -9,9 +9,7 @@ export default ({ env }: { env: any }) => {
     : false;
 
   if (!isDevelopment && (!hasConfiguredKeys || usesPlaceholderKeys)) {
-    throw new Error(
-      'APP_KEYS environment variable must be set to secure values in production.'
-    );
+    throw new Error('APP_KEYS environment variable must be set to secure values in production.');
   }
 
   const appKeys = hasConfiguredKeys

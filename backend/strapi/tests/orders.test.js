@@ -143,7 +143,16 @@ describe('Order API - Revenue Critical', () => {
       const fs = require('fs');
       const path = require('path');
 
-      const schemaPath = path.join(__dirname, '..', 'src', 'api', 'order', 'content-types', 'order', 'schema.json');
+      const schemaPath = path.join(
+        __dirname,
+        '..',
+        'src',
+        'api',
+        'order',
+        'content-types',
+        'order',
+        'schema.json'
+      );
       expect(fs.existsSync(schemaPath)).toBe(true);
 
       const schema = require(schemaPath);

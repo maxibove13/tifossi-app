@@ -34,7 +34,20 @@
     "categoryId": {
       "type": "string",
       "description": "Product category identifier",
-      "enum": ["todo", "medias", "bolsos", "mochilas", "remeras", "buzos", "gorros", "neceser", "canilleras", "accesorios", "chanclas", "pantalones"]
+      "enum": [
+        "todo",
+        "medias",
+        "bolsos",
+        "mochilas",
+        "remeras",
+        "buzos",
+        "gorros",
+        "neceser",
+        "canilleras",
+        "accesorios",
+        "chanclas",
+        "pantalones"
+      ]
     },
     "modelId": {
       "type": "string",
@@ -89,7 +102,16 @@
       "description": "Product status labels",
       "items": {
         "type": "string",
-        "enum": ["new", "sale", "featured", "opportunity", "recommended", "popular", "app_exclusive", "highlighted"]
+        "enum": [
+          "new",
+          "sale",
+          "featured",
+          "opportunity",
+          "recommended",
+          "popular",
+          "app_exclusive",
+          "highlighted"
+        ]
       },
       "minItems": 1,
       "uniqueItems": true
@@ -254,7 +276,7 @@
           "description": "Product height with unit"
         },
         "width": {
-          "type": "string", 
+          "type": "string",
           "description": "Product width with unit"
         },
         "depth": {

@@ -39,7 +39,9 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFilesAfterEnv": ["./jest-integration-setup.js"],
+    "setupFilesAfterEnv": [
+      "./jest-integration-setup.js"
+    ],
     "testMatch": [
       "**/__tests__/**/*.(test|spec).js",
       "**/*.(test|spec).js"
@@ -58,7 +60,11 @@
       "!artillery-*.yml"
     ],
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
     "verbose": true,
     "testTimeout": 30000
   },
@@ -91,7 +97,7 @@
     },
     "load_test_scenarios": [
       "baseline",
-      "normalLoad", 
+      "normalLoad",
       "peakLoad",
       "stressTest",
       "enduranceTest",

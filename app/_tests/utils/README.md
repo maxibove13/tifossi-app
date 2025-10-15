@@ -27,6 +27,7 @@ expect(product).toBeValidProduct();
 Custom render function that provides all necessary providers for components.
 
 **Default Providers Included:**
+
 - NavigationContainer with test stack navigator
 - QueryClientProvider with test-optimized settings
 - GestureHandlerRootView for gesture support
@@ -76,6 +77,7 @@ const cartItems = cartItemFactory.fromProducts([product]);
 ```
 
 **Available Factories:**
+
 - `productFactory` - Products with realistic names, prices, colors, sizes
 - `userFactory` - Users with realistic names, emails, providers
 - `cartItemFactory` - Cart items with proper product references
@@ -110,10 +112,11 @@ const { user, cartItems, addresses } = setupAuthenticatedUserWithCart();
 const { cartItems } = setupGuestUser();
 
 // Wait for async store updates
-await storeUtils.auth.waitFor(state => state.isLoggedIn === true);
+await storeUtils.auth.waitFor((state) => state.isLoggedIn === true);
 ```
 
 **Available Store Utils:**
+
 - `authStoreUtils` - Authentication state management
 - `cartStoreUtils` - Shopping cart state management
 - `userStoreUtils` - User profile and preferences
@@ -205,10 +208,10 @@ expect(typeof product).toBe('object');
 
 ```typescript
 // ✅ Good - Wait for specific condition
-await storeUtils.cart.waitFor(state => state.items.length > 0);
+await storeUtils.cart.waitFor((state) => state.items.length > 0);
 
 // ❌ Bad - Arbitrary wait
-await new Promise(resolve => setTimeout(resolve, 1000));
+await new Promise((resolve) => setTimeout(resolve, 1000));
 ```
 
 ## Common Patterns
@@ -218,9 +221,9 @@ await new Promise(resolve => setTimeout(resolve, 1000));
 ```typescript
 it('should show user-specific content when logged in', () => {
   const user = storeUtils.auth.setupLoggedInUser();
-  
+
   const { getByText } = render(<UserProfile />);
-  
+
   expect(getByText(user.name!)).toBeTruthy();
 });
 ```
@@ -231,11 +234,11 @@ it('should show user-specific content when logged in', () => {
 it('should add product to cart', async () => {
   const product = productFactory.createForCart();
   storeUtils.cart.setupEmpty();
-  
+
   const { getByText } = render(<ProductCard product={product} />);
-  
+
   fireEvent.press(getByText('Add to Cart'));
-  
+
   await storeUtils.cart.waitFor(state => state.items.length === 1);
   expect(storeUtils.cart.getState()).toHaveCartItems(1);
 });
@@ -246,12 +249,12 @@ it('should add product to cart', async () => {
 ```typescript
 it('should complete checkout flow', async () => {
   const { user, cartItems } = setupAuthenticatedUserWithCart();
-  
+
   const { getByText } = render(<CheckoutScreen />);
-  
+
   // User goes through checkout
   fireEvent.press(getByText('Proceed to Payment'));
-  
+
   await waitFor(() => {
     expect(getByText('Order Confirmed')).toBeTruthy();
   });
@@ -263,9 +266,9 @@ it('should complete checkout flow', async () => {
 ```typescript
 it('should handle auth errors', () => {
   storeUtils.auth.setupErrorState('Invalid credentials');
-  
+
   const { getByText } = render(<LoginForm />);
-  
+
   expect(getByText('Invalid credentials')).toBeTruthy();
 });
 ```
@@ -297,9 +300,9 @@ These utilities integrate seamlessly with the existing test setup:
 
 ```typescript
 // Add logging for store changes during tests
-const unsubscribe = storeUtils.debug(useCartStore, 'CartStore', state => ({
+const unsubscribe = storeUtils.debug(useCartStore, 'CartStore', (state) => ({
   itemCount: state.items.length,
-  total: state.total
+  total: state.total,
 }));
 
 // Don't forget to unsubscribe
@@ -326,12 +329,12 @@ const product = productFactory.create({
 await storeUtils.waitForMultipleConditions([
   {
     store: useAuthStore,
-    predicate: state => state.isLoggedIn,
+    predicate: (state) => state.isLoggedIn,
     name: 'AuthStore login',
   },
   {
     store: useCartStore,
-    predicate: state => state.items.length > 0,
+    predicate: (state) => state.items.length > 0,
     name: 'CartStore items',
   },
 ]);
@@ -342,37 +345,41 @@ await storeUtils.waitForMultipleConditions([
 To migrate existing tests to use these utilities:
 
 1. **Replace render imports:**
+
    ```typescript
    // Old
    import { render } from '@testing-library/react-native';
-   
+
    // New
    import { render } from '@/_tests/utils';
    ```
 
 2. **Replace test data creation:**
+
    ```typescript
    // Old
    const product = { id: 'test', name: 'Test Product', price: 100 };
-   
+
    // New
    const product = productFactory.create();
    ```
 
 3. **Replace store mocks with real stores:**
+
    ```typescript
    // Old
    jest.mock('@/stores/authStore');
-   
+
    // New
    storeUtils.auth.setupLoggedInUser();
    ```
 
 4. **Use custom matchers:**
+
    ```typescript
    // Old
    expect(product.price).toBeGreaterThan(0);
-   
+
    // New
    expect(product).toBeValidProduct();
    ```

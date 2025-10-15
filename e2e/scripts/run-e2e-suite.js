@@ -2,7 +2,7 @@
 
 /**
  * Comprehensive E2E Test Suite Runner for Tifossi
- * 
+ *
  * This script orchestrates the complete E2E test suite execution
  * with proper setup, cleanup, and reporting.
  */
@@ -20,78 +20,78 @@ class E2ETestRunner {
           file: 'app-stability.test.js',
           timeout: 300000, // 5 minutes
           critical: true,
-          description: 'Cold starts, warm starts, memory management, crash recovery'
+          description: 'Cold starts, warm starts, memory management, crash recovery',
         },
         {
           name: 'Authentication Flow',
-          file: 'auth.test.js', 
+          file: 'auth.test.js',
           timeout: 240000, // 4 minutes
           critical: true,
-          description: 'Login, registration, biometrics, session management'
+          description: 'Login, registration, biometrics, session management',
         },
         {
           name: 'Shopping Flow',
           file: 'shopping.test.js',
           timeout: 300000, // 5 minutes
           critical: true,
-          description: 'Product browsing, cart, favorites, search functionality'
+          description: 'Product browsing, cart, favorites, search functionality',
         },
         {
           name: 'Checkout Process',
           file: 'checkout.test.js',
           timeout: 360000, // 6 minutes
           critical: true,
-          description: 'Full checkout flow, payment, order placement'
+          description: 'Full checkout flow, payment, order placement',
         },
         {
           name: 'Deep Linking',
           file: 'deep-linking.test.js',
           timeout: 180000, // 3 minutes
           critical: false,
-          description: 'Product links, auth links, promotional campaigns'
+          description: 'Product links, auth links, promotional campaigns',
         },
         {
           name: 'Push Notifications',
           file: 'push-notifications.test.js',
           timeout: 240000, // 4 minutes
           critical: false,
-          description: 'Notification delivery, permissions, interaction'
+          description: 'Notification delivery, permissions, interaction',
         },
         {
           name: 'Performance Testing',
           file: 'performance.test.js',
           timeout: 480000, // 8 minutes
           critical: false,
-          description: 'Startup time, navigation speed, memory usage'
+          description: 'Startup time, navigation speed, memory usage',
         },
         {
           name: 'Network Conditions',
           file: 'network-conditions.test.js',
           timeout: 420000, // 7 minutes
           critical: false,
-          description: 'Offline support, slow network, network interruption'
+          description: 'Offline support, slow network, network interruption',
         },
         {
           name: 'Device Compatibility',
           file: 'device-compatibility.test.js',
           timeout: 300000, // 5 minutes
           critical: false,
-          description: 'Orientations, screen sizes, platform differences'
-        }
+          description: 'Orientations, screen sizes, platform differences',
+        },
       ],
       platforms: ['ios.sim.debug', 'android.emu.debug'],
       retryCount: 2,
       reportDir: './e2e/reports',
-      artifactDir: './e2e/artifacts'
+      artifactDir: './e2e/artifacts',
     };
-    
+
     this.results = {
       passed: [],
       failed: [],
       skipped: [],
       startTime: null,
       endTime: null,
-      totalDuration: 0
+      totalDuration: 0,
     };
   }
 
@@ -101,51 +101,53 @@ class E2ETestRunner {
       platforms = this.config.platforms,
       criticalOnly = false,
       skipCleanup = false,
-      generateReport = true
+      generateReport = true,
     } = options;
 
     console.log('🚀 Starting Tifossi E2E Test Suite');
     console.log('=====================================');
-    
+
     this.results.startTime = new Date();
-    
+
     try {
       // Setup test environment
       await this.setupEnvironment();
-      
+
       // Determine which test suites to run
       const suitesToRun = this.getSuitesToRun(suites, criticalOnly);
-      
-      console.log(`\n📋 Running ${suitesToRun.length} test suites on ${platforms.length} platform(s)`);
-      
+
+      console.log(
+        `\n📋 Running ${suitesToRun.length} test suites on ${platforms.length} platform(s)`
+      );
+
       // Run tests on each platform
       for (const platform of platforms) {
         console.log(`\n🎯 Testing on ${platform}`);
         console.log('─'.repeat(50));
-        
+
         await this.runPlatformTests(platform, suitesToRun);
       }
-      
+
       this.results.endTime = new Date();
       this.results.totalDuration = this.results.endTime - this.results.startTime;
-      
+
       // Generate reports
       if (generateReport) {
         await this.generateReports();
       }
-      
+
       // Cleanup
       if (!skipCleanup) {
         await this.cleanup();
       }
-      
+
       // Print summary
       this.printSummary();
-      
+
       // Exit with appropriate code
       const hasFailures = this.results.failed.length > 0;
-      const hasCriticalFailures = this.results.failed.some(f => f.critical);
-      
+      const hasCriticalFailures = this.results.failed.some((f) => f.critical);
+
       if (hasCriticalFailures) {
         console.log('\n❌ Critical test failures detected!');
         process.exit(1);
@@ -156,7 +158,6 @@ class E2ETestRunner {
         console.log('\n✅ All tests passed successfully!');
         process.exit(0);
       }
-      
     } catch (error) {
       console.error('\n💥 Test suite execution failed:', error.message);
       process.exit(1);
@@ -165,36 +166,35 @@ class E2ETestRunner {
 
   async setupEnvironment() {
     console.log('🔧 Setting up test environment...');
-    
+
     // Ensure report directories exist
     this.ensureDirectoryExists(this.config.reportDir);
     this.ensureDirectoryExists(this.config.artifactDir);
-    
+
     // Check if Detox is properly configured
     this.validateDetoxSetup();
-    
+
     // Build apps if needed
     await this.buildAppsIfNeeded();
-    
+
     console.log('✅ Environment setup complete');
   }
 
   getSuitesToRun(suiteNames, criticalOnly) {
     let suites = this.config.testSuites;
-    
+
     if (criticalOnly) {
-      suites = suites.filter(s => s.critical);
+      suites = suites.filter((s) => s.critical);
     }
-    
+
     if (suiteNames && suiteNames.length > 0) {
-      suites = suites.filter(s => 
-        suiteNames.some(name => 
-          s.name.toLowerCase().includes(name.toLowerCase()) ||
-          s.file.includes(name)
+      suites = suites.filter((s) =>
+        suiteNames.some(
+          (name) => s.name.toLowerCase().includes(name.toLowerCase()) || s.file.includes(name)
         )
       );
     }
-    
+
     return suites;
   }
 
@@ -205,29 +205,29 @@ class E2ETestRunner {
       console.log(`   ⏱️  Timeout: ${suite.timeout / 1000}s`);
       console.log(`   🔥 Critical: ${suite.critical ? 'Yes' : 'No'}`);
       console.log(`   📖 ${suite.description}`);
-      
+
       const result = await this.runSingleTest(platform, suite);
-      
+
       if (result.success) {
         console.log(`   ✅ PASSED (${result.duration / 1000}s)`);
         this.results.passed.push({
           ...suite,
           platform,
           duration: result.duration,
-          output: result.output
+          output: result.output,
         });
       } else {
         console.log(`   ❌ FAILED (${result.duration / 1000}s)`);
         console.log(`   Error: ${result.error}`);
-        
+
         this.results.failed.push({
           ...suite,
           platform,
           duration: result.duration,
           error: result.error,
-          output: result.output
+          output: result.output,
         });
-        
+
         // If it's a critical test, consider stopping
         if (suite.critical && process.env.FAIL_FAST === 'true') {
           throw new Error(`Critical test failed: ${suite.name}`);
@@ -239,34 +239,32 @@ class E2ETestRunner {
   async runSingleTest(platform, suite) {
     const startTime = Date.now();
     let retryCount = 0;
-    
+
     while (retryCount <= this.config.retryCount) {
       try {
         const output = await this.executeDetoxTest(platform, suite);
-        
+
         return {
           success: true,
           duration: Date.now() - startTime,
           output,
-          retryCount
+          retryCount,
         };
-        
       } catch (error) {
         retryCount++;
-        
+
         if (retryCount <= this.config.retryCount) {
           console.log(`   🔄 Retry ${retryCount}/${this.config.retryCount}`);
-          
+
           // Clean up before retry
           await this.cleanupForRetry(platform);
-          
         } else {
           return {
             success: false,
             duration: Date.now() - startTime,
             error: error.message,
             output: error.output || '',
-            retryCount: retryCount - 1
+            retryCount: retryCount - 1,
           };
         }
       }
@@ -276,34 +274,37 @@ class E2ETestRunner {
   async executeDetoxTest(platform, suite) {
     return new Promise((resolve, reject) => {
       const testPath = path.join('e2e/tests', suite.file);
-      
+
       const detoxCommand = [
         'detox',
         'test',
-        '--configuration', platform,
-        '--testNamePattern', `"${suite.name}"`,
-        '--maxWorkers', '1',
+        '--configuration',
+        platform,
+        '--testNamePattern',
+        `"${suite.name}"`,
+        '--maxWorkers',
+        '1',
         '--forceExit',
         '--detectOpenHandles',
-        testPath
+        testPath,
       ];
-      
+
       const proc = spawn('npx', detoxCommand, {
         stdio: 'pipe',
-        timeout: suite.timeout
+        timeout: suite.timeout,
       });
-      
+
       let output = '';
       let errorOutput = '';
-      
+
       proc.stdout.on('data', (data) => {
         output += data.toString();
       });
-      
+
       proc.stderr.on('data', (data) => {
         errorOutput += data.toString();
       });
-      
+
       proc.on('close', (code) => {
         if (code === 0) {
           resolve(output);
@@ -313,17 +314,17 @@ class E2ETestRunner {
           reject(error);
         }
       });
-      
+
       proc.on('error', (err) => {
         reject(err);
       });
-      
+
       // Handle timeout
       const timeoutId = setTimeout(() => {
         proc.kill('SIGKILL');
         reject(new Error(`Test timed out after ${suite.timeout / 1000}s`));
       }, suite.timeout);
-      
+
       proc.on('close', () => {
         clearTimeout(timeoutId);
       });
@@ -332,21 +333,21 @@ class E2ETestRunner {
 
   async buildAppsIfNeeded() {
     console.log('🏗️  Building apps if needed...');
-    
+
     // Check if builds exist and are recent
     const buildPaths = {
       'ios.sim.debug': 'ios/build/Build/Products/Debug-iphonesimulator/tifossi.app',
-      'android.emu.debug': 'android/app/build/outputs/apk/debug/app-debug.apk'
+      'android.emu.debug': 'android/app/build/outputs/apk/debug/app-debug.apk',
     };
-    
+
     for (const [platform, buildPath] of Object.entries(buildPaths)) {
       if (!fs.existsSync(buildPath) || this.isBuildStale(buildPath)) {
         console.log(`   Building ${platform}...`);
-        
+
         try {
           execSync(`npx detox build --configuration ${platform}`, {
             stdio: 'inherit',
-            timeout: 600000 // 10 minutes
+            timeout: 600000, // 10 minutes
           });
         } catch (error) {
           throw new Error(`Failed to build ${platform}: ${error.message}`);
@@ -362,7 +363,7 @@ class E2ETestRunner {
       const buildTime = fs.statSync(buildPath).mtime;
       const currentTime = new Date();
       const hoursSinceBuild = (currentTime - buildTime) / (1000 * 60 * 60);
-      
+
       // Consider build stale if older than 24 hours
       return hoursSinceBuild > 24;
     } catch (error) {
@@ -372,11 +373,11 @@ class E2ETestRunner {
 
   async cleanupForRetry(platform) {
     console.log('   🧹 Cleaning up for retry...');
-    
+
     try {
       // Reset app state
       execSync(`npx detox reset-locks`, { stdio: 'pipe' });
-      
+
       // Clean up simulator/emulator
       if (platform.includes('ios')) {
         execSync('xcrun simctl shutdown all', { stdio: 'pipe' });
@@ -384,7 +385,6 @@ class E2ETestRunner {
       } else if (platform.includes('android')) {
         execSync('adb shell pm clear com.tifossi', { stdio: 'pipe' });
       }
-      
     } catch (error) {
       console.log(`     Warning: Cleanup failed: ${error.message}`);
     }
@@ -392,14 +392,13 @@ class E2ETestRunner {
 
   async cleanup() {
     console.log('🧹 Cleaning up test environment...');
-    
+
     try {
       // Shutdown simulators/emulators
       execSync('xcrun simctl shutdown all', { stdio: 'pipe' });
-      
+
       // Clean up Detox
       execSync('npx detox reset-locks', { stdio: 'pipe' });
-      
     } catch (error) {
       console.log(`Warning: Cleanup failed: ${error.message}`);
     }
@@ -407,31 +406,32 @@ class E2ETestRunner {
 
   async generateReports() {
     console.log('📊 Generating test reports...');
-    
+
     const reportData = {
       summary: {
-        total: this.results.passed.length + this.results.failed.length + this.results.skipped.length,
+        total:
+          this.results.passed.length + this.results.failed.length + this.results.skipped.length,
         passed: this.results.passed.length,
         failed: this.results.failed.length,
         skipped: this.results.skipped.length,
         duration: this.results.totalDuration,
         startTime: this.results.startTime,
-        endTime: this.results.endTime
+        endTime: this.results.endTime,
       },
       results: {
         passed: this.results.passed,
         failed: this.results.failed,
-        skipped: this.results.skipped
-      }
+        skipped: this.results.skipped,
+      },
     };
-    
+
     // Generate JSON report
     const jsonReportPath = path.join(this.config.reportDir, 'e2e-results.json');
     fs.writeFileSync(jsonReportPath, JSON.stringify(reportData, null, 2));
-    
+
     // Generate HTML report
     await this.generateHtmlReport(reportData);
-    
+
     console.log(`✅ Reports generated in ${this.config.reportDir}`);
   }
 
@@ -492,7 +492,7 @@ class E2ETestRunner {
     ${this.generateSuiteResults(reportData.results)}
 </body>
 </html>`;
-    
+
     const htmlReportPath = path.join(this.config.reportDir, 'e2e-report.html');
     fs.writeFileSync(htmlReportPath, htmlTemplate);
   }
@@ -500,18 +500,21 @@ class E2ETestRunner {
   generateSuiteResults(results) {
     const allResults = [...results.passed, ...results.failed, ...results.skipped];
     const suiteGroups = this.groupByTestSuite(allResults);
-    
-    return Object.entries(suiteGroups).map(([suiteName, tests]) => {
-      const suite = this.config.testSuites.find(s => s.name === suiteName);
-      const hasFailures = tests.some(t => results.failed.includes(t));
-      
-      return `
+
+    return Object.entries(suiteGroups)
+      .map(([suiteName, tests]) => {
+        const suite = this.config.testSuites.find((s) => s.name === suiteName);
+        const hasFailures = tests.some((t) => results.failed.includes(t));
+
+        return `
         <div class="test-suite">
             <div class="suite-header">
                 <div class="suite-name">${suiteName}</div>
                 <div class="suite-description">${suite?.description || ''}</div>
             </div>
-            ${tests.map(test => `
+            ${tests
+              .map(
+                (test) => `
                 <div class="test-result ${results.failed.includes(test) ? 'failed' : 'passed'}">
                     <strong>${test.platform}</strong>
                     <div class="test-details">
@@ -520,10 +523,13 @@ class E2ETestRunner {
                     </div>
                     ${test.error ? `<div class="error-message">${test.error}</div>` : ''}
                 </div>
-            `).join('')}
+            `
+              )
+              .join('')}
         </div>
       `;
-    }).join('');
+      })
+      .join('');
   }
 
   groupByTestSuite(results) {
@@ -544,17 +550,17 @@ class E2ETestRunner {
     console.log(`✅ Passed: ${this.results.passed.length}`);
     console.log(`❌ Failed: ${this.results.failed.length}`);
     console.log(`⏱️  Duration: ${(this.results.totalDuration / 1000 / 60).toFixed(1)} minutes`);
-    
+
     if (this.results.failed.length > 0) {
       console.log('\n❌ FAILED TESTS:');
-      this.results.failed.forEach(test => {
+      this.results.failed.forEach((test) => {
         console.log(`   • ${test.name} (${test.platform})`);
         if (test.error) {
           console.log(`     Error: ${test.error.split('\n')[0]}`);
         }
       });
     }
-    
+
     console.log(`\n📁 Reports available in: ${this.config.reportDir}`);
     console.log(`📁 Artifacts available in: ${this.config.artifactDir}`);
   }
@@ -577,7 +583,7 @@ class E2ETestRunner {
 if (require.main === module) {
   const args = process.argv.slice(2);
   const options = {};
-  
+
   // Parse command line arguments
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
@@ -618,9 +624,9 @@ Examples:
         process.exit(0);
     }
   }
-  
+
   const runner = new E2ETestRunner();
-  runner.run(options).catch(error => {
+  runner.run(options).catch((error) => {
     console.error('Test suite failed:', error);
     process.exit(1);
   });

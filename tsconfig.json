@@ -15,10 +15,10 @@
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "types/**/*.d.ts"],
   "exclude": [
-    "node_modules", 
+    "node_modules",
     "e2e/**/*",
     "app/_tests/integration/apple-auth.test.tsx",
-    "app/_tests/integration/apple-auth-simple.test.tsx", 
+    "app/_tests/integration/apple-auth-simple.test.tsx",
     "app/_tests/utils/apple-auth-utils.ts",
     "app/_tests/integration/payment.test.tsx"
   ]

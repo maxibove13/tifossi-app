@@ -1,6 +1,6 @@
 /**
  * Mock Firebase Authentication Service
- * 
+ *
  * This service provides a comprehensive mock implementation of Firebase
  * Authentication for testing the Tifossi backend migration. It supports
  * all major authentication flows, user management, and security features.
@@ -16,7 +16,7 @@ const crypto = require('crypto');
 class MockFirebaseAuth extends EventEmitter {
   constructor(config = {}) {
     super();
-    
+
     this.config = {
       apiKey: 'mock-api-key-AIzaSyExample',
       authDomain: 'tifossi-test.firebaseapp.com',
@@ -27,7 +27,7 @@ class MockFirebaseAuth extends EventEmitter {
       responseDelay: config.responseDelay || 300,
       errorRate: config.errorRate || 0.01,
       enableCustomClaims: config.enableCustomClaims !== false,
-      ...config
+      ...config,
     };
 
     // Service state
@@ -41,7 +41,7 @@ class MockFirebaseAuth extends EventEmitter {
 
     // Initialize test data
     this.initializeTestUsers();
-    
+
     // Start cleanup processes
     this.startSessionCleanup();
     this.startVerificationCodeCleanup();
@@ -63,7 +63,7 @@ class MockFirebaseAuth extends EventEmitter {
         phoneNumber: '+59899123456',
         customClaims: { role: 'customer', plan: 'premium' },
         createdAt: new Date('2023-01-01').toISOString(),
-        lastSignInTime: new Date().toISOString()
+        lastSignInTime: new Date().toISOString(),
       },
       {
         uid: 'firebase-test-user-2',
@@ -76,7 +76,7 @@ class MockFirebaseAuth extends EventEmitter {
         phoneNumber: null,
         customClaims: { role: 'customer' },
         createdAt: new Date('2024-01-01').toISOString(),
-        lastSignInTime: null
+        lastSignInTime: null,
       },
       {
         uid: 'firebase-test-user-3',
@@ -89,7 +89,7 @@ class MockFirebaseAuth extends EventEmitter {
         phoneNumber: null,
         customClaims: {},
         createdAt: new Date('2023-06-01').toISOString(),
-        lastSignInTime: new Date('2023-12-01').toISOString()
+        lastSignInTime: new Date('2023-12-01').toISOString(),
       },
       {
         uid: 'firebase-admin-user',
@@ -102,11 +102,11 @@ class MockFirebaseAuth extends EventEmitter {
         phoneNumber: '+59899654321',
         customClaims: { role: 'admin', permissions: ['read', 'write', 'admin'] },
         createdAt: new Date('2022-01-01').toISOString(),
-        lastSignInTime: new Date().toISOString()
-      }
+        lastSignInTime: new Date().toISOString(),
+      },
     ];
 
-    testUsers.forEach(user => {
+    testUsers.forEach((user) => {
       this.users.set(user.email, {
         ...user,
         providerData: [
@@ -115,9 +115,9 @@ class MockFirebaseAuth extends EventEmitter {
             displayName: user.displayName,
             email: user.email,
             photoURL: user.photoURL,
-            providerId: 'password'
-          }
-        ]
+            providerId: 'password',
+          },
+        ],
       });
     });
   }
@@ -159,7 +159,7 @@ class MockFirebaseAuth extends EventEmitter {
       credential: null,
       operationType: 'signIn',
       additionalUserInfo: null,
-      ...tokens
+      ...tokens,
     };
   }
 
@@ -180,7 +180,10 @@ class MockFirebaseAuth extends EventEmitter {
 
     // Validate password strength
     if (!this.validatePassword(password)) {
-      throw new FirebaseAuthError('auth/weak-password', 'Password must be at least 6 characters long');
+      throw new FirebaseAuthError(
+        'auth/weak-password',
+        'Password must be at least 6 characters long'
+      );
     }
 
     const user = {
@@ -201,9 +204,9 @@ class MockFirebaseAuth extends EventEmitter {
           displayName: displayName || null,
           email: email,
           photoURL: null,
-          providerId: 'password'
-        }
-      ]
+          providerId: 'password',
+        },
+      ],
     };
 
     this.users.set(email, user);
@@ -218,7 +221,7 @@ class MockFirebaseAuth extends EventEmitter {
       credential: null,
       operationType: 'signIn',
       additionalUserInfo: { isNewUser: true },
-      ...tokens
+      ...tokens,
     };
   }
 
@@ -240,12 +243,12 @@ class MockFirebaseAuth extends EventEmitter {
     this.verificationCodes.set(user.email, {
       code: verificationCode,
       expires: Date.now() + 600000, // 10 minutes
-      type: 'email_verification'
+      type: 'email_verification',
     });
 
     // Simulate email sending
     console.log(`[Mock Firebase] Email verification code for ${user.email}: ${verificationCode}`);
-    
+
     this.emit('email.verification_sent', { email: user.email, code: verificationCode });
 
     return { success: true };
@@ -295,7 +298,7 @@ class MockFirebaseAuth extends EventEmitter {
       this.verificationCodes.set(email, {
         code: resetCode,
         expires: Date.now() + 3600000, // 1 hour
-        type: 'password_reset'
+        type: 'password_reset',
       });
 
       this.emit('password.reset_sent', { email, code: resetCode });
@@ -312,7 +315,11 @@ class MockFirebaseAuth extends EventEmitter {
     this.requestCount++;
 
     const verification = this.verificationCodes.get(email);
-    if (!verification || verification.expires < Date.now() || verification.type !== 'password_reset') {
+    if (
+      !verification ||
+      verification.expires < Date.now() ||
+      verification.type !== 'password_reset'
+    ) {
       throw new FirebaseAuthError('auth/expired-action-code', 'Reset code has expired');
     }
 
@@ -321,7 +328,10 @@ class MockFirebaseAuth extends EventEmitter {
     }
 
     if (!this.validatePassword(newPassword)) {
-      throw new FirebaseAuthError('auth/weak-password', 'Password must be at least 6 characters long');
+      throw new FirebaseAuthError(
+        'auth/weak-password',
+        'Password must be at least 6 characters long'
+      );
     }
 
     const user = this.users.get(email);
@@ -357,7 +367,7 @@ class MockFirebaseAuth extends EventEmitter {
       name: user.displayName,
       picture: user.photoURL,
       phone_number: user.phoneNumber,
-      
+
       // JWT standard claims
       iss: `https://securetoken.google.com/${this.config.projectId}`,
       aud: this.config.projectId,
@@ -365,14 +375,14 @@ class MockFirebaseAuth extends EventEmitter {
       exp: Math.floor(session.expires / 1000),
       iat: Math.floor(new Date(session.createdAt).getTime() / 1000),
       sub: user.uid,
-      
+
       // Firebase custom claims
       firebase: {
         identities: {
-          email: [user.email]
+          email: [user.email],
         },
-        sign_in_provider: 'password'
-      }
+        sign_in_provider: 'password',
+      },
     };
 
     // Add custom claims if enabled
@@ -390,7 +400,7 @@ class MockFirebaseAuth extends EventEmitter {
     await this.simulateDelay();
     this.requestCount++;
 
-    const user = Array.from(this.users.values()).find(u => u.uid === uid);
+    const user = Array.from(this.users.values()).find((u) => u.uid === uid);
     if (!user) {
       throw new FirebaseAuthError('auth/user-not-found', 'No user record found');
     }
@@ -460,10 +470,10 @@ class MockFirebaseAuth extends EventEmitter {
     user.providerData[0].email = newEmail;
     this.users.set(newEmail, user);
 
-    this.emit('email.updated', { 
-      user: this.formatUser(user), 
-      oldEmail, 
-      newEmail 
+    this.emit('email.updated', {
+      user: this.formatUser(user),
+      oldEmail,
+      newEmail,
     });
 
     return { user: this.formatUser(user) };
@@ -477,7 +487,10 @@ class MockFirebaseAuth extends EventEmitter {
     this.requestCount++;
 
     if (!this.validatePassword(newPassword)) {
-      throw new FirebaseAuthError('auth/weak-password', 'Password must be at least 6 characters long');
+      throw new FirebaseAuthError(
+        'auth/weak-password',
+        'Password must be at least 6 characters long'
+      );
     }
 
     const session = this.validateSession(idToken);
@@ -505,10 +518,10 @@ class MockFirebaseAuth extends EventEmitter {
 
     // Remove user from storage
     this.users.delete(user.email);
-    
+
     // Invalidate all sessions
     this.invalidateUserSessions(user.uid);
-    
+
     // Clean up verification codes
     this.verificationCodes.delete(user.email);
 
@@ -536,14 +549,13 @@ class MockFirebaseAuth extends EventEmitter {
 
     // Generate new tokens
     const newTokens = this.generateTokens(user);
-    
+
     // Remove old refresh token
     this.refreshTokens.delete(refreshToken);
 
     // Update session with new tokens
-    const session = Array.from(this.sessions.values())
-      .find(s => s.refreshToken === refreshToken);
-    
+    const session = Array.from(this.sessions.values()).find((s) => s.refreshToken === refreshToken);
+
     if (session) {
       Object.assign(session, newTokens);
     }
@@ -562,10 +574,10 @@ class MockFirebaseAuth extends EventEmitter {
     if (session) {
       this.sessions.delete(idToken);
       this.refreshTokens.delete(session.refreshToken);
-      
-      this.emit('user.signedOut', { 
-        uid: session.user.uid, 
-        sessionId: session.sessionId 
+
+      this.emit('user.signedOut', {
+        uid: session.user.uid,
+        sessionId: session.sessionId,
       });
     }
 
@@ -580,7 +592,7 @@ class MockFirebaseAuth extends EventEmitter {
     this.requestCount++;
 
     this.invalidateUserSessions(uid);
-    
+
     this.emit('user.signedOutEverywhere', { uid });
 
     return { success: true };
@@ -593,18 +605,18 @@ class MockFirebaseAuth extends EventEmitter {
     await this.simulateDelay();
     this.requestCount++;
 
-    const user = Array.from(this.users.values()).find(u => u.uid === uid);
+    const user = Array.from(this.users.values()).find((u) => u.uid === uid);
     if (!user) {
       throw new FirebaseAuthError('auth/user-not-found', 'No user record found');
     }
 
     const customToken = this.generateCustomToken(user, additionalClaims);
-    
+
     this.customTokens.set(customToken, {
       uid,
       additionalClaims,
       expires: Date.now() + 3600000, // 1 hour
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
 
     return customToken;
@@ -617,7 +629,7 @@ class MockFirebaseAuth extends EventEmitter {
     await this.simulateDelay();
     this.requestCount++;
 
-    const user = Array.from(this.users.values()).find(u => u.uid === uid);
+    const user = Array.from(this.users.values()).find((u) => u.uid === uid);
     if (!user) {
       throw new FirebaseAuthError('auth/user-not-found', 'No user record found');
     }
@@ -645,8 +657,8 @@ class MockFirebaseAuth extends EventEmitter {
     const pageUsers = users.slice(startIndex, endIndex);
 
     return {
-      users: pageUsers.map(user => this.formatUser(user)),
-      pageToken: endIndex < users.length ? endIndex.toString() : undefined
+      users: pageUsers.map((user) => this.formatUser(user)),
+      pageToken: endIndex < users.length ? endIndex.toString() : undefined,
     };
   }
 
@@ -675,14 +687,14 @@ class MockFirebaseAuth extends EventEmitter {
       email: user.email,
       uid: user.uid,
       expires: now + 2592000000, // 30 days
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
 
     return {
       idToken,
       refreshToken,
       accessToken,
-      expiresIn: '3600' // 1 hour
+      expiresIn: '3600', // 1 hour
     };
   }
 
@@ -693,7 +705,7 @@ class MockFirebaseAuth extends EventEmitter {
       user,
       ...tokens,
       expires: Date.now() + 3600000, // 1 hour
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     this.sessions.set(tokens.idToken, session);
@@ -702,7 +714,7 @@ class MockFirebaseAuth extends EventEmitter {
 
   invalidateUserSessions(uid, exceptSessionId = null) {
     const sessionsToDelete = [];
-    
+
     for (const [idToken, session] of this.sessions.entries()) {
       if (session.user.uid === uid && session.sessionId !== exceptSessionId) {
         sessionsToDelete.push(idToken);
@@ -710,7 +722,7 @@ class MockFirebaseAuth extends EventEmitter {
       }
     }
 
-    sessionsToDelete.forEach(idToken => {
+    sessionsToDelete.forEach((idToken) => {
       this.sessions.delete(idToken);
     });
 
@@ -729,11 +741,11 @@ class MockFirebaseAuth extends EventEmitter {
       metadata: {
         creationTime: user.createdAt,
         lastSignInTime: user.lastSignInTime,
-        lastRefreshTime: new Date().toISOString()
+        lastRefreshTime: new Date().toISOString(),
       },
       customClaims: user.customClaims || {},
       providerData: user.providerData || [],
-      tokensValidAfterTime: user.createdAt
+      tokensValidAfterTime: user.createdAt,
     };
   }
 
@@ -761,7 +773,7 @@ class MockFirebaseAuth extends EventEmitter {
       aud: `https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit`,
       iss: `firebase-adminsdk@${this.config.projectId}.iam.gserviceaccount.com`,
       sub: `firebase-adminsdk@${this.config.projectId}.iam.gserviceaccount.com`,
-      ...additionalClaims
+      ...additionalClaims,
     };
 
     return `mock-custom-token-${Buffer.from(JSON.stringify(payload)).toString('base64')}`;
@@ -783,7 +795,7 @@ class MockFirebaseAuth extends EventEmitter {
         }
       }
 
-      expiredSessions.forEach(idToken => {
+      expiredSessions.forEach((idToken) => {
         this.sessions.delete(idToken);
       });
 
@@ -804,7 +816,7 @@ class MockFirebaseAuth extends EventEmitter {
         }
       }
 
-      expiredCodes.forEach(email => {
+      expiredCodes.forEach((email) => {
         this.verificationCodes.delete(email);
       });
 
@@ -816,13 +828,13 @@ class MockFirebaseAuth extends EventEmitter {
 
   async simulateDelay(customDelay = null) {
     const delay = customDelay || this.config.responseDelay;
-    
+
     if (this.serviceHealth === 'degraded') {
-      await new Promise(resolve => setTimeout(resolve, delay * 2));
+      await new Promise((resolve) => setTimeout(resolve, delay * 2));
     } else if (this.serviceHealth === 'down') {
       throw new FirebaseAuthError('auth/network-request-failed', 'Firebase service is unavailable');
     } else {
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
@@ -855,7 +867,7 @@ class MockFirebaseAuth extends EventEmitter {
       customTokenCount: this.customTokens.size,
       serviceHealth: this.serviceHealth,
       errorRate: this.config.errorRate,
-      responseDelay: this.config.responseDelay
+      responseDelay: this.config.responseDelay,
     };
   }
 
@@ -863,13 +875,15 @@ class MockFirebaseAuth extends EventEmitter {
     const users = Array.from(this.users.values());
     return {
       total: users.length,
-      verified: users.filter(u => u.emailVerified).length,
-      disabled: users.filter(u => u.disabled).length,
-      withCustomClaims: users.filter(u => u.customClaims && Object.keys(u.customClaims).length > 0).length,
-      signedInRecently: users.filter(u => {
+      verified: users.filter((u) => u.emailVerified).length,
+      disabled: users.filter((u) => u.disabled).length,
+      withCustomClaims: users.filter(
+        (u) => u.customClaims && Object.keys(u.customClaims).length > 0
+      ).length,
+      signedInRecently: users.filter((u) => {
         if (!u.lastSignInTime) return false;
         return Date.now() - new Date(u.lastSignInTime).getTime() < 86400000; // 24 hours
-      }).length
+      }).length,
     };
   }
 
@@ -881,11 +895,11 @@ class MockFirebaseAuth extends EventEmitter {
     this.customTokens.clear();
     this.requestCount = 0;
     this.serviceHealth = 'healthy';
-    
+
     // Reset test users to initial state
     this.users.clear();
     this.initializeTestUsers();
-    
+
     this.emit('service.reset');
     console.log('[Mock Firebase Auth] Service reset');
   }
@@ -906,9 +920,9 @@ class FirebaseAuthError extends Error {
     return {
       error: {
         code: this.code,
-        message: this.message
+        message: this.message,
       },
-      timestamp: this.timestamp
+      timestamp: this.timestamp,
     };
   }
 }
@@ -923,42 +937,42 @@ class MockFirebaseAuthFactory {
       normal: {
         errorRate: 0.01,
         responseDelay: 300,
-        enableCustomClaims: true
+        enableCustomClaims: true,
       },
-      
+
       high_error: {
         errorRate: 0.1,
         responseDelay: 800,
-        enableCustomClaims: true
+        enableCustomClaims: true,
       },
-      
+
       slow_network: {
         errorRate: 0.01,
         responseDelay: 2000,
-        enableCustomClaims: true
+        enableCustomClaims: true,
       },
-      
+
       degraded_service: {
         errorRate: 0.05,
         responseDelay: 1000,
         enableCustomClaims: true,
-        initialHealth: 'degraded'
+        initialHealth: 'degraded',
       },
-      
+
       fast_testing: {
         errorRate: 0,
         responseDelay: 50,
-        enableCustomClaims: false
-      }
+        enableCustomClaims: false,
+      },
     };
 
     const config = scenarios[scenario] || scenarios.normal;
     const auth = new MockFirebaseAuth(config);
-    
+
     if (config.initialHealth) {
       auth.setServiceHealth(config.initialHealth);
     }
-    
+
     return auth;
   }
 }
@@ -966,7 +980,7 @@ class MockFirebaseAuthFactory {
 module.exports = {
   MockFirebaseAuth,
   FirebaseAuthError,
-  MockFirebaseAuthFactory
+  MockFirebaseAuthFactory,
 };
 
 // Export default instance

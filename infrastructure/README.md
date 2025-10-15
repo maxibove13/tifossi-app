@@ -26,6 +26,7 @@ infrastructure/
 ### 1. Environment Setup
 
 #### For Development
+
 ```bash
 # Copy environment template
 cp infrastructure/templates/.env.development.template backend/.env
@@ -38,6 +39,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
 #### For Staging/Production
+
 Environment variables should be configured in your Render dashboard.
 
 ### 2. Local Development with Docker
@@ -64,6 +66,7 @@ docker-compose logs -f strapi
 ### 3. Deployment
 
 #### Render Deployment
+
 ```bash
 # Set your Render API key
 export RENDER_API_KEY=your_render_api_key
@@ -78,6 +81,7 @@ export RENDER_API_KEY=your_render_api_key
 ## Environment Configuration
 
 ### Development Environment
+
 - **Purpose**: Local development and testing
 - **Database**: PostgreSQL (Docker container)
 - **Cache**: Redis (Docker container)
@@ -86,6 +90,7 @@ export RENDER_API_KEY=your_render_api_key
 - **Features**: All debug tools enabled
 
 ### Staging Environment
+
 - **Purpose**: Integration testing and client review
 - **Platform**: Render
 - **Database**: Managed PostgreSQL
@@ -93,6 +98,7 @@ export RENDER_API_KEY=your_render_api_key
 - **Features**: Production-like with some debug features
 
 ### Production Environment
+
 - **Purpose**: Live application
 - **Platform**: Render
 - **Database**: Managed PostgreSQL with backups
@@ -103,6 +109,7 @@ export RENDER_API_KEY=your_render_api_key
 ## Required Environment Variables
 
 ### Critical Variables (Required for all environments)
+
 ```bash
 # Strapi Core
 APP_KEYS=comma,separated,keys,here
@@ -128,6 +135,7 @@ CLOUDINARY_SECRET=your-api-secret
 ### Environment-Specific Variables
 
 #### Development
+
 ```bash
 NODE_ENV=development
 DATABASE_CLIENT=postgres
@@ -137,6 +145,7 @@ AUTH_RATE_LIMIT_ENABLED=false
 ```
 
 #### Staging
+
 ```bash
 NODE_ENV=staging
 CORS_ORIGINS=https://staging.tifossi.app,exp://staging.tifossi.app
@@ -145,6 +154,7 @@ MERCADO_PAGO_SANDBOX=true
 ```
 
 #### Production
+
 ```bash
 NODE_ENV=production
 CORS_ORIGINS=https://tifossi.app,https://www.tifossi.app
@@ -156,16 +166,19 @@ SECURITY_HEADERS_ENABLED=true
 ## Docker Services
 
 ### Core Services
+
 - **strapi**: Main Strapi CMS application
 - **postgres**: PostgreSQL database
 - **redis**: Redis cache for sessions and caching
 
 ### Development Services (dev profile)
+
 - **adminer**: Database administration interface
 - **redis-commander**: Redis management interface
 - **mailhog**: Email testing service
 
 ### Production Services (prod profile)
+
 - **nginx**: Reverse proxy and SSL termination
 - **backup**: Automated database backups
 - **fluentd**: Log aggregation (optional)
@@ -173,6 +186,7 @@ SECURITY_HEADERS_ENABLED=true
 ## Deployment Scripts Features
 
 ### Render Deployment Script
+
 - ✅ API-based deployment
 - ✅ Environment validation
 - ✅ Service health monitoring
@@ -183,18 +197,21 @@ SECURITY_HEADERS_ENABLED=true
 ## Security Considerations
 
 ### Development
+
 - Local secrets (not for production use)
 - Debug features enabled
 - Permissive CORS for local testing
 - No rate limiting
 
 ### Staging
+
 - Environment-specific secrets
 - Basic security headers
 - Moderate rate limiting
 - MercadoPago sandbox mode
 
 ### Production
+
 - Strong, unique secrets
 - Full security headers (HSTS, CSP)
 - Strict rate limiting
@@ -207,6 +224,7 @@ SECURITY_HEADERS_ENABLED=true
 ### Common Issues
 
 #### Docker Build Failures
+
 ```bash
 # Clear Docker cache
 docker system prune -a
@@ -216,6 +234,7 @@ docker-compose build --no-cache
 ```
 
 #### Database Connection Issues
+
 ```bash
 # Check database logs
 docker-compose logs postgres
@@ -225,6 +244,7 @@ docker-compose exec strapi env | grep DATABASE
 ```
 
 #### Port Conflicts
+
 ```bash
 # Find processes using ports
 netstat -tulpn | grep :1337
@@ -234,6 +254,7 @@ sudo kill -9 $(sudo lsof -t -i:1337)
 ```
 
 #### Deployment Script Errors
+
 ```bash
 # Check dependencies
 docker --version
@@ -245,6 +266,7 @@ curl -H "Authorization: Bearer $RENDER_API_KEY" https://api.render.com/v1/servic
 ```
 
 ### Health Check URLs
+
 - **Development**: http://localhost:1337/api/health
 - **Staging**: https://staging-api.tifossi.app/api/health
 - **Production**: https://api.tifossi.app/api/health
@@ -252,6 +274,7 @@ curl -H "Authorization: Bearer $RENDER_API_KEY" https://api.render.com/v1/servic
 ## Monitoring and Logs
 
 ### Local Development
+
 ```bash
 # View all service logs
 docker-compose logs -f
@@ -262,6 +285,7 @@ docker-compose logs -f postgres
 ```
 
 ### Render
+
 - Check logs in Render dashboard
 - Build logs available during deployment
 - Runtime logs available in service dashboard
@@ -269,6 +293,7 @@ docker-compose logs -f postgres
 ## Backup and Recovery
 
 ### Development
+
 ```bash
 # Create database backup
 docker-compose exec postgres pg_dump -U strapi tifossi_dev > backup.sql
@@ -278,6 +303,7 @@ docker-compose exec -T postgres psql -U strapi -d tifossi_dev < backup.sql
 ```
 
 ### Production
+
 - Automated daily backups (Render managed)
 - Point-in-time recovery available
 - Media assets backed up to Cloudinary

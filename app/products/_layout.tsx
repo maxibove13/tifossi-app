@@ -14,5 +14,5 @@ export default function ProductsLayout() {
 // Metadata for the router
 export const layoutExport = {
   name: 'ProductsLayout',
-  version: '1.0.0'
-}; 
+  version: '1.0.0',
+};

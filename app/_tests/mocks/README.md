@@ -28,6 +28,7 @@ app/_tests/mocks/
 ## Mock Data
 
 ### Products (`/data/products.ts`)
+
 - **60+ realistic products** covering Uruguayan football teams
 - **Teams**: Nacional, Peñarol, Defensor, Wanderers, Danubio, etc.
 - **Categories**: Apparel, Accessories, Footwear, Equipment
@@ -35,6 +36,7 @@ app/_tests/mocks/
 - **Special items**: Retro jerseys, limited editions, Uruguay national team
 
 **Key Features:**
+
 ```typescript
 interface MockProduct {
   id: string;
@@ -58,12 +60,14 @@ interface MockProduct {
 ```
 
 ### Users (`/data/users.ts`)
+
 - **53 users** with authentic Uruguayan data
 - **Addresses**: Realistic Montevideo and interior addresses
 - **Phone numbers**: Valid Uruguayan format (+598)
 - **Test users**: Predefined users for integration testing
 
 **Key Features:**
+
 ```typescript
 interface MockUser {
   id: number;
@@ -82,12 +86,14 @@ interface MockUser {
 ```
 
 **Addresses include:**
+
 - Montevideo neighborhoods: Pocitos, Punta Carretas, Centro, etc.
 - Interior cities: Salto, Paysandú, Rivera, Maldonado
 - Realistic street names and postal codes
 - Multiple address types: home, work, other
 
 ### Orders (`/data/orders.ts`)
+
 - **152 orders** with various states and realistic data
 - **Statuses**: CREATED, PAID, PROCESSING, SHIPPED, DELIVERED, etc.
 - **Payment methods**: MercadoPago, credit/debit cards, cash
@@ -95,6 +101,7 @@ interface MockUser {
 - **Status history**: Complete order tracking information
 
 **Key Features:**
+
 ```typescript
 interface MockOrder {
   id: string;
@@ -116,11 +123,13 @@ interface MockOrder {
 ## API Handlers (`/handlers.ts`)
 
 ### Product Endpoints
+
 - `GET /api/products` - Product listing with pagination and filtering
 - `GET /api/products/:id` - Individual product details
 - `GET /api/products/search` - Product search with filters
 
 ### Authentication Endpoints
+
 - `POST /api/auth/local` - Email/password authentication
 - `POST /api/auth/local/register` - User registration
 - `GET /api/users/me` - Current user profile
@@ -129,6 +138,7 @@ interface MockOrder {
 - `POST /api/upload` - Profile picture upload
 
 ### Cart Endpoints
+
 - `POST /api/cart/add` - Add items to cart
 - `GET /api/cart` - Get cart contents
 - `PUT /api/cart/update` - Update cart items
@@ -137,6 +147,7 @@ interface MockOrder {
 - `PUT /users/me/cart` - Sync cart with server
 
 ### Order Endpoints
+
 - `POST /api/orders` - Create new order
 - `GET /api/orders` - List user orders
 - `GET /api/orders/:id` - Get order details
@@ -145,12 +156,14 @@ interface MockOrder {
 - `GET /api/orders/:id/tracking` - Order tracking
 
 ### Favorites Endpoints
+
 - `GET /api/favorites` - Get user favorites
 - `POST /api/favorites` - Add to favorites
 - `DELETE /api/favorites/:id` - Remove from favorites
 - `PUT /users/me/favorites` - Sync favorites
 
 ### Address Endpoints
+
 - `GET /users/me/addresses` - Get user addresses
 - `POST /users/me/addresses` - Create new address
 - `PUT /users/me/addresses/:id` - Update address
@@ -158,18 +171,21 @@ interface MockOrder {
 - `PUT /users/me/addresses/:id/set-default` - Set default address
 
 ### Utility Endpoints
+
 - `GET /api/health` - Health check
 - `GET /api/simulate-error` - Error simulation for testing
 
 ## Features
 
 ### Realistic Network Behavior
+
 - **Random delays**: 100-1200ms response times
 - **Error simulation**: Configurable error rates (1-5%)
 - **Timeout simulation**: Long delays for testing loading states
 - **Auth validation**: Proper JWT token validation
 
 ### Comprehensive Error Scenarios
+
 - **404 errors**: Non-existent resources
 - **401 errors**: Authentication required
 - **400 errors**: Validation failures
@@ -177,6 +193,7 @@ interface MockOrder {
 - **Network timeouts**: Connection issues
 
 ### Uruguayan-Specific Data
+
 - **Football teams**: All major Uruguayan clubs
 - **Addresses**: Real Montevideo neighborhoods and interior cities
 - **Phone numbers**: Valid +598 format
@@ -186,6 +203,7 @@ interface MockOrder {
 ## Testing Integration
 
 ### Predefined Test Users
+
 ```typescript
 // Available for integration testing
 const testCredentials = [
@@ -196,10 +214,12 @@ const testCredentials = [
 ```
 
 ### Test Orders
+
 - `test_order_1`: Delivered order for testing tracking
 - `test_order_2`: Processing order for testing status updates
 
 ### Mock Server Setup
+
 ```typescript
 import { server } from './mocks/server';
 
@@ -211,6 +231,7 @@ afterAll(() => server.close());
 ## Usage Examples
 
 ### Basic Product Testing
+
 ```typescript
 // Fetch products
 const response = await fetch('/api/products');
@@ -223,6 +244,7 @@ const searchData = await searchResponse.json();
 ```
 
 ### Authentication Testing
+
 ```typescript
 // Login with test user
 const loginResponse = await fetch('/api/auth/local', {
@@ -230,32 +252,35 @@ const loginResponse = await fetch('/api/auth/local', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     identifier: 'test@tifossi.com',
-    password: 'password123'
-  })
+    password: 'password123',
+  }),
 });
 
 const { jwt, user } = await loginResponse.json();
 
 // Use JWT for authenticated requests
 const userResponse = await fetch('/api/users/me', {
-  headers: { 'Authorization': `Bearer ${jwt}` }
+  headers: { Authorization: `Bearer ${jwt}` },
 });
 ```
 
 ### Order Testing
+
 ```typescript
 // Create order
 const orderResponse = await fetch('/api/orders', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${jwt}`
+    Authorization: `Bearer ${jwt}`,
   },
   body: JSON.stringify({
     items: [{ productId: '1', quantity: 2 }],
-    shippingAddress: { /* address data */ },
-    shippingMethod: 'delivery'
-  })
+    shippingAddress: {
+      /* address data */
+    },
+    shippingMethod: 'delivery',
+  }),
 });
 ```
 
@@ -279,6 +304,7 @@ The mock data includes comprehensive validation tests in `mock-data.test.ts`:
 ## Maintenance
 
 ### Adding New Products
+
 ```typescript
 // In data/products.ts
 productMockData.push({
@@ -287,11 +313,12 @@ productMockData.push({
     name: 'New Product Name',
     price: 99.99,
     // ... other required fields
-  }
+  },
 });
 ```
 
 ### Adding New Endpoints
+
 ```typescript
 // In handlers.ts
 http.get('/api/new-endpoint', async ({ request }) => {
@@ -302,6 +329,7 @@ http.get('/api/new-endpoint', async ({ request }) => {
 ```
 
 ### Updating Test Data
+
 ```typescript
 // Add new test scenarios
 const newTestUser = {
@@ -324,6 +352,7 @@ userMockData.push(newTestUser);
 ### Debugging
 
 Enable MSW logging:
+
 ```typescript
 // In server.ts
 const server = setupServer(...handlers);

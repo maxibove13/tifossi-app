@@ -8,22 +8,22 @@ The Tifossi authentication system provides comprehensive user account management
 
 The authentication system is **implemented** with the following components:
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Authentication Store | ✅ Implemented | Token storage, state management, and mock API integration |
-| Login UI | ✅ Implemented | Form with validation, error handling |
-| Signup UI | ✅ Implemented | Registration form with terms checkbox and validation |
-| Password Reset UI | ✅ Implemented | Form for initiating password reset |
-| Auth Prompt | ✅ Implemented | Reusable component for non-authenticated states |
-| Profile UI | ✅ Implemented | Displays user info when authenticated |
-| Profile Picture Editor | ✅ Implemented | Component for uploading/editing profile photos |
-| Password Change | ✅ Implemented | Secure password change screen with validation |
-| Logout UI | ✅ Implemented | Explicit logout with confirmation dialog |
-| Email Verification | ✅ Implemented | Email verification flow with resend option |
-| Terms & Privacy | ✅ Implemented | Legal screens and signup integration |
-| Backend Integration | 🚧 Pending | Currently using mock API implementation |
-| Token Refresh | 🚧 Pending | Not yet implemented |
-| Session Persistence | ✅ Implemented | Token stored in SecureStore |
+| Component              | Status         | Notes                                                     |
+| ---------------------- | -------------- | --------------------------------------------------------- |
+| Authentication Store   | ✅ Implemented | Token storage, state management, and mock API integration |
+| Login UI               | ✅ Implemented | Form with validation, error handling                      |
+| Signup UI              | ✅ Implemented | Registration form with terms checkbox and validation      |
+| Password Reset UI      | ✅ Implemented | Form for initiating password reset                        |
+| Auth Prompt            | ✅ Implemented | Reusable component for non-authenticated states           |
+| Profile UI             | ✅ Implemented | Displays user info when authenticated                     |
+| Profile Picture Editor | ✅ Implemented | Component for uploading/editing profile photos            |
+| Password Change        | ✅ Implemented | Secure password change screen with validation             |
+| Logout UI              | ✅ Implemented | Explicit logout with confirmation dialog                  |
+| Email Verification     | ✅ Implemented | Email verification flow with resend option                |
+| Terms & Privacy        | ✅ Implemented | Legal screens and signup integration                      |
+| Backend Integration    | 🚧 Pending     | Currently using mock API implementation                   |
+| Token Refresh          | 🚧 Pending     | Not yet implemented                                       |
+| Session Persistence    | ✅ Implemented | Token stored in SecureStore                               |
 
 ## Architecture
 
@@ -70,11 +70,11 @@ The authentication system is **implemented** with the following components:
 
 The Tifossi authentication system supports multiple authentication providers:
 
-| Provider | Status | Platform Support | Notes |
-|----------|--------|-------------------|-------|
-| Email/Password | ✅ Implemented | iOS, Android, Web | Traditional credential authentication |
-| Google Sign-In | ✅ Implemented | iOS, Android, Web | OAuth 2.0 with Google |
-| Apple Sign-In | ✅ Implemented | iOS (Native), Android (Web fallback) | Required for App Store compliance |
+| Provider       | Status         | Platform Support                     | Notes                                 |
+| -------------- | -------------- | ------------------------------------ | ------------------------------------- |
+| Email/Password | ✅ Implemented | iOS, Android, Web                    | Traditional credential authentication |
+| Google Sign-In | ✅ Implemented | iOS, Android, Web                    | OAuth 2.0 with Google                 |
+| Apple Sign-In  | ✅ Implemented | iOS (Native), Android (Web fallback) | Required for App Store compliance     |
 
 #### Apple Sign-In Integration
 
@@ -140,6 +140,7 @@ Key features of the enhanced auth store:
 ### Authentication Initialization
 
 On application startup:
+
 1. The root layout component initializes auth state
 2. The authStore checks SecureStore for an existing token
 3. If a token exists, it's validated with the backend
@@ -295,11 +296,9 @@ The `AuthPrompt.tsx` component provides a reusable UI for prompting users to aut
 - Customizable styling
 
 Usage:
+
 ```tsx
-<ReusableAuthPrompt
-  message="Aún no iniciaste sesión."
-  style={styles.authPromptStyle}
-/>
+<ReusableAuthPrompt message="Aún no iniciaste sesión." style={styles.authPromptStyle} />
 ```
 
 ### Profile Picture Editor Component
@@ -313,6 +312,7 @@ The `ProfilePictureEditor.tsx` component provides a reusable UI for editing prof
 - Circular cropping and display
 
 Usage:
+
 ```tsx
 <ProfilePictureEditor
   currentImage={userProfileImage}

@@ -75,10 +75,13 @@ interface ProductCardData {
   price: number;
   image: string | ImageSourcePropType;
   isNew?: boolean;
-  description?: string | string[] | {
-    line1: string;
-    line2: string;
-  };
+  description?:
+    | string
+    | string[]
+    | {
+        line1: string;
+        line2: string;
+      };
   discountPercentage?: number;
   originalPrice?: number;
   quantity?: number;

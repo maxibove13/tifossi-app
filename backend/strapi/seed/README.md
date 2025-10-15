@@ -5,12 +5,14 @@ This directory contains seed data for initializing the Tifossi e-commerce Strapi
 ## Seed Files
 
 ### Core Data
+
 - `product-statuses.json` - All 8 product status labels with Spanish/English translations
-- `categories.json` - Product categories including label-based and regular categories  
+- `categories.json` - Product categories including label-based and regular categories
 - `product-models.json` - Product model variants within each category
 - `store-locations.json` - Physical store locations for pickup services
 
 ### Product Data
+
 - `products.json` - Sample products with complete variant information (colors, sizes, etc.)
 
 ## Data Structure Compatibility
@@ -36,6 +38,7 @@ All seed data is designed to maintain 100% compatibility with existing TypeScrip
 ## Data Validation
 
 Each JSON file includes:
+
 - Required field validation
 - Proper enum values
 - Consistent slug formatting
@@ -46,8 +49,9 @@ Each JSON file includes:
 ## Relationships
 
 The seed data maintains proper relationships:
+
 - Products → Categories (via slug)
-- Products → Models (via slug)  
+- Products → Models (via slug)
 - Products → Statuses (via name array)
 - Models → Categories (via categorySlug)
 - Orders → Store Locations (when shipping method is pickup)
@@ -66,12 +70,13 @@ To customize the seed data:
 The seed data references placeholder image paths that should be replaced with actual media uploads in Strapi:
 
 - Product images: Upload to Strapi media library
-- Category icons: Upload to Strapi media library  
+- Category icons: Upload to Strapi media library
 - Store location images: Upload to Strapi media library
 
 ## Migration Notes
 
 When migrating from existing data:
+
 - Map existing product IDs to new Strapi IDs
 - Update image references to Strapi media URLs
 - Ensure status mappings are consistent

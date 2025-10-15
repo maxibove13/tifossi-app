@@ -12,7 +12,7 @@
     "name": "sale",
     "priority": 70,
     "labelEs": "Descuento",
-    "labelEn": "Sale", 
+    "labelEn": "Sale",
     "color": "#FFFFFF",
     "backgroundColor": "#E74C3C",
     "isActive": true
@@ -22,7 +22,7 @@
     "priority": 50,
     "labelEs": "Destacado",
     "labelEn": "Featured",
-    "color": "#FFFFFF", 
+    "color": "#FFFFFF",
     "backgroundColor": "#3498DB",
     "isActive": true
   },
@@ -38,7 +38,7 @@
   {
     "name": "recommended",
     "priority": 40,
-    "labelEs": "Recomendado", 
+    "labelEs": "Recomendado",
     "labelEn": "Recommended",
     "color": "#FFFFFF",
     "backgroundColor": "#27AE60",

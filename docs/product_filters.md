@@ -31,7 +31,7 @@ This modal overlay provides the UI for selecting and applying filters:
 
 Custom hook that implements the filtering logic:
 
-- **Input**: 
+- **Input**:
   - Product list (array of Product objects)
   - Applied filters object (sizes, colors, price range)
 - **Output**: Filtered product list based on selected criteria
@@ -43,13 +43,13 @@ The `ProductFilters` interface defines the structure for filters:
 
 ```typescript
 export interface ProductFilters {
-  sizes?: string[];          // Selected size values (e.g., ['S', 'M', 'L'])
-  colorHexes?: string[];     // Selected color hex codes (e.g., ['#FF0000', '#00FF00'])
-  priceRange?: { 
-    min: number;             // Minimum price
-    max: number;             // Maximum price
+  sizes?: string[]; // Selected size values (e.g., ['S', 'M', 'L'])
+  colorHexes?: string[]; // Selected color hex codes (e.g., ['#FF0000', '#00FF00'])
+  priceRange?: {
+    min: number; // Minimum price
+    max: number; // Maximum price
   };
-  labels?: ProductLabel[];   // Product labels (e.g., [ProductLabel.NEW, ProductLabel.FEATURED])
+  labels?: ProductLabel[]; // Product labels (e.g., [ProductLabel.NEW, ProductLabel.FEATURED])
 }
 ```
 
@@ -138,15 +138,17 @@ if (appliedFilters.priceRange) {
 To apply filters to a product list:
 
 1. Initialize state for filters and filtered products:
+
    ```typescript
    const [filters, setFilters] = useState<ProductFilters>({});
    const filteredProducts = useProductFilters(products, filters);
    ```
 
 2. Display the filters overlay and handle filter application:
+
    ```typescript
    const [showFilters, setShowFilters] = useState(false);
-   
+
    // Handle filter application
    const handleApplyFilters = (newFilters: ProductFilters) => {
      setFilters(newFilters);
@@ -170,7 +172,7 @@ To apply filters to a product list:
 
 ## Features
 
-1. **Multi-Criteria Filtering**: Products can be filtered by multiple criteria simultaneously 
+1. **Multi-Criteria Filtering**: Products can be filtered by multiple criteria simultaneously
 2. **Restore Previous State**: The overlay restores previously selected filters when reopened
 3. **Unique Options**: Only displays unique sizes and colors available in the product list
 4. **Optimized Performance**: Uses useMemo for efficient filtering without recalculating on every render

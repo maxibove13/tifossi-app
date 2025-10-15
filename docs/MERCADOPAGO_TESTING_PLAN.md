@@ -2,14 +2,14 @@
 
 ## Snapshot
 
-| Area | Status | Notes |
-|------|--------|-------|
-| Frontend payment store | ✅ Implemented | `app/_stores/paymentStore.ts` integrates with MercadoPago service |
-| Sandbox helper | ✅ Implemented | `app/_tests/services/mercadopago-test.service.ts` handles real API, signatures, cleanup |
-| Integration suites | ✅ Implemented | `mercadopago-payment-flow.test.tsx`, `revenue-critical-purchase.test.tsx` (real sandbox) |
-| Credential guard | ✅ Implemented | Tests fail fast when `MP_TEST_*` variables are missing |
-| Documentation | ✅ Updated | Credential + alignment docs refreshed (Feb 2025) |
-| CI enablement | 🚧 Pending credentials | `payment-tests.yml` ready once secrets exist |
+| Area                   | Status                 | Notes                                                                                    |
+| ---------------------- | ---------------------- | ---------------------------------------------------------------------------------------- |
+| Frontend payment store | ✅ Implemented         | `app/_stores/paymentStore.ts` integrates with MercadoPago service                        |
+| Sandbox helper         | ✅ Implemented         | `app/_tests/services/mercadopago-test.service.ts` handles real API, signatures, cleanup  |
+| Integration suites     | ✅ Implemented         | `mercadopago-payment-flow.test.tsx`, `revenue-critical-purchase.test.tsx` (real sandbox) |
+| Credential guard       | ✅ Implemented         | Tests fail fast when `MP_TEST_*` variables are missing                                   |
+| Documentation          | ✅ Updated             | Credential + alignment docs refreshed (Feb 2025)                                         |
+| CI enablement          | 🚧 Pending credentials | `payment-tests.yml` ready once secrets exist                                             |
 
 ## How the Suites Work
 
@@ -24,13 +24,13 @@
 
 ## Required Environment Variables
 
-| Variable | Purpose |
-|----------|---------|
-| `MP_TEST_ACCESS_TOKEN` | MercadoPago sandbox access token (starts with `TEST-`). |
-| `MP_TEST_PUBLIC_KEY` | Sandbox public key for client-side flows. |
-| `MP_WEBHOOK_SECRET` | Secret used for webhook signature validation. |
-| `MP_API_URL` (optional) | Override the default API host (`https://api.mercadopago.com`). |
-| `TEST_WEBHOOK_URL` | Where sandbox notifications should point during tests (local Strapi/ngrok or staging). |
+| Variable                | Purpose                                                                                |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| `MP_TEST_ACCESS_TOKEN`  | MercadoPago sandbox access token (starts with `TEST-`).                                |
+| `MP_TEST_PUBLIC_KEY`    | Sandbox public key for client-side flows.                                              |
+| `MP_WEBHOOK_SECRET`     | Secret used for webhook signature validation.                                          |
+| `MP_API_URL` (optional) | Override the default API host (`https://api.mercadopago.com`).                         |
+| `TEST_WEBHOOK_URL`      | Where sandbox notifications should point during tests (local Strapi/ngrok or staging). |
 
 See `docs/MERCADOPAGO_CREDENTIAL_SETUP.md` for step-by-step provisioning instructions.
 
@@ -38,6 +38,7 @@ See `docs/MERCADOPAGO_CREDENTIAL_SETUP.md` for step-by-step provisioning instruc
 
 1. Export sandbox credentials in your shell (or configure `.env.test`).
 2. Run the suites:
+
    ```bash
    ENABLE_PAYMENT_TESTS=true npx jest --watchman=false \
      app/_tests/integration/mercadopago-payment-flow.test.tsx
@@ -45,6 +46,7 @@ See `docs/MERCADOPAGO_CREDENTIAL_SETUP.md` for step-by-step provisioning instruc
    ENABLE_PAYMENT_TESTS=true npx jest --watchman=false \
      app/_tests/integration/revenue-critical-purchase.test.tsx
    ```
+
 3. For CI, set the same environment variables and enable the workflow in
    `.github/workflows/payment-tests.yml` once credentials are stored as secrets.
 

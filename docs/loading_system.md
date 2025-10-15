@@ -3,6 +3,7 @@
 ## Overview
 
 Tifossi implements a sophisticated progressive loading system that ensures optimal user experience by:
+
 1. Loading essential app assets during the initial splash screen
 2. Showing component-specific skeletons during content loading
 3. Progressively revealing content as it becomes available
@@ -37,21 +38,31 @@ class PreloadService {
   private static instance: PreloadService;
   private highPriorityAssets: PreloadAsset[] = [
     // Only global UI assets here
-    { key: 'logo', asset: require('../../../assets/images/logo/tiffosi.png'), type: 'image', priority: 'high' },
-    { key: 'logo-light', asset: require('../../../assets/images/logo/tiffosi-light.png'), type: 'image', priority: 'high' }
+    {
+      key: 'logo',
+      asset: require('../../../assets/images/logo/tiffosi.png'),
+      type: 'image',
+      priority: 'high',
+    },
+    {
+      key: 'logo-light',
+      asset: require('../../../assets/images/logo/tiffosi-light.png'),
+      type: 'image',
+      priority: 'high',
+    },
   ];
   private mediumPriorityAssets: PreloadAsset[] = [];
-  
+
   // Preload essential assets needed before showing the app
   public async preloadEssentials(callback: ProgressCallback): Promise<void> {
     // Implementation for loading essential assets
   }
-  
+
   // Preload secondary assets in the background
   public async preloadSecondary(): Promise<void> {
     // Implementation for background loading of less critical assets
   }
-  
+
   // Update asset list dynamically
   public updateAssetList(assets: PreloadAsset[]): void {
     // Logic to update high/medium priority asset lists
@@ -117,7 +128,6 @@ Screen-specific asset loader for home screen:
 export async function preloadHomeAssets() {
   // IMPORTANT: These assets are loaded DURING skeleton display,
   // NOT during splash screen
-  
   // Implementation for loading home screen assets with proper prioritization
 }
 ```
@@ -148,15 +158,15 @@ The home screen implements a staggered loading approach:
 ```typescript
 // First wave: Above the fold content
 if (loadedAssets.highlightedProducts.length > 0) {
-  setData(current => ({ ...current, highlightedProducts: loadedAssets.highlightedProducts }));
-  setSectionLoadingState(current => ({ ...current, highlighted: false }));
+  setData((current) => ({ ...current, highlightedProducts: loadedAssets.highlightedProducts }));
+  setSectionLoadingState((current) => ({ ...current, highlighted: false }));
 }
 
 // Second wave (with small delay)
 setTimeout(() => {
   if (loadedAssets.recommendedProducts.length > 0) {
-    setData(current => ({ ...current, recommendedProducts: loadedAssets.recommendedProducts }));
-    setSectionLoadingState(current => ({ ...current, recommended: false }));
+    setData((current) => ({ ...current, recommendedProducts: loadedAssets.recommendedProducts }));
+    setSectionLoadingState((current) => ({ ...current, recommended: false }));
   }
 }, 200);
 
@@ -209,12 +219,12 @@ The TiffosiExplore screen implements video preloading:
 ```typescript
 useEffect(() => {
   if (preloaded) return;
-  
+
   async function preloadExploreProducts() {
     try {
       // Load video sources for first 2 videos with high priority
-      const videoProducts = exploreProducts.filter(p => p.videoSource);
-      
+      const videoProducts = exploreProducts.filter((p) => p.videoSource);
+
       if (videoProducts.length > 0) {
         const videoAssets = videoProducts.map((product, index) => {
           const priority: 'high' | 'medium' | 'low' = index < 2 ? 'high' : 'medium';
@@ -222,13 +232,13 @@ useEffect(() => {
             key: `video_${product.id}`,
             asset: product.videoSource,
             type: 'video' as const,
-            priority
+            priority,
           };
         });
-        
+
         preloadService.updateAssetList(videoAssets);
       }
-      
+
       // Trigger background loading
       preloadService.preloadSecondary();
       setPreloaded(true);
@@ -236,7 +246,7 @@ useEffect(() => {
       console.error('Failed to preload explore assets:', error);
     }
   }
-  
+
   preloadExploreProducts();
 }, [preloaded]);
 ```

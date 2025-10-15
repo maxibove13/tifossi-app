@@ -1,6 +1,7 @@
 # Tifossi E-commerce App - Project Status
 
 ## Overview
+
 React Native/Expo mobile application for sports apparel e-commerce with Strapi CMS backend and MercadoPago payment integration.
 
 ## Current Implementation Status
@@ -8,6 +9,7 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 ### ✅ Completed Components
 
 #### Mobile Application
+
 - **React Native/Expo App**: Fully functional with TypeScript
 - **Authentication System**: Firebase Auth with Google and Apple Sign-In
 - **Shopping Cart**: Complete with persistence and undo functionality
@@ -17,6 +19,7 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 - **UI/UX**: All screens implemented per Figma designs
 
 #### Backend Infrastructure
+
 - **Strapi CMS**: Content types, schemas, and API structure defined
 - **Database Schema**: PostgreSQL configuration ready
 - **Payment Service**: MercadoPago integration code complete
@@ -26,6 +29,7 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 ### 🔄 Components Requiring Action
 
 #### High Priority
+
 1. **Backend Deployment**
    - Deploy Strapi to Render.com
    - Configure PostgreSQL database
@@ -44,6 +48,7 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
    - Test data synchronization
 
 #### Medium Priority
+
 1. **Payment Testing**
    - Configure MercadoPago sandbox
    - Test end-to-end payment flow
@@ -58,6 +63,7 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
    - Configure image storage
 
 #### Low Priority
+
 1. **Performance Optimization**
    - Implement caching strategies
    - Optimize image loading
@@ -71,6 +77,7 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 ## Technical Stack
 
 ### Frontend
+
 - **Framework**: React Native with Expo SDK 51+
 - **Navigation**: Expo Router (file-based)
 - **State Management**: Zustand stores
@@ -79,6 +86,7 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 - **Storage**: MMKV for persistence
 
 ### Backend
+
 - **CMS**: Strapi v4 with PostgreSQL
 - **Hosting**: Render.com (configured)
 - **Image Storage**: Cloudinary
@@ -88,6 +96,7 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 ## Infrastructure Costs
 
 ### Monthly Operational Costs
+
 - **Render.com Hosting**: $35/month
   - Web Service: $7
   - PostgreSQL: $7
@@ -98,12 +107,14 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 - **Firebase**: Free tier for authentication
 
 ### One-Time Costs
+
 - **Google Play Store**: $25 (lifetime)
 - **Apple App Store**: $99/year
 
 ## Required Actions for Production
 
 ### Immediate Requirements
+
 1. Create service accounts:
    - Render.com
    - MercadoPago merchant account
@@ -111,6 +122,7 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
    - Firebase project
 
 2. Deploy backend:
+
    ```bash
    cd backend/strapi
    npm install
@@ -124,6 +136,7 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
    - Configure domain/URLs
 
 ### Client Responsibilities
+
 - Provide production credentials
 - Load product catalog
 - Configure legal texts (terms, privacy)
@@ -133,12 +146,14 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 ## Documentation Structure
 
 ### Client-Facing Documentation
+
 - `FUNCIONALIDADES_APP_TIFOSSI.md` - Feature specifications
 - `COSTOS_OPERATIVOS_URUGUAY.md` - Operational costs
 - `CLIENT_SETUP_GUIDE.md` - Account setup instructions
 - `FIREBASE_SETUP_GUIDE.md` - Firebase configuration
 
 ### Technical Documentation
+
 - `README.md` - Project overview and setup
 - `/docs` - Technical implementation details
 - `CLAUDE.md` - Development guidelines
@@ -156,11 +171,13 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 ## Support & Maintenance
 
 ### Included (6 months)
+
 - Bug fixes for critical issues
 - Minor adjustments
 - Re-submission support if rejected
 
 ### Not Included
+
 - New features
 - SDK updates
 - Design changes
@@ -176,4 +193,4 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 
 ---
 
-*This document serves as the single source of truth for project status and requirements.*
+_This document serves as the single source of truth for project status and requirements._

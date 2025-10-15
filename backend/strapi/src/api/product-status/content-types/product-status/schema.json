@@ -13,7 +13,16 @@
   "attributes": {
     "name": {
       "type": "enumeration",
-      "enum": ["new", "sale", "featured", "opportunity", "recommended", "popular", "app_exclusive", "highlighted"],
+      "enum": [
+        "new",
+        "sale",
+        "featured",
+        "opportunity",
+        "recommended",
+        "popular",
+        "app_exclusive",
+        "highlighted"
+      ],
       "required": true,
       "unique": true
     },

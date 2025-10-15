@@ -10,4 +10,4 @@ try {
 } catch (error) {
   console.error('\n❌ Failed to fix some issues:', error.message);
   process.exit(1);
-} 
+}

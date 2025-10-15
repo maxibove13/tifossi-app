@@ -1,4 +1,5 @@
 # Strapi CMS Implementation Plan for Tifossi E-commerce
+
 ## Complete Backend Architecture with MercadoPago Integration
 
 ---
@@ -13,25 +14,26 @@ Building a production-ready e-commerce backend using Strapi CMS v4 with PostgreS
 
 ### Overall Progress: Ready for Deployment
 
-| Phase | Status | Completion |
-|-------|--------|------------|
-| Infrastructure Setup | ✅ Code Complete | 100% |
-| Strapi Configuration | ✅ Code Complete | 100% |
-| Content Types | ✅ Code Complete | 100% |
-| Payment Integration | 🔄 Code Complete, Testing Needed | 70% |
-| Mobile Integration | 🔄 Mock API Active | 30% |
-| Testing | ⏳ Not Started | 0% |
-| TypeScript Compliance | ✅ Complete | 100% |
-| Performance Optimization | ⏳ Pending | 0% |
-| Production Deployment | ⏳ Not Started | 0% |
-| Documentation | 🔄 In Progress | 60% |
-| Launch Preparation | ⏳ Not Started | 0% |
+| Phase                    | Status                           | Completion |
+| ------------------------ | -------------------------------- | ---------- |
+| Infrastructure Setup     | ✅ Code Complete                 | 100%       |
+| Strapi Configuration     | ✅ Code Complete                 | 100%       |
+| Content Types            | ✅ Code Complete                 | 100%       |
+| Payment Integration      | 🔄 Code Complete, Testing Needed | 70%        |
+| Mobile Integration       | 🔄 Mock API Active               | 30%        |
+| Testing                  | ⏳ Not Started                   | 0%         |
+| TypeScript Compliance    | ✅ Complete                      | 100%       |
+| Performance Optimization | ⏳ Pending                       | 0%         |
+| Production Deployment    | ⏳ Not Started                   | 0%         |
+| Documentation            | 🔄 In Progress                   | 60%        |
+| Launch Preparation       | ⏳ Not Started                   | 0%         |
 
 ---
 
 ## Phase 1: Infrastructure Setup ✅ CODE COMPLETE
 
 ### Completed Components:
+
 - **Docker Configuration**: Multi-stage Dockerfile with dev/staging/prod environments
 - **Service Orchestration**: Docker Compose with Strapi, PostgreSQL, Redis, Nginx
 - **Environment Management**: Complete .env templates for all environments
@@ -39,6 +41,7 @@ Building a production-ready e-commerce backend using Strapi CMS v4 with PostgreS
 - **CI/CD Pipeline**: GitHub Actions for testing and deployment
 
 ### Infrastructure Files Created:
+
 ```
 infrastructure/
 ├── docker/
@@ -60,6 +63,7 @@ infrastructure/
 ## Phase 2: Strapi CMS Configuration ✅ CODE COMPLETE
 
 ### Core Setup:
+
 ```javascript
 // backend/strapi/config/database.js
 module.exports = ({ env }) => ({
@@ -82,6 +86,7 @@ module.exports = ({ env }) => ({
 ```
 
 ### Plugins Configured:
+
 - **Upload**: Cloudinary for media storage
 - **Email**: SMTP configuration for transactional emails
 - **Users & Permissions**: Custom roles for customers and admins
@@ -92,6 +97,7 @@ module.exports = ({ env }) => ({
 ## Phase 3: Content Type Schemas ✅ CODE COMPLETE
 
 ### Product Schema:
+
 ```javascript
 {
   "collectionName": "products",
@@ -129,6 +135,7 @@ module.exports = ({ env }) => ({
 ```
 
 ### Order Schema:
+
 ```javascript
 {
   "collectionName": "orders",
@@ -163,6 +170,7 @@ module.exports = ({ env }) => ({
 ## Phase 4: MercadoPago Integration ✅ COMPLETE
 
 ### Payment Service Implementation:
+
 ```typescript
 // backend/strapi/api/payment/services/mercadopago.js
 const mercadopago = require('mercadopago');
@@ -176,7 +184,7 @@ mercadopago.configure({
 module.exports = {
   async createPaymentPreference(order) {
     const preference = {
-      items: order.items.map(item => ({
+      items: order.items.map((item) => ({
         title: item.title,
         quantity: item.quantity,
         unit_price: parseFloat(item.price),
@@ -214,22 +222,20 @@ module.exports = {
 ```
 
 ### Webhook Handler:
+
 ```javascript
 // backend/strapi/api/webhook/controllers/mercadopago.js
 module.exports = {
   async handleWebhook(ctx) {
     const { type, data } = ctx.request.body;
-    
+
     if (type === 'payment') {
-      const payment = await strapi
-        .service('api::payment.mercadopago')
-        .verifyPayment(data.id);
-      
-      const order = await strapi.entityService.findOne(
-        'api::order.order',
-        { mercadoPagoId: payment.external_reference }
-      );
-      
+      const payment = await strapi.service('api::payment.mercadopago').verifyPayment(data.id);
+
+      const order = await strapi.entityService.findOne('api::order.order', {
+        mercadoPagoId: payment.external_reference,
+      });
+
       if (order) {
         await strapi.entityService.update('api::order.order', order.id, {
           data: {
@@ -239,7 +245,7 @@ module.exports = {
         });
       }
     }
-    
+
     ctx.send({ received: true });
   },
 };
@@ -250,6 +256,7 @@ module.exports = {
 ## Phase 5: Mobile App Integration ✅ COMPLETE
 
 ### API Service Layer:
+
 ```typescript
 // app/_services/api/strapiApi.ts
 import { httpClient } from './httpClient';
@@ -279,6 +286,7 @@ export const strapiApi = {
 ```
 
 ### Payment Store Integration:
+
 ```typescript
 // app/_stores/paymentStore.ts
 import { mercadoPagoService } from '../_services/payment/mercadoPagoService';
@@ -286,10 +294,10 @@ import { mercadoPagoService } from '../_services/payment/mercadoPagoService';
 export const usePaymentStore = create((set, get) => ({
   async initiatePayment(order: Order) {
     const preference = await strapiApi.initiatePayment(order.id);
-    
+
     // Open MercadoPago checkout in WebBrowser
     const result = await WebBrowser.openBrowserAsync(preference.init_point);
-    
+
     if (result.type === 'success') {
       // Verify payment on backend
       const payment = await strapiApi.verifyPayment(order.id);
@@ -305,25 +313,26 @@ export const usePaymentStore = create((set, get) => ({
 
 ### Core Endpoints Implemented:
 
-| Endpoint | Method | Description | Auth Required |
-|----------|--------|-------------|---------------|
-| `/api/products` | GET | List all products | No |
-| `/api/products/:id` | GET | Get single product | No |
-| `/api/categories` | GET | List categories | No |
-| `/api/cart` | GET/POST/PUT | Manage cart | Yes |
-| `/api/orders` | GET/POST | Manage orders | Yes |
-| `/api/orders/:id` | GET | Get order details | Yes |
-| `/api/payments/create` | POST | Create payment | Yes |
-| `/api/payments/verify` | POST | Verify payment | Yes |
-| `/api/webhooks/mercadopago` | POST | Payment webhook | No (signed) |
-| `/api/users/profile` | GET/PUT | User profile | Yes |
-| `/api/users/addresses` | GET/POST/PUT/DELETE | Manage addresses | Yes |
+| Endpoint                    | Method              | Description        | Auth Required |
+| --------------------------- | ------------------- | ------------------ | ------------- |
+| `/api/products`             | GET                 | List all products  | No            |
+| `/api/products/:id`         | GET                 | Get single product | No            |
+| `/api/categories`           | GET                 | List categories    | No            |
+| `/api/cart`                 | GET/POST/PUT        | Manage cart        | Yes           |
+| `/api/orders`               | GET/POST            | Manage orders      | Yes           |
+| `/api/orders/:id`           | GET                 | Get order details  | Yes           |
+| `/api/payments/create`      | POST                | Create payment     | Yes           |
+| `/api/payments/verify`      | POST                | Verify payment     | Yes           |
+| `/api/webhooks/mercadopago` | POST                | Payment webhook    | No (signed)   |
+| `/api/users/profile`        | GET/PUT             | User profile       | Yes           |
+| `/api/users/addresses`      | GET/POST/PUT/DELETE | Manage addresses   | Yes           |
 
 ---
 
 ## Phase 7: Testing Strategy ✅ COMPLETE
 
 ### Test Coverage Implemented:
+
 - **Unit Tests**: Services, utilities, transformers
 - **Integration Tests**: API endpoints, database operations
 - **E2E Tests**: Complete user journeys
@@ -331,6 +340,7 @@ export const usePaymentStore = create((set, get) => ({
 - **Load Tests**: Performance benchmarking
 
 ### Test Configuration:
+
 ```javascript
 // backend/strapi/config/env/test/database.js
 module.exports = () => ({
@@ -349,12 +359,14 @@ module.exports = () => ({
 ## Phase 8: Performance Optimization 🔄 IN PROGRESS (40%)
 
 ### Completed:
+
 - ✅ Database indexes on frequently queried fields
 - ✅ Redis caching for product listings
 - ✅ CDN configuration for static assets
 - ✅ Gzip compression enabled
 
 ### Pending:
+
 - ⏳ Query optimization for complex filters
 - ⏳ Implement pagination for large datasets
 - ⏳ Add request rate limiting
@@ -365,6 +377,7 @@ module.exports = () => ({
 ## Phase 8.5: TypeScript Compliance ✅ COMPLETE
 
 ### Achievement Unlocked:
+
 - **357 TypeScript errors resolved to ZERO**
 - All components fully typed
 - All stores with proper type safety
@@ -372,6 +385,7 @@ module.exports = () => ({
 - Enhanced Button and Input components with accessibility props
 
 ### Key Improvements:
+
 - 15 parallel agents deployed to fix errors systematically
 - Testing philosophy enforced: behavior over implementation
 - Integration tests prioritized over mocked unit tests
@@ -384,6 +398,7 @@ module.exports = () => ({
 ### Deployment Target: Render.com
 
 ### Current Status:
+
 - ✅ Deployment scripts created
 - ✅ Environment variables defined
 - ⏳ Strapi instance not yet deployed
@@ -392,6 +407,7 @@ module.exports = () => ({
 - ⏳ Domain not connected
 
 ### Deployment Steps Required:
+
 1. Create Render PostgreSQL database
 2. Create Render Redis instance
 3. Deploy Strapi web service
@@ -406,6 +422,7 @@ module.exports = () => ({
 ## Phase 10: Documentation & Launch ⏳ PENDING
 
 ### Documentation Needed:
+
 - [ ] API documentation (Swagger/OpenAPI)
 - [ ] Admin panel user guide
 - [ ] Developer setup guide
@@ -413,6 +430,7 @@ module.exports = () => ({
 - [ ] Troubleshooting guide
 
 ### Launch Checklist:
+
 - [ ] Production environment tested
 - [ ] Payment flow validated
 - [ ] Security audit completed
@@ -426,13 +444,17 @@ module.exports = () => ({
 ## 🚨 Critical Issues to Address
 
 ### 1. Backend Not Actually Deployed
+
 The infrastructure is ready but Strapi is not running on Render yet. The mobile app is still using mock data.
 
 ### 2. Database Not Seeded
+
 Product catalog data needs to be imported into Strapi.
 
 ### 3. Environment Configuration
+
 Mobile app needs to switch from mock API to real Strapi endpoints:
+
 ```typescript
 // app/_config/environment.ts
 // Change from:
@@ -444,6 +466,7 @@ apiUrl: 'https://tifossi-api.onrender.com',
 ```
 
 ### 4. Payment Testing
+
 MercadoPago integration needs end-to-end testing with sandbox credentials.
 
 ---
@@ -451,28 +474,33 @@ MercadoPago integration needs end-to-end testing with sandbox credentials.
 ## 📋 Immediate Action Items
 
 ### Priority 0: Install Backend Dependencies 🆕
+
 1. Navigate to backend: `cd backend/strapi`
 2. Install dependencies: `npm install`
 3. Test local build: `npm run build`
 4. Verify PostgreSQL connection locally
 
 ### Priority 1: Deploy Backend
+
 1. Create Render.com account and PostgreSQL database
 2. Configure environment variables in Render dashboard
 3. Deploy Strapi: `git push` to trigger Render deployment
 4. Test health endpoint: `https://tifossi-api.onrender.com/api/health`
 
 ### Priority 2: Seed Database
+
 1. Connect to production database
 2. Run seed script: `npm run strapi seed`
 3. Verify products appear in admin panel
 
 ### Priority 3: Connect Mobile App
+
 1. Update environment configuration
 2. Test API connection
 3. Verify data flows correctly
 
 ### Priority 4: Test Payments
+
 1. Use MercadoPago sandbox mode
 2. Complete test purchase flow
 3. Verify webhook handling

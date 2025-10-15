@@ -10,14 +10,14 @@ services:
       POSTGRES_USER: strapi
       POSTGRES_PASSWORD: strapi123
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
       - ./infrastructure/docker/init-scripts:/docker-entrypoint-initdb.d:ro
 
   redis:
     ports:
-      - "6379:6379"
+      - '6379:6379'
     command: redis-server --appendonly yes --requirepass redis123
     volumes:
       - redis_data_dev:/data
@@ -38,12 +38,12 @@ services:
       - FEATURE_EMAIL_NOTIFICATIONS=false
       - SEED_DATA_ENABLED=true
     ports:
-      - "1337:1337"
+      - '1337:1337'
     volumes:
       - ./backend:/app
       - strapi_uploads_dev:/app/public/uploads
       - /app/node_modules
-    command: ["npm", "run", "develop"]
+    command: ['npm', 'run', 'develop']
 
   # Database administration interface
   adminer:
@@ -51,7 +51,7 @@ services:
     container_name: tifossi-adminer-dev
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - '8080:8080'
     environment:
       ADMINER_DEFAULT_SERVER: postgres
       ADMINER_DESIGN: hydra
@@ -68,7 +68,7 @@ services:
     container_name: tifossi-redis-commander-dev
     restart: unless-stopped
     ports:
-      - "8081:8081"
+      - '8081:8081'
     environment:
       - REDIS_HOSTS=local:redis:6379:0:redis123
       - HTTP_USER=admin
@@ -85,8 +85,8 @@ services:
     container_name: tifossi-mailhog-dev
     restart: unless-stopped
     ports:
-      - "1025:1025"  # SMTP server
-      - "8025:8025"  # Web UI
+      - '1025:1025' # SMTP server
+      - '8025:8025' # Web UI
     networks:
       - tifossi-network
 

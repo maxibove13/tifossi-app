@@ -21,7 +21,7 @@ This screen displays all available zones for a specific city:
 
 This screen displays detailed information about a specific store:
 
-- **Route Parameters**: 
+- **Route Parameters**:
   - `cityId` - Identifier for the city
   - `zoneId` - Identifier for the zone within that city
 - **Data Source**: Filtered store from `storesData` based on `cityId` and `zoneId`
@@ -71,7 +71,7 @@ A helper function maps cityId values to human-readable names:
 ```typescript
 const getCityDisplayName = (cityId: string): string => {
   const store = storesData.find((s) => s.cityId === cityId);
-  if (!store) return cityId; 
+  if (!store) return cityId;
   return store.cityId === 'mvd'
     ? 'Montevideo'
     : store.cityId === 'pde'

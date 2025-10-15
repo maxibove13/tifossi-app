@@ -58,4 +58,4 @@ const styles = StyleSheet.create({
     color: '#FBFBFB',
     fontFamily: 'Roboto',
   },
-}); 
+});

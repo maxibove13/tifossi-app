@@ -20,27 +20,32 @@ export default ({ env }: { env: any }) => ({
   upload: {
     config: {
       provider: env('UPLOAD_PROVIDER', 'local'),
-      providerOptions: env('UPLOAD_PROVIDER') === 'cloudinary' ? {
-        cloud_name: env('CLOUDINARY_NAME'),
-        api_key: env('CLOUDINARY_KEY'),
-        api_secret: env('CLOUDINARY_SECRET'),
-        secure: true,
-        folder: env('CLOUDINARY_FOLDER', 'tifossi'),
-        use_filename: true,
-        unique_filename: false,
-      } : env('UPLOAD_PROVIDER') === 'aws-s3' ? {
-        accessKeyId: env('AWS_ACCESS_KEY_ID'),
-        secretAccessKey: env('AWS_ACCESS_SECRET'),
-        region: env('AWS_REGION'),
-        bucket: env('AWS_BUCKET'),
-        upload: {
-          ACL: 'public-read',
-        },
-        actionOptions: {
-          upload: {},
-          uploadStream: {},
-        },
-      } : {},
+      providerOptions:
+        env('UPLOAD_PROVIDER') === 'cloudinary'
+          ? {
+              cloud_name: env('CLOUDINARY_NAME'),
+              api_key: env('CLOUDINARY_KEY'),
+              api_secret: env('CLOUDINARY_SECRET'),
+              secure: true,
+              folder: env('CLOUDINARY_FOLDER', 'tifossi'),
+              use_filename: true,
+              unique_filename: false,
+            }
+          : env('UPLOAD_PROVIDER') === 'aws-s3'
+            ? {
+                accessKeyId: env('AWS_ACCESS_KEY_ID'),
+                secretAccessKey: env('AWS_ACCESS_SECRET'),
+                region: env('AWS_REGION'),
+                bucket: env('AWS_BUCKET'),
+                upload: {
+                  ACL: 'public-read',
+                },
+                actionOptions: {
+                  upload: {},
+                  uploadStream: {},
+                },
+              }
+            : {},
       sizeLimit: env.int('UPLOAD_SIZE_LIMIT', 200 * 1024 * 1024), // 200MB
       actionOptions: {
         upload: {},
@@ -52,7 +57,7 @@ export default ({ env }: { env: any }) => ({
         large: 1000,
         medium: 750,
         small: 500,
-        xsmall: 64
+        xsmall: 64,
       },
     },
   },
@@ -177,7 +182,7 @@ export default ({ env }: { env: any }) => ({
   }),
 
   // Sentry Plugin for Error Monitoring (if using Sentry)
-  ...((env('SENTRY_DSN')) && {
+  ...(env('SENTRY_DSN') && {
     sentry: {
       enabled: true,
       config: {

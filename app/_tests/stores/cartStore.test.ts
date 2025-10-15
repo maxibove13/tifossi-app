@@ -52,10 +52,10 @@ describe('cartStore', () => {
       actionStatus: 'idle',
       pendingOperations: [],
     });
-    
+
     // Reset all mocks
     jest.clearAllMocks();
-    
+
     // Default successful response
     mockHttpClient.post.mockResolvedValue({ success: true });
     mockHttpClient.delete.mockResolvedValue({ success: true });
@@ -165,7 +165,7 @@ describe('cartStore', () => {
           price: 99.99,
         });
       });
-      
+
       await act(async () => {
         await result.current.addItem({
           productId: '1',
@@ -254,7 +254,7 @@ describe('cartStore', () => {
           price: 99.99,
         });
       });
-      
+
       await act(async () => {
         await result.current.addItem({
           productId: '2',
@@ -295,7 +295,7 @@ describe('cartStore', () => {
           price: 99.99,
         });
       });
-      
+
       await act(async () => {
         await result.current.addItem({
           productId: '2',
@@ -396,7 +396,7 @@ describe('cartStore', () => {
           price: 99.99,
         });
       });
-      
+
       await act(async () => {
         await result.current.addItem({
           productId: '2',
@@ -406,7 +406,7 @@ describe('cartStore', () => {
           price: 99.99,
         });
       });
-      
+
       await act(async () => {
         await result.current.addItem({
           productId: '3',
@@ -436,7 +436,7 @@ describe('cartStore', () => {
   describe('error handling', () => {
     it('should clear error state', () => {
       const { result } = renderHook(() => useCartStore());
-      
+
       // Set error state
       act(() => {
         useCartStore.setState({ error: 'Some error' });

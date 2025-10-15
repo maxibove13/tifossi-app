@@ -457,10 +457,7 @@ export const sanitizeOrderPayload = async ({
     throw new Error('Calculated order total must be greater than zero');
   }
 
-  const shippingAddressComponent = buildShippingComponent(
-    rawOrder.shippingAddress,
-    shippingMethod
-  );
+  const shippingAddressComponent = buildShippingComponent(rawOrder.shippingAddress, shippingMethod);
 
   const metadata: OrderMetadata = {
     createdVia: 'mobile_app',

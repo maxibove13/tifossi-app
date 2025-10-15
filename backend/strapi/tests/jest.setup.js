@@ -30,7 +30,7 @@ global.env.float = (key, defaultValue) => {
 global.env.array = (key, defaultValue) => {
   const value = process.env[key];
   if (value === undefined) return defaultValue;
-  return value.split(',').map(item => item.trim());
+  return value.split(',').map((item) => item.trim());
 };
 
 // Global setup for all tests
@@ -72,14 +72,14 @@ afterAll(async () => {
 global.setupStrapi = async () => {
   if (!global.strapi) {
     const Strapi = require('@strapi/strapi');
-    
+
     global.strapi = await Strapi({
       // Test-specific configuration
       appDir: path.resolve(__dirname, '..'),
       distDir: path.resolve(__dirname, '..', 'dist'),
     }).load();
   }
-  
+
   return global.strapi;
 };
 
@@ -103,7 +103,7 @@ global.cleanupDatabase = async () => {
   if (global.strapi && global.strapi.db) {
     // Clear all test data
     const models = Object.keys(global.strapi.db.models);
-    
+
     for (const model of models) {
       try {
         await global.strapi.db.query(model).deleteMany({});
@@ -125,7 +125,7 @@ global.createTestUser = async (userData = {}) => {
     blocked: false,
     ...userData,
   };
-  
+
   return await global.strapi.plugins['users-permissions'].services.user.add(defaultUser);
 };
 
@@ -134,7 +134,7 @@ global.authenticateUser = async (user) => {
   const jwt = global.strapi.plugins['users-permissions'].services.jwt.issue({
     id: user.id,
   });
-  
+
   return jwt;
 };
 
@@ -151,7 +151,7 @@ global.mockExternalServices = () => {
       get: jest.fn(),
     },
   }));
-  
+
   // Mock Cloudinary
   jest.mock('cloudinary', () => ({
     v2: {
@@ -161,7 +161,7 @@ global.mockExternalServices = () => {
       },
     },
   }));
-  
+
   // Mock Nodemailer
   jest.mock('nodemailer', () => ({
     createTransport: jest.fn().mockReturnValue({

@@ -13,7 +13,7 @@ This modal overlay provides visual feedback during the item removal process:
 - **Animated Progress Bar**: Shows removal progress, giving the user time to cancel
 - **Cancel Button**: Allows user to abort the removal process
 - **Animation**: Implemented using both React Native Animated and Reanimated libraries
-- **Props**: 
+- **Props**:
   - `isVisible`: Controls whether the overlay is shown
   - `onCancel`: Function to call when user cancels the removal
   - `duration`: Configurable duration of the removal process (defaults to 3000ms)

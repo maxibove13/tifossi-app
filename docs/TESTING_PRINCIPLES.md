@@ -21,11 +21,13 @@
 ### The Solo Dev Reality
 
 **You're not Google.** You don't have a QA team. You don't have infinite time. You have:
+
 - One developer (you)
 - Real users who need to buy products
 - A business that needs to not lose money
 
 **Test accordingly:**
+
 1. **Integration tests are your safety net** - They catch real bugs users will see
 2. **Unit tests are for complex logic** - Only when the logic is genuinely complex
 3. **Coverage is a vanity metric** - 100% coverage of the wrong things = 0% confidence
@@ -33,12 +35,14 @@
 ### What Actually Matters
 
 ✅ **Test These (Revenue Protection):**
+
 - Can users add products to cart and checkout?
 - Does payment processing work without losing money?
 - Does cart persist when app crashes?
 - Do prices calculate correctly?
 
 ❌ **Skip These (Time Wasters):**
+
 - Testing that React renders components
 - Testing third-party libraries
 - Testing simple getters/setters
@@ -48,6 +52,7 @@
 ### The 80/20 Rule for Testing
 
 **80% of bugs come from 20% of code:**
+
 - Payment flows
 - Cart operations
 - Authentication
@@ -58,6 +63,7 @@
 ## Testing Architecture in This Project
 
 ### Current Setup (in setup.ts)
+
 - **httpClient**: Globally mocked with Strapi-formatted responses
 - **authService**: Globally mocked for store testing
 - **Firebase/Native modules**: Mocked at boundaries
@@ -67,24 +73,28 @@
 ### Types of Tests We Have
 
 #### 1. Store Tests (e.g., `authStore.test.ts`, `cartStore.test.ts`)
+
 - **Purpose**: Test store logic and state management
 - **Uses**: Mocked services (like authService), real Zustand stores
 - **Why**: Isolates store behavior from service implementation
 - **Example**: Testing if login updates user state correctly
 
 #### 2. Integration Tests (e.g., `auth-flows.test.tsx`, `complete-purchase-flow.test.tsx`)
+
 - **Purpose**: Test complete user flows through multiple layers
 - **Uses**: Real components, real stores, mocked httpClient
 - **Why**: Validates feature functionality end-to-end
 - **Example**: Testing entire checkout process from cart to payment
 
 #### 3. Component Tests (e.g., `ProductCard.test.tsx`, `CartProductCard.test.tsx`)
+
 - **Purpose**: Test component rendering and user interactions
 - **Uses**: Real components with test props, mocked stores if needed
 - **Why**: Ensures UI components behave correctly in isolation
 - **Example**: Testing if "Add to Cart" button works
 
 ### What We DON'T Have (and why)
+
 - **Service Tests**: Services are either globally mocked (authService) or simple wrappers around httpClient
 - **True E2E Tests**: Would require real backend and are better suited for separate E2E test suite
 - **MSW Tests**: We use direct httpClient mocking instead for simplicity and reliability
@@ -92,6 +102,7 @@
 ### Tests That Are Credential-Gated
 
 #### MercadoPago Payment Tests
+
 - **Files**: `mercadopago-payment-flow.test.tsx`, `revenue-critical-purchase.test.tsx`
 - **Status**: ❗ Credential-gated – require `ENABLE_PAYMENT_TESTS=true` and sandbox credentials
 - **Expected Behaviour**: Missing credentials trigger an immediate failure listing the variables that must be set
@@ -103,6 +114,7 @@
 ### CI/CD Testing Strategy
 
 #### Media Files in Tests
+
 - **Problem**: Tests failed in CI/CD due to `require()` statements for non-existent media files
 - **Solution**: Complete mock-based approach
 
@@ -122,11 +134,13 @@
    - Consistent behavior across environments
 
 #### Key Principle
+
 **Test business logic, not asset loading.** If a test needs to verify image rendering, mock the component that displays it, not the image itself.
 
 ### Current Test Coverage Status (March 2025)
 
 #### What's Well Tested ✅
+
 - **ALL Stores**: 7/7 stores fully tested (auth, cart, product, payment, favorites, user, synchronizer)
 - **Payment flows**: Comprehensive MercadoPago integration with real sandbox tests
 - **Cart operations**: Add/remove items, persistence, edge cases (100+ items, concurrent ops)
@@ -139,6 +153,7 @@
 - **Basic components**: ProductCard, CartProductCard, CheckoutForm, etc.
 
 #### What Needs More Tests ⚠️
+
 - **Services**: auth, analytics (httpClient + error handling already covered)
 - **UI Components**: Only 6/20+ components tested (but who cares?)
 - **Screens**: Only 1 screen test exists (payment-result)
@@ -148,6 +163,7 @@
 ### Before Writing New Tests - Checklist
 
 **Ask yourself:**
+
 1. **Does a similar test already exist?** Check:
    - `/app/_tests/stores/` - Store logic tests (services are mocked)
    - `/app/_tests/integration/` - User flow tests (httpClient is mocked)
@@ -166,6 +182,7 @@
 ## 1. Testing Priority (Integration-First Approach)
 
 ### Write These Tests First (High ROI)
+
 1. **Integration Tests (70% of effort)**
    - Complete purchase flows
    - Cart persistence across sessions
@@ -186,6 +203,7 @@
    - Custom hooks with side effects
 
 ### Skip These Tests (Low ROI for Solo Devs)
+
 - ❌ Simple component rendering ("does it show the title?")
 - ❌ Redux/Zustand action creators
 - ❌ API wrapper functions
@@ -212,9 +230,9 @@ Before writing a test, ask: **"If this breaks, would it wake me up at 3 AM?"**
 // ✅ GOOD: Mock at HTTP boundary with httpClient
 jest.mock('../_services/api/httpClient', () => ({
   default: {
-    post: jest.fn().mockResolvedValue({ token: 'abc123' })
-  }
-}))
+    post: jest.fn().mockResolvedValue({ token: 'abc123' }),
+  },
+}));
 
 // ⚠️ EXCEPTION: authService is globally mocked in setup.ts for store tests
 // This is intentional to isolate store logic from service implementation
@@ -225,20 +243,22 @@ jest.mock('../_services/api/httpClient', () => ({
 
 ```javascript
 // ✅ GOOD: Use real Zustand store
-import { useCartStore } from '../stores/cartStore'
+import { useCartStore } from '../stores/cartStore';
 
 // ❌ BAD: Mock Zustand
-jest.mock('zustand')
+jest.mock('zustand');
 ```
 
 ### Network Mocking Strategy
 
 #### Why httpClient, not MSW
+
 - MSW has module resolution issues in our React Native/Jest environment
 - httpClient mocking is simpler and more reliable
 - All HTTP mocking is centralized in `setup.ts`
 
 #### How to Use httpClient Mock
+
 ```javascript
 // The mock is already set up globally in setup.ts
 // It returns realistic Strapi-formatted responses
@@ -290,7 +310,8 @@ initiatePaymentSpy.mockRestore();
 ```
 
 - If a flow reads async data (e.g., address fetch on mount), wait for the underlying `httpClient` call before firing the next action. A helper like `await waitForSelectedAddress()` keeps the test deterministic and removes the temptation to stub the entire service.
-```
+
+````
 
 ## 3. React Native Testing
 
@@ -300,19 +321,21 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native'
 
 // Let Testing Library handle React Native components
 // Don't manually mock RN modules unless absolutely necessary
-```
+````
 
 ### Avoid Mocking React Native Modules
+
 - ❌ Don't mock: `Dimensions`, `StyleSheet`, `Platform`, `I18nManager`
 - ✅ Do use: Testing Library's built-in support for these
 
 ### Navigation Testing
+
 ```javascript
 // Use real navigation with test navigator
-import { NavigationContainer } from '@react-navigation/native'
-import { createStackNavigator } from '@react-navigation/stack'
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 
-const Stack = createStackNavigator()
+const Stack = createStackNavigator();
 
 const TestNavigator = ({ children }) => (
   <NavigationContainer>
@@ -320,91 +343,99 @@ const TestNavigator = ({ children }) => (
       <Stack.Screen name="Test">{children}</Stack.Screen>
     </Stack.Navigator>
   </NavigationContainer>
-)
+);
 ```
 
 ## 4. State Management Testing
 
 ### Use Real Stores
+
 ```javascript
 // ✅ GOOD: Test with real store
-const { result } = renderHook(() => useCartStore())
+const { result } = renderHook(() => useCartStore());
 act(() => {
-  result.current.addItem(product)
-})
-expect(result.current.items).toHaveLength(1)
+  result.current.addItem(product);
+});
+expect(result.current.items).toHaveLength(1);
 
 // ❌ BAD: Mock store methods
-const mockAddItem = jest.fn()
+const mockAddItem = jest.fn();
 jest.mock('../stores/cartStore', () => ({
-  useCartStore: () => ({ addItem: mockAddItem })
-}))
+  useCartStore: () => ({ addItem: mockAddItem }),
+}));
 ```
 
 ### Reset State Between Tests
+
 ```javascript
 beforeEach(() => {
   // Reset store to initial state
-  useCartStore.setState({ items: [], total: 0 })
-})
+  useCartStore.setState({ items: [], total: 0 });
+});
 ```
 
 ## 5. Component Testing
 
 ### Test User Interactions
+
 ```javascript
 // ✅ GOOD: Test what users do
-const { getByText, getByTestId } = render(<ProductCard product={product} />)
-fireEvent.press(getByText('Add to Cart'))
+const { getByText, getByTestId } = render(<ProductCard product={product} />);
+fireEvent.press(getByText('Add to Cart'));
 await waitFor(() => {
-  expect(getByTestId('cart-count')).toHaveTextContent('1')
-})
+  expect(getByTestId('cart-count')).toHaveTextContent('1');
+});
 
 // ❌ BAD: Test implementation
-expect(component.state.cartItems).toEqual([product])
+expect(component.state.cartItems).toEqual([product]);
 ```
 
 ### Use Test IDs Sparingly
+
 - Only for elements hard to query by text/role
 - Prefer accessible queries: `getByRole`, `getByLabelText`, `getByText`
 
 ## 6. Async Testing
 
 ### Always Await Async Operations
+
 ```javascript
 // ✅ GOOD
 await waitFor(() => {
-  expect(getByText('Success')).toBeInTheDocument()
-})
+  expect(getByText('Success')).toBeInTheDocument();
+});
 
 // ❌ BAD
-expect(getByText('Success')).toBeInTheDocument() // Might fail intermittently
+expect(getByText('Success')).toBeInTheDocument(); // Might fail intermittently
 ```
 
 ### Use Act for State Updates
+
 ```javascript
 await act(async () => {
-  await userEvent.press(button)
-})
+  await userEvent.press(button);
+});
 ```
 
 ## 7. Test Data
 
 ### Use Factories for Test Data
+
 ```javascript
 const createMockProduct = (overrides = {}) => ({
   id: 'test-1',
   name: 'Test Product',
   price: 99.99,
   inStock: true,
-  ...overrides
-})
+  ...overrides,
+});
 
 // Usage
-const outOfStockProduct = createMockProduct({ inStock: false })
+const outOfStockProduct = createMockProduct({ inStock: false });
 ```
 
 ### Keep Test Data Realistic
+
 - Use realistic values (not "test", "foo", "bar")
 - Match production data structure
 - Include edge cases (empty strings, null values)
@@ -412,87 +443,93 @@ const outOfStockProduct = createMockProduct({ inStock: false })
 ## 8. Test Organization
 
 ### Describe-It Structure
+
 ```javascript
 describe('CartStore', () => {
   describe('when adding items', () => {
-    it('should add new item to empty cart', () => {})
-    it('should increment quantity for existing item', () => {})
-  })
-  
+    it('should add new item to empty cart', () => {});
+    it('should increment quantity for existing item', () => {});
+  });
+
   describe('when removing items', () => {
-    it('should remove item from cart', () => {})
-  })
-})
+    it('should remove item from cart', () => {});
+  });
+});
 ```
 
 ### One Assertion Per Test (When Possible)
+
 ```javascript
 // ✅ GOOD: Clear what failed
 it('should update cart count', () => {
-  expect(cartCount).toBe(1)
-})
+  expect(cartCount).toBe(1);
+});
 
 it('should update total price', () => {
-  expect(totalPrice).toBe(99.99)
-})
+  expect(totalPrice).toBe(99.99);
+});
 
 // ❌ BAD: Multiple assertions
 it('should update cart', () => {
-  expect(cartCount).toBe(1)
-  expect(totalPrice).toBe(99.99)
-  expect(cartItems).toHaveLength(1)
-})
+  expect(cartCount).toBe(1);
+  expect(totalPrice).toBe(99.99);
+  expect(cartItems).toHaveLength(1);
+});
 ```
 
 ## 9. Performance
 
 ### Keep Tests Fast
+
 - Mock heavy operations (image loading, animations)
 - Use `jest.useFakeTimers()` for time-dependent tests
 - Avoid unnecessary waits
 - Run tests in parallel when possible
 
 ### Optimize Test Setup
+
 ```javascript
 // Do expensive setup once
 beforeAll(async () => {
-  server.listen() // MSW server
-})
+  server.listen(); // MSW server
+});
 
 // Do lightweight setup for each test
 beforeEach(() => {
-  server.resetHandlers()
-})
+  server.resetHandlers();
+});
 ```
 
 ## 10. Debugging Tests
 
 ### Debugging Tools
+
 ```javascript
 // Print component tree
-import { debug } from '@testing-library/react-native'
-debug()
+import { debug } from '@testing-library/react-native';
+debug();
 
 // Print specific element
-debug(getByTestId('cart'))
+debug(getByTestId('cart'));
 
 // Use screen for better debugging
-import { screen } from '@testing-library/react-native'
-screen.debug()
+import { screen } from '@testing-library/react-native';
+screen.debug();
 ```
 
 ### Common Issues and Solutions
 
-| Issue | Solution |
-|-------|----------|
-| "Unable to find element" | Check if async rendering, use `waitFor` |
-| "Not wrapped in act" | Wrap state updates in `act()` |
-| Test passes alone but fails in suite | Check for test pollution, reset state |
-| Timeout errors | Increase timeout or check for unresolved promises |
+| Issue                                | Solution                                          |
+| ------------------------------------ | ------------------------------------------------- |
+| "Unable to find element"             | Check if async rendering, use `waitFor`           |
+| "Not wrapped in act"                 | Wrap state updates in `act()`                     |
+| Test passes alone but fails in suite | Check for test pollution, reset state             |
+| Timeout errors                       | Increase timeout or check for unresolved promises |
 
 ## 11. CI/CD Considerations
 
 ### Test Categories
+
 ```json
 {
   "scripts": {
@@ -509,17 +546,20 @@ screen.debug()
 **Stop chasing coverage percentages.** Instead:
 
 ✅ **100% Coverage Required:**
+
 - Payment processing paths
 - Cart checkout flow
 - Price calculations
 - Order creation
 
 ⚠️ **Nice to Have:**
+
 - User profile management
 - Product browsing
 - Search functionality
 
 ❌ **Skip Coverage:**
+
 - UI components without logic
 - Generated code
 - Config files
@@ -530,6 +570,7 @@ screen.debug()
 ## 12. Real Examples from This Project
 
 ### Store Test Example (authStore.test.ts)
+
 ```javascript
 // authService is ALREADY MOCKED in setup.ts
 import { useAuthStore } from '../../_stores/authStore';
@@ -557,6 +598,7 @@ it('should login user successfully', async () => {
 ```
 
 ### Integration Test Example (complete-purchase-flow.test.tsx)
+
 ```javascript
 // httpClient is ALREADY MOCKED in setup.ts
 // Uses real stores and components
@@ -579,12 +621,13 @@ it('should complete purchase from product selection to payment', async () => {
 ```
 
 ### Component Test Example (ProductCard.test.tsx)
+
 ```javascript
 // Simple component test with props
 it('should render product information', () => {
   const product = createMockProduct({
     name: 'Test Product',
-    price: 100
+    price: 100,
   });
 
   const { getByText } = render(<ProductCard product={product} />);
@@ -599,6 +642,7 @@ it('should render product information', () => {
 ### Anti-Patterns to Avoid
 
 1. **Don't create redundant tests**
+
    ```javascript
    // ❌ BAD: Creating a "service integration test" when service is already mocked
    jest.unmock('../services/authService'); // Fighting against setup.ts
@@ -606,26 +650,29 @@ it('should render product information', () => {
    ```
 
 2. **Don't mock everything**
+
    ```javascript
    // ❌ BAD
-   jest.mock('react-native')
-   jest.mock('zustand')
-   jest.mock('../stores/cartStore')
+   jest.mock('react-native');
+   jest.mock('zustand');
+   jest.mock('../stores/cartStore');
    ```
 
 3. **Don't test implementation details**
+
    ```javascript
    // ❌ BAD
-   expect(component.instance().state.isLoading).toBe(true)
+   expect(component.instance().state.isLoading).toBe(true);
    ```
 
 4. **Don't use arbitrary waits**
+
    ```javascript
    // ❌ BAD
-   await new Promise(resolve => setTimeout(resolve, 1000))
-   
+   await new Promise((resolve) => setTimeout(resolve, 1000));
+
    // ✅ GOOD
-   await waitFor(() => expect(getByText('Loaded')).toBeInTheDocument())
+   await waitFor(() => expect(getByText('Loaded')).toBeInTheDocument());
    ```
 
 5. **Don't ignore test warnings**
@@ -636,11 +683,11 @@ it('should render product information', () => {
 ## Example: Ideal Integration Test
 
 ```javascript
-import { render, fireEvent, waitFor } from '@testing-library/react-native'
-import { http, HttpResponse } from 'msw'
-import { server } from '../test-utils/server'
-import { ProductScreen } from '../screens/ProductScreen'
-import { NavigationContainer } from '@react-navigation/native'
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { http, HttpResponse } from 'msw';
+import { server } from '../test-utils/server';
+import { ProductScreen } from '../screens/ProductScreen';
+import { NavigationContainer } from '@react-navigation/native';
 
 describe('Product Purchase Flow', () => {
   it('should allow user to add product to cart and checkout', async () => {
@@ -651,55 +698,56 @@ describe('Product Purchase Flow', () => {
           id: 1,
           name: 'Winter Jacket',
           price: 199.99,
-          inStock: true
-        })
+          inStock: true,
+        });
       }),
       http.post('/api/cart', () => {
-        return HttpResponse.json({ success: true })
+        return HttpResponse.json({ success: true });
       })
-    )
+    );
 
     // Render with real navigation
     const { getByText, getByTestId } = render(
       <NavigationContainer>
         <ProductScreen productId="1" />
       </NavigationContainer>
-    )
+    );
 
     // Wait for product to load
     await waitFor(() => {
-      expect(getByText('Winter Jacket')).toBeInTheDocument()
-    })
+      expect(getByText('Winter Jacket')).toBeInTheDocument();
+    });
 
     // User interaction
-    fireEvent.press(getByText('Add to Cart'))
+    fireEvent.press(getByText('Add to Cart'));
 
     // Verify behavior, not implementation
     await waitFor(() => {
-      expect(getByTestId('cart-badge')).toHaveTextContent('1')
-    })
+      expect(getByTestId('cart-badge')).toHaveTextContent('1');
+    });
 
     // Continue with checkout flow...
-  })
-})
+  });
+});
 ```
 
 ## Payment Test Failure Scenarios
 
 ### What Different Failures Mean
 
-| Failure Type | Meaning | Action Required |
-|-------------|---------|-----------------|
-| Missing credentials | `MP_TEST_ACCESS_TOKEN` not set | Add MercadoPago test credentials to environment |
-| Connection timeout | MercadoPago sandbox unreachable | Check network or MercadoPago service status |
+| Failure Type        | Meaning                           | Action Required                                   |
+| ------------------- | --------------------------------- | ------------------------------------------------- |
+| Missing credentials | `MP_TEST_ACCESS_TOKEN` not set    | Add MercadoPago test credentials to environment   |
+| Connection timeout  | MercadoPago sandbox unreachable   | Check network or MercadoPago service status       |
 | Invalid credentials | 401 Unauthorized from MercadoPago | Verify test credentials are valid and for Uruguay |
-| Webhook timeout | Webhook not received within 30s | Check notification URL configuration |
-| Signature mismatch | Webhook validation failed | Verify webhook secret configuration |
-| Amount tampering | Payment amount doesn't match | Critical security issue - investigate immediately |
+| Webhook timeout     | Webhook not received within 30s   | Check notification URL configuration              |
+| Signature mismatch  | Webhook validation failed         | Verify webhook secret configuration               |
+| Amount tampering    | Payment amount doesn't match      | Critical security issue - investigate immediately |
 
 ### Zero Tolerance for Payment Test Failures
 
 **If ANY revenue-critical test fails:**
+
 1. ❌ Block deployment immediately
 2. ❌ Alert the team
 3. ❌ Do not merge PR
@@ -714,6 +762,7 @@ Remember: **Write tests that give you confidence your app works for users, not t
 **For payment tests specifically: Use real MercadoPago sandbox or don't test at all. Mock payment tests provide false confidence that can cost real money.**
 
 Tests should be:
+
 - **Fast** - Quick feedback loop
 - **Reliable** - No flaky tests
 - **Maintainable** - Easy to understand and update
@@ -724,6 +773,7 @@ When in doubt, ask: "Does this test give me confidence that my app works for rea
 ## 13. Testing Implementation Plan for Tifossi App
 
 ### Current State Assessment
+
 - **Test Coverage**: Low (~20% estimated)
 - **Test Infrastructure**: Partially configured (MSW missing)
 - **Existing Tests**: Basic component and store tests
@@ -732,10 +782,13 @@ When in doubt, ask: "Does this test give me confidence that my app works for rea
 ### Priority Matrix by Business Impact
 
 #### 🔴 Priority 1: Revenue-Critical Tests (Must Have)
+
 These tests directly protect revenue generation. If these features break, the business stops making money.
 
 ##### 1.1 Complete Purchase Flow (`app/_tests/integration/purchase-flow.test.tsx`)
+
 **What to test:**
+
 ```javascript
 describe('Purchase Flow - Guest User', () => {
   // Critical path: Browse → Cart → Checkout → Payment → Order
@@ -752,153 +805,173 @@ describe('Purchase Flow - Guest User', () => {
     // 10. Initialize MercadoPago payment
     // 11. Complete payment (mocked)
     // 12. Receive order confirmation
-  })
+  });
 
   it('should handle out of stock during checkout', async () => {
     // Add item, simulate stock change, verify error handling
-  })
+  });
 
   it('should recover from payment failure', async () => {
     // Simulate failed payment, verify retry flow
-  })
-})
+  });
+});
 
 describe('Purchase Flow - Authenticated User', () => {
   it('should use saved address for authenticated user', async () => {
     // Login, use saved address, complete purchase
-  })
+  });
 
   it('should merge guest cart after login', async () => {
     // Add items as guest, login, verify cart merged
-  })
-})
+  });
+});
 ```
 
 **Mock boundaries:**
+
 - HTTP calls to Strapi API (products, orders)
 - MercadoPago API responses
 - Firebase Auth tokens
 
 ##### 1.2 Cart Persistence (`app/_tests/integration/cart-persistence.test.tsx`)
+
 **What to test:**
+
 ```javascript
 describe('Cart Persistence and Sync', () => {
   it('should persist cart items through app restart', async () => {
     // Add items → Kill app → Restart → Verify items
-  })
+  });
 
   it('should sync cart between devices for logged in user', async () => {
     // Add items on device A → Login device B → Verify sync
-  })
+  });
 
   it('should validate stock before checkout', async () => {
     // Add items → Change stock on backend → Verify validation
-  })
+  });
 
   it('should handle cart conflicts on sync', async () => {
     // Offline changes → Online changes → Verify merge strategy
-  })
-})
+  });
+});
 ```
 
 ##### 1.3 Payment Integration (`app/_tests/integration/payment.test.tsx`)
+
 **What to test:**
+
 ```javascript
 describe('MercadoPago Payment Integration', () => {
   it('should create payment preference correctly', async () => {
     // Verify correct data sent to MercadoPago
-  })
+  });
 
   it('should handle successful payment webhook', async () => {
     // Simulate webhook → Verify order status update
-  })
+  });
 
   it('should handle payment timeout', async () => {
     // Start payment → Timeout → Verify cleanup
-  })
+  });
 
   it('should calculate correct totals with shipping', async () => {
     // Various scenarios: delivery, pickup, discounts
-  })
-})
+  });
+});
 ```
 
 #### 🟡 Priority 2: UX-Critical Tests (Should Have)
+
 These affect user experience and conversion rates.
 
 ##### 2.1 Product Discovery (`app/_tests/integration/product-discovery.test.tsx`)
+
 **What to test:**
+
 ```javascript
 describe('Product Discovery', () => {
-  it('should filter products by category', async () => {})
-  it('should search products by name', async () => {})
-  it('should filter by size and color', async () => {})
-  it('should handle pagination correctly', async () => {})
-  it('should show out of stock status', async () => {})
-})
+  it('should filter products by category', async () => {});
+  it('should search products by name', async () => {});
+  it('should filter by size and color', async () => {});
+  it('should handle pagination correctly', async () => {});
+  it('should show out of stock status', async () => {});
+});
 ```
 
 ##### 2.2 Authentication Flows (`app/_tests/integration/auth-flows.test.tsx`)
+
 **What to test:**
+
 ```javascript
 describe('Authentication Flows', () => {
-  it('should login with Google', async () => {})
-  it('should login with Apple', async () => {})
-  it('should persist session across app restarts', async () => {})
-  it('should redirect to login for protected routes', async () => {})
-  it('should handle token refresh', async () => {})
-})
+  it('should login with Google', async () => {});
+  it('should login with Apple', async () => {});
+  it('should persist session across app restarts', async () => {});
+  it('should redirect to login for protected routes', async () => {});
+  it('should handle token refresh', async () => {});
+});
 ```
 
 ##### 2.3 Checkout Variations (`app/_tests/integration/checkout-variations.test.tsx`)
+
 **What to test:**
+
 ```javascript
 describe('Checkout Variations', () => {
-  it('should handle delivery to address', async () => {})
-  it('should handle store pickup', async () => {})
-  it('should validate address form', async () => {})
-  it('should show correct shipping costs', async () => {})
-  it('should allow store selection for pickup', async () => {})
-})
+  it('should handle delivery to address', async () => {});
+  it('should handle store pickup', async () => {});
+  it('should validate address form', async () => {});
+  it('should show correct shipping costs', async () => {});
+  it('should allow store selection for pickup', async () => {});
+});
 ```
 
 ##### 2.4 Store Locator (`app/_tests/integration/store-locator.test.tsx`)
+
 **What to test:**
+
 ```javascript
 describe('Store Locator', () => {
-  it('should list all stores', async () => {})
-  it('should filter stores by city/zone', async () => {})
-  it('should select store for pickup', async () => {})
-  it('should show store details', async () => {})
-})
+  it('should list all stores', async () => {});
+  it('should filter stores by city/zone', async () => {});
+  it('should select store for pickup', async () => {});
+  it('should show store details', async () => {});
+});
 ```
 
 #### 🟢 Priority 3: Supporting Features (Nice to Have)
+
 These enhance the experience but aren't critical for revenue.
 
 ##### 3.1 Favorites Management (`app/_tests/integration/favorites.test.tsx`)
+
 **What to test:**
+
 ```javascript
 describe('Favorites', () => {
-  it('should add/remove favorites', async () => {})
-  it('should sync favorites for logged in users', async () => {})
-  it('should persist favorites locally for guests', async () => {})
-})
+  it('should add/remove favorites', async () => {});
+  it('should sync favorites for logged in users', async () => {});
+  it('should persist favorites locally for guests', async () => {});
+});
 ```
 
 ##### 3.2 User Profile (`app/_tests/integration/profile.test.tsx`)
+
 **What to test:**
+
 ```javascript
 describe('User Profile', () => {
-  it('should view order history', async () => {})
-  it('should update profile information', async () => {})
-  it('should manage addresses', async () => {})
-})
+  it('should view order history', async () => {});
+  it('should update profile information', async () => {});
+  it('should manage addresses', async () => {});
+});
 ```
 
 ### Implementation Timeline
 
 #### Phase 1: Foundation (Day 1-2)
+
 - [ ] Install MSW: `npm install --save-dev msw@2.0.0`
 - [ ] Fix TypeScript errors in existing tests
 - [ ] Setup MSW handlers for Strapi API
@@ -906,6 +979,7 @@ describe('User Profile', () => {
 - [ ] Verify all existing tests pass
 
 #### Phase 2: Priority 1 Tests (Day 3-5)
+
 - [ ] Implement purchase flow tests (guest & authenticated)
 - [ ] Implement cart persistence tests
 - [ ] Implement payment integration tests
@@ -913,12 +987,14 @@ describe('User Profile', () => {
 - [ ] Ensure 100% pass rate for revenue-critical paths
 
 #### Phase 3: Priority 2 Tests (Day 6-8)
+
 - [ ] Implement product discovery tests
 - [ ] Implement authentication flow tests
 - [ ] Implement checkout variation tests
 - [ ] Implement store locator tests
 
 #### Phase 4: Priority 3 & Polish (Day 9-10)
+
 - [ ] Implement favorites tests
 - [ ] Implement profile tests
 - [ ] Add error scenario tests
@@ -926,6 +1002,7 @@ describe('User Profile', () => {
 - [ ] Documentation and cleanup
 
 ### Test File Structure
+
 ```
 app/_tests/
 ├── integration/           # User flow tests
@@ -963,6 +1040,7 @@ app/_tests/
 #### Forget Coverage Percentages, Focus on Behaviors
 
 ✅ **Must Have Before Launch:**
+
 - [ ] Users can browse → add to cart → checkout → pay
 - [ ] Cart persists across app restarts
 - [ ] Payment errors don't lose money
@@ -970,18 +1048,21 @@ app/_tests/
 - [ ] Stock validation prevents overselling
 
 ⚠️ **Should Have Soon:**
+
 - [ ] Login/logout flows work
 - [ ] Search returns relevant products
 - [ ] Filters work correctly
 - [ ] Profile updates save
 
 ❌ **Don't Block Launch:**
+
 - Component prop validation
 - 100% code coverage
 - Every edge case
 - Performance optimization tests
 
 #### Real Success Metrics
+
 - **Revenue Protection**: 0 payment bugs in production
 - **User Trust**: Cart never loses items
 - **Sleep Quality**: No 3 AM calls about critical failures
@@ -991,13 +1072,16 @@ app/_tests/
 ### Revenue-Critical Integration Tests with MercadoPago Sandbox
 
 #### ⚠️ IMPORTANT: No Fallbacks Policy
+
 **Revenue-critical tests MUST use real MercadoPago sandbox. If MercadoPago fails, tests MUST fail.**
+
 - No mock fallbacks for payment tests
 - Tests require valid MercadoPago test credentials
 - CI/CD must have MercadoPago sandbox credentials configured
 - If credentials are missing or API is down, tests fail immediately
 
 #### Required Environment Setup
+
 ```bash
 # .env.test (REQUIRED - tests will fail without these)
 MP_TEST_PUBLIC_KEY=TEST-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -1012,32 +1096,33 @@ if (!process.env.MP_TEST_ACCESS_TOKEN) {
 ```
 
 #### MercadoPago Test Cards for Uruguay
+
 ```javascript
 const URUGUAY_TEST_CARDS = {
   // Mastercard test cards
   approved: {
     number: '5031 7557 3453 0604',
-    name: 'APRO',           // Forces approval
+    name: 'APRO', // Forces approval
     cvv: '123',
-    expiration: '11/30'
+    expiration: '11/30',
   },
   rejected_insufficient_funds: {
     number: '5031 7557 3453 0604',
-    name: 'FUND',           // Forces insufficient funds
+    name: 'FUND', // Forces insufficient funds
     cvv: '123',
-    expiration: '11/30'
+    expiration: '11/30',
   },
   rejected_security_code: {
     number: '5031 7557 3453 0604',
-    name: 'SECU',           // Forces security code error
+    name: 'SECU', // Forces security code error
     cvv: '123',
-    expiration: '11/30'
+    expiration: '11/30',
   },
   pending: {
     number: '5031 7557 3453 0604',
-    name: 'CONT',           // Forces pending status
+    name: 'CONT', // Forces pending status
     cvv: '123',
-    expiration: '11/30'
+    expiration: '11/30',
   },
 
   // Visa test cards
@@ -1045,12 +1130,13 @@ const URUGUAY_TEST_CARDS = {
     number: '4509 9535 6623 3704',
     name: 'APRO',
     cvv: '123',
-    expiration: '11/30'
-  }
+    expiration: '11/30',
+  },
 };
 ```
 
 #### Revenue-Critical Test Suite Structure
+
 ```javascript
 // app/_tests/integration/revenue-critical-mercadopago.test.tsx
 describe('Revenue-Critical: MercadoPago Real Sandbox Tests', () => {
@@ -1183,28 +1269,30 @@ describe('Revenue-Critical: MercadoPago Real Sandbox Tests', () => {
 ```
 
 ### MSW Usage for Non-Payment Tests Only
+
 ```javascript
 // MSW should ONLY be used for non-payment endpoints
 export const handlers = [
   // ✅ OK to mock: Product catalog
   http.get('/api/products', () => {
-    return HttpResponse.json({ data: products })
+    return HttpResponse.json({ data: products });
   }),
 
   // ✅ OK to mock: User data
   http.get('/api/users/me', () => {
-    return HttpResponse.json({ user: mockUser })
+    return HttpResponse.json({ user: mockUser });
   }),
 
   // ❌ NEVER mock: MercadoPago endpoints
   // ❌ NEVER mock: Payment verification
   // ❌ NEVER mock: Webhook processing
-]
+];
 ```
 
 #### Test Execution Strategy
 
 ##### Local Development
+
 ```bash
 # Run all tests except payment (for quick feedback)
 npm test -- --testPathIgnorePatterns="revenue-critical"
@@ -1214,6 +1302,7 @@ MP_TEST_ACCESS_TOKEN=TEST-xxx npm test -- revenue-critical
 ```
 
 ##### CI/CD Requirements
+
 ```yaml
 # GitHub Actions / CI Configuration
 jobs:
@@ -1238,6 +1327,7 @@ jobs:
 ```
 
 ##### Test Categorization
+
 ```json
 // package.json
 {
@@ -1255,20 +1345,22 @@ jobs:
 ### Common Test Patterns for E-commerce
 
 #### Testing Cart Math
+
 ```javascript
 it('should calculate correct totals', () => {
-  const cart = useCartStore.getState()
-  cart.addItem(product1, 2) // $50 x 2
-  cart.addItem(product2, 1) // $30 x 1
-  cart.setShipping('express') // $15
+  const cart = useCartStore.getState();
+  cart.addItem(product1, 2); // $50 x 2
+  cart.addItem(product2, 1); // $30 x 1
+  cart.setShipping('express'); // $15
 
-  expect(cart.subtotal).toBe(130)
-  expect(cart.shipping).toBe(15)
-  expect(cart.total).toBe(145)
-})
+  expect(cart.subtotal).toBe(130);
+  expect(cart.shipping).toBe(15);
+  expect(cart.total).toBe(145);
+});
 ```
 
 #### Testing Stock Validation
+
 ```javascript
 it('should prevent checkout with insufficient stock', async () => {
   // Setup low stock
@@ -1276,21 +1368,22 @@ it('should prevent checkout with insufficient stock', async () => {
     http.get('/api/products/1', () => {
       return HttpResponse.json({
         ...product,
-        stock: 1
-      })
+        stock: 1,
+      });
     })
-  )
+  );
 
   // Try to buy 2
-  cart.addItem(product, 2)
-  const result = await cart.validateStock()
+  cart.addItem(product, 2);
+  const result = await cart.validateStock();
 
-  expect(result.valid).toBe(false)
-  expect(result.errors).toContain('Insufficient stock')
-})
+  expect(result.valid).toBe(false);
+  expect(result.errors).toContain('Insufficient stock');
+});
 ```
 
 #### Testing Payment Flow
+
 ```javascript
 it('should handle payment success', async () => {
   // Setup successful payment mock
@@ -1300,34 +1393,36 @@ it('should handle payment success', async () => {
         action: 'payment.created',
         data: {
           id: 'PAY_123',
-          status: 'approved'
-        }
-      })
+          status: 'approved',
+        },
+      });
     })
-  )
+  );
 
   // Complete checkout
-  const order = await checkout.complete()
+  const order = await checkout.complete();
 
   // Verify order updated
   await waitFor(() => {
-    expect(order.status).toBe('paid')
-  })
-})
+    expect(order.status).toBe('paid');
+  });
+});
 ```
 
 ### Debugging Test Failures
 
 #### Common Issues and Solutions
-| Problem | Solution |
-|---------|----------|
-| MSW not intercepting | Check handler URL matches exactly |
-| Store not resetting | Add `beforeEach` with state reset |
-| Async timing issues | Use `waitFor` with specific assertions |
-| Navigation errors | Wrap in NavigationContainer |
-| Auth state leaking | Clear SecureStore in `afterEach` |
+
+| Problem              | Solution                               |
+| -------------------- | -------------------------------------- |
+| MSW not intercepting | Check handler URL matches exactly      |
+| Store not resetting  | Add `beforeEach` with state reset      |
+| Async timing issues  | Use `waitFor` with specific assertions |
+| Navigation errors    | Wrap in NavigationContainer            |
+| Auth state leaking   | Clear SecureStore in `afterEach`       |
 
 ### Final Checklist
+
 - [ ] All Priority 1 tests passing
 - [ ] No console errors in test output
 - [ ] Coverage report generated
@@ -1347,6 +1442,7 @@ it('should handle payment success', async () => {
 The Tifossi app has comprehensive test coverage for all revenue-critical paths. We're not chasing 100% coverage - we have the right tests in the right places.
 
 #### Key Metrics
+
 - **Total Tests:** 768 total → 765 passing, 3 skipped (99.6% pass rate)
 - **Test Suites:** 41 total → 40 passing, 1 skipped (credential-gated)
 - **Execution Time:** ~18.8 seconds (CI-friendly)
@@ -1361,6 +1457,7 @@ The Tifossi app has comprehensive test coverage for all revenue-critical paths. 
 ### Test Suite Overview
 
 #### Current Test Results (npm run test:app, March 2025)
+
 ```
 Test Suites: 40 passed, 1 skipped, 41 total
 Tests:       765 passed, 3 skipped, 768 total
@@ -1369,8 +1466,9 @@ Command:     npm run test:app
 ```
 
 #### Coverage Report (March 2025)
+
 | Metric     | Current | Target | Status |
-|------------|---------|--------|--------|
+| ---------- | ------- | ------ | ------ |
 | Statements | 31.21%  | 35%    | ⚠️     |
 | Branches   | 29.08%  | 30%    | ⚠️     |
 | Functions  | 28.28%  | 30%    | ⚠️     |
@@ -1379,43 +1477,48 @@ Command:     npm run test:app
 ### Test Implementation Status
 
 #### 🔴 Priority 1: Revenue-Critical Tests (MUST HAVE)
-| Test File | Status | Pass/Fail | Notes |
-|-----------|--------|-----------|-------|
-| `product-detail.integration.test.tsx` | ✅ Implemented | ✅ PASSING | 19/19 tests passing - all flows working |
-| `store-selection.integration.test.tsx` | ✅ Implemented | ✅ PASSING | 14/14 tests passing - zone/store selection working |
-| `complete-purchase-flow.test.tsx` | ✅ Implemented | ✅ PASSING | All 8 tests passing with mocks |
-| `checkout-flow.integration.test.tsx` | ✅ Implemented | ✅ PASSING | All 12 tests passing |
-| `shipping-address.integration.test.tsx` | ✅ Implemented | ✅ PASSING | Address management flows tested |
-| `revenue-critical-purchase.test.tsx` | ✅ Implemented | ⏸️ SKIPPED | Real MercadoPago sandbox, requires credentials |
-| `mercadopago-payment-flow.test.tsx` | ✅ Implemented | ⏸️ SKIPPED | Real MercadoPago sandbox, requires credentials |
-| `cart-persistence.test.tsx` | ✅ Implemented | ✅ PASSING | Cart state persistence working |
-| `add-to-cart-flow.test.tsx` | ✅ Implemented | ✅ PASSING | Add to cart user flows tested |
-| `cart-edge-cases.test.tsx` | ✅ Implemented | ✅ PASSING | 18/18 tests - concurrent ops, 100+ items ✅ NEW |
+
+| Test File                               | Status         | Pass/Fail  | Notes                                              |
+| --------------------------------------- | -------------- | ---------- | -------------------------------------------------- |
+| `product-detail.integration.test.tsx`   | ✅ Implemented | ✅ PASSING | 19/19 tests passing - all flows working            |
+| `store-selection.integration.test.tsx`  | ✅ Implemented | ✅ PASSING | 14/14 tests passing - zone/store selection working |
+| `complete-purchase-flow.test.tsx`       | ✅ Implemented | ✅ PASSING | All 8 tests passing with mocks                     |
+| `checkout-flow.integration.test.tsx`    | ✅ Implemented | ✅ PASSING | All 12 tests passing                               |
+| `shipping-address.integration.test.tsx` | ✅ Implemented | ✅ PASSING | Address management flows tested                    |
+| `revenue-critical-purchase.test.tsx`    | ✅ Implemented | ⏸️ SKIPPED | Real MercadoPago sandbox, requires credentials     |
+| `mercadopago-payment-flow.test.tsx`     | ✅ Implemented | ⏸️ SKIPPED | Real MercadoPago sandbox, requires credentials     |
+| `cart-persistence.test.tsx`             | ✅ Implemented | ✅ PASSING | Cart state persistence working                     |
+| `add-to-cart-flow.test.tsx`             | ✅ Implemented | ✅ PASSING | Add to cart user flows tested                      |
+| `cart-edge-cases.test.tsx`              | ✅ Implemented | ✅ PASSING | 18/18 tests - concurrent ops, 100+ items ✅ NEW    |
 
 **Payment Test Status:**
+
 - **Real Sandbox Suites:** Implemented and guarded by credential checks
 - **Current Behaviour:** Fails with a setup error when credentials are absent—configure sandbox access to run them
 - **Impact:** Once credentials are in place these suites cover revenue-critical payment paths end to end
 
 #### 🟡 Priority 2: UX-Critical Tests (SHOULD HAVE)
-| Test File | Status | Notes |
-|-----------|--------|-------|
-| `product-discovery.test.tsx` | ✅ Exists & Passing | All 21 tests passing (Fixed Dec 2024) |
-| `auth-flows.test.tsx` | ✅ Exists & Passing | All 15 tests passing |
-| `checkout-variations.test.tsx` | ✅ IMPLEMENTED | Covered by checkout-flow.integration.test.tsx |
-| `store-locator.test.tsx` | ✅ PARTIALLY TESTED | Store selection tested in checkout-flow.integration.test.tsx |
-| `add-to-cart-flow.test.tsx` | ✅ Exists & Passing | Basic flow working |
+
+| Test File                      | Status              | Notes                                                        |
+| ------------------------------ | ------------------- | ------------------------------------------------------------ |
+| `product-discovery.test.tsx`   | ✅ Exists & Passing | All 21 tests passing (Fixed Dec 2024)                        |
+| `auth-flows.test.tsx`          | ✅ Exists & Passing | All 15 tests passing                                         |
+| `checkout-variations.test.tsx` | ✅ IMPLEMENTED      | Covered by checkout-flow.integration.test.tsx                |
+| `store-locator.test.tsx`       | ✅ PARTIALLY TESTED | Store selection tested in checkout-flow.integration.test.tsx |
+| `add-to-cart-flow.test.tsx`    | ✅ Exists & Passing | Basic flow working                                           |
 
 #### 🟢 Priority 3: Supporting Features (NICE TO HAVE)
-| Test File | Status | Notes |
-|-----------|--------|-------|
-| `favorites.test.tsx` | ❌ Missing | Was deleted |
-| `profile.test.tsx` | ❌ Missing | User management untested |
-| Component tests | ⚠️ Partial | 6/20+ components tested |
+
+| Test File            | Status     | Notes                    |
+| -------------------- | ---------- | ------------------------ |
+| `favorites.test.tsx` | ❌ Missing | Was deleted              |
+| `profile.test.tsx`   | ❌ Missing | User management untested |
+| Component tests      | ⚠️ Partial | 6/20+ components tested  |
 
 ### Component Test Coverage
 
 #### Tested Components ✅ (6 files)
+
 - `ProductCard.test.tsx` - Basic rendering and interactions
 - `CartProductCard.test.tsx` - Cart item display
 - `CheckoutForm.test.tsx` - Form validation
@@ -1424,6 +1527,7 @@ Command:     npm run test:app
 - `DefaultLargeCard.test.tsx` - Large card display
 
 #### Missing Component Tests ❌
+
 - Navigation components
 - Authentication screens
 - Product filters
@@ -1436,6 +1540,7 @@ Command:     npm run test:app
 ### Store Test Coverage
 
 #### Tested Stores ✅ (7 files - ALL STORES TESTED)
+
 - `authStore.test.ts` - Basic auth state (all tests passing)
 - `cartStore.test.ts` - Cart operations (all tests passing)
 - `productStore.test.ts` - Product state (all tests passing)
@@ -1445,11 +1550,13 @@ Command:     npm run test:app
 - `userStore.test.ts` - **COMPREHENSIVE** (563 lines, 10 test suites) - Profile, preferences, addresses, helpers
 
 #### Missing Store Tests ❌
+
 - `localStorageAdapter.test.ts` - Adapter exists but no tests (may not need direct testing if covered via stores)
 
 ### Service Test Coverage (NEW - December 2024)
 
 #### ✅ Tested Services with High Coverage
+
 - `orderService` - **93.39% coverage** (32 tests) - Order lifecycle, validation, payment integration
 - `addressService` - **90.74% coverage** (31 tests) - CRUD operations, validation, formatting
 - `cartService` - **76.14% coverage** (31 tests) - Sync, merge, persistence, error handling
@@ -1459,6 +1566,7 @@ Command:     npm run test:app
 - `networkService` - **New** (offline persistence, reconnection signalling)
 
 #### ❌ Services Not Worth Testing (Low ROI)
+
 - `authService.test.ts` - 0% coverage (globally mocked - working fine)
 - `httpClient.test.ts` - 0% coverage (simple wrapper - not worth it)
 - `mercadoPago.test.ts` - No unit tests (integration tests are sufficient)
@@ -1469,9 +1577,11 @@ Command:     npm run test:app
 ### Critical Issues & Risks
 
 #### 🚨 Immediate Blockers
+
 1. **Payment suites gated by credentials:** Tests exist but skip without MercadoPago sandbox credentials
 
 #### ⚠️ Areas Needing Improvement
+
 1. **Code Coverage:** Currently ~31%, aim for 35% minimum (60% ideal) by adding targeted UI/screen cases
 2. **Screen/UX Tests:** Only payment-result screen covered; add offline + auth surface checks
 3. **Credential-Gated Payment Suites:** Still skipped until MercadoPago sandbox credentials wired in CI
@@ -1479,6 +1589,7 @@ Command:     npm run test:app
 5. **No Visual Regression Tests:** UI changes could break unexpectedly
 
 #### 📊 Business Impact
+
 - **Revenue Risk:** VERY LOW - Payment flows now tested, webhook validation secured
 - **User Experience Risk:** LOW - All main paths tested with 608+ passing tests
 - **Deployment Risk:** MEDIUM - ~27% coverage is improved but still below ideal 60%
@@ -1486,12 +1597,14 @@ Command:     npm run test:app
 ### Action Plan
 
 #### 🔴 Immediate Actions (When MercadoPago Credentials Available)
+
 - [ ] Configure MercadoPago test credentials in environment
 - [ ] Run revenue-critical-purchase tests with real sandbox
 - [ ] Validate webhook processing with real notifications
 - [ ] Test payment error scenarios with sandbox test cards
 
 #### 🟡 Short Term (Completed)
+
 - [x] Fix ProductStatus enum import issues
 - [x] Fix auth-flows test failures
 - [x] Fix complete-purchase-flow tests
@@ -1506,6 +1619,7 @@ Command:     npm run test:app
 - [ ] Increase coverage to 35% minimum
 
 #### 🟢 Before Production (Next Sprint)
+
 - [ ] Achieve 60% code coverage
 - [ ] All Priority 1 tests passing with real MercadoPago
 - [ ] Implement E2E tests
@@ -1514,6 +1628,7 @@ Command:     npm run test:app
 ### Test Infrastructure Health
 
 #### Working ✅
+
 - Jest configuration
 - React Native Testing Library
 - MSW for HTTP mocking
@@ -1521,12 +1636,14 @@ Command:     npm run test:app
 - Component test setup
 
 #### Issues ⚠️
+
 - MSW handlers incomplete
 - No real payment sandbox
 - Missing test data factories
 - No E2E test framework
 
 #### Missing ❌
+
 - Coverage reporting in CI
 - Test performance metrics
 - Flaky test detection
@@ -1535,6 +1652,7 @@ Command:     npm run test:app
 ### Progress Tracking
 
 #### Milestones
+
 - [x] Test infrastructure setup
 - [x] Basic component tests
 - [x] Store tests implemented
@@ -1545,12 +1663,15 @@ Command:     npm run test:app
 - [ ] Production ready
 
 #### Weekly Goals
+
 **Week of Sep 24, 2025:**
+
 - Fix failing payment tests
 - Add cart persistence tests
 - Reach 25% coverage
 
 **Week of Oct 1, 2025:**
+
 - Implement product discovery tests
 - Add auth flow tests
 - Reach 35% coverage
@@ -1580,6 +1701,7 @@ npm test -- --verbose
 ### Definition of Done for Testing
 
 A feature is considered tested when:
+
 - [ ] Unit tests for business logic
 - [ ] Integration test for user flow
 - [ ] Component tests for UI
@@ -1591,23 +1713,31 @@ A feature is considered tested when:
 ### Critical Test Fixes - December 2024
 
 #### Memory Leak Resolution
+
 The test suite was experiencing JavaScript heap out of memory errors, making it impossible to run the full suite. This was fixed by:
+
 1. **Adding cleanup()** - Properly unmounting React components after each test
 2. **Fixing setImmediate polyfill** - Corrected type issues in the Node environment polyfill
 3. **Using --runInBand flag** - Forces sequential test execution to prevent parallel memory buildup
 
 #### Test Environment Detection
+
 SwipeableEdge component was not rendering the test-friendly layout due to unreliable environment detection:
+
 - **Old:** `process.env?.NODE_ENV === 'test'` (didn't work with Jest/Expo)
 - **New:** `typeof jest !== 'undefined'` (reliable across all test scenarios)
 
 #### Favorites Store Persistence
+
 The MMKV-backed persistence was causing async hydration issues in tests:
+
 - **Solution:** Disabled persistence entirely when `typeof jest !== 'undefined'`
 - **Result:** Store starts fresh for each test without async delays
 
 #### Enhanced Test Selectors
+
 Added missing testIDs for better test reliability:
+
 - Size options: `testID="size-option-${size.value}"`
 - Quantity value: `testID="quantity-value"`
 - Gallery container: `testID="product-gallery-container"`
@@ -1615,6 +1745,7 @@ Added missing testIDs for better test reliability:
 ### Summary of Recent Improvements (December 2024)
 
 #### Tests Fixed and Added
+
 - ✅ **Product Detail Integration:** 19/19 tests passing (was failing with memory issues)
 - ✅ **Store Selection Integration:** 14/14 tests passing (fixed zone selection and testIDs)
 - ✅ Memory leak fixed with proper cleanup
@@ -1623,6 +1754,7 @@ Added missing testIDs for better test reliability:
 - ✅ Overall integration test pass rate: 100%
 
 #### Payment System Tests Added (December 2024)
+
 - ✅ **PaymentStore Tests:** 10 tests with 100% coverage - Minimal UI state management
 - ✅ **StoreSynchronizer Tests:** 12 tests with 100% coverage - Cross-store communication
 - ✅ **WebhookValidator Tests:** 22 tests with 60.81% coverage - Security validation
@@ -1630,6 +1762,7 @@ Added missing testIDs for better test reliability:
 - ✅ **Testing Principles Followed:** Real stores, mock only at boundaries, test behavior not implementation
 
 #### Service Layer Testing (December 2024)
+
 - ✅ Created comprehensive service tests (94 new tests across 3 services)
 - ✅ Fixed error handling inconsistencies - services now properly throw Error objects
 - ✅ Improved error propagation patterns (throw for data fetching, return objects for actions)
@@ -1637,6 +1770,7 @@ Added missing testIDs for better test reliability:
 - ✅ Service coverage improved: 0% → 76-93% for critical services
 
 #### Checkout Flow Integration Testing (December 2024)
+
 - ✅ Created comprehensive checkout-flow.integration.test.tsx
 - ✅ 12 tests covering all checkout variations:
   - Guest checkout with delivery (2 tests)
@@ -1648,12 +1782,14 @@ Added missing testIDs for better test reliability:
 - ✅ Uses httpClient mocking (not MSW) as specified
 
 #### Next Steps
+
 1. **Run tests with:** `npm run test:app`
 2. Obtain MercadoPago credentials for real sandbox testing
 3. Increase coverage beyond current ~25% to target 60%+
 4. Add more integration tests following the same pragmatic patterns
 
 ### Next Review Date
+
 **June 2025** - Revisit offline UX + credential-gated payment suites
 
 ---
@@ -1661,6 +1797,7 @@ Added missing testIDs for better test reliability:
 ## Final Test Status Summary (March 2025)
 
 ### Snapshot From `npm run test:app`
+
 - **Total Tests:** 768 total → 765 passing, 3 skipped (credential-gated)
 - **Test Files:** 44 tracked (14 integration, 8 service, 7 store, 6 component, 10 utility, 3 smoke, 1 screen)
 - **Service Coverage Adds:** `NetworkService` resilience suite now in place alongside order/address/cart/error handlers
@@ -1668,6 +1805,7 @@ Added missing testIDs for better test reliability:
 ### What This Means
 
 ✅ **Covered Thoroughly**
+
 - Revenue paths: checkout, payments, cart persistence, pricing edge cases
 - Stores: 7/7 Zustand stores with regression coverage
 - Offline recovery service logic: NetworkService reconnection + persistence flow
@@ -1675,6 +1813,7 @@ Added missing testIDs for better test reliability:
 - User flows: auth, product discovery, shipping options, store selection
 
 ⚠️ **Still Backlog (Low ROI or UX polish)**
+
 - Component cosmetics and minor screens (e.g., profile, change password view)
 - Offline UX indicators (banners/toasts) on UI layer
 - Full E2E automation (manual checks still sufficient for releases)
@@ -1687,6 +1826,7 @@ Added missing testIDs for better test reliability:
 That’s the bar. Not 100% coverage. Not testing every getter/setter. Confidence > vanity metrics.
 
 **The app remains production-ready because:**
+
 1. Users can browse, add to cart, and checkout across flows
 2. Payments succeed and roll back safely when they fail
 3. Cart persistence survives crashes and reconnects
@@ -1697,14 +1837,16 @@ That’s the bar. Not 100% coverage. Not testing every getter/setter. Confidence
 
 ---
 
-*This status section reflects the March 2025 test run documented above.*
+_This status section reflects the March 2025 test run documented above._
 
 ## 15. Service Testing Best Practices (Added December 2024)
 
 ### Error Handling Patterns
+
 Based on our service layer implementation, we've established clear patterns for error handling:
 
 #### Data Fetching Methods (throw errors)
+
 ```typescript
 async fetchData(): Promise<Data> {
   if (!this.authToken) {
@@ -1721,6 +1863,7 @@ async fetchData(): Promise<Data> {
 ```
 
 #### Action Methods (return success/error objects)
+
 ```typescript
 async performAction(): Promise<ActionResult> {
   try {
@@ -1737,6 +1880,7 @@ async performAction(): Promise<ActionResult> {
 ```
 
 ### Test Organization for Services
+
 - Group tests by method functionality
 - Test validation logic separately from API calls
 - Mock only at httpClient boundary
@@ -1744,6 +1888,7 @@ async performAction(): Promise<ActionResult> {
 - Test error scenarios explicitly
 
 ### Key Lessons Learned
+
 1. **Silent failures are dangerous** - Always propagate errors appropriately
 2. **Consistent patterns matter** - Use throw vs return consistently based on method type
 3. **Test the actual behavior** - Not the implementation details
@@ -1760,7 +1905,9 @@ async performAction(): Promise<ActionResult> {
 ### What to Test Next (Priority Order)
 
 #### 🔴 Critical - Do These Now
+
 **Already Done ✅:**
+
 - Checkout flow (all variations)
 - Payment integration (sandbox ready)
 - Cart persistence & edge cases (100+ items, concurrent ops)
@@ -1768,12 +1915,14 @@ async performAction(): Promise<ActionResult> {
 - Product data transformation (StrapiApi)
 
 **Still Needed:**
+
 1. **Offline UX Coverage**
    - Surface offline banner/toast behaviour in key screens
    - Verify checkout retries surface helpful messaging
    - Exercise app shell when NetworkService reports reconnection
 
 #### 🟡 Important - Do These Before Major Changes
+
 1. **Search & Filter Tests**
    - Basic search works (not every edge case)
    - Category filters work
@@ -1785,12 +1934,14 @@ async performAction(): Promise<ActionResult> {
    - Cart merge on login
 
 #### 🟢 Nice to Have - Do When Bored
+
 - Profile management
 - Order history
 - Wishlist sync
 - Email notifications
 
 #### ⚫ Skip These - Not Worth Your Time
+
 - Component prop types
 - Styling tests
 - Animation tests
@@ -1800,6 +1951,7 @@ async performAction(): Promise<ActionResult> {
 ### ✅ Phase 2: Service Layer (COMPLETED March 2025)
 
 #### Completed Service Tests
+
 - ✅ `orderService.test.ts` – create/checkout orchestration + payment handoff
 - ✅ `addressService.test.ts` – validation, dedupe, preferred address flows
 - ✅ `cartService.test.ts` – sync, retries, optimistic rollbacks
@@ -1810,6 +1962,7 @@ async performAction(): Promise<ActionResult> {
 - ✅ `mercadopago-test.service.ts` – credential-gated happy-path validations
 
 #### Key Achievements
+
 - Fixed error handling inconsistencies
 - Established clear throw vs return patterns
 - Improved from 0% to 60%+ service coverage (including network resilience)
@@ -1818,6 +1971,7 @@ async performAction(): Promise<ActionResult> {
 ### ✅ Phase 3: Store Layer (COMPLETED December 2024)
 
 #### All Store Tests Implemented
+
 - ✅ `userStore.test.ts` - 563 lines, 10 test suites covering:
   - User preferences (notifications, language)
   - Address management
@@ -1840,6 +1994,7 @@ async performAction(): Promise<ActionResult> {
   - Conflict resolution
 
 #### 2.2 Expand Existing Store Tests
+
 - [ ] Enhance `cartStore.test.ts`
   - Stock validation errors
   - Price update handling
@@ -1859,6 +2014,7 @@ async performAction(): Promise<ActionResult> {
 ### Phase 4: Remaining Services (Week 3, Jan 2-9) - Target 65% Coverage
 
 #### 4.1 Untested Services (Mock HTTP Only)
+
 - [ ] `strapiApi.test.ts` - API layer (currently 3.8% coverage)
   - Data transformations
   - Error handling
@@ -1876,6 +2032,7 @@ async performAction(): Promise<ActionResult> {
   - Logging logic
 
 #### 4.2 Authentication Services
+
 - [ ] `authService.test.ts` - Integration tests (currently mocked globally)
   - Login/logout flows
   - Token management
@@ -1885,6 +2042,7 @@ async performAction(): Promise<ActionResult> {
 ### Phase 5: Screen Integration Tests (Week 3-4, Jan 9-16) - Target 80% Coverage
 
 #### 4.1 Tab Screens (Real Navigation)
+
 - [ ] `cart-screen.integration.test.tsx`
   - View cart items
   - Update quantities
@@ -1902,6 +2060,7 @@ async performAction(): Promise<ActionResult> {
   - Store details
 
 #### 4.2 Product Screens
+
 - [ ] `product-detail.integration.test.tsx`
   - View product details
   - Select size/color
@@ -1916,6 +2075,7 @@ async performAction(): Promise<ActionResult> {
 ### Phase 6: Components & Utils (Week 4, Jan 16-23) - Target 90% Coverage
 
 #### 5.1 Critical Components (User Interactions)
+
 - [ ] `AddressForm.test.tsx` - Form validation
 - [ ] `ProductFilters.test.tsx` - Filter UI
 - [ ] `SearchBar.test.tsx` - Search input
@@ -1924,6 +2084,7 @@ async performAction(): Promise<ActionResult> {
 - [ ] `PaymentSummary.test.tsx` - Payment info
 
 #### 5.2 Utility Functions (Quick Wins)
+
 - [ ] `apiTransforms.test.ts` - Data mapping (100% coverage)
 - [ ] `validators.test.ts` - Input validation (100% coverage)
 - [ ] `formatters.test.ts` - Price/date formatting (100% coverage)
@@ -1932,6 +2093,7 @@ async performAction(): Promise<ActionResult> {
 ### Implementation Tracking
 
 #### ✅ Completed (March 2025)
+
 ```
 Service Tests Created: 8 files (200+ assertions)
 - orderService.test.ts – checkout orchestration + MercadoPago handoff
@@ -1951,6 +2113,7 @@ Integration Test Suite: 14 files (300+ assertions)
 ```
 
 #### Current Test File Snapshot
+
 ```
 Integration tests: 14 files (all major flows + edge cases)
 Store tests: 7 files (ALL stores tested)
@@ -2008,17 +2171,20 @@ describe('Feature Flow - Integration', () => {
 **Forget weekly coverage targets. Focus on capability:**
 
 ✅ **Can Ship Now:**
+
 - Users can buy products
 - Payments process correctly
 - Cart doesn't lose items
 - Critical errors are handled
 
 ⚠️ **Should Fix Soon:**
+
 - Search might return weird results
 - Filters might miss edge cases
 - Profile updates might fail silently
 
 🤷 **Who Cares:**
+
 - That one component has 0% coverage
 - The footer component isn't tested
 - Utility functions work but aren't tested
@@ -2026,6 +2192,7 @@ describe('Feature Flow - Integration', () => {
 ### Solo Dev Daily Reality Check
 
 Ask yourself:
+
 1. **"What could lose me money today?"** → Test that
 2. **"What kept me up last night?"** → Test that
 3. **"What would piss off users?"** → Test that
@@ -2035,12 +2202,14 @@ Everything else can wait.
 ### Pragmatic Completion Criteria
 
 ✅ **Ready to Ship When:**
+
 - [ ] Payment flow tested with real sandbox
 - [ ] Cart persists across crashes
 - [ ] Critical paths have integration tests
 - [ ] You can sleep at night
 
 ❌ **Not Blockers:**
+
 - [ ] 90% code coverage
 - [ ] Every component tested
 - [ ] 100% of edge cases covered

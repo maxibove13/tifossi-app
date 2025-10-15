@@ -3,26 +3,31 @@
 ## Cuentas Requeridas para el Backend y Servicios
 
 ### 1. **Render.com (Hosting del Backend)**
+
 **Costo**: $35 USD/mes para el plan Production
 
 **Pasos para crear la cuenta:**
+
 1. Ir a https://render.com y crear una cuenta
 2. Verificar el email
 3. Agregar método de pago (tarjeta de crédito)
 4. Crear un nuevo Web Service para Strapi
 
 **Agregar desarrolladores al equipo:**
+
 1. En el Dashboard de Render, ir a "Settings" → "Team"
 2. Click en "Invite Team Member"
 3. Invitar a los desarrolladores con rol "Admin" o "Developer"
 4. Los desarrolladores recibirán un email para unirse al equipo
 
 **Información que necesitamos:**
+
 - Email de la cuenta
 - Nombre del proyecto: `tifossi-backend`
 - Region: Sao Paulo (más cercano a Uruguay)
 
 **Credenciales a proporcionar:**
+
 ```
 RENDER_API_KEY=
 RENDER_SERVICE_ID=
@@ -32,15 +37,18 @@ DATABASE_URL= (será generado por Render)
 ---
 
 ### 2. **MercadoPago (Procesamiento de Pagos)**
+
 **Costo**: 5.23% por transacción (sin costo mensual fijo)
 
 **Pasos para crear la cuenta:**
+
 1. Crear cuenta de MercadoPago Business en https://www.mercadopago.com.uy/hub/registration
 2. Completar verificación de identidad y datos bancarios
 3. Activar el modo producción (requiere documentación de la empresa)
 4. Obtener las credenciales de producción
 
 **Agregar desarrolladores:**
+
 1. Ingresar a https://www.mercadopago.com.uy/developers/panel
 2. Ir a "Configuración" → "Gestión de equipo"
 3. Click en "Invitar colaborador"
@@ -48,6 +56,7 @@ DATABASE_URL= (será generado por Render)
 5. El desarrollador recibirá una invitación por email
 
 **Credenciales necesarias (PRODUCCIÓN):**
+
 ```
 MERCADOPAGO_PUBLIC_KEY=
 MERCADOPAGO_ACCESS_TOKEN=
@@ -56,12 +65,14 @@ MERCADOPAGO_CLIENT_SECRET=
 ```
 
 **Credenciales de SANDBOX (para pruebas):**
+
 ```
 MERCADOPAGO_SANDBOX_PUBLIC_KEY=
 MERCADOPAGO_SANDBOX_ACCESS_TOKEN=
 ```
 
 **Configuración importante:**
+
 - Configurar URL de webhook: `https://tifossi-backend.onrender.com/api/webhooks/mercadopago`
 - Activar notificaciones IPN (Instant Payment Notification)
 - Configurar URLs de retorno:
@@ -72,9 +83,11 @@ MERCADOPAGO_SANDBOX_ACCESS_TOKEN=
 ---
 
 ### 3. **Firebase (Autenticación)**
+
 **Costo**: Gratis para hasta 50,000 autenticaciones/mes
 
 **Pasos para crear el proyecto:**
+
 1. Ir a https://console.firebase.google.com
 2. Crear nuevo proyecto: "tifossi-production"
 3. Habilitar Authentication
@@ -84,6 +97,7 @@ MERCADOPAGO_SANDBOX_ACCESS_TOKEN=
    - Apple Sign-In (requiere cuenta de Apple Developer)
 
 **Agregar desarrolladores al proyecto:**
+
 1. En Firebase Console, ir a "Project Settings" → "Users and permissions"
 2. Click en "Add member"
 3. Ingresar el email del desarrollador
@@ -91,10 +105,12 @@ MERCADOPAGO_SANDBOX_ACCESS_TOKEN=
 5. El desarrollador recibirá una invitación por email
 
 **Archivos necesarios:**
+
 - `google-services.json` (para Android)
 - `GoogleService-Info.plist` (para iOS)
 
 **Credenciales del proyecto:**
+
 ```
 FIREBASE_API_KEY=
 FIREBASE_AUTH_DOMAIN=
@@ -108,14 +124,17 @@ FIREBASE_MEASUREMENT_ID=
 ---
 
 ### 4. **Cloudinary (Almacenamiento de Imágenes)**
+
 **Costo**: Gratis hasta 25GB de almacenamiento y 25GB de ancho de banda/mes
 
 **Pasos para crear la cuenta:**
+
 1. Registrarse en https://cloudinary.com
 2. Verificar email
 3. Obtener credenciales del dashboard
 
 **Agregar desarrolladores:**
+
 1. En el Dashboard de Cloudinary, ir a "Settings" → "Users"
 2. Click en "Invite users"
 3. Ingresar email del desarrollador
@@ -123,6 +142,7 @@ FIREBASE_MEASUREMENT_ID=
 5. El desarrollador recibirá invitación por email
 
 **Credenciales necesarias:**
+
 ```
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
@@ -151,14 +171,15 @@ CLOUDINARY_URL=
      - Pagos aprobados
      - Pagos rechazados
      - Pagos pendientes
-   
 3. **Credenciales Sandbox del vendedor:**
    - Access Token de prueba
    - Public Key de prueba
    - Se obtienen del panel usando el usuario VENDEDOR de prueba
 
 ### Firebase (Desarrollo)
+
 Proyecto: `tifossi-development`
+
 - Ya configurado en el código actual
 
 ---
@@ -186,6 +207,7 @@ Proyecto: `tifossi-development`
 Por favor, proporcione la siguiente información una vez creadas las cuentas:
 
 ### Credenciales Requeridas:
+
 - [ ] Acceso a Render.com (invitación al equipo enviada)
 - [ ] Credenciales de MercadoPago (público y privado)
 - [ ] Proyecto de Firebase creado con nombre "tifossi-production"
@@ -193,12 +215,14 @@ Por favor, proporcione la siguiente información una vez creadas las cuentas:
 - [ ] Dominio personalizado (si desea uno diferente a .onrender.com)
 
 ### Acceso para Desarrolladores:
+
 - [ ] Invitación enviada en Render.com al email del desarrollador
 - [ ] Invitación enviada en MercadoPago Developers al email del desarrollador
 - [ ] Invitación enviada en Firebase Console al email del desarrollador
 - [ ] Invitación enviada en Cloudinary al email del desarrollador
 
 ### Configuración Inicial:
+
 - [ ] Variables de entorno configuradas en Render
 - [ ] Webhook de MercadoPago configurado
 - [ ] Firebase Authentication habilitado
@@ -223,9 +247,11 @@ Por favor, proporcione la siguiente información una vez creadas las cuentas:
 ## Email del Desarrollador para Invitaciones
 
 Por favor, enviar las invitaciones de acceso a las plataformas al siguiente email:
+
 - **Email**: maxibove13@gmail.com
 
 Una vez recibidas las invitaciones, procederemos con:
+
 1. Configuración del backend en Render
 2. Setup de base de datos PostgreSQL
 3. Configuración de webhooks de MercadoPago

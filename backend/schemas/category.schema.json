@@ -20,7 +20,20 @@
       "type": "string",
       "description": "URL-friendly category identifier",
       "pattern": "^[a-z0-9-]+$",
-      "enum": ["todo", "medias", "bolsos", "mochilas", "remeras", "buzos", "gorros", "neceser", "canilleras", "accesorios", "chanclas", "pantalones"]
+      "enum": [
+        "todo",
+        "medias",
+        "bolsos",
+        "mochilas",
+        "remeras",
+        "buzos",
+        "gorros",
+        "neceser",
+        "canilleras",
+        "accesorios",
+        "chanclas",
+        "pantalones"
+      ]
     },
     "description": {
       "type": "string",

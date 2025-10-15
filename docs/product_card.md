@@ -5,6 +5,7 @@ This document specifies the implementation details for various product card comp
 ## Common Features
 
 All product card variants share these common characteristics:
+
 - Written in TypeScript with full type safety
 - Use React Native components
 - Follow consistent styling patterns
@@ -14,6 +15,7 @@ All product card variants share these common characteristics:
 ## Type System
 
 ### Core Types
+
 ```typescript
 type CardVariant = 'default' | 'featured' | 'horizontal' | 'minicard' | 'image-only';
 type CardSize = 'small' | 'large';
@@ -41,32 +43,34 @@ interface SizeableProductCardProps<T extends CardVariant> extends BaseProductCar
 const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensions>>> = {
   default: {
     small: { width: 132, height: 196, imageSize: 132 },
-    large: { width: 160, height: 272, imageSize: 160 }
+    large: { width: 160, height: 272, imageSize: 160 },
   },
   featured: {
     small: { width: 'full', height: 420, imageSize: 220 },
-    large: { width: 'full', height: 160, imageSize: 160 }
+    large: { width: 'full', height: 160, imageSize: 160 },
   },
   horizontal: {
-    large: { width: 'full', height: 142, imageSize: 119 }
+    large: { width: 'full', height: 142, imageSize: 119 },
   },
   minicard: {
-    large: { width: 128, height: 304, imageSize: 256 }
+    large: { width: 128, height: 304, imageSize: 256 },
   },
   'image-only': {
     small: { width: 132, height: 132, imageSize: 132 },
-    large: { width: 160, height: 264, imageSize: 160 }
-  }
+    large: { width: 160, height: 264, imageSize: 160 },
+  },
 } as const;
 ```
 
 ### Card Variants
 
 #### 1. Default Card
+
 **Variants**: Small (132x196), Large (160x272)  
 **Props**: `DefaultCardProps extends SizeableProductCardProps<'default'>`  
 **Implementation**: `/app/_components/store/product/default/small.tsx` and `/app/_components/store/product/default/large.tsx`  
 **Features**:
+
 - Product image (132x132 or 160x160)
 - New tag (optional)
 - Product name
@@ -76,10 +80,12 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 - Customizable indicator (large variant only)
 
 #### 1B. Promotion Card
+
 **Variants**: Uses a custom size  
 **Props**: `PromotionProductCardProps extends { product: Product, onPress?: () => void, style?: StyleProp<ViewStyle> }`  
 **Implementation**: `/app/_components/store/product/promotion/PromotionCard.tsx`  
 **Features**:
+
 - Product image (132x132)
 - New tag or discount label
 - Product name
@@ -89,10 +95,12 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 - Similar to DefaultCard but optimized for promotions
 
 #### 2. Featured Card
+
 **Variants**: Small (Full Width x 420), Large (Full Width x 160)  
 **Props**: `FeaturedCardProps extends SizeableProductCardProps<'featured'> & { onBuyPress?: () => void; }`  
 **Implementation**: `/app/_components/store/product/featured/FeaturedCard.tsx`  
 **Features**:
+
 - Dark gradient background (#373737 to #0C0C0C)
 - New tag (optional)
 - Product name
@@ -106,12 +114,14 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 - Dedicated buy and press handlers
 
 #### 3. Horizontal Card (HighlightedCard)
+
 **Variants**: Large only (Full Width x 142)  
 **Props**: `HorizontalCardProps extends BaseProductCardProps & { aspectRatio?: number }`  
 **Implementation**: `/app/_components/store/product/horizontal/HighlightedCard.tsx`  
 **Features**:
+
 - Horizontal layout
-- Fixed image width (119px)  
+- Fixed image width (119px)
 - Product details on right
 - Structured description with two text elements separated by divider
 - Support for shortDescription with line1 and line2 properties
@@ -119,26 +129,31 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 - Optional aspectRatio property for image sizing
 
 #### 4. Minicard
+
 **Variants**: Large only (128x304)  
 **Props**: `MinicardProps extends BaseProductCardProps`  
 **Implementation**: `/app/_components/store/product/minicard/index.tsx` and `/app/_components/store/product/minicard/large.tsx`  
 **Features**:
+
 - Tall image format (256px)
 - Minimal product info
 - Name and price only
 - Clean, focused design
 
 #### 5. Image Only Card
+
 **Variants**: Small (132x132), Large (160x264)  
 **Props**: `ImageOnlyCardProps extends SizeableProductCardProps<'image-only'>`  
 **Implementation**: `/app/_components/store/product/image/ImageOnlyCard.tsx`  
 **Features**:
+
 - Pure image display
 - Optional name display
 - Square or portrait format
 - No additional info
 
 ### Product Color Requirements
+
 All products must include a color property to ensure consistent presentation across the app. The Product interface enforces this with the following structure:
 
 ```typescript
@@ -153,18 +168,20 @@ colors: ProductColor[];
 ```
 
 Cart product cards additionally require a color string to be passed:
+
 ```typescript
 export interface CartProductCardProps extends BaseProductCardProps {
-  quantity: number
-  color: string  // Required
-  size?: string
-  onEdit?: () => void
+  quantity: number;
+  color: string; // Required
+  size?: string;
+  onEdit?: () => void;
 }
 ```
 
 ## Implementation Guidelines
 
 ### 1. Directory Structure
+
 ```
 app/_components/store/product/
 ├── types.ts                # Shared types
@@ -211,6 +228,7 @@ app/_components/store/product/
 ```
 
 ### 2. Styling Guidelines
+
 - Use `StyleSheet.create` for all styles
 - Follow spacing system:
   - xs: 4px
@@ -230,6 +248,7 @@ app/_components/store/product/
   - Border: #DCDCDC
 
 ### 3. Best Practices
+
 - Use memo for performance optimization
 - Handle loading states
 - Support accessibility
@@ -246,7 +265,7 @@ app/_components/store/product/
 import ProductCards from '../_components/store/product';
 
 // Default Card
-<ProductCards.Default 
+<ProductCards.Default
   product={product}
   size="large"
   onPress={() => {}}
@@ -255,7 +274,7 @@ import ProductCards from '../_components/store/product';
 // Alternative import approach
 import { Default as DefaultCard } from '../_components/store/product';
 
-<DefaultCard 
+<DefaultCard
   product={product}
   size="large"
   onPress={() => {}}
@@ -299,12 +318,14 @@ import { Default as DefaultCard } from '../_components/store/product';
 ```
 
 ### 5. Type Safety
+
 - Use proper type guards for validation:
+
 ```typescript
 // Located in: app/_types/product-card.ts (or similar utility location)
 
 export function isValidSize(size: unknown): size is CardSize {
-  return typeof size === 'string' && (size === 'small' || size === 'large')
+  return typeof size === 'string' && (size === 'small' || size === 'large');
 }
 
 export function isValidCardSize<T extends CardVariant>(
@@ -313,10 +334,12 @@ export function isValidCardSize<T extends CardVariant>(
 ): size is CardSizeByVariant<T> {
   // Assumes CARD_DIMENSIONS is accessible within this scope or imported
   // const internalCardDimensions = ...
-  return isValidSize(size) && size in internalCardDimensions[variant]
+  return isValidSize(size) && size in internalCardDimensions[variant];
 }
 ```
+
 - Use dimension helpers:
+
 ```typescript
 // Located in: app/_types/product-card.ts (or similar utility location)
 
@@ -327,7 +350,7 @@ export function getCardDimensions<T extends CardVariant>(
 ): CardDimensions {
   // Assumes CARD_DIMENSIONS is accessible within this scope or imported
   // const internalCardDimensions = ...
-  return internalCardDimensions[variant][size] as CardDimensions
+  return internalCardDimensions[variant][size] as CardDimensions;
 }
 
 // Example Usage:
@@ -336,11 +359,13 @@ import { getCardDimensions } from '../../_types/product-card';
 const defaultLargeDims = getCardDimensions('default', 'large');
 console.log(defaultLargeDims.width); // 160
 ```
+
 - Keep types in sync with implementation
 - Document type constraints
 - Use shared type utilities
 
 ### 6. Performance Considerations
+
 - Memoize components using React.memo
 - Optimize image loading with proper sizing
 - Handle large lists efficiently with FlatList
@@ -352,6 +377,7 @@ console.log(defaultLargeDims.width); // 160
 - Use optimized background components based on performance needs
 
 ### 7. Accessibility
+
 - Support screen readers with proper labels
 - Provide meaningful accessibility hints
 - Handle focus states for interactive elements

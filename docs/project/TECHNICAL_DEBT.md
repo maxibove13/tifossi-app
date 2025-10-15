@@ -1,17 +1,20 @@
 # Technical Debt Backlog
 
 ## Overview
+
 This document tracks technical debt items identified during code audits that require future attention.
 
 ## Deferred Items
 
 ### Agent 5: Overlay Component Refactoring
+
 **Priority**: Medium
 **Estimated Effort**: Small
 **Focus**: Eliminate duplication in 9 overlay components
 **Location**: `app/_components/store/product/overlay/**`
 
 **Current Issues**:
+
 - 9 overlay components with significant code duplication
 - Each component (~200-300 lines) repeats:
   - Modal animation logic
@@ -21,7 +24,9 @@ This document tracks technical debt items identified during code audits that req
   - Style definitions
 
 **Proposed Solution**:
+
 1. Create `BaseOverlay` component with common functionality:
+
    ```typescript
    interface BaseOverlayProps {
      visible: boolean;
@@ -49,12 +54,14 @@ This document tracks technical debt items identified during code audits that req
    - OverlayShippingSelection
 
 **Expected Benefits**:
+
 - Reduce code by ~40% (800-1000 lines)
 - Consistent behavior across all overlays
 - Easier maintenance and updates
 - Better testability
 
 **Files to Modify**:
+
 ```
 app/_components/store/product/overlay/
 ├── BaseOverlay.tsx (NEW)
@@ -70,6 +77,7 @@ app/_components/store/product/overlay/
 ```
 
 **Validation**:
+
 - All overlays should maintain current functionality
 - Visual appearance must remain identical
 - Gesture behaviors preserved
@@ -78,9 +86,11 @@ app/_components/store/product/overlay/
 ---
 
 ## Completed Items
+
 _Items will be moved here once resolved_
 
 ## Notes
+
 - Last audit: August 2025
 - Total estimated debt: Medium to Large effort required
 - Critical items being addressed in current sprint

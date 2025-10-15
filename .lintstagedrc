@@ -1,10 +1,4 @@
 {
-  "*.{ts,tsx}": [
-    "prettier --write",
-    "eslint --max-warnings 50",
-    "bash -c 'tsc --noEmit'"
-  ],
-  "**/__tests__/**/*.{ts,tsx}": [
-    "jest --ci --bail --findRelatedTests"
-  ]
+  "*.{ts,tsx}": ["prettier --write", "eslint --max-warnings 50", "bash -c 'tsc --noEmit'"],
+  "**/__tests__/**/*.{ts,tsx}": ["jest --ci --bail --findRelatedTests"]
 }

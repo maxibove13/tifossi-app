@@ -4,10 +4,10 @@ describe('Checkout Flow', () => {
   beforeEach(async () => {
     await device.launchApp({ newInstance: true });
     await testUtils.waitForApp();
-    
+
     // Login as test user
     await testUtils.loginTestUser();
-    
+
     // Add a product to cart for checkout
     await testUtils.addProductToCart('product-card-0');
   });
@@ -21,7 +21,7 @@ describe('Checkout Flow', () => {
       // Navigate to cart and start checkout
       await element(by.id('cart-tab')).tap();
       await element(by.id('checkout-button')).tap();
-      
+
       await waitFor(element(by.id('checkout-screen')))
         .toBeVisible()
         .withTimeout(5000);
@@ -38,10 +38,10 @@ describe('Checkout Flow', () => {
 
       // Verify address is selected
       await expect(element(by.id('selected-address-0'))).toBeVisible();
-      
+
       // Continue to next step
       await element(by.id('continue-to-payment')).tap();
-      
+
       await waitFor(element(by.id('payment-section')))
         .toBeVisible()
         .withTimeout(5000);
@@ -101,11 +101,11 @@ describe('Checkout Flow', () => {
       // Navigate to checkout and select address
       await element(by.id('cart-tab')).tap();
       await element(by.id('checkout-button')).tap();
-      
+
       await waitFor(element(by.id('shipping-address-section')))
         .toBeVisible()
         .withTimeout(5000);
-      
+
       await element(by.id('address-option-0')).tap();
       await element(by.id('continue-to-shipping')).tap();
     });
@@ -161,14 +161,14 @@ describe('Checkout Flow', () => {
       // Navigate through checkout steps to payment
       await element(by.id('cart-tab')).tap();
       await element(by.id('checkout-button')).tap();
-      
+
       // Select address
       await waitFor(element(by.id('shipping-address-section')))
         .toBeVisible()
         .withTimeout(5000);
       await element(by.id('address-option-0')).tap();
       await element(by.id('continue-to-shipping')).tap();
-      
+
       // Select shipping method
       await waitFor(element(by.id('shipping-method-section')))
         .toBeVisible()
@@ -241,33 +241,33 @@ describe('Checkout Flow', () => {
       // Complete all checkout steps to reach review
       await element(by.id('cart-tab')).tap();
       await element(by.id('checkout-button')).tap();
-      
+
       // Select address
       await waitFor(element(by.id('shipping-address-section')))
         .toBeVisible()
         .withTimeout(5000);
       await element(by.id('address-option-0')).tap();
       await element(by.id('continue-to-shipping')).tap();
-      
+
       // Select shipping
       await waitFor(element(by.id('shipping-method-section')))
         .toBeVisible()
         .withTimeout(5000);
       await element(by.id('shipping-standard')).tap();
       await element(by.id('continue-to-payment')).tap();
-      
+
       // Select payment
       await waitFor(element(by.id('payment-method-section')))
         .toBeVisible()
         .withTimeout(5000);
       await element(by.id('payment-credit-card')).tap();
-      
+
       // Fill payment form (using test card)
       await element(by.id('card-number')).typeText('4242424242424242');
       await element(by.id('card-expiry')).typeText('12/25');
       await element(by.id('card-cvc')).typeText('123');
       await element(by.id('card-name')).typeText('Test User');
-      
+
       await element(by.id('continue-to-review')).tap();
     });
 
@@ -326,7 +326,7 @@ describe('Checkout Flow', () => {
 
       // Mock payment failure by using declined test card
       await element(by.id('edit-payment-method')).tap();
-      
+
       await waitFor(element(by.id('credit-card-form')))
         .toBeVisible()
         .withTimeout(3000);
@@ -353,37 +353,37 @@ describe('Checkout Flow', () => {
       // Complete a successful order first
       await element(by.id('cart-tab')).tap();
       await element(by.id('checkout-button')).tap();
-      
+
       // Quick checkout flow
       await waitFor(element(by.id('shipping-address-section')))
         .toBeVisible()
         .withTimeout(5000);
       await element(by.id('address-option-0')).tap();
       await element(by.id('continue-to-shipping')).tap();
-      
+
       await waitFor(element(by.id('shipping-method-section')))
         .toBeVisible()
         .withTimeout(5000);
       await element(by.id('shipping-standard')).tap();
       await element(by.id('continue-to-payment')).tap();
-      
+
       await waitFor(element(by.id('payment-method-section')))
         .toBeVisible()
         .withTimeout(5000);
       await element(by.id('payment-credit-card')).tap();
-      
+
       await element(by.id('card-number')).typeText('4242424242424242');
       await element(by.id('card-expiry')).typeText('12/25');
       await element(by.id('card-cvc')).typeText('123');
       await element(by.id('card-name')).typeText('Test User');
-      
+
       await element(by.id('continue-to-review')).tap();
-      
+
       await waitFor(element(by.id('order-review-section')))
         .toBeVisible()
         .withTimeout(5000);
       await element(by.id('place-order-button')).tap();
-      
+
       await waitFor(element(by.id('order-success-screen')))
         .toBeVisible()
         .withTimeout(15000);

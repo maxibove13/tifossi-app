@@ -1,6 +1,6 @@
 /**
  * Example Integration Test for Tifossi Backend Migration
- * 
+ *
  * This file demonstrates how to use all the testing utilities together
  * for comprehensive backend integration testing. It serves as both
  * documentation and a working example of the testing infrastructure.
@@ -10,13 +10,12 @@ const { JestSetupHelpers, TestDataAssertions } = require('./jest-integration-set
 
 // Example 1: Simple Integration Test Suite
 JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () => {
-  
   describe('Authentication Service Integration', () => {
     test('should create and authenticate a user', async () => {
       // Create a new test user
       const userResult = await global.testHelpers.createTestUser({
         email: 'integration-test@tifossi.com',
-        displayName: 'Integration Test User'
+        displayName: 'Integration Test User',
       });
 
       // Validate user creation
@@ -43,16 +42,17 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
 
     test('should verify email verification flow', async () => {
       const userResult = await global.testHelpers.createTestUser({
-        email: 'verification-test@tifossi.com'
+        email: 'verification-test@tifossi.com',
       });
 
       // Send verification email
       await global.mockServices.firebase.sendEmailVerification(userResult.tokens.idToken);
 
       // Get the verification code (in real tests, this would come from email)
-      const verificationData = global.mockServices.firebase.verificationCodes
-        .get('verification-test@tifossi.com');
-      
+      const verificationData = global.mockServices.firebase.verificationCodes.get(
+        'verification-test@tifossi.com'
+      );
+
       expect(verificationData).toBeDefined();
       expect(verificationData.code).toMatch(/^\d{6}$/);
 
@@ -63,7 +63,9 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
       );
 
       // Verify user is now verified
-      const user = await global.mockServices.firebase.getUserByEmail('verification-test@tifossi.com');
+      const user = await global.mockServices.firebase.getUserByEmail(
+        'verification-test@tifossi.com'
+      );
       expect(user.emailVerified).toBe(true);
     });
   });
@@ -72,7 +74,7 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
     test('should process a successful payment', async () => {
       const payment = await global.testHelpers.createTestPayment({
         transaction_amount: 3500,
-        description: 'Integration Test Purchase'
+        description: 'Integration Test Purchase',
       });
 
       // Validate payment creation
@@ -98,7 +100,7 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
         security_code: '123',
         expiration_month: '12',
         expiration_year: '2025',
-        cardholder: { name: 'DECLINED USER' }
+        cardholder: { name: 'DECLINED USER' },
       });
 
       const payment = await global.mockServices.mercadopago.createPayment({
@@ -106,7 +108,7 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
         currency_id: 'UYU',
         payment_method_id: 'visa',
         token: cardToken.id,
-        description: 'Declined Payment Test'
+        description: 'Declined Payment Test',
       });
 
       // Wait for payment processing
@@ -123,7 +125,7 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
     test('should support payment refunds', async () => {
       // Create and process a successful payment
       const payment = await global.testHelpers.createTestPayment({
-        transaction_amount: 5000
+        transaction_amount: 5000,
       });
 
       await global.testHelpers.waitFor(async () => {
@@ -134,7 +136,7 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
       // Process full refund
       const refund = await global.mockServices.mercadopago.refundPayment(payment.id, {
         amount: 5000,
-        reason: 'customer_request'
+        reason: 'customer_request',
       });
 
       expect(refund.amount).toBe(5000);
@@ -152,7 +154,7 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
       // Step 1: Create and authenticate user
       const userResult = await global.testHelpers.createTestUser({
         email: 'complete-journey@tifossi.com',
-        displayName: 'Complete Journey User'
+        displayName: 'Complete Journey User',
       });
 
       // Step 2: Create an order
@@ -164,10 +166,10 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
             quantity: 2,
             price: 2500,
             size: 'L',
-            color: 'Negro'
-          }
+            color: 'Negro',
+          },
         ],
-        total: 5000
+        total: 5000,
       });
 
       TestDataAssertions.validateOrder(order);
@@ -177,7 +179,7 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
       const payment = await global.testHelpers.createTestPayment({
         transaction_amount: order.total,
         external_reference: order.id,
-        description: `Payment for order ${order.id}`
+        description: `Payment for order ${order.id}`,
       });
 
       // Step 4: Wait for payment completion
@@ -193,7 +195,9 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
       expect(finalPayment.status).toBe('approved');
 
       // Step 6: Verify user session is still valid
-      const decodedToken = await global.mockServices.firebase.verifyIdToken(userResult.tokens.idToken);
+      const decodedToken = await global.mockServices.firebase.verifyIdToken(
+        userResult.tokens.idToken
+      );
       expect(decodedToken.uid).toBe(userResult.user.uid);
     });
 
@@ -203,14 +207,16 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
         userId: null, // Guest order
         guestInfo: {
           email: 'guest@example.com',
-          name: 'Guest User'
+          name: 'Guest User',
         },
-        items: [{
-          productId: global.testData.products[1].id,
-          quantity: 1,
-          price: 1500
-        }],
-        total: 1500
+        items: [
+          {
+            productId: global.testData.products[1].id,
+            quantity: 1,
+            price: 1500,
+          },
+        ],
+        total: 1500,
       });
 
       // Step 2: Process payment
@@ -220,8 +226,8 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
         payer: {
           email: order.guestInfo.email,
           first_name: 'Guest',
-          last_name: 'User'
-        }
+          last_name: 'User',
+        },
       });
 
       // Step 3: Verify payment processing
@@ -240,10 +246,8 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
     test('should handle network errors gracefully', async () => {
       // Simulate network issues by increasing error rate
       global.mockServices.firebase.setErrorRate(1.0); // 100% error rate
-      
-      await expect(
-        global.testHelpers.createTestUser()
-      ).rejects.toThrow('Network error');
+
+      await expect(global.testHelpers.createTestUser()).rejects.toThrow('Network error');
 
       // Reset error rate
       global.mockServices.firebase.setErrorRate(0);
@@ -272,13 +276,13 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
       for (let i = 0; i < 5; i++) {
         userPromises.push(
           global.testHelpers.createTestUser({
-            email: `concurrent-user-${i}@tifossi.com`
+            email: `concurrent-user-${i}@tifossi.com`,
           })
         );
       }
 
       const users = await Promise.all(userPromises);
-      
+
       // Verify all users were created successfully
       expect(users).toHaveLength(5);
       users.forEach((userResult, index) => {
@@ -287,20 +291,20 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
       });
 
       // Create payments concurrently
-      const paymentPromises = users.map(userResult =>
+      const paymentPromises = users.map((userResult) =>
         global.testHelpers.createTestPayment({
           payer: {
             email: userResult.user.email,
-            first_name: userResult.user.displayName?.split(' ')[0] || 'Test'
-          }
+            first_name: userResult.user.displayName?.split(' ')[0] || 'Test',
+          },
         })
       );
 
       const payments = await Promise.all(paymentPromises);
-      
+
       // Verify all payments were created
       expect(payments).toHaveLength(5);
-      payments.forEach(payment => {
+      payments.forEach((payment) => {
         TestDataAssertions.validatePayment(payment);
       });
     });
@@ -319,7 +323,7 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
       // Verify metrics are being tracked
       expect(firebaseMetrics.requestCount).toBeGreaterThan(0);
       expect(firebaseMetrics.userCount).toBeGreaterThan(0);
-      
+
       expect(mercadopagoMetrics.requestCount).toBeGreaterThan(0);
       expect(mercadopagoMetrics.paymentCount).toBeGreaterThan(0);
     });
@@ -328,7 +332,7 @@ JestSetupHelpers.createTestSuite('Backend Integration Tests', 'integration', () 
       const status = global.testEnvironment?.getStatus() || {
         initialized: true,
         services: { firebase: true, mercadopago: true },
-        testData: { products: 0, users: 0, orders: 0 }
+        testData: { products: 0, users: 0, orders: 0 },
       };
 
       expect(status.initialized).toBe(true);
@@ -354,15 +358,17 @@ describe('E2E User Journey Tests', () => {
 
   test('should complete guest checkout journey', async () => {
     const e2eManager = global.testManagers.e2eManager;
-    const journeyHelper = e2eManager.userJourneyHelper || new (require('./e2e-test-utils').UserJourneyHelper)(e2eManager);
-    
+    const journeyHelper =
+      e2eManager.userJourneyHelper ||
+      new (require('./e2e-test-utils').UserJourneyHelper)(e2eManager);
+
     const sessionId = 'guest-checkout-test';
     await e2eManager.createTestSession(sessionId);
 
     const journey = await journeyHelper.guestCheckoutJourney(sessionId, {
       productId: global.testData.products[0]?.id,
       quantity: 1,
-      paymentMethod: 'visa'
+      paymentMethod: 'visa',
     });
 
     expect(journey.success).toBe(true);
@@ -374,20 +380,22 @@ describe('E2E User Journey Tests', () => {
 
   test('should complete authenticated user journey', async () => {
     const e2eManager = global.testManagers.e2eManager;
-    const journeyHelper = e2eManager.userJourneyHelper || new (require('./e2e-test-utils').UserJourneyHelper)(e2eManager);
-    
+    const journeyHelper =
+      e2eManager.userJourneyHelper ||
+      new (require('./e2e-test-utils').UserJourneyHelper)(e2eManager);
+
     const sessionId = 'auth-user-test';
     await e2eManager.createTestSession(sessionId);
 
     const journey = await journeyHelper.authenticatedUserJourney(sessionId, {
       userEmail: 'test@tifossi.com',
       useExistingUser: true,
-      addToFavorites: true
+      addToFavorites: true,
     });
 
     expect(journey.success).toBe(true);
-    expect(journey.steps.some(step => step.name === 'login_user')).toBe(true);
-    expect(journey.steps.some(step => step.name === 'add_to_favorites')).toBe(true);
+    expect(journey.steps.some((step) => step.name === 'login_user')).toBe(true);
+    expect(journey.steps.some((step) => step.name === 'add_to_favorites')).toBe(true);
 
     await e2eManager.cleanupTestSession(sessionId);
   });
@@ -410,10 +418,10 @@ describe('Performance Tests', () => {
   test('should handle concurrent user creations efficiently', async () => {
     const startTime = Date.now();
     const concurrentUsers = 20;
-    
+
     const promises = Array.from({ length: concurrentUsers }, (_, i) =>
       global.testHelpers.createTestUser({
-        email: `perf-test-user-${i}@tifossi.com`
+        email: `perf-test-user-${i}@tifossi.com`,
       })
     );
 
@@ -422,8 +430,8 @@ describe('Performance Tests', () => {
 
     expect(results).toHaveLength(concurrentUsers);
     expect(duration).toBeLessThan(5000); // Should complete within 5 seconds
-    
-    results.forEach(result => {
+
+    results.forEach((result) => {
       TestDataAssertions.validateUser(result.user);
     });
   });
@@ -431,11 +439,11 @@ describe('Performance Tests', () => {
   test('should handle burst payment processing', async () => {
     const startTime = Date.now();
     const concurrentPayments = 10;
-    
+
     const promises = Array.from({ length: concurrentPayments }, (_, i) =>
       global.testHelpers.createTestPayment({
         transaction_amount: 1000 + i * 100,
-        description: `Burst payment ${i}`
+        description: `Burst payment ${i}`,
       })
     );
 
@@ -444,17 +452,17 @@ describe('Performance Tests', () => {
 
     expect(payments).toHaveLength(concurrentPayments);
     expect(duration).toBeLessThan(10000); // Should complete within 10 seconds
-    
-    payments.forEach(payment => {
+
+    payments.forEach((payment) => {
       TestDataAssertions.validatePayment(payment);
     });
 
     // Wait for all payments to process
     await global.testHelpers.waitFor(async () => {
       const statusChecks = await Promise.all(
-        payments.map(p => global.mockServices.mercadopago.getPayment(p.id))
+        payments.map((p) => global.mockServices.mercadopago.getPayment(p.id))
       );
-      return statusChecks.every(payment => payment.status !== 'pending');
+      return statusChecks.every((payment) => payment.status !== 'pending');
     }, 15000);
   });
 });
@@ -464,10 +472,10 @@ describe('Test Data Validation', () => {
   test('should generate valid product data', () => {
     expect(global.testData.products).toBeDefined();
     expect(global.testData.products.length).toBeGreaterThan(0);
-    
-    global.testData.products.forEach(product => {
+
+    global.testData.products.forEach((product) => {
       TestDataAssertions.validateProduct(product);
-      
+
       // Additional product-specific validations
       expect(product.statuses).toBeInstanceOf(Array);
       expect(product.colors).toBeInstanceOf(Array);
@@ -481,15 +489,15 @@ describe('Test Data Validation', () => {
   test('should generate valid user data', () => {
     expect(global.testData.users).toBeDefined();
     expect(global.testData.users.length).toBeGreaterThan(0);
-    
-    global.testData.users.forEach(user => {
+
+    global.testData.users.forEach((user) => {
       TestDataAssertions.validateUser(user);
-      
+
       // Additional user-specific validations
       expect(user.preferences).toBeDefined();
       expect(user.addresses).toBeInstanceOf(Array);
       if (user.addresses.length > 0) {
-        user.addresses.forEach(address => {
+        user.addresses.forEach((address) => {
           expect(address.street).toBeDefined();
           expect(address.city).toBeDefined();
           expect(address.country).toBeDefined();
@@ -501,15 +509,17 @@ describe('Test Data Validation', () => {
   test('should generate valid order data', () => {
     expect(global.testData.orders).toBeDefined();
     expect(global.testData.orders.length).toBeGreaterThan(0);
-    
-    global.testData.orders.forEach(order => {
+
+    global.testData.orders.forEach((order) => {
       TestDataAssertions.validateOrder(order);
-      
+
       // Additional order-specific validations
-      expect(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']).toContain(order.status);
+      expect(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']).toContain(
+        order.status
+      );
       expect(order.currency).toBe('UYU');
-      
-      order.items.forEach(item => {
+
+      order.items.forEach((item) => {
         expect(item.productId).toBeDefined();
         expect(item.quantity).toBeGreaterThan(0);
         expect(item.price).toBeGreaterThan(0);
@@ -527,5 +537,5 @@ module.exports = {
     const environment = new JestTestEnvironment();
     await environment.initialize(TestProfiles[profile]);
     return environment;
-  }
+  },
 };

@@ -50,11 +50,13 @@ This guide will help you obtain and configure MercadoPago credentials for testin
 3. Add your webhook URLs:
 
    **For Testing (Local Development with ngrok):**
+
    ```
    https://your-ngrok-url.ngrok.io/webhooks/mercadopago
    ```
 
    **For Production:**
+
    ```
    https://api.tifossi.com.uy/webhooks/mercadopago
    ```
@@ -184,16 +186,16 @@ Use these cards with specific cardholder names to trigger different outcomes:
 
 ### Credit Cards
 
-| Card Type | Number | CVV | Expiry |
-|-----------|--------|-----|--------|
-| Mastercard | 5031 7557 3453 0604 | 123 | 11/30 |
-| Visa | 4509 9535 6623 3704 | 123 | 11/30 |
+| Card Type  | Number              | CVV | Expiry |
+| ---------- | ------------------- | --- | ------ |
+| Mastercard | 5031 7557 3453 0604 | 123 | 11/30  |
+| Visa       | 4509 9535 6623 3704 | 123 | 11/30  |
 
 ### Debit Card
 
-| Card Type | Number | CVV | Expiry |
-|-----------|--------|-----|--------|
-| Visa Debit | 4213 0163 1470 6756 | 123 | 11/30 |
+| Card Type  | Number              | CVV | Expiry |
+| ---------- | ------------------- | --- | ------ |
+| Visa Debit | 4213 0163 1470 6756 | 123 | 11/30  |
 
 ### Cardholder Names (Control Payment Outcome)
 

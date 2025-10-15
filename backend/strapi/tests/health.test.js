@@ -17,9 +17,7 @@ describe('Health Endpoints', () => {
 
   describe('GET /api/health', () => {
     it('should return basic health status', async () => {
-      const response = await request(strapi.server.httpServer)
-        .get('/api/health')
-        .expect(200);
+      const response = await request(strapi.server.httpServer).get('/api/health').expect(200);
 
       expect(response.body).toHaveProperty('status', 'ok');
       expect(response.body).toHaveProperty('timestamp');

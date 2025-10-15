@@ -10,6 +10,7 @@ The application uses a two-layer state management architecture:
 2. **Client State:** Data relevant to the current user session and device (cart, favorites, authentication), implemented with **Zustand**.
 
 Key implementation patterns:
+
 - Optimistic updates with error rollback
 - Local persistence via MMKV storage
 - Secure token storage with expo-secure-store
@@ -30,9 +31,10 @@ Key implementation patterns:
 ## 3. Client State Management (Zustand)
 
 ### 3.1 Implementation Overview
+
 - **Library:** `zustand` with `persist` middleware
 - **Store Location:** `app/_stores/` directory
-- **Current Stores:** 
+- **Current Stores:**
   - `cartStore.ts`: Shopping cart management
   - `favoritesStore.ts`: Product favorites management
   - `authStore.ts`: Authentication state
@@ -40,6 +42,7 @@ Key implementation patterns:
 ### 3.2 Store Implementations
 
 #### Cart Store (`cartStore.ts`)
+
 - **Persistence:** MMKV storage with custom ID
 - **Key Features:**
   - Optimistic updates with error rollback
@@ -48,6 +51,7 @@ Key implementation patterns:
   - Server synchronization support
 
 #### Favorites Store (`favoritesStore.ts`)
+
 - **Persistence:** MMKV storage with custom ID
 - **Key Features:**
   - Simple productId tracking
@@ -56,6 +60,7 @@ Key implementation patterns:
   - Server synchronization support
 
 #### Auth Store (`authStore.ts`)
+
 - **Persistence:** SecureStore for token storage
 - **Key Features:**
   - Token-based authentication
@@ -67,23 +72,24 @@ Key implementation patterns:
   - Triggers cart/favorites sync after login
   - Development toggle for testing authenticated state
 
-## 4. Search Implementation 
+## 4. Search Implementation
 
 **Current Implementation:** Basic filtering via `useSearch` hook in `hooks/useSearch.ts`
+
 - Implements client-side filtering of product data
 - Supports text search with case insensitivity
 - Future plan: Replace with Fuse.js or server-side search when needed
 
 ## 5. Current Data Flow
 
-| Feature             | State Management  | Persistence            | Implementation Notes                                                   |
-| :------------------ | :---------------- | :--------------------- | :--------------------------------------------------------------------- |
-| Product Catalogue   | Local Data        | None (static data)     | Imported from `app/_data/products.ts`                                  |
-| Search / Filtering  | Local React State | None                   | Client-side filtering via `useSearch` and `useProductFilters` hooks    |
-| Shopping Cart       | Zustand           | MMKV                   | Optimistic updates with `useCartStore`, sync with mockApi              |
-| Favorites           | Zustand           | MMKV                   | Optimistic updates with `useFavoritesStore`, sync with mockApi         |
-| Auth Tokens         | Zustand           | SecureStore            | Managed by `useAuthStore`, sync triggers other stores                  |
-| UI Interactions     | Local React State | None                   | Component-local state using useState/useReducer                        |
+| Feature            | State Management  | Persistence        | Implementation Notes                                                |
+| :----------------- | :---------------- | :----------------- | :------------------------------------------------------------------ |
+| Product Catalogue  | Local Data        | None (static data) | Imported from `app/_data/products.ts`                               |
+| Search / Filtering | Local React State | None               | Client-side filtering via `useSearch` and `useProductFilters` hooks |
+| Shopping Cart      | Zustand           | MMKV               | Optimistic updates with `useCartStore`, sync with mockApi           |
+| Favorites          | Zustand           | MMKV               | Optimistic updates with `useFavoritesStore`, sync with mockApi      |
+| Auth Tokens        | Zustand           | SecureStore        | Managed by `useAuthStore`, sync triggers other stores               |
+| UI Interactions    | Local React State | None               | Component-local state using useState/useReducer                     |
 
 ## 6. Current Project Structure
 
@@ -109,6 +115,7 @@ hooks/                     # Custom hooks for state access
 ## 7. TypeScript Type System
 
 Key types currently implemented:
+
 - `Product`: Full product model in `app/_types/product.ts`
 - `CartItem`: Cart item interface in `app/_services/api/mockApi.ts`
 - `User`: User model in `app/_services/api/mockApi.ts`
@@ -121,7 +128,7 @@ Key types currently implemented:
 - ✅ Cart state with MMKV persistence
 - ✅ Cart item variant management (size, color)
 - ✅ Cart operations (add, update, remove)
-- ✅ Favorites state with MMKV persistence 
+- ✅ Favorites state with MMKV persistence
 - ✅ Authentication state with SecureStore token storage
 - ✅ Auth session restoration
 - ✅ Cross-store coordination (auth triggers other stores)

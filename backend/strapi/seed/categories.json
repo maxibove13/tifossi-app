@@ -18,7 +18,7 @@
   },
   {
     "name": "Descuentos",
-    "slug": "sale", 
+    "slug": "sale",
     "displayOrder": 2,
     "description": "Productos en oferta",
     "isActive": true,
