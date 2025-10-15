@@ -1,6 +1,6 @@
 export default ({ env }: { env: any }) => {
   const nodeEnv = env('NODE_ENV', 'development');
-  const isDevelopment = nodeEnv === 'development';
+  const isDevelopment = nodeEnv === 'development' || nodeEnv === 'test';
 
   const resolveSecret = (name: string, devFallback: string) => {
     const value = env(name);
