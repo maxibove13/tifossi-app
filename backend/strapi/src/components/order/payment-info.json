@@ -1,54 +1,35 @@
 {
   "collectionName": "components_order_payment_infos",
+  "category": "order",
   "info": {
-    "displayName": "Payment Information",
-    "description": "Payment details and transaction data"
+    "displayName": "Payment Info",
+    "description": "Payment details and metadata for orders"
   },
   "options": {},
   "attributes": {
-    "method": {
-      "type": "enumeration",
-      "enum": ["mercadopago", "cash_on_delivery", "bank_transfer"],
+    "provider": {
+      "type": "string",
       "required": true
     },
-    "status": {
-      "type": "enumeration",
-      "enum": ["pending", "approved", "rejected", "cancelled", "refunded"],
-      "default": "pending"
-    },
     "transactionId": {
-      "type": "string"
-    },
-    "externalReference": {
-      "type": "string"
-    },
-    "amount": {
-      "type": "decimal",
-      "required": true,
-      "min": 0
-    },
-    "currency": {
-      "type": "enumeration",
-      "enum": ["UYU", "USD"],
-      "default": "UYU"
-    },
-    "paidAt": {
-      "type": "datetime"
-    },
-    "installments": {
-      "type": "integer",
-      "default": 1,
-      "min": 1
-    },
-    "paymentTypeId": {
-      "type": "string"
-    },
-    "issuerId": {
-      "type": "string"
-    },
-    "lastFourDigits": {
       "type": "string",
-      "maxLength": 4
+      "required": false
+    },
+    "receiptUrl": {
+      "type": "string",
+      "required": false
+    },
+    "status": {
+      "type": "string",
+      "required": false
+    },
+    "timestamp": {
+      "type": "datetime",
+      "required": false
+    },
+    "rawData": {
+      "type": "json",
+      "required": false
     }
   }
 }

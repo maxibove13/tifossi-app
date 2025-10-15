@@ -25,8 +25,7 @@
     "user": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "orders"
+      "target": "plugin::users-permissions.user"
     },
     "guestEmail": {
       "type": "email"

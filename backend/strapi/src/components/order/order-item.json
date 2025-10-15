@@ -1,5 +1,6 @@
 {
   "collectionName": "components_order_order_items",
+  "category": "order",
   "info": {
     "displayName": "Order Item",
     "description": "Individual item within an order"

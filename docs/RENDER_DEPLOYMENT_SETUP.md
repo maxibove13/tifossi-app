@@ -88,6 +88,85 @@ Use this Node.js command to generate secure random keys:
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
+## Pre-Deployment Validation
+
+Before deploying to Render, validate your Strapi build locally to catch issues early.
+
+### Local Build Verification
+
+```bash
+cd backend/strapi
+
+# 1. Clean previous builds
+rm -rf dist/ build/ .cache/
+
+# 2. Install dependencies
+npm ci
+
+# 3. Build with production settings (Strapi v5)
+NODE_ENV=production npm run build
+
+# 4. Verify content-types compiled to dist/
+ls -la dist/api/*/content-types/*/index.js
+
+# 5. Verify components compiled to dist/
+ls -la dist/components/*/*
+
+# 6. Check for any compilation errors
+echo $?  # Should be 0 for success
+```
+
+### Strapi v5 Requirements Checklist
+
+Before deploying, ensure:
+
+- [ ] All content-types have both `schema.json` AND `index.ts` files
+- [ ] All components have both `.json` AND `.ts` export files
+- [ ] Components use flat structure (not nested in subdirectories)
+- [ ] Build completes successfully with `npm run build`
+- [ ] `dist/` folder contains compiled content-types and components
+- [ ] All environment variables are configured in Render dashboard
+
+### Check for Missing TypeScript Files
+
+Run this script to find missing `index.ts` files:
+
+```bash
+# Check for content-types missing index.ts
+find backend/strapi/src/api -name "schema.json" -not -path "*/node_modules/*" | while read schema; do
+  dir=$(dirname "$schema")
+  if [ ! -f "$dir/index.ts" ]; then
+    echo "⚠️  Missing index.ts in: $dir"
+  fi
+done
+
+# Check for components missing .ts files
+find backend/strapi/src/components -name "*.json" -not -path "*/node_modules/*" | while read comp; do
+  ts_file="${comp%.json}.ts"
+  if [ ! -f "$ts_file" ]; then
+    echo "⚠️  Missing .ts file for: $comp"
+  fi
+done
+```
+
+If any files are missing, create them with this format:
+
+```typescript
+// For content-types (index.ts)
+import schema from './schema.json';
+
+export default {
+  schema,
+};
+
+// For components ({name}.ts)
+import schema from './{name}.json';
+
+export default {
+  schema,
+};
+```
+
 ## Deployment Steps
 
 ### 1. Deploy Backend to Render
@@ -174,6 +253,60 @@ npx expo start --clear
    - Clear Expo cache: `npx expo start --clear`
    - Verify variables are prefixed with `EXPO_PUBLIC_`
    - Check if build includes the variables
+
+### Strapi v5 Specific Issues
+
+5. **"Content type not found" errors in production**
+   - **Symptom**: API endpoints return 404 or content type errors after deployment
+   - **Cause**: Missing `index.ts` file in content-type directory
+   - **Solution**:
+     ```bash
+     # Check locally first
+     npm run build
+     ls -la dist/api/*/content-types/*/index.js
+
+     # If missing, add index.ts to the content-type folder:
+     # backend/strapi/src/api/{api}/content-types/{type}/index.ts
+     ```
+   - See "Pre-Deployment Validation" section above for details
+
+6. **Build fails on Render with TypeScript errors**
+   - **Symptom**: Build process fails during `npm run build`
+   - **Cause**: Missing TypeScript export files or compilation errors
+   - **Solution**:
+     1. Run `npm run build` locally to see the exact error
+     2. Verify all content-types have `index.ts` files
+     3. Verify all components have `.ts` export files
+     4. Check for TypeScript syntax errors in your code
+     5. Ensure `TRANSFER_TOKEN_SALT` is set in Render environment variables
+
+7. **"Metadata for component not found" during startup**
+   - **Symptom**: Strapi fails to start with component metadata errors
+   - **Cause**: Component structure issues (nested folders or missing `.ts` files)
+   - **Solution**:
+     - Use flat structure: `src/components/{category}/{name}.json` ✓
+     - NOT nested: `src/components/{category}/{name}/schema.json` ✗
+     - Ensure every `.json` component has a matching `.ts` file
+     - Rebuild and verify: `npm run build && ls -la dist/components/*/*`
+
+8. **Plugin controller "handler not found" errors**
+   - **Symptom**: Routes exist but return handler not found
+   - **Cause**: Controller not registered in plugin extension file
+   - **Solution**: Check `src/extensions/{plugin}/strapi-server.ts` registers the controller:
+     ```typescript
+     plugin.controllers = {
+       ...plugin.controllers,
+       controllerName: controllerFunction({ strapi }),
+     };
+     ```
+
+9. **Policy not found errors**
+   - **Symptom**: Routes fail with "Policy global::policy-name not found"
+   - **Cause**: Policy file missing or incorrect reference
+   - **Solution**:
+     - Ensure policy is in `src/policies/{policy-name}.ts`
+     - Reference as `global::policy-name` in routes (not just `policy-name`)
+     - Verify policy export format matches Strapi v5 requirements
 
 ## Monitoring
 

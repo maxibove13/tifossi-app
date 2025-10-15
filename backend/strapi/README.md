@@ -1,6 +1,6 @@
 # Tifossi Strapi Backend
 
-A production-ready Strapi v4 backend for the Tifossi e-commerce mobile application, built with PostgreSQL, MercadoPago payment integration, and cloud media storage.
+A production-ready Strapi v5 backend for the Tifossi e-commerce mobile application, built with PostgreSQL, MercadoPago payment integration, and cloud media storage.
 
 ## 🚀 Features
 
@@ -155,6 +155,70 @@ src/
 - **Order Components**: Order items
 - **Store Components**: Operating hours
 
+### ⚠️ CRITICAL: Strapi v5 File Structure Requirements
+
+**Every content-type and component MUST have TypeScript export files** for compilation to work correctly.
+
+#### Content-Type Structure (REQUIRED)
+
+Each content-type MUST have BOTH `schema.json` AND `index.ts`:
+
+```
+src/api/{api-name}/content-types/{type-name}/
+├── schema.json          # Schema definition
+└── index.ts            # TypeScript export (REQUIRED for v5)
+```
+
+**index.ts format**:
+```typescript
+import schema from './schema.json';
+
+export default {
+  schema,
+};
+```
+
+**Why this matters**: Without the `index.ts` file, TypeScript will not compile the content-type to the `dist/` folder, causing **deployment failures** with errors like "Content type not found" or 404 errors on API endpoints.
+
+#### Component Structure (REQUIRED)
+
+Each component MUST have BOTH `.json` AND `.ts` files in a **FLAT** structure:
+
+```
+src/components/{category}/{component-name}.json    # Schema
+src/components/{category}/{component-name}.ts      # TypeScript export (REQUIRED for v5)
+```
+
+**component.ts format**:
+```typescript
+import schema from './{component-name}.json';
+
+export default {
+  schema,
+};
+```
+
+**Do NOT nest** components in subdirectories like `{component-name}/schema.json` - this is not supported in Strapi v5.
+
+#### Validation
+
+To verify your setup is correct:
+
+```bash
+# Build the project
+npm run build
+
+# Verify content-types compiled to dist/
+ls -la dist/api/*/content-types/*/index.js
+
+# Verify components compiled to dist/
+ls -la dist/components/*/*
+
+# All content-types and components should have compiled .js files
+```
+
+If any content-types or components are missing from `dist/`, check that their `index.ts` or `.ts` files exist and follow the correct format.
+
 ### API Endpoints
 
 #### Products
@@ -227,6 +291,109 @@ npm run build
 # Start production server
 NODE_ENV=production npm run start
 ```
+
+### 🚨 Common Deployment Issues & Solutions
+
+#### Issue 1: "Content type not found" in production
+
+**Symptom**: API endpoints return 404 or "Content type not found" errors after deployment
+
+**Cause**: Missing `index.ts` file in content-type directory (Strapi v5 requirement)
+
+**Solution**:
+1. Check that every content-type has `index.ts` alongside `schema.json`:
+   ```bash
+   find src/api -name "schema.json" | while read schema; do
+     dir=$(dirname "$schema")
+     if [ ! -f "$dir/index.ts" ]; then
+       echo "Missing index.ts in: $dir"
+     fi
+   done
+   ```
+
+2. Create the missing `index.ts` file:
+   ```typescript
+   import schema from './schema.json';
+
+   export default {
+     schema,
+   };
+   ```
+
+3. Rebuild and verify compilation:
+   ```bash
+   npm run build
+   ls -la dist/api/*/content-types/*/index.js
+   ```
+
+#### Issue 2: "Policy not found" errors
+
+**Symptom**: API routes fail with "Policy global::policy-name not found"
+
+**Cause**: Policy file missing or incorrectly located
+
+**Solution**:
+1. Ensure policy files are in `src/policies/{policy-name}.ts`
+2. Reference policies in routes as `global::policy-name` (not just `policy-name`)
+3. Verify policy export format:
+   ```typescript
+   export default (policyContext, config, { strapi }) => {
+     return !!policyContext.state.user;
+   };
+   ```
+
+#### Issue 3: Plugin controller not registered
+
+**Symptom**: Routes exist but handler not found (e.g., "Handler not found 'controller.action'")
+
+**Cause**: Controller not registered in plugin extension file
+
+**Solution**: In plugin extension file (`src/extensions/{plugin}/strapi-server.ts`):
+```typescript
+import customController from './controllers/custom';
+
+export default (plugin: Plugin) => {
+  // Add controller to plugin object
+  plugin.controllers = {
+    ...plugin.controllers,
+    custom: customController({ strapi }),
+  };
+
+  return plugin;
+};
+```
+
+#### Issue 4: Build fails on Render
+
+**Symptom**: Build process fails during `npm run build`
+
+**Solution**:
+1. Run `npm run build` locally first to identify issues
+2. Check build logs for specific TypeScript errors
+3. Verify all content-types have `index.ts` files
+4. Ensure environment variables are set in Render dashboard (especially `TRANSFER_TOKEN_SALT`)
+
+#### Issue 5: Component metadata errors
+
+**Symptom**: "Metadata for component not found" during Strapi startup
+
+**Cause**: Component missing TypeScript export file or nested in subdirectory
+
+**Solution**:
+1. Ensure components use FLAT structure:
+   ```
+   src/components/{category}/{component-name}.json  ✓ Correct
+   src/components/{category}/{component-name}/schema.json  ✗ Wrong
+   ```
+
+2. Create `.ts` export for each component:
+   ```typescript
+   import schema from './{component-name}.json';
+
+   export default {
+     schema,
+   };
+   ```
 
 ## 🧪 Testing
 
@@ -420,6 +587,11 @@ For support and questions:
 - **v1.1.0** - MercadoPago integration
 - **v1.2.0** - Enhanced user profiles and order management
 - **v1.3.0** - Production deployment and monitoring
+- **v2.0.0** - Strapi v5 migration with TypeScript-first architecture
+  - Added required `index.ts` files to all content-types and components
+  - Implemented proper plugin extension pattern for Firebase authentication
+  - Enhanced CI/CD pipeline with build validation
+  - Improved error handling and documentation
 
 ---
 
