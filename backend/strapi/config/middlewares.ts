@@ -74,17 +74,6 @@ export default ({ env }: { env: any }) => {
         },
       },
     },
-    {
-      name: 'strapi::session',
-      config: {
-        key: 'strapi.sid',
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: env.bool('IS_PROXIED', false),
-        secureProxy: env.bool('IS_PROXIED', false),
-        maxAge: 86400000, // 24 hours
-      },
-    },
   ];
 
   if (fs.existsSync(faviconPath)) {
@@ -94,8 +83,6 @@ export default ({ env }: { env: any }) => {
         path: faviconPath,
       },
     });
-  } else {
-    middlewares.push('strapi::favicon');
   }
 
   middlewares.push('strapi::public');
