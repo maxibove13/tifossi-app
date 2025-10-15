@@ -28,7 +28,7 @@ export default ({ env }: { env: any }) => {
       populateRelations: env.bool('WEBHOOKS_POPULATE_RELATIONS', false),
     },
     url: env('PUBLIC_URL', `http://${env('HOST', '0.0.0.0')}:${env.int('PORT', 1337)}`),
-    proxy: env.bool('IS_PROXIED', false),
+    proxy: env.bool('IS_PROXIED', nodeEnv === 'production'),
     cron: {
       enabled: env.bool('CRON_ENABLED', true),
     },
