@@ -82,6 +82,14 @@ Based on **FUNCIONALIDADES_APP_TIFOSSI.md** and **COSTOS_OPERATIVOS_URUGUAY_2025
 - **Cloudinary**: ✅ Setup documented, credentials ready to configure via GitHub Secrets
 - **MercadoPago**: ✅ Endpoints integrated in Strapi, awaiting credentials
 
+### Recently Resolved Issues
+- **Favicon Path Resolution**: ✅ FIXED (2025-10-15)
+  - **Problem**: 500 errors on /favicon.ico requests in production
+  - **Root Cause**: `__dirname` path resolution breaks in TypeScript compiled builds
+  - **Solution**: Use `process.cwd() + env('PUBLIC_DIR')` for robust path resolution
+  - **Impact**: Eliminates 500 errors, ensures favicon works in all environments
+  - **Commits**: 7f7fc61, a08db52, 96f3f21
+
 ## 📈 Feature Implementation Status (GOAL vs REALITY)
 
 ### ✅ Working Features (80-90% Complete)

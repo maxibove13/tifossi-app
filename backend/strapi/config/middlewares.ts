@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 
-const faviconPath = path.resolve(__dirname, '../public/favicon.ico');
-
 export default ({ env }: { env: any }) => {
+  const publicDir = env('PUBLIC_DIR', './public');
+  const faviconPath = path.resolve(process.cwd(), publicDir, 'favicon.ico');
   const middlewares: any[] = [
     'global::health-check',
     'global::trust-proxy',

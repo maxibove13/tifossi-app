@@ -254,9 +254,16 @@ npx expo start --clear
    - Verify variables are prefixed with `EXPO_PUBLIC_`
    - Check if build includes the variables
 
+5. **Favicon 500 Errors**
+   - **Symptom**: `/favicon.ico` requests return 500 errors
+   - **Check**: Verify favicon.ico exists in `backend/strapi/public/`
+   - **Verify**: Path resolution uses `process.cwd()` not `__dirname`
+   - **Note**: This is critical for TypeScript projects where code compiles to `dist/`
+   - **Optional**: Set `PUBLIC_DIR` environment variable for custom paths
+
 ### Strapi v5 Specific Issues
 
-5. **"Content type not found" errors in production**
+6. **"Content type not found" errors in production**
    - **Symptom**: API endpoints return 404 or content type errors after deployment
    - **Cause**: Missing `index.ts` file in content-type directory
    - **Solution**:
@@ -270,7 +277,7 @@ npx expo start --clear
      ```
    - See "Pre-Deployment Validation" section above for details
 
-6. **Build fails on Render with TypeScript errors**
+7. **Build fails on Render with TypeScript errors**
    - **Symptom**: Build process fails during `npm run build`
    - **Cause**: Missing TypeScript export files or compilation errors
    - **Solution**:
@@ -280,7 +287,7 @@ npx expo start --clear
      4. Check for TypeScript syntax errors in your code
      5. Ensure `TRANSFER_TOKEN_SALT` is set in Render environment variables
 
-7. **"Metadata for component not found" during startup**
+8. **"Metadata for component not found" during startup**
    - **Symptom**: Strapi fails to start with component metadata errors
    - **Cause**: Component structure issues (nested folders or missing `.ts` files)
    - **Solution**:
@@ -289,7 +296,7 @@ npx expo start --clear
      - Ensure every `.json` component has a matching `.ts` file
      - Rebuild and verify: `npm run build && ls -la dist/components/*/*`
 
-8. **Plugin controller "handler not found" errors**
+9. **Plugin controller "handler not found" errors**
    - **Symptom**: Routes exist but return handler not found
    - **Cause**: Controller not registered in plugin extension file
    - **Solution**: Check `src/extensions/{plugin}/strapi-server.ts` registers the controller:
@@ -300,7 +307,7 @@ npx expo start --clear
      };
      ```
 
-9. **Policy not found errors**
+10. **Policy not found errors**
    - **Symptom**: Routes fail with "Policy global::policy-name not found"
    - **Cause**: Policy file missing or incorrect reference
    - **Solution**:

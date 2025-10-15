@@ -300,6 +300,47 @@ These are the key environment variables tested by these tools:
 
 ---
 
+### Issue: Favicon 500 errors in production
+
+**Cause**: Path resolution using `__dirname` breaks in TypeScript compiled builds.
+
+**Test with**:
+```bash
+# Build and check if middleware can find favicon
+npm run build
+cd dist/config
+node -e "console.log(__dirname)"  # Shows dist/config, not project root
+```
+
+**Solution**:
+Use `process.cwd()` for path resolution in middleware configuration:
+
+```typescript
+export default ({ env }: { env: any }) => {
+  const publicDir = env('PUBLIC_DIR', './public');
+  const faviconPath = path.resolve(process.cwd(), publicDir, 'favicon.ico');
+  // ... rest of middleware config
+};
+```
+
+**Why this works**:
+- `process.cwd()` always returns the project root directory
+- Works correctly in both dev (ts-node) and production (compiled JS)
+- Allows configuration via `PUBLIC_DIR` environment variable
+- Eliminates path resolution issues in compiled TypeScript projects
+
+**Verify**:
+```bash
+# Check favicon exists
+ls -la backend/strapi/public/favicon.ico
+
+# Test locally with production build
+NODE_ENV=production npm run build && npm run start
+curl http://localhost:1337/favicon.ico  # Should return 200, not 500
+```
+
+---
+
 ## Files Created
 
 ```
