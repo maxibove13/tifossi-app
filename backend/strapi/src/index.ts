@@ -19,6 +19,12 @@ export default {
 
     strapi.log.info('Tifossi Strapi Backend is starting up...');
 
+    const proxyEnabled = strapi.config.get('server.proxy', false);
+    strapi.log.debug(
+      `Reverse proxy trusted: ${proxyEnabled} (IS_PROXIED=${process.env.IS_PROXIED ?? 'undefined'})`
+    );
+    strapi.log.debug(`Resolved PUBLIC_URL: ${strapi.config.get('server.url')}`);
+
     // Initialize default data if needed
     await initializeDefaultData(strapi);
 
