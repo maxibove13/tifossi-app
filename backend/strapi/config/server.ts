@@ -1,7 +1,7 @@
 export default ({ env }: { env: any }) => {
   const nodeEnv = env('NODE_ENV', 'development');
   const configuredAppKeys = env.array('APP_KEYS');
-  const isDevelopment = nodeEnv === 'development';
+  const isDevelopment = nodeEnv === 'development' || nodeEnv === 'test';
 
   const hasConfiguredKeys = Array.isArray(configuredAppKeys) && configuredAppKeys.length > 0;
   const usesPlaceholderKeys = hasConfiguredKeys
