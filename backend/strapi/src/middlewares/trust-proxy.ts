@@ -33,6 +33,13 @@ export default (_config: unknown, { strapi }: { strapi: any }) => {
         if (ctx.req?.headers) {
           ctx.req.headers['x-forwarded-proto'] = headerValue;
         }
+
+        if (ctx.req) {
+          ctx.req.protocol = headerValue;
+          if (ctx.req.socket) {
+            ctx.req.socket.encrypted = true;
+          }
+        }
       }
     }
 
