@@ -94,6 +94,8 @@ export default ({ env }: { env: any }) => {
         path: faviconPath,
       },
     });
+  } else {
+    middlewares.push('strapi::favicon');
   }
 
   middlewares.push('strapi::public');
