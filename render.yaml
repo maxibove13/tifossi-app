@@ -75,6 +75,10 @@ services:
         value: "Tifossi Sport"
       - key: BUSINESS_EMAIL
         value: info@tifossi.com
+      - key: IS_PROXIED
+        value: true
+      - key: PUBLIC_URL
+        sync: false
 
   # Redis Cache (Optional - using Valkey)
   - type: keyvalue
@@ -98,6 +102,7 @@ databases:
 # - DATABASE_CLIENT (postgres)
 # - DATABASE_SSL (true for Render)
 # - DATABASE_SSL_REJECT_UNAUTHORIZED (false for Render)
+# - PUBLIC_URL (your Render service URL, e.g., https://your-service.onrender.com)
 # - CLOUDINARY_NAME (from Cloudinary account)
 # - CLOUDINARY_KEY (from Cloudinary account)
 # - CLOUDINARY_SECRET (from Cloudinary account)

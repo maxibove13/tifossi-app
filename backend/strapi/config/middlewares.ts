@@ -67,7 +67,17 @@ export default ({ env }: { env: any }) => [
       },
     },
   },
-  'strapi::session',
+  {
+    name: 'strapi::session',
+    config: {
+      key: 'strapi.sid',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: env.bool('IS_PROXIED', false),
+      secureProxy: env.bool('IS_PROXIED', false),
+      maxAge: 86400000, // 24 hours
+    },
+  },
   'strapi::favicon',
   'strapi::public',
 ];
