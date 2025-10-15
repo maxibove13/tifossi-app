@@ -249,6 +249,7 @@ jobs:
           JWT_SECRET: build-jwt-secret
           API_TOKEN_SALT: build-api-token-salt
           ADMIN_JWT_SECRET: build-admin-jwt-secret
+          TRANSFER_TOKEN_SALT: build-transfer-token-salt
 
       - name: Verify build
         working-directory: backend/strapi
