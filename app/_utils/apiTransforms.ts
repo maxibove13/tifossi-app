@@ -91,6 +91,7 @@ export interface StrapiProduct {
       colorName: string;
       quantity: number;
       hex?: string;
+      isActive?: boolean;
       mainImage?: {
         data?: {
           id: number;
@@ -110,8 +111,10 @@ export interface StrapiProduct {
     }[];
     sizes?: {
       id: number;
-      value: string;
-      available: boolean;
+      name: string;
+      isActive: boolean;
+      stock?: number;
+      code?: string;
     }[];
     dimensions?: {
       height?: string;
@@ -137,16 +140,28 @@ export function transformStrapiProduct(strapiProduct: StrapiProduct): Product {
   // Transform statuses
   const statuses = attrs.statuses?.data?.map((status) => status.attributes.name) || [];
 
-  // Transform colors
+  // Transform colors - filter out inactive colors
   const colors: ProductColor[] =
-    attrs.colors?.map((color) => ({
-      colorName: color.colorName,
-      quantity: color.quantity,
-      hex: color.hex,
-      images: {
-        main: color.mainImage?.data?.attributes?.url || frontImage,
-        additional: color.additionalImages?.data?.map((img) => img.attributes.url) || [],
-      },
+    attrs.colors
+      ?.filter((color) => color.isActive !== false) // Keep colors where isActive is true or undefined
+      .map((color) => ({
+        colorName: color.colorName,
+        quantity: color.quantity,
+        hex: color.hex,
+        isActive: color.isActive,
+        images: {
+          main: color.mainImage?.data?.attributes?.url || frontImage,
+          additional: color.additionalImages?.data?.map((img) => img.attributes.url) || [],
+        },
+      })) || [];
+
+  // Transform sizes to match mobile app format
+  const sizes =
+    attrs.sizes?.map((size) => ({
+      value: size.name,
+      available: size.isActive,
+      stock: size.stock || 0,
+      code: size.code,
     })) || [];
 
   // Transform long description from rich text to string array
@@ -170,7 +185,7 @@ export function transformStrapiProduct(strapiProduct: StrapiProduct): Product {
     longDescription,
     isCustomizable: attrs.isCustomizable || false,
     colors,
-    sizes: attrs.sizes || [],
+    sizes,
     warranty: attrs.warranty,
     returnPolicy: attrs.returnPolicy,
     dimensions: attrs.dimensions,

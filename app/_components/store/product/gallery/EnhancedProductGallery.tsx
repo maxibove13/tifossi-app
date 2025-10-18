@@ -27,34 +27,35 @@ function EnhancedProductGallery({
   selectedColor,
   onColorChange,
 }: EnhancedProductGalleryProps) {
+  // Filter out inactive colors as a safety net (should already be filtered by backend)
+  const activeColors = useMemo(
+    () => product.colors?.filter((color) => color.isActive !== false) || [],
+    [product.colors]
+  );
+
   // Use the first color as default if none is selected
   const [activeColor, setActiveColor] = useState<string>(
-    selectedColor ||
-      (product.colors && product.colors.length > 0 ? product.colors[0].colorName : '')
+    selectedColor || (activeColors.length > 0 ? activeColors[0].colorName : '')
   );
 
   // Reset activeColor when product or selectedColor changes
   useEffect(() => {
-    setActiveColor(
-      selectedColor ||
-        (product.colors && product.colors.length > 0 ? product.colors[0].colorName : '')
-    );
-  }, [product.id, selectedColor, product.colors]);
+    setActiveColor(selectedColor || (activeColors.length > 0 ? activeColors[0].colorName : ''));
+  }, [product.id, selectedColor, activeColors]);
 
   const colorSliderRef = useRef<ScrollView>(null);
 
   // Get the color object for the selected color
-  const selectedColorObject = product.colors?.find((c) => c.colorName === activeColor);
+  const selectedColorObject = activeColors.find((c) => c.colorName === activeColor);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // If no matching color object is found, use the first available color from this product
   useEffect(() => {
-    const colors = product.colors;
-    if (colors && colors.length > 0 && !selectedColorObject) {
-      setActiveColor(colors[0].colorName);
+    if (activeColors.length > 0 && !selectedColorObject) {
+      setActiveColor(activeColors[0].colorName);
     }
-  }, [product.id, selectedColorObject, product.colors]);
+  }, [product.id, selectedColorObject, activeColors]);
 
   const productImages: ImageSourcePropType[] = useMemo(() => {
     const images: ImageSourcePropType[] = [];
@@ -93,7 +94,7 @@ function EnhancedProductGallery({
 
   return (
     <View style={styles.container} testID="product-gallery-container">
-      {product.colors && product.colors.length > 1 && (
+      {activeColors.length > 1 && (
         <View style={styles.colorSliderContainer}>
           <ScrollView
             ref={colorSliderRef}
@@ -101,7 +102,7 @@ function EnhancedProductGallery({
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.colorSliderContent}
           >
-            {product.colors.map((colorObj, index) => (
+            {activeColors.map((colorObj, index) => (
               <TouchableOpacity
                 key={index}
                 style={[

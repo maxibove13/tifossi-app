@@ -311,8 +311,9 @@ const transformMockToStrapi = (mockProduct: any) => {
       sizes:
         attrs.sizes?.map((size: string, index: number) => ({
           id: index + 1,
-          value: size,
-          available: attrs.stock > 0 && Math.random() > 0.2, // 80% availability if in stock
+          name: size, // Strapi format: 'name' field
+          isActive: attrs.stock > 0, // Strapi format: 'isActive' field
+          stock: attrs.stock > 0 ? Math.floor(attrs.stock / attrs.sizes.length) : 0,
         })) || [],
     },
   };

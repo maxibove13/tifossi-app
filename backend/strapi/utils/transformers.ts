@@ -56,21 +56,26 @@ export function transformProduct(strapiProduct: StrapiProductEntity): ProductTra
     },
   } = strapiProduct;
 
-  // Transform colors to match mobile app format
-  const transformedColors = colors.map((color) => ({
-    colorName: color.colorName,
-    quantity: color.quantity,
-    hex: color.hex,
-    images: {
-      main: getMediaUrl(color.mainImage) || '',
-      additional: getMediaUrls(color.additionalImages),
-    },
-  }));
+  // Transform colors to match mobile app format - filter out inactive colors
+  const transformedColors = colors
+    .filter((color) => color.isActive !== false) // Keep colors where isActive is true or undefined
+    .map((color) => ({
+      colorName: color.colorName,
+      quantity: color.quantity,
+      hex: color.hex,
+      isActive: color.isActive,
+      images: {
+        main: getMediaUrl(color.mainImage) || '',
+        additional: getMediaUrls(color.additionalImages),
+      },
+    }));
 
   // Transform sizes to match mobile app format
   const transformedSizes = sizes?.map((size) => ({
-    value: size.value,
-    available: size.available,
+    value: size.name,
+    available: size.isActive,
+    stock: size.stock || 0,
+    code: size.code,
   }));
 
   // Transform dimensions to match mobile app format

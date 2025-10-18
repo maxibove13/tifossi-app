@@ -647,8 +647,15 @@ class StrapiApiService {
     const cacheKey = createCacheKey('stores');
 
     try {
-      const queryParams = '?populate=*';
-      const response = await httpClient.get<StrapiResponse<any[]>>(`/stores${queryParams}`);
+      const queryParams = buildStrapiQuery({
+        populate: ['image'],
+        filters: {
+          isActive: { $eq: true },
+        },
+      });
+      const response = await httpClient.get<StrapiResponse<any[]>>(
+        `/store-locations${queryParams}`
+      );
       const validatedResponse = validateStrapiResponse<any[]>(response);
 
       // Transform Strapi store data to app format

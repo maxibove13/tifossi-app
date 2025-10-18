@@ -23,19 +23,22 @@
         "colorName": "Blanco",
         "quantity": 10,
         "hex": "#FAFAFA",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 1
       },
       {
         "colorName": "Negro",
         "quantity": 8,
         "hex": "#0C0C0C",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 2
       },
       {
         "colorName": "Azul",
         "quantity": 5,
         "hex": "#2E5BFF",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 3
       }
     ],
     "sizes": [
@@ -94,19 +97,22 @@
         "colorName": "Negro",
         "quantity": 12,
         "hex": "#000000",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 1
       },
       {
         "colorName": "Azul Marino",
         "quantity": 8,
         "hex": "#1B365D",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 2
       },
       {
         "colorName": "Rojo",
         "quantity": 6,
         "hex": "#DC143C",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 3
       }
     ],
     "totalStock": 26,
@@ -132,25 +138,29 @@
         "colorName": "Blanco",
         "quantity": 25,
         "hex": "#FFFFFF",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 1
       },
       {
         "colorName": "Negro",
         "quantity": 20,
         "hex": "#000000",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 2
       },
       {
         "colorName": "Gris",
         "quantity": 15,
         "hex": "#808080",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 3
       },
       {
         "colorName": "Verde",
         "quantity": 10,
         "hex": "#228B22",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 4
       }
     ],
     "sizes": [
@@ -220,13 +230,15 @@
         "colorName": "Negro",
         "quantity": 15,
         "hex": "#000000",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 1
       },
       {
         "colorName": "Blanco",
         "quantity": 12,
         "hex": "#FFFFFF",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 2
       }
     ],
     "sizes": [
@@ -273,25 +285,29 @@
         "colorName": "Negro",
         "quantity": 20,
         "hex": "#000000",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 1
       },
       {
         "colorName": "Azul",
         "quantity": 15,
         "hex": "#0066CC",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 2
       },
       {
         "colorName": "Rojo",
         "quantity": 10,
         "hex": "#FF0000",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 3
       },
       {
         "colorName": "Blanco",
         "quantity": 8,
         "hex": "#FFFFFF",
-        "isAvailable": true
+        "isActive": true,
+        "displayOrder": 4
       }
     ],
     "totalStock": 53,

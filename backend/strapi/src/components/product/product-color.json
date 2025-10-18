@@ -2,19 +2,36 @@
   "collectionName": "components_product_product_colors",
   "info": {
     "displayName": "Product Color",
-    "description": "Product color variant with hex code and name"
+    "description": "Product color variant with hex code, name, quantity and images"
   },
   "options": {},
   "attributes": {
-    "name": {
+    "colorName": {
       "type": "string",
       "required": true,
       "maxLength": 50
     },
-    "hexCode": {
+    "hex": {
       "type": "string",
       "required": true,
       "regex": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+    },
+    "quantity": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "mainImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "additionalImages": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images"]
     },
     "isActive": {
       "type": "boolean",

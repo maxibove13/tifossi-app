@@ -11,6 +11,7 @@ export interface ProductColor {
   quantity: number;
   images: ProductColorImages;
   hex?: string; // Hex color code like "#FFFFFF" for display in UI
+  isActive?: boolean; // Whether this color is active/available (for filtering)
 }
 
 export interface Product {
@@ -142,8 +143,10 @@ export function mapProductToCardData(product: Product): ProductCardData {
 }
 
 export interface ProductSize {
-  value: string;
-  available: boolean;
+  value: string; // Maps from Strapi 'name'
+  available: boolean; // Maps from Strapi 'isActive'
+  stock?: number; // Maps from Strapi 'stock' (defaults to 0)
+  code?: string; // Maps from Strapi 'code'
 }
 
 // Moving to model.ts

@@ -146,16 +146,72 @@ src/
 - **Category**: Product categorization system
 - **Product Model**: Model variants (fast, classic, sport)
 - **Product Status**: Status labels (new, sale, featured, etc.)
-- **Order**: Complete order management
+- **Order**: Complete order management with store pickup support
 - **Store Location**: Physical store locations for pickup
 - **User**: Extended user profiles with e-commerce fields
 
 #### Components
 
-- **Product Components**: Colors, sizes, dimensions, short descriptions
+- **Product Components**: Colors (with images), sizes (with inventory), dimensions, short descriptions
 - **Shared Components**: Address, SEO metadata
 - **Order Components**: Order items
 - **Store Components**: Operating hours
+
+### Schema Updates (October 2025)
+
+#### Product Color Variants Schema
+
+Products support color variants with dedicated images and inventory management:
+
+**Product-Color Component** (`src/components/product/product-color.json`):
+
+- `colorName` (string): Display name (e.g., "Rojo", "Azul")
+- `hex` (string): Color code for UI swatches (e.g., "#FF0000")
+- `quantity` (number): Stock available for this color variant
+- `isActive` (boolean): Set to false to hide color without deleting
+- `mainImage` (media): Primary image for this color variant
+- `additionalImages` (media, multiple): Gallery images for this color
+
+**Important**: Color filtering is automatic. Colors with `isActive: false` are filtered out by both backend transformers and frontend components.
+
+#### Product Size Schema
+
+Size-level inventory tracking with availability management:
+
+**Product-Size Component** (`src/components/product/product-size.json`):
+
+- `name` (string): Size value (e.g., "S", "M", "L", "XL")
+- `isActive` (boolean): Controls availability (mapped to `available` in app)
+- `stock` (number): Inventory count (defaults to 0)
+- `code` (string, optional): SKU code for this size
+
+**Field Mapping**: Strapi uses `name`/`isActive`, but the mobile app uses `value`/`available`. Transformation happens automatically in `apiTransforms.ts`.
+
+#### Active/Inactive Content Pattern
+
+All content types support the `isActive` boolean field pattern:
+
+- Set to `false` to hide content without deleting it
+- Backend transformers automatically filter by `isActive: true`
+- Frontend applies additional safety filtering
+- Applies to: Products, Categories, Stores, Product Colors, Product Sizes
+
+**Usage Example**:
+
+- Archive a product without deleting: Set `isActive: false`
+- Temporarily disable a store: Set `isActive: false`
+- Hide a color variant: Set `isActive: false` on that color
+
+#### Store Pickup Integration
+
+Orders now support store location tracking:
+
+- `storeLocationId` field added to Order content type
+- Store selection persists through checkout flow
+- `store-locations` endpoint (not `/stores`) with automatic `isActive` filtering
+- Backend transformers populate store location data in orders
+
+For non-technical users, see **[GUIA_USUARIO_STRAPI.md](./GUIA_USUARIO_STRAPI.md)** (Spanish) for content management instructions.
 
 ### ⚠️ CRITICAL: Strapi v5 File Structure Requirements
 
@@ -228,28 +284,44 @@ If any content-types or components are missing from `dist/`, check that their `i
 #### Products
 
 ```
-GET    /api/products              # List products with filters
+GET    /api/products              # List products with filters (auto-filters inactive items)
 GET    /api/products/:id          # Get single product
 POST   /api/products              # Create product (admin)
 PUT    /api/products/:id          # Update product (admin)
 DELETE /api/products/:id          # Delete product (admin)
 ```
 
+**Query Parameters**:
+
+- `populate=*` - Include all relations (images, colors, sizes, category, etc.)
+- `filters[isActive][$eq]=true` - Filter by active status (applied automatically)
+
 #### Categories
 
 ```
-GET    /api/categories            # List categories
+GET    /api/categories            # List categories (auto-filters inactive)
 GET    /api/categories/:id        # Get category with products
 ```
+
+#### Store Locations
+
+```
+GET    /api/store-locations       # List active store locations
+GET    /api/store-locations/:id   # Get single store location
+```
+
+**Note**: Endpoint is `/store-locations` (not `/stores`). Automatically filters by `isActive: true` and populates image relation.
 
 #### Orders
 
 ```
 GET    /api/orders                # User's orders
-POST   /api/orders                # Create order
+POST   /api/orders                # Create order (includes storeLocationId for pickup)
 GET    /api/orders/:id            # Get order details
 PUT    /api/orders/:id            # Update order status
 ```
+
+**Order Creation**: Include `storeLocationId` field when shipping method is 'pickup'.
 
 #### Health Checks
 

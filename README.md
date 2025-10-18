@@ -2,6 +2,18 @@
 
 Tifossi is a mobile-first iOS e-commerce application built with React Native and Expo. The app provides a seamless shopping experience with a focus on fashion products, featuring Firebase authentication, Strapi backend integration, and MercadoPago payments.
 
+## Recent Updates (October 2025)
+
+**5 Critical Strapi Integration Fixes Completed** - The application is now production-ready with full backend integration:
+
+- **Product Color Variants**: Full support for color-specific images and inventory management
+- **Size-Level Inventory Tracking**: Real-time stock tracking at the size level with accurate availability
+- **Store Pickup Flow**: Complete store selection with location persistence through order completion
+- **Active/Inactive Content Filtering**: Intelligent filtering across all content types (products, categories, stores)
+- **API Field Mapping**: Seamless transformation between Strapi schema and mobile app types
+
+See [TIFOSSI_DELIVERY_PLAN.md](./docs/project/TIFOSSI_DELIVERY_PLAN.md) for complete status and [STRAPI_INTEGRATION_AUDIT_REPORT.md](./backend/strapi/STRAPI_INTEGRATION_AUDIT_REPORT.md) for technical details.
+
 ## Features
 
 - **User Authentication**: Firebase-powered login/signup with biometric support

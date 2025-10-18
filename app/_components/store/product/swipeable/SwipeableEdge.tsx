@@ -269,7 +269,7 @@ const SwipeableEdge = ({
         <Text style={styles.selectorTitle}>Talles disponibles</Text>
         <View style={styles.sizeChipsContainer}>
           {availableSizes.map((size) => {
-            const isDisabled = !size.available;
+            const isDisabled = !size.available || (size.stock !== undefined && size.stock === 0);
             const isSelected = selectedSize === size.value;
             return (
               <TouchableOpacity

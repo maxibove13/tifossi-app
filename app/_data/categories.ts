@@ -45,6 +45,8 @@ export const labelCategories: Category[] = Object.entries(ProductStatus).map(([_
 });
 
 // Regular product categories
+// NOTE: These are hardcoded categories. When categories are fetched from API in the future,
+// ensure to filter by isActive field to only show active categories to users.
 export const productCategories: Category[] = [
   { id: 'accesorios', name: 'Accesorios', slug: 'accesorios' },
   { id: 'buzos', name: 'Buzos', slug: 'buzos' },

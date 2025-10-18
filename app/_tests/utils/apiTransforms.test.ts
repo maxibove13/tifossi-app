@@ -231,10 +231,10 @@ describe('API Transforms', () => {
           title: 'Sized Product',
           price: 99.99,
           sizes: [
-            { id: 1, value: 'S', available: true },
-            { id: 2, value: 'M', available: true },
-            { id: 3, value: 'L', available: false },
-            { id: 4, value: 'XL', available: true },
+            { id: 1, name: 'S', isActive: true, stock: 10 },
+            { id: 2, name: 'M', isActive: true, stock: 15 },
+            { id: 3, name: 'L', isActive: false, stock: 0 },
+            { id: 4, name: 'XL', isActive: true, stock: 20 },
           ],
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-01T00:00:00Z',
@@ -245,7 +245,12 @@ describe('API Transforms', () => {
       const result = transformStrapiProduct(strapiProduct);
 
       expect(result.sizes).toHaveLength(4);
-      expect(result.sizes?.[2]).toEqual({ id: 3, value: 'L', available: false });
+      expect(result.sizes?.[2]).toEqual({
+        value: 'L',
+        available: false,
+        stock: 0,
+        code: undefined,
+      });
     });
 
     it('should transform product statuses', () => {

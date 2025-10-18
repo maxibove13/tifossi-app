@@ -61,22 +61,21 @@ export interface ProductShortDescription {
 export interface ProductColor {
   id: number;
   colorName: string;
-  hex?: string;
+  hex: string;
   quantity: number;
   mainImage: StrapiMedia;
   additionalImages: { data: StrapiMedia['data'][] };
-  isAvailable: boolean;
-  sku?: string;
-  weight?: number;
+  isActive: boolean;
+  displayOrder: number;
 }
 
 export interface ProductSize {
   id: number;
-  value: string;
-  available: boolean;
-  displayOrder: number;
+  name: string;
+  code?: string;
   stock: number;
-  sku?: string;
+  isActive: boolean;
+  displayOrder: number;
 }
 
 export interface ProductDimensions {

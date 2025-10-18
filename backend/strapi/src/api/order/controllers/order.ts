@@ -45,6 +45,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           items: sanitizedOrder.itemsForPersistence,
           shippingAddress: sanitizedOrder.shippingAddressComponent,
           shippingMethod: sanitizedOrder.shippingMethod,
+          storeLocation: sanitizedOrder.storeLocationId || null,
           shippingCost: sanitizedOrder.shippingCost,
           subtotal: sanitizedOrder.subtotal,
           discount: sanitizedOrder.discount,
@@ -58,6 +59,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         populate: {
           items: { populate: { product: true } },
           user: true,
+          storeLocation: true,
         },
       });
 

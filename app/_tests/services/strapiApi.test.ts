@@ -108,13 +108,15 @@ const createStrapiProduct = (overrides?: Partial<StrapiProduct['attributes']>): 
     sizes: [
       {
         id: 1,
-        value: 'M',
-        available: true,
+        name: 'M',
+        isActive: true,
+        stock: 10,
       },
       {
         id: 2,
-        value: 'L',
-        available: false,
+        name: 'L',
+        isActive: false,
+        stock: 0,
       },
     ],
     dimensions: {
@@ -455,10 +457,10 @@ describe('StrapiApi Service', () => {
     it('should handle size availability correctly', async () => {
       const productWithSizes = createStrapiProduct({
         sizes: [
-          { id: 1, value: 'S', available: true },
-          { id: 2, value: 'M', available: true },
-          { id: 3, value: 'L', available: false },
-          { id: 4, value: 'XL', available: false },
+          { id: 1, name: 'S', isActive: true, stock: 10 },
+          { id: 2, name: 'M', isActive: true, stock: 15 },
+          { id: 3, name: 'L', isActive: false, stock: 0 },
+          { id: 4, name: 'XL', isActive: false, stock: 0 },
         ],
       });
 
@@ -523,15 +525,15 @@ describe('StrapiApi Service', () => {
         createStrapiProduct({
           title: 'Product S-M',
           sizes: [
-            { id: 1, value: 'S', available: true },
-            { id: 2, value: 'M', available: true },
+            { id: 1, name: 'S', isActive: true, stock: 10 },
+            { id: 2, name: 'M', isActive: true, stock: 15 },
           ],
         }),
         createStrapiProduct({
           title: 'Product L-XL',
           sizes: [
-            { id: 3, value: 'L', available: true },
-            { id: 4, value: 'XL', available: true },
+            { id: 3, name: 'L', isActive: true, stock: 20 },
+            { id: 4, name: 'XL', isActive: true, stock: 25 },
           ],
         }),
       ];

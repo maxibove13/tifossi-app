@@ -174,8 +174,8 @@ class MediaUploader {
         // Save mapping after each upload for safety
         await this.saveMapping();
 
-        // Small delay to avoid overwhelming the server
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        // Delay to avoid overwhelming the server (increased for production)
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
       console.log(`✅ Uploaded ${imageFiles.length} images successfully`);

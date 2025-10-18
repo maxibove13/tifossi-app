@@ -99,6 +99,10 @@ export default function StoreListScreen() {
             <Text style={styles.retryText}>Reintentar</Text>
           </TouchableOpacity>
         </View>
+      ) : stores.length === 0 ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>No hay tiendas disponibles en este momento</Text>
+        </View>
       ) : (
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContentContainer}>
           {Object.entries(groupedStores).map(([cityId, cityData]) => (

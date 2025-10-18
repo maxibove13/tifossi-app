@@ -66,6 +66,7 @@ export interface CreateOrderRequest {
   items: CartItem[];
   shippingAddress: Address;
   shippingMethod: 'delivery' | 'pickup';
+  storeLocationId?: number;
   notes?: string;
 }
 
@@ -140,6 +141,7 @@ class OrderService {
         user: userData,
         shippingAddress: orderRequest.shippingAddress,
         shippingMethod: orderRequest.shippingMethod,
+        storeLocationId: orderRequest.storeLocationId,
         shippingCost: totals.shippingCost,
         subtotal: totals.subtotal,
         discount: totals.discount,

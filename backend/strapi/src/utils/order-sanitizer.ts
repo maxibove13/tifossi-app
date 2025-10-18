@@ -33,6 +33,7 @@ interface RawOrder {
   items: RawOrderItem[];
   discount?: number | string;
   shippingAddress: RawAddress;
+  storeLocationId?: number | string;
 }
 
 interface AuthUser {
@@ -162,7 +163,7 @@ interface ClientSummary {
 }
 
 interface MercadoPagoPayload {
-  items: Array<{
+  items: {
     productId: number;
     productName: string;
     description: string | null;
@@ -170,7 +171,7 @@ interface MercadoPagoPayload {
     price: number;
     size?: string;
     color?: string;
-  }>;
+  }[];
   address: MercadoPagoAddress;
   user: MercadoPagoUser;
 }
@@ -178,6 +179,7 @@ interface MercadoPagoPayload {
 interface SanitizedOrderResult {
   orderNumber: string;
   shippingMethod: string;
+  storeLocationId: number | null;
   subtotal: number;
   discount: number;
   shippingCost: number;
@@ -361,6 +363,23 @@ export const sanitizeOrderPayload = async ({
     throw new Error('Invalid shipping method');
   }
 
+  // Validate storeLocation for pickup orders
+  let storeLocationId: number | null = null;
+  if (shippingMethod === 'pickup' && rawOrder.storeLocationId) {
+    const parsedStoreId = Number(rawOrder.storeLocationId);
+    if (Number.isInteger(parsedStoreId) && parsedStoreId > 0) {
+      // Verify store location exists and is active
+      const storeLocation = await strapi.documents('api::store-location.store-location').findOne({
+        documentId: String(parsedStoreId),
+        filters: { isActive: true, hasPickupService: true },
+      });
+
+      if (storeLocation) {
+        storeLocationId = parsedStoreId;
+      }
+    }
+  }
+
   const rawItems = ensureArray(rawOrder.items);
   if (!rawItems.length) {
     throw new Error('Order must contain at least one item');
@@ -469,6 +488,7 @@ export const sanitizeOrderPayload = async ({
   return {
     orderNumber: generateOrderNumber(),
     shippingMethod,
+    storeLocationId,
     subtotal,
     discount,
     shippingCost,

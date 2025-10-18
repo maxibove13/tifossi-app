@@ -49,7 +49,9 @@ export default function OverlayProductEditSize({
   // Determine available sizes and if it's a single 'Talle Unico' using useMemo
   const availableSizes = useMemo(() => {
     const validProductSizes = productSizes || []; // Ensure productSizes is an array
-    return validProductSizes.filter((size) => size.available);
+    return validProductSizes.filter(
+      (size) => size.available && (size.stock === undefined || size.stock > 0)
+    );
   }, [productSizes]);
 
   const isTalleUnico = useMemo(() => availableSizes.length <= 1, [availableSizes]);
@@ -122,6 +124,13 @@ export default function OverlayProductEditSize({
     // Implement size guide functionality here
   };
 
+  // Helper to format stock display
+  const getStockText = (stock: number): string | null => {
+    if (stock === 0) return 'Sin stock';
+    if (stock < 5) return `Solo ${stock} disponible${stock > 1 ? 's' : ''}`;
+    return null; // Don't show stock for items with 5+ in stock
+  };
+
   return (
     <Modal transparent visible={isVisible} onRequestClose={onClose} animationType="none">
       <View style={styles.modalContainer}>
@@ -150,18 +159,39 @@ export default function OverlayProductEditSize({
               </View>
             ) : (
               // Display list of available sizes
-              availableSizes.map((size) => (
-                <TouchableOpacity
-                  key={size.value}
-                  style={styles.sizeOption}
-                  onPress={() => handleSelectSize(size.value)}
-                  activeOpacity={0.7}
-                  disabled={!size.available} // Should always be true due to filter
-                >
-                  <Text style={styles.sizeOptionText}>{size.value}</Text>
-                  <RadioButton selected={selectedSize === size.value} />
-                </TouchableOpacity>
-              ))
+              availableSizes.map((size) => {
+                const stock = size.stock ?? 0;
+                const stockText = getStockText(stock);
+                const isOutOfStock = stock === 0;
+                return (
+                  <TouchableOpacity
+                    key={size.value}
+                    style={styles.sizeOption}
+                    onPress={() => handleSelectSize(size.value)}
+                    activeOpacity={0.7}
+                    disabled={!size.available || isOutOfStock}
+                  >
+                    <View style={styles.sizeInfoContainer}>
+                      <Text
+                        style={[
+                          styles.sizeOptionText,
+                          isOutOfStock && styles.sizeOptionTextDisabled,
+                        ]}
+                      >
+                        {size.value}
+                      </Text>
+                      {stockText && (
+                        <Text
+                          style={[styles.stockText, isOutOfStock && styles.stockTextOutOfStock]}
+                        >
+                          {stockText}
+                        </Text>
+                      )}
+                    </View>
+                    <RadioButton selected={selectedSize === size.value} />
+                  </TouchableOpacity>
+                );
+              })
             )}
           </View>
 
@@ -248,12 +278,29 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#DCDCDC',
   },
+  sizeInfoContainer: {
+    flexDirection: 'column',
+    gap: spacing.xs,
+  },
   sizeOptionText: {
     fontFamily: 'Inter',
     fontSize: fontSizes.md,
     fontWeight: '400',
     lineHeight: lineHeights.md,
     color: '#0C0C0C',
+  },
+  sizeOptionTextDisabled: {
+    color: '#9E9E9E',
+  },
+  stockText: {
+    fontFamily: 'Inter',
+    fontSize: fontSizes.xs,
+    fontWeight: '400',
+    lineHeight: lineHeights.xs,
+    color: '#FF6B00',
+  },
+  stockTextOutOfStock: {
+    color: '#9E9E9E',
   },
   actionButtons: {
     flexDirection: 'row',

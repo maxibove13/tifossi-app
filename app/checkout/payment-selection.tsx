@@ -53,6 +53,7 @@ export default function PaymentSelectionScreen() {
   const setCurrentOrder = usePaymentStore((state) => state.setCurrentOrder);
   const clearPaymentState = usePaymentStore((state) => state.clearPaymentState);
   const setLoading = usePaymentStore((state) => state.setLoading);
+  const selectedStore = usePaymentStore((state) => state.selectedStore);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -211,11 +212,15 @@ export default function PaymentSelectionScreen() {
           : undefined,
       };
 
+      // Determine shipping method based on whether a store was selected
+      const shippingMethod = selectedStore ? ('pickup' as const) : ('delivery' as const);
+
       // Prepare order request
       const orderRequest = {
         items: cartItems,
         shippingAddress: selectedAddress,
-        shippingMethod: 'delivery' as const,
+        shippingMethod,
+        storeLocationId: selectedStore?.strapiId,
         notes: 'Pedido realizado desde la app móvil',
       };
 

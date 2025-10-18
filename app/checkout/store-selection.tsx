@@ -21,15 +21,26 @@ import { fontWeights, fonts, fontSizes, lineHeights } from '../_styles/typograph
 
 import { StoreDetails } from '../_types';
 import { storesData } from '../_data/stores';
+import { usePaymentStore } from '../_stores/paymentStore';
 
 export default function StoreSelectionScreen() {
   const { cityId, zoneId } = useLocalSearchParams<{ cityId: string; zoneId?: string }>();
+  const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
 
   const store = useMemo(() => {
     return storesData.find((s: StoreDetails) => s.cityId === cityId && s.zoneId === zoneId);
   }, [cityId, zoneId]);
 
   const handleConfirm = () => {
+    if (store) {
+      setSelectedStore({
+        id: store.id,
+        cityId: store.cityId,
+        zoneId: store.zoneId,
+        name: store.name,
+        address: store.address,
+      });
+    }
     router.push('/checkout/payment-selection');
   };
 
