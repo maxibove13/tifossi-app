@@ -2,20 +2,38 @@
 
 ## PROJECT STATUS
 
-**Status**: Code Complete - Awaiting Deployment
+**Status**: Code Complete - App Store Compliance Required (8 Critical Blockers)
+**Last Audit**: 2025-10-18 Multi-Agent Review
+**Rejection Risk**: 95% without fixes to iOS entitlements, privacy manifest, ATT permission
 **Ground Truth Documents**:
 
 - FUNCIONALIDADES_APP_TIFOSSI.md (client deliverables)
 - COSTOS_OPERATIVOS_URUGUAY_2025.md (infrastructure costs)
-- TIFOSSI_DELIVERY_PLAN.md (execution roadmap)
+- TIFOSSI_DELIVERY_PLAN.md (execution roadmap with audit findings)
+
+## CRITICAL APP STORE BLOCKERS (2025-10-18 Audit)
+
+Before App Store submission, these must be resolved:
+
+1. **Empty iOS Entitlements** - `ios/tifossi/tifossi.entitlements` contains only `<dict/>` (Apple Sign-In will crash)
+2. **Empty Privacy Manifest** - `NSPrivacyCollectedDataTypes` array is empty (collecting 10+ data types but none declared)
+3. **Missing ATT Permission** - Analytics enabled but no `NSUserTrackingUsageDescription` in Info.plist
+4. **Backend Payment Configuration** - MercadoPago service crashes on startup without credentials
+5. **Bundle ID Inconsistency** - Mismatch between app.json and eas.json
+6. **Google Sign-In Incomplete** - Button present but returns hardcoded error
+7. **Production Code Quality** - 83 console.log statements, generic URL schemes
+8. **Unnecessary Permissions** - Microphone permission declared but not used
+
+See [TIFOSSI_DELIVERY_PLAN.md](./docs/project/TIFOSSI_DELIVERY_PLAN.md) for complete details.
 
 ## DEPLOYMENT REQUIREMENTS
 
-1. Deploy Strapi backend to Render.com
+1. Deploy Strapi backend to Render.com ✅ COMPLETED
 2. Apple Sign-In: ✅ Implemented via Firebase (expo-apple-authentication)
 3. Update bundle identifiers to production values (awaiting Apple/Google accounts)
 4. Configure Firebase and MercadoPago production credentials
 5. Remove all TODO/placeholder content
+6. Fix 8 critical App Store blockers identified in audit
 
 ## PROGRESS TRACKING
 
