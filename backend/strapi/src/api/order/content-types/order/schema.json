@@ -123,6 +123,9 @@
     },
     "internalNotes": {
       "type": "text"
+    },
+    "metadata": {
+      "type": "json"
     }
   }
 }

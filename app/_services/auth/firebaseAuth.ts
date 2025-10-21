@@ -7,6 +7,11 @@
 
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import {
+  GoogleSignin,
+  statusCodes as GoogleSigninStatusCodes,
+} from '@react-native-google-signin/google-signin';
+import { Platform } from 'react-native';
 import type { User as AppUser } from '../../_types/auth';
 
 interface AuthResult {
@@ -44,6 +49,11 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   ERROR_NOT_AVAILABLE: 'Apple Sign-In no está disponible en este dispositivo.',
   ERROR_INVALID_RESPONSE: 'Respuesta inválida de Apple Sign-In.',
   'apple-signin-unavailable': 'Apple Sign-In no está disponible en esta plataforma.',
+  SIGN_IN_CANCELLED: 'Google Sign-In fue cancelado por el usuario.',
+  IN_PROGRESS: 'Google Sign-In ya está en progreso.',
+  PLAY_SERVICES_NOT_AVAILABLE: 'Google Play Services no está disponible en este dispositivo.',
+  'google-signin-unavailable': 'Google Sign-In no está disponible en esta plataforma.',
+  'google-signin-failed': 'Error al iniciar sesión con Google.',
 };
 
 class FirebaseAuthService {
@@ -142,13 +152,105 @@ class FirebaseAuthService {
   }
 
   /**
-   * Google OAuth Sign-In (placeholder)
+   * Google OAuth Sign-In
+   *
+   * IMPORTANT - PRODUCTION CREDENTIALS REQUIRED:
+   * The webClientId below is a placeholder and MUST be replaced before deployment.
+   *
+   * How to get the production webClientId:
+   * 1. Go to Firebase Console: https://console.firebase.google.com
+   * 2. Select your project
+   * 3. Go to Project Settings > General
+   * 4. Scroll down to "Your apps" section
+   * 5. Find the Web App or create one if it doesn't exist
+   * 6. Copy the "Web Client ID" (format: XXXXX.apps.googleusercontent.com)
+   * 7. Replace the placeholder below with your actual Web Client ID
+   *
+   * Note: This is different from the Android/iOS client IDs in google-services.json
+   * and GoogleService-Info.plist. You need the Web Client ID specifically.
+   *
+   * See docs/guides/FIREBASE_SETUP_GUIDE.md for detailed instructions.
    */
   async signInWithGoogle(): Promise<AuthResult> {
-    return {
-      success: false,
-      error: 'Google Sign-In no está configurado aún.',
-    };
+    try {
+      // Configure Google Sign-In
+      GoogleSignin.configure({
+        webClientId: '123456789012-placeholder.apps.googleusercontent.com', // TODO: REPLACE WITH PRODUCTION WEB CLIENT ID
+        offlineAccess: false,
+      });
+
+      // Check if Google Play Services is available (Android only)
+      // Note: hasPlayServices() only works on Android and will fail on iOS
+      if (Platform.OS === 'android') {
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      }
+
+      // Get Google credentials
+      const userInfo = await GoogleSignin.signIn();
+
+      // Check if sign-in was successful (not cancelled)
+      if (userInfo.type === 'cancelled') {
+        return {
+          success: false,
+          error: AUTH_ERROR_MESSAGES.SIGN_IN_CANCELLED,
+        };
+      }
+
+      if (!userInfo.data.idToken) {
+        throw new Error('No ID token received from Google');
+      }
+
+      // Create Firebase credential from Google ID token
+      const googleCredential = auth.GoogleAuthProvider.credential(userInfo.data.idToken);
+
+      // Sign in with Firebase using Google credential
+      const userCredential = await auth().signInWithCredential(googleCredential);
+
+      // Update display name if provided by Google (only on first sign-in)
+      if (userInfo.data.user.name && !userCredential.user.displayName) {
+        await userCredential.user.updateProfile({
+          displayName: userInfo.data.user.name,
+        });
+      }
+
+      const user = this.mapFirebaseUserToAppUser(userCredential.user);
+      const token = await userCredential.user.getIdToken();
+
+      return {
+        success: true,
+        user,
+        token,
+      };
+    } catch (error: any) {
+      // Handle Google Sign-In cancellation
+      if (error.code === GoogleSigninStatusCodes.SIGN_IN_CANCELLED) {
+        return {
+          success: false,
+          error: AUTH_ERROR_MESSAGES.SIGN_IN_CANCELLED,
+        };
+      }
+
+      // Handle Google Play Services not available
+      if (error.code === GoogleSigninStatusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        return {
+          success: false,
+          error: AUTH_ERROR_MESSAGES.PLAY_SERVICES_NOT_AVAILABLE,
+        };
+      }
+
+      // Handle sign-in already in progress
+      if (error.code === GoogleSigninStatusCodes.IN_PROGRESS) {
+        return {
+          success: false,
+          error: AUTH_ERROR_MESSAGES.IN_PROGRESS,
+        };
+      }
+
+      return {
+        success: false,
+        error: this.handleAuthError(error),
+      };
+    }
   }
 
   /**

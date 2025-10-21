@@ -37,16 +37,30 @@ module.exports = {
   // Test timeout
   testTimeout: 30000,
 
-  // Transform files
+  // Transform files - transpile TypeScript and JavaScript on the fly
   transform: {
-    '^.+\\.(ts|js)$': 'babel-jest',
+    '^.+\\.(ts|tsx)$': ['babel-jest', {
+      presets: [
+        '@babel/preset-typescript',
+        ['@babel/preset-env', { targets: { node: 'current' } }]
+      ]
+    }],
+    '^.+\\.(js|jsx)$': ['babel-jest', {
+      presets: [
+        ['@babel/preset-env', { targets: { node: 'current' } }]
+      ]
+    }],
   },
 
-  // Module file extensions
-  moduleFileExtensions: ['ts', 'js', 'json'],
+  // Transform node_modules except those that need transpilation
+  // No longer ignore /dist/ since we're using source files now
+  transformIgnorePatterns: ['/node_modules/(?!(mercadopago)/)'],
 
-  // Ignore patterns
-  testPathIgnorePatterns: ['/node_modules/', '/build/', '/dist/', '/.cache/', '/.tmp/'],
+  // Module file extensions
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+
+  // Ignore patterns - no longer ignore /dist/ since tests use source
+  testPathIgnorePatterns: ['/node_modules/', '/build/', '/.cache/', '/.tmp/'],
 
   // Clear mocks between tests
   clearMocks: true,

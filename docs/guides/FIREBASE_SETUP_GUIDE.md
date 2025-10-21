@@ -1,6 +1,14 @@
 # Firebase Setup Guide for Tifossi Production App
 
-This guide will help you set up Firebase for your Tifossi mobile app, including Apple Sign-In authentication.
+This guide will help you set up Firebase for your Tifossi mobile app, including Apple Sign-In and Google Sign-In authentication.
+
+## ⚠️ CRITICAL: Google Sign-In Web Client ID Required
+
+**Before deploying to production, you MUST replace the placeholder Web Client ID in the code.**
+
+The app currently has a placeholder value that will cause Google Sign-In to fail. Follow **Step 5** of this guide carefully to obtain and configure your production Web Client ID.
+
+**File to update**: `app/_services/auth/firebaseAuth.ts` (Line 178)
 
 ## Prerequisites
 
@@ -57,6 +65,12 @@ Before starting, make sure you have:
    - Enable **Email/Password**:
      - Toggle "Enable"
      - Click "Save"
+   - Enable **Google**:
+     - Click on "Google" in the sign-in providers list
+     - Toggle "Enable"
+     - **Project support email**: Enter your email address
+     - Click "Save"
+     - **Important**: Note the Web Client ID shown - you'll need this later
    - Enable **Apple** (for iOS):
      - Click on "Apple" in the sign-in providers list
      - Toggle "Enable"
@@ -93,7 +107,63 @@ Before starting, make sure you have:
    - Enter your Apple Team ID in the designated field
    - Click "Save"
 
-## Step 5: Configure Environment Variables
+## Step 5: Configure Google Sign-In ⚠️ CRITICAL
+
+### ⚠️ This step is REQUIRED for Google Sign-In to work in production
+
+1. **Find Your Web Client ID in Firebase Console**
+
+   **Method 1 (Recommended):**
+   - In Firebase Console, go to **Project Settings** (gear icon)
+   - Scroll to **"Your apps"** section
+   - If you don't see a **Web App**, create one:
+     - Click **"Add app"** and select **Web** (</> icon)
+     - Enter nickname: "Tifossi Web Client"
+     - Click **"Register app"**
+   - Copy the **Web Client ID** shown (format: `XXXXX.apps.googleusercontent.com`)
+
+   **Method 2 (Alternative):**
+   - In Firebase Console, go to **Authentication** → **Sign-in method**
+   - Click on **"Google"** provider
+   - Copy the **Web client ID** shown below the "Enable" toggle
+
+   **Important**: The Web Client ID is different from the iOS/Android client IDs!
+
+2. **⚠️ CRITICAL: Update the Code**
+
+   **File**: `app/_services/auth/firebaseAuth.ts` (around line 178)
+
+   Replace this line:
+   ```typescript
+   webClientId: '123456789012-placeholder.apps.googleusercontent.com', // OLD - PLACEHOLDER
+   ```
+
+   With your actual Web Client ID:
+   ```typescript
+   webClientId: 'YOUR_ACTUAL_WEB_CLIENT_ID.apps.googleusercontent.com', // NEW - FROM FIREBASE
+   ```
+
+   **Example**:
+   ```typescript
+   GoogleSignin.configure({
+     webClientId: '987654321012-abcdefghijklmnop.apps.googleusercontent.com', // Your Web Client ID
+     offlineAccess: false,
+   });
+   ```
+
+3. **Update iOS URL Scheme**
+   - Open `app.json`
+   - Find the `@react-native-google-signin/google-signin` plugin configuration
+   - Replace `iosUrlScheme` with your reversed client ID from `GoogleService-Info.plist`
+   - The reversed client ID should look like: `com.googleusercontent.apps.123456789012-abcdefg`
+
+4. **Update GoogleService-Info.plist**
+   - Ensure your production `GoogleService-Info.plist` has:
+     - `CLIENT_ID`: Your iOS OAuth client ID
+     - `REVERSED_CLIENT_ID`: Your reversed client ID for URL scheme
+   - Both values should be from your Firebase project settings
+
+## Step 6: Configure Environment Variables
 
 Create a `.env.local` file in your project root with your Firebase configuration:
 
@@ -122,7 +192,7 @@ EXPO_PUBLIC_ENVIRONMENT=production
 
 2. **Alternative**: Look in your downloaded `GoogleService-Info.plist` file
 
-## Step 6: Update App Configuration
+## Step 7: Update App Configuration
 
 1. **Update Bundle Identifier** (in `app.json`):
 
@@ -153,7 +223,7 @@ EXPO_PUBLIC_ENVIRONMENT=production
    }
    ```
 
-## Step 7: Test Configuration
+## Step 8: Test Configuration
 
 1. **Install and Run**:
 
@@ -162,17 +232,25 @@ EXPO_PUBLIC_ENVIRONMENT=production
    npx expo run:ios
    ```
 
-2. **Test Apple Sign-In**:
-   - Open the app on your iOS device or simulator
+2. **Test Google Sign-In**:
+   - Open the app on your iOS device or Android device
+   - Navigate to the login screen
+   - Tap "Continue with Google"
+   - Complete the Google authentication flow
+   - Verify successful login
+
+3. **Test Apple Sign-In**:
+   - Open the app on your iOS device or simulator (iOS 13+)
    - Navigate to the login screen
    - Tap "Sign in with Apple"
    - Complete the Apple authentication flow
+   - Verify successful login
 
-3. **Verify in Firebase**:
+4. **Verify in Firebase**:
    - Go to Firebase Console → Authentication → Users
    - You should see new users appearing after successful sign-ins
 
-## Step 8: Security Configuration
+## Step 9: Security Configuration
 
 1. **Add to .gitignore**:
 
@@ -205,31 +283,46 @@ EXPO_PUBLIC_ENVIRONMENT=production
 
 ### Common Issues:
 
-1. **"Apple Sign-In not available"**
+1. **"Google Sign-In was canceled"**
+   - This is normal if user cancels the sign-in flow
+   - No action needed - user can try again
+
+2. **"Google Play Services not available"** (Android only)
+   - Ensure Google Play Services is installed on the device
+   - Update Google Play Services to latest version
+   - Test on a physical device instead of emulator
+
+3. **"No ID token received from Google"**
+   - Verify Web Client ID is correctly configured in `firebaseAuth.ts`
+   - Check that Google sign-in is enabled in Firebase Console
+   - Ensure `GoogleService-Info.plist` has correct CLIENT_ID
+
+4. **"Apple Sign-In not available"**
    - Ensure you're testing on a real iOS device or iOS 13+ simulator
    - Verify Apple Team ID is correctly configured
    - Check that Apple Sign-In is enabled in your app identifier
 
-2. **"Configuration object is not valid"**
+5. **"Configuration object is not valid"**
    - Verify all environment variables are set correctly
    - Ensure `GoogleService-Info.plist` is in the correct location
    - Check that bundle identifier matches between Firebase and Apple Developer
 
-3. **"Identity token validation failed"**
+6. **"Identity token validation failed"**
    - Verify Apple Team ID in both Firebase and app.json
    - Ensure your Apple Developer account is active
    - Check that Apple Sign-In capability is enabled
 
-4. **Build failures**
+7. **Build failures**
    - Run: `npx expo install --fix`
    - Clean build: `npx expo start --clear`
    - For iOS: Clean derived data in Xcode
 
 ### Getting Help:
 
-1. **Firebase Documentation**: https://firebase.google.com/docs/auth/ios/apple
-2. **Expo Apple Authentication**: https://docs.expo.dev/versions/latest/sdk/apple-authentication/
-3. **Apple Sign-In Documentation**: https://developer.apple.com/sign-in-with-apple/
+1. **Firebase Documentation**: https://firebase.google.com/docs/auth
+2. **Google Sign-In for React Native**: https://github.com/react-native-google-signin/google-signin
+3. **Expo Apple Authentication**: https://docs.expo.dev/versions/latest/sdk/apple-authentication/
+4. **Apple Sign-In Documentation**: https://developer.apple.com/sign-in-with-apple/
 
 ## Security Best Practices
 

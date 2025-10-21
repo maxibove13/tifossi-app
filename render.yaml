@@ -75,10 +75,32 @@ services:
         value: 'Tifossi Sport'
       - key: BUSINESS_EMAIL
         value: info@tifossi.com
+      - key: BUSINESS_LEGAL_NAME
+        value: 'TODO: Full legal business name (e.g., Tifossi Sport S.A.)'
+      - key: BUSINESS_ADDRESS
+        value: 'TODO: Complete business address (Street, City, Country)'
+      - key: PRIVACY_CONTACT_EMAIL
+        value: info@tifossi.com
       - key: IS_PROXIED
         value: true
       - key: PUBLIC_URL
         sync: false
+      # MercadoPago Payment Configuration
+      - key: MP_ACCESS_TOKEN
+        sync: false
+      - key: MP_PUBLIC_KEY
+        sync: false
+      - key: MP_TEST_ACCESS_TOKEN
+        sync: false
+      - key: MP_TEST_PUBLIC_KEY
+        sync: false
+      - key: MP_WEBHOOK_SECRET
+        sync: false
+      - key: WEBHOOK_URL
+        sync: false
+      # Mobile App Configuration
+      - key: APP_SCHEME
+        value: tifossi
 
   # Redis Cache (Optional - using Valkey)
   - type: keyvalue
@@ -101,14 +123,19 @@ databases:
 # - DATABASE_CLIENT (postgres)
 # - DATABASE_SSL (true for Render)
 # - DATABASE_SSL_REJECT_UNAUTHORIZED (false for Render)
-# - PUBLIC_URL (your Render service URL, e.g., https://your-service.onrender.com)
+# - PUBLIC_URL (your Render service URL, e.g., https://tifossi-strapi-backend.onrender.com)
 # - CLOUDINARY_NAME (from Cloudinary account)
 # - CLOUDINARY_KEY (from Cloudinary account)
 # - CLOUDINARY_SECRET (from Cloudinary account)
-# - MP_TEST_ACCESS_TOKEN (test MercadoPago token)
-# - MP_TEST_PUBLIC_KEY (test MercadoPago public key)
-# - MP_WEBHOOK_SECRET (webhook secret for MercadoPago)
-# - WEBHOOK_URL (webhook callback URL)
+#
+# MercadoPago Environment Variables (defined above, values set in Render Dashboard):
+# - MP_ACCESS_TOKEN (production token - starts with APP-)
+# - MP_PUBLIC_KEY (production key - starts with APP-)
+# - MP_TEST_ACCESS_TOKEN (test token - starts with TEST-)
+# - MP_TEST_PUBLIC_KEY (test key - starts with TEST-)
+# - MP_WEBHOOK_SECRET (webhook secret for signature verification)
+# - WEBHOOK_URL (https://tifossi-strapi-backend.onrender.com/webhooks/mercadopago)
+# - APP_SCHEME (tifossi - already set as value)
 #
 # REQUIRED Firebase Admin Credentials (Choose ONE option):
 # Option 1 (Recommended):

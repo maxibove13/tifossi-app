@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { render, fireEvent, waitFor, within } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { useCartStore } from '../../_stores/cartStore';
 import { useProductStore } from '../../_stores/productStore';
@@ -299,42 +299,6 @@ describe('Add-to-Cart Integration Flow', () => {
   });
 
   describe('API Integration', () => {
-    it.skip('should handle API errors gracefully', async () => {
-      // Skip: This test requires MSW runtime handler overrides which are not available with our mock setup
-      // server.use(
-      //   http.post('/api/cart/add', () => {
-      //     return HttpResponse.json(
-      //       { error: 'Failed to add to cart' },
-      //       { status: 500 }
-      //     );
-      //   })
-      // );
-
-      const { getByTestId } = render(<ProductListWithCart />);
-
-      await waitFor(() => {
-        expect(getByTestId('products-container')).toBeTruthy();
-      });
-
-      // Try to add product
-      const product1 = getByTestId('product-1');
-      fireEvent.press(within(product1).getByRole('button'));
-
-      await waitFor(() => {
-        expect(getByTestId('product-1-actions')).toBeTruthy();
-      });
-
-      fireEvent(getByTestId('size-M'), 'touchEnd');
-      fireEvent.press(within(getByTestId('product-1-actions')).getByRole('button'));
-
-      // Cart should handle error gracefully
-      await waitFor(() => {
-        const cartStore = useCartStore.getState();
-        // Item might still be added locally even if API fails
-        expect(cartStore.error).toBeDefined();
-      });
-    });
-
     it('should sync cart with backend', async () => {
       const { getByTestId } = render(<ProductListWithCart />);
 
@@ -357,45 +321,6 @@ describe('Add-to-Cart Integration Flow', () => {
   });
 
   describe('Edge Cases', () => {
-    it.skip('should prevent adding out-of-stock items', async () => {
-      // Skip: This test requires MSW runtime handler overrides which are not available with our mock setup
-      // server.use(
-      //   http.get('/api/products', () => {
-      //     return HttpResponse.json({
-      //       data: [
-      //         {
-      //           id: '3',
-      //           attributes: {
-      //             name: 'Out of Stock Product',
-      //             slug: 'out-of-stock',
-      //             price: 50,
-      //             stock: 0,
-      //             sizes: [{ value: 'M', available: false }],
-      //           },
-      //         },
-      //       ],
-      //     });
-      //   })
-      // );
-
-      const { getByTestId } = render(<ProductListWithCart />);
-
-      await waitFor(() => {
-        expect(getByTestId('products-container')).toBeTruthy();
-      });
-
-      const product = getByTestId('product-3');
-      if (product) {
-        fireEvent.press(within(product).getByTestId('product-card-pressable'));
-
-        await waitFor(() => {
-          const actions = getByTestId('product-3-actions');
-          const addButton = within(actions).getByRole('button');
-          expect(addButton.props.disabled).toBe(true);
-        });
-      }
-    });
-
     it('should handle rapid successive additions', async () => {
       const { getByTestId } = render(<ProductListWithCart />);
 

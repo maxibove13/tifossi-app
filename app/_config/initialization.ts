@@ -6,7 +6,14 @@
  */
 
 import { initializeEndpoints } from './endpoints';
-import { validateEnvironment, getEnvironmentInfo, currentEnvironment } from './environment';
+import {
+  validateEnvironment,
+  getEnvironmentInfo,
+  currentEnvironment,
+  safeLog,
+  safeError,
+  safeWarn,
+} from './environment';
 
 /**
  * Critical configuration that must be present
@@ -44,15 +51,11 @@ const checkRequiredEnvVars = (): RequiredConfig => {
  * This should be called as early as possible in the app lifecycle
  */
 export const initializeApp = (): void => {
-  if (__DEV__) {
-    console.log('🚀 Initializing Tifossi App...');
-  }
+  safeLog('🚀 Initializing Tifossi App...');
 
   // Get environment info
   const envInfo = getEnvironmentInfo();
-  if (__DEV__) {
-    console.log('📱 Environment:', envInfo);
-  }
+  safeLog('📱 Environment:', envInfo);
 
   // Validate environment configuration
   if (!validateEnvironment()) {
@@ -86,9 +89,7 @@ See .env.example for the complete list.
 
 Current environment: ${currentEnvironment}
 `;
-    if (__DEV__) {
-      console.error(errorMsg);
-    }
+    safeError(errorMsg);
 
     // In production/staging, throw error to prevent app from starting
     if (currentEnvironment !== 'development') {
@@ -100,9 +101,7 @@ Current environment: ${currentEnvironment}
   try {
     initializeEndpoints();
   } catch (error) {
-    if (__DEV__) {
-      console.error('❌ Failed to initialize API endpoints:', error);
-    }
+    safeError('❌ Failed to initialize API endpoints:', error);
 
     // In production/staging, re-throw to prevent app from starting
     if (currentEnvironment !== 'development') {
@@ -110,9 +109,7 @@ Current environment: ${currentEnvironment}
     }
   }
 
-  if (__DEV__) {
-    console.log('✅ App initialization complete');
-  }
+  safeLog('✅ App initialization complete');
 };
 
 /**
@@ -142,8 +139,7 @@ export const showConfigWarning = (): void => {
     const status = getConfigStatus();
 
     if (!status.configStatus.apiUrl) {
-      if (__DEV__) {
-        console.warn(`
+      safeWarn(`
 ⚠️  DEVELOPMENT WARNING: API URL not configured
 
    The app is using default localhost:1337
@@ -152,7 +148,6 @@ export const showConfigWarning = (): void => {
    Example:
    EXPO_PUBLIC_API_BASE_URL=https://staging-api.tifossi.app
 `);
-      }
     }
   }
 };

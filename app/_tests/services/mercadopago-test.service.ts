@@ -56,11 +56,17 @@ export class MercadoPagoTestService {
   }
 
   private validateConfig(config: MercadoPagoTestConfig) {
-    if (!config.accessToken?.startsWith('TEST-')) {
-      throw new Error('Invalid test access token. Must start with TEST-');
+    // Accept both TEST- (official test credentials) and APP_USR- (sandbox credentials)
+    const isValidAccessToken =
+      config.accessToken?.startsWith('TEST-') || config.accessToken?.startsWith('APP_USR-');
+    const isValidPublicKey =
+      config.publicKey?.startsWith('TEST-') || config.publicKey?.startsWith('APP_USR-');
+
+    if (!isValidAccessToken) {
+      throw new Error('Invalid access token. Must start with TEST- or APP_USR-');
     }
-    if (!config.publicKey?.startsWith('TEST-')) {
-      throw new Error('Invalid test public key. Must start with TEST-');
+    if (!isValidPublicKey) {
+      throw new Error('Invalid public key. Must start with TEST- or APP_USR-');
     }
     if (!config.webhookSecret) {
       throw new Error('Webhook secret is required');
@@ -104,23 +110,45 @@ export class MercadoPagoTestService {
 
   /**
    * Get preference details from MercadoPago
+   *
+   * NOTE: MercadoPago API does not officially support GET /checkout/preferences/{id}
+   * Preferences can only be retrieved from the creation response.
+   * This method first checks local storage, then attempts API call (which may fail).
+   *
+   * @deprecated Use the preference returned from createRealPreference() instead
    */
   async getPreference(preferenceId: string): Promise<TestPreference | null> {
+    // First check if we have it stored locally
+    const stored = this.testPreferences.get(preferenceId);
+    if (stored) {
+      return stored;
+    }
+
+    // Attempt API call (this will likely fail with 401/405)
     try {
-      const response = await fetch(`${this.apiUrl}/checkout/preferences/${preferenceId}`, {
+      const url = `${this.apiUrl}/checkout/preferences/${preferenceId}`;
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${this.config.accessToken}`,
+          'Content-Type': 'application/json',
         },
       });
 
       if (!response.ok) {
+        const _errorBody = await response.text().catch(() => 'Unable to read error body');
+        console.warn(
+          `[MercadoPago] Cannot fetch preference ${preferenceId} (expected - API doesn't support this):`,
+          response.status,
+          response.statusText
+        );
         return null;
       }
 
-      return await response.json();
+      const preference = await response.json();
+      return preference;
     } catch (error) {
-      console.error('Error fetching preference:', error);
+      console.warn('[MercadoPago] Preference fetch failed (expected):', error);
       return null;
     }
   }

@@ -23,12 +23,6 @@ interface WebhookValidationResult {
   reason?: string;
 }
 
-interface ProcessedWebhook {
-  timestamp: number;
-  requestId: string;
-  dataId: string;
-}
-
 interface DeadLetterEntry {
   requestId: string;
   webhookData: MPWebhookPayload;
@@ -45,7 +39,6 @@ export class WebhookHandler {
   private mercadoPagoService: MercadoPagoService;
   private orderStateManager: OrderStateManager;
   private _webhookSecret: string; // Placeholder for future webhook verification
-  private processedWebhooks: Map<string, ProcessedWebhook>;
   private webhookQueue: DeadLetterEntry[];
   private metrics: WebhookMetrics;
 
@@ -54,8 +47,7 @@ export class WebhookHandler {
     this.orderStateManager = new OrderStateManager();
     this._webhookSecret = process.env.MP_WEBHOOK_SECRET || '';
 
-    // Rate limiting and duplicate detection
-    this.processedWebhooks = new Map(); // In production, use Redis
+    // Dead letter queue for failed webhooks
     this.webhookQueue = []; // In production, use proper queue system
 
     // Metrics tracking
@@ -85,7 +77,7 @@ export class WebhookHandler {
       // Validate webhook
       const validationResult = this.validateWebhook(signature, requestId, dataId);
       if (!validationResult.valid) {
-        console.warn('Webhook validation failed:', validationResult.reason);
+        strapi.log.warn('Webhook validation failed:', validationResult.reason);
         res.status(validationResult.status || 400).json({
           error: validationResult.reason,
         });
@@ -93,8 +85,8 @@ export class WebhookHandler {
       }
 
       // Check for duplicates
-      if (this.isDuplicateWebhook(requestId, webhookData)) {
-        console.log('Duplicate webhook detected, returning success');
+      if (await this.isDuplicateWebhook(requestId, webhookData)) {
+        strapi.log.debug('Duplicate webhook detected, returning success');
         this.metrics.duplicates++;
         res.status(200).json({ status: 'processed' });
         return;
@@ -110,7 +102,7 @@ export class WebhookHandler {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      console.error('Webhook handler error:', error);
+      strapi.log.error('Webhook handler error:', error);
       this.metrics.failed++;
 
       res.status(500).json({
@@ -150,26 +142,54 @@ export class WebhookHandler {
   }
 
   /**
-   * Check if webhook is a duplicate
+   * Check if webhook is a duplicate using database
    */
-  private isDuplicateWebhook(requestId: string, webhookData: MPWebhookPayload): boolean {
+  private async isDuplicateWebhook(
+    requestId: string,
+    webhookData: MPWebhookPayload
+  ): Promise<boolean> {
     const webhookKey = `${requestId}_${webhookData.type}_${webhookData.data?.id}`;
 
-    if (this.processedWebhooks.has(webhookKey)) {
-      return true;
+    try {
+      // Check if webhook was already processed in database
+      const existingLog = await strapi.documents('api::webhook-log.webhook-log').findMany({
+        filters: {
+          webhookKey: webhookKey,
+        },
+        limit: 1,
+      });
+
+      if (existingLog && existingLog.length > 0) {
+        strapi.log.warn('Duplicate webhook detected', {
+          requestId,
+          webhookKey,
+          originalProcessedAt: existingLog[0].processedAt,
+        });
+        return true;
+      }
+
+      // Log this webhook as processed
+      await strapi.documents('api::webhook-log.webhook-log').create({
+        data: {
+          requestId,
+          webhookType: webhookData.type,
+          dataId: webhookData.data?.id?.toString() || '',
+          webhookKey,
+          processedAt: new Date().toISOString(),
+          status: 'success',
+          metadata: {
+            action: webhookData.action,
+            apiVersion: webhookData.api_version,
+          } as any,
+        },
+      });
+
+      return false;
+    } catch (error) {
+      strapi.log.error('Error checking duplicate webhook:', error);
+      // On error, allow webhook to proceed (safer than blocking legitimate webhooks)
+      return false;
     }
-
-    // Store webhook key with TTL (24 hours)
-    this.processedWebhooks.set(webhookKey, {
-      timestamp: Date.now(),
-      requestId,
-      dataId: webhookData.data?.id || '',
-    });
-
-    // Clean up old entries (in production, use Redis with TTL)
-    this.cleanupProcessedWebhooks();
-
-    return false;
   }
 
   /**
@@ -181,7 +201,7 @@ export class WebhookHandler {
     startTime: number
   ): Promise<void> {
     try {
-      console.log(`Processing webhook ${requestId}:`, webhookData.type);
+      strapi.log.debug(`Processing webhook ${requestId}:`, webhookData.type);
 
       // Route to appropriate handler based on webhook type
       let result: any;
@@ -195,19 +215,19 @@ export class WebhookHandler {
           break;
 
         default:
-          console.log(`Unknown webhook type: ${webhookData.type}`);
+          strapi.log.debug(`Unknown webhook type: ${webhookData.type}`);
           result = { status: 'ignored', reason: 'Unknown webhook type' };
       }
 
       const processingTime = Date.now() - startTime;
-      console.log(`Webhook ${requestId} processed in ${processingTime}ms:`, result);
+      strapi.log.info(`Webhook ${requestId} processed in ${processingTime}ms:`, result);
 
       this.metrics.processed++;
 
       // Store processing result for audit
       this.storeWebhookResult(requestId, webhookData, result, processingTime);
     } catch (error) {
-      console.error(`Error processing webhook ${requestId}:`, error);
+      strapi.log.error(`Error processing webhook ${requestId}:`, error);
 
       this.metrics.failed++;
 
@@ -290,7 +310,7 @@ export class WebhookHandler {
 
     // Note: This would require MercadoPago Merchant Order API
     // For now, we'll log and return success
-    console.log(`Merchant order webhook received: ${merchantOrderId}`);
+    strapi.log.debug(`Merchant order webhook received: ${merchantOrderId}`);
 
     return {
       status: 'processed',
@@ -312,11 +332,8 @@ export class WebhookHandler {
         await this.handlePaidOrder(order, paymentInfo);
         break;
 
-      case OrderStatus.PAYMENT_FAILED:
-        await this.handleFailedPayment(order, paymentInfo);
-        break;
-
       case OrderStatus.CANCELLED:
+        // CANCELLED handles both explicit cancellations and payment failures
         await this.handleCancelledOrder(order, paymentInfo);
         break;
 
@@ -325,7 +342,7 @@ export class WebhookHandler {
         break;
 
       default:
-        console.log(`No specific actions for status: ${newStatus}`);
+        strapi.log.debug(`No specific actions for status: ${newStatus}`);
     }
   }
 
@@ -333,7 +350,7 @@ export class WebhookHandler {
    * Handle successful payment actions
    */
   private async handlePaidOrder(order: Order, paymentInfo: MPPaymentResponse): Promise<void> {
-    console.log(`Order ${order.orderNumber} payment confirmed`);
+    strapi.log.info(`Order ${order.orderNumber} payment confirmed`);
 
     try {
       // Allocate inventory (placeholder)
@@ -345,9 +362,9 @@ export class WebhookHandler {
       // Notify fulfillment (placeholder)
       await this.notifyFulfillmentCenter(order);
 
-      console.log(`Paid order actions completed for ${order.orderNumber}`);
+      strapi.log.info(`Paid order actions completed for ${order.orderNumber}`);
     } catch (error) {
-      console.error(`Error in paid order actions for ${order.orderNumber}:`, error);
+      strapi.log.error(`Error in paid order actions for ${order.orderNumber}:`, error);
       // Don't throw - webhook processing should still succeed
     }
   }
@@ -356,7 +373,7 @@ export class WebhookHandler {
    * Handle failed payment actions
    */
   private async handleFailedPayment(order: Order, paymentInfo: MPPaymentResponse): Promise<void> {
-    console.log(`Order ${order.orderNumber} payment failed`);
+    strapi.log.info(`Order ${order.orderNumber} payment failed`);
 
     try {
       // Release inventory reservations
@@ -365,9 +382,9 @@ export class WebhookHandler {
       // Send payment failure notification
       await this.sendPaymentFailureEmail(order, paymentInfo);
 
-      console.log(`Failed payment actions completed for ${order.orderNumber}`);
+      strapi.log.info(`Failed payment actions completed for ${order.orderNumber}`);
     } catch (error) {
-      console.error(`Error in failed payment actions for ${order.orderNumber}:`, error);
+      strapi.log.error(`Error in failed payment actions for ${order.orderNumber}:`, error);
     }
   }
 
@@ -375,7 +392,7 @@ export class WebhookHandler {
    * Handle cancelled order actions
    */
   private async handleCancelledOrder(order: Order, _paymentInfo: MPPaymentResponse): Promise<void> {
-    console.log(`Order ${order.orderNumber} cancelled`);
+    strapi.log.info(`Order ${order.orderNumber} cancelled`);
 
     try {
       // Release all reservations
@@ -384,9 +401,9 @@ export class WebhookHandler {
       // Send cancellation notification
       await this.sendCancellationEmail(order);
 
-      console.log(`Cancelled order actions completed for ${order.orderNumber}`);
+      strapi.log.info(`Cancelled order actions completed for ${order.orderNumber}`);
     } catch (error) {
-      console.error(`Error in cancelled order actions for ${order.orderNumber}:`, error);
+      strapi.log.error(`Error in cancelled order actions for ${order.orderNumber}:`, error);
     }
   }
 
@@ -394,7 +411,7 @@ export class WebhookHandler {
    * Handle refunded order actions
    */
   private async handleRefundedOrder(order: Order, paymentInfo: MPPaymentResponse): Promise<void> {
-    console.log(`Order ${order.orderNumber} refunded`);
+    strapi.log.info(`Order ${order.orderNumber} refunded`);
 
     try {
       // Return inventory to stock
@@ -403,9 +420,9 @@ export class WebhookHandler {
       // Send refund confirmation
       await this.sendRefundConfirmationEmail(order, paymentInfo);
 
-      console.log(`Refunded order actions completed for ${order.orderNumber}`);
+      strapi.log.info(`Refunded order actions completed for ${order.orderNumber}`);
     } catch (error) {
-      console.error(`Error in refunded order actions for ${order.orderNumber}:`, error);
+      strapi.log.error(`Error in refunded order actions for ${order.orderNumber}:`, error);
     }
   }
 
@@ -429,7 +446,7 @@ export class WebhookHandler {
     };
 
     // In production, store in database
-    console.log('Webhook audit record:', auditRecord);
+    strapi.log.debug('Webhook audit record:', auditRecord);
   }
 
   /**
@@ -455,7 +472,7 @@ export class WebhookHandler {
     this.webhookQueue.push(deadLetterEntry);
 
     // In production, store in persistent queue
-    console.error('Added webhook to dead letter queue:', deadLetterEntry);
+    strapi.log.error('Added webhook to dead letter queue:', deadLetterEntry);
   }
 
   /**
@@ -466,14 +483,14 @@ export class WebhookHandler {
       return;
     }
 
-    console.log(`Processing ${this.webhookQueue.length} failed webhooks`);
+    strapi.log.info(`Processing ${this.webhookQueue.length} failed webhooks`);
 
     const toRetry = this.webhookQueue.splice(0, 10); // Process 10 at a time
 
     for (const entry of toRetry) {
       try {
         await this.processWebhookAsync(entry.webhookData, entry.requestId, Date.now());
-        console.log(`Successfully reprocessed webhook ${entry.requestId}`);
+        strapi.log.info(`Successfully reprocessed webhook ${entry.requestId}`);
       } catch (error) {
         entry.attemptCount++;
         entry.lastAttempt = new Date().toISOString();
@@ -483,7 +500,7 @@ export class WebhookHandler {
           this.webhookQueue.push(entry);
         } else {
           // Max retries reached, need manual intervention
-          console.error(
+          strapi.log.error(
             `Webhook ${entry.requestId} failed after ${entry.attemptCount} attempts:`,
             error
           );
@@ -493,15 +510,24 @@ export class WebhookHandler {
   }
 
   /**
-   * Clean up old processed webhook entries
+   * Clean up old webhook logs (90 days retention)
    */
-  private cleanupProcessedWebhooks(): void {
-    const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+  async cleanupOldWebhookLogs(): Promise<void> {
+    try {
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-    for (const [key, webhook] of this.processedWebhooks.entries()) {
-      if (webhook.timestamp < twentyFourHoursAgo) {
-        this.processedWebhooks.delete(key);
-      }
+      await strapi.db.query('api::webhook-log.webhook-log').deleteMany({
+        where: {
+          processedAt: {
+            $lt: ninetyDaysAgo.toISOString(),
+          },
+        },
+      });
+
+      strapi.log.info('Cleaned up old webhook logs');
+    } catch (error) {
+      strapi.log.error('Error cleaning up webhook logs:', error);
     }
   }
 
@@ -510,13 +536,11 @@ export class WebhookHandler {
    */
   getMetrics(): WebhookMetrics & {
     queueDepth: number;
-    processedWebhooksCount: number;
     timestamp: string;
   } {
     return {
       ...this.metrics,
       queueDepth: this.webhookQueue.length,
-      processedWebhooksCount: this.processedWebhooks.size,
       timestamp: new Date().toISOString(),
     };
   }
@@ -526,49 +550,49 @@ export class WebhookHandler {
 
   private async getOrderByNumber(orderNumber: string): Promise<Order | null> {
     // Placeholder - implement with actual database query
-    console.log(`Getting order by number: ${orderNumber}`);
+    strapi.log.debug(`Getting order by number: ${orderNumber}`);
     return null; // Replace with actual implementation
   }
 
   private async allocateInventory(order: Order): Promise<void> {
-    console.log(`Allocating inventory for order ${order.orderNumber}`);
+    strapi.log.debug(`Allocating inventory for order ${order.orderNumber}`);
   }
 
   private async releaseInventoryReservations(order: Order): Promise<void> {
-    console.log(`Releasing inventory reservations for order ${order.orderNumber}`);
+    strapi.log.debug(`Releasing inventory reservations for order ${order.orderNumber}`);
   }
 
   private async returnInventoryToStock(order: Order): Promise<void> {
-    console.log(`Returning inventory to stock for order ${order.orderNumber}`);
+    strapi.log.debug(`Returning inventory to stock for order ${order.orderNumber}`);
   }
 
   private async sendConfirmationEmail(
     order: Order,
     _paymentInfo: MPPaymentResponse
   ): Promise<void> {
-    console.log(`Sending confirmation email for order ${order.orderNumber}`);
+    strapi.log.debug(`Sending confirmation email for order ${order.orderNumber}`);
   }
 
   private async sendPaymentFailureEmail(
     order: Order,
     _paymentInfo: MPPaymentResponse
   ): Promise<void> {
-    console.log(`Sending payment failure email for order ${order.orderNumber}`);
+    strapi.log.debug(`Sending payment failure email for order ${order.orderNumber}`);
   }
 
   private async sendCancellationEmail(order: Order): Promise<void> {
-    console.log(`Sending cancellation email for order ${order.orderNumber}`);
+    strapi.log.debug(`Sending cancellation email for order ${order.orderNumber}`);
   }
 
   private async sendRefundConfirmationEmail(
     order: Order,
     _paymentInfo: MPPaymentResponse
   ): Promise<void> {
-    console.log(`Sending refund confirmation email for order ${order.orderNumber}`);
+    strapi.log.debug(`Sending refund confirmation email for order ${order.orderNumber}`);
   }
 
   private async notifyFulfillmentCenter(order: Order): Promise<void> {
-    console.log(`Notifying fulfillment center for order ${order.orderNumber}`);
+    strapi.log.debug(`Notifying fulfillment center for order ${order.orderNumber}`);
   }
 }
 

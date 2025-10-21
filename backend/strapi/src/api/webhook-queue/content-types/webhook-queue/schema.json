@@ -1,0 +1,63 @@
+{
+  "kind": "collectionType",
+  "collectionName": "webhook_queues",
+  "info": {
+    "singularName": "webhook-queue",
+    "pluralName": "webhook-queues",
+    "displayName": "Webhook Queue",
+    "description": "Queue for async webhook processing to improve response time"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "populateCreatorFields": false
+  },
+  "attributes": {
+    "requestId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "webhookType": {
+      "type": "enumeration",
+      "enum": ["payment", "merchant_order", "chargebacks", "point_integration_wh"],
+      "required": true
+    },
+    "dataId": {
+      "type": "string",
+      "required": true
+    },
+    "payload": {
+      "type": "json",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["queued", "processing", "completed", "failed"],
+      "default": "queued",
+      "required": true
+    },
+    "retryCount": {
+      "type": "integer",
+      "default": 0,
+      "required": true
+    },
+    "maxRetries": {
+      "type": "integer",
+      "default": 5,
+      "required": true
+    },
+    "scheduledAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "processedAt": {
+      "type": "datetime"
+    },
+    "error": {
+      "type": "text"
+    },
+    "metadata": {
+      "type": "json"
+    }
+  }
+}

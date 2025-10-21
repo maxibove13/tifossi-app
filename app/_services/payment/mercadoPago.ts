@@ -5,6 +5,7 @@
 
 import * as WebBrowser from 'expo-web-browser';
 import { endpoints } from '../../_config/endpoints';
+import { deviceFingerprintService } from '../device/fingerprint';
 
 export interface OrderData {
   id?: string;
@@ -109,13 +110,19 @@ class MercadoPagoService {
         throw new Error('Se requiere autenticación');
       }
 
+      // Get device fingerprint for fraud prevention
+      const deviceFingerprint = await deviceFingerprintService.getDeviceFingerprint();
+
       const response = await fetch(`${this.baseUrl}/api/payment/create-preference`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.authToken}`,
         },
-        body: JSON.stringify({ orderData }),
+        body: JSON.stringify({
+          orderData,
+          deviceFingerprint,
+        }),
       });
 
       if (!response.ok) {
@@ -233,8 +240,61 @@ class MercadoPagoService {
         params[key] = value;
       });
 
-      if (!['success', 'failure', 'pending'].includes(status)) {
-        return null;
+      // Validate payment_id format (must be numeric)
+      const paymentId = params.payment_id as string;
+      if (paymentId) {
+        if (!/^\d+$/.test(paymentId)) {
+          console.warn('[MercadoPago] Invalid payment_id format:', paymentId);
+          return {
+            success: false,
+            error: 'Invalid payment ID format',
+          };
+        }
+      }
+
+      // Validate external_reference format (should be order number format)
+      const externalReference = params.external_reference as string;
+      if (externalReference) {
+        // Order numbers should be alphanumeric with hyphens
+        if (!/^[A-Z0-9-]+$/.test(externalReference)) {
+          console.warn('[MercadoPago] Invalid external_reference format:', externalReference);
+          return {
+            success: false,
+            error: 'Invalid order reference format',
+          };
+        }
+      }
+
+      // Validate merchant_order_id format (must be numeric if present)
+      const merchantOrderId = params.merchant_order_id as string;
+      if (merchantOrderId && !/^\d+$/.test(merchantOrderId)) {
+        console.warn('[MercadoPago] Invalid merchant_order_id format:', merchantOrderId);
+        return {
+          success: false,
+          error: 'Invalid merchant order ID format',
+        };
+      }
+
+      // Prevent parameter injection - check for suspicious characters
+      const allParams = Object.entries(params);
+      for (const [key, value] of allParams) {
+        // Check for code injection attempts
+        if (typeof value === 'string' && /[<>'"{}()\[\]\\]/.test(value)) {
+          console.warn('[MercadoPago] Suspicious parameter detected:', { key, value });
+          return {
+            success: false,
+            error: 'Invalid parameter format',
+          };
+        }
+
+        // Check for excessively long values (potential DoS)
+        if (typeof value === 'string' && value.length > 255) {
+          console.warn('[MercadoPago] Parameter too long:', { key, length: value.length });
+          return {
+            success: false,
+            error: 'Parameter exceeds maximum length',
+          };
+        }
       }
 
       const paymentStatus = this.mapUrlStatusToPaymentStatus(status);

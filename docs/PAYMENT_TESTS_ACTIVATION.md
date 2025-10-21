@@ -34,7 +34,7 @@ All scripts are added but commented with `#`:
 
 ### Step 1: Obtain MercadoPago Credentials
 
-Follow `docs/MERCADOPAGO_CREDENTIAL_SETUP.md` to get:
+Follow `docs/MERCADOPAGO_SETUP.md` to get:
 
 - `MP_TEST_ACCESS_TOKEN`
 - `MP_TEST_PUBLIC_KEY`
@@ -140,10 +140,10 @@ Before activation, review these files:
 - `/app/_services/payment/webhookValidator.ts`
 - `/app/_tests/services/mercadopago-test.service.ts`
 - `/.github/workflows/payment-tests.yml`
-- `/docs/MERCADOPAGO_CREDENTIAL_SETUP.md`
+- `/docs/MERCADOPAGO_SETUP.md`
 
 ---
 
 **Status**: Waiting for MercadoPago account creation
-**Next Step**: Follow `MERCADOPAGO_CREDENTIAL_SETUP.md`
+**Next Step**: Follow `MERCADOPAGO_SETUP.md`
 **ETA**: Tests ready to activate immediately upon credential availability

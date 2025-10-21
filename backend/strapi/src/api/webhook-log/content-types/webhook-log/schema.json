@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "webhook_logs",
+  "info": {
+    "singularName": "webhook-log",
+    "pluralName": "webhook-logs",
+    "displayName": "Webhook Log",
+    "description": "MercadoPago webhook processing logs for duplicate detection and audit trail"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "populateCreatorFields": false
+  },
+  "attributes": {
+    "requestId": {
+      "type": "string",
+      "required": true
+    },
+    "webhookType": {
+      "type": "string",
+      "required": true
+    },
+    "dataId": {
+      "type": "string",
+      "required": true
+    },
+    "webhookKey": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "processedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["success", "failed", "duplicate"],
+      "default": "success"
+    },
+    "metadata": {
+      "type": "json"
+    }
+  }
+}

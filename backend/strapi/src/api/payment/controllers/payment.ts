@@ -23,6 +23,7 @@ export default {
 
       const rawOrder =
         ctx.request.body?.orderData || ctx.request.body?.data || ctx.request.body || {};
+      const deviceFingerprint = ctx.request.body?.deviceFingerprint;
 
       const sanitizedOrder = await sanitizeOrderPayload({
         strapi,
@@ -35,7 +36,6 @@ export default {
       });
 
       const mpService = new MercadoPagoService();
-      const orderManager = new OrderStateManager();
 
       const orderEntity = await strapi.documents('api::order.order').create({
         data: {
@@ -44,51 +44,53 @@ export default {
           user: authUser.id,
           items: sanitizedOrder.itemsForPersistence,
           shippingAddress: sanitizedOrder.shippingAddressComponent,
-          shippingMethod: sanitizedOrder.shippingMethod,
+          shippingMethod: sanitizedOrder.shippingMethod as 'delivery' | 'pickup',
           shippingCost: sanitizedOrder.shippingCost,
           subtotal: sanitizedOrder.subtotal,
           discount: sanitizedOrder.discount,
           total: sanitizedOrder.total,
           paymentMethod: 'mercadopago',
-          paymentStatus: 'PENDING',
-          status: 'PENDING',
-          notes: rawOrder.notes || null,
+          paymentStatus: 'pending',
+          status: 'pending',
+          notes: rawOrder.notes || undefined,
           metadata: {
             ...sanitizedOrder.metadata,
             paymentProvider: 'mercadopago',
           },
-        },
+        } as any,
         populate: {
           items: { populate: { product: true } },
           user: true,
         },
       });
 
-      const preference = await mpService.createPreference({
-        orderNumber: orderEntity.orderNumber,
-        items: sanitizedOrder.mercadoPagoPayload.items.map((item) => ({
-          productId: String(item.productId),
-          productName: item.productName,
-          description: item.description || undefined,
-          quantity: item.quantity,
-          price: item.price,
-          size: item.size,
-          color: item.color,
-        })),
-        user: sanitizedOrder.mercadoPagoPayload.user,
-        shippingAddress: sanitizedOrder.mercadoPagoPayload.address,
-        shippingMethod: sanitizedOrder.shippingMethod as 'pickup' | 'delivery',
-        shippingCost: sanitizedOrder.shippingCost,
-        subtotal: sanitizedOrder.subtotal,
-        discount: sanitizedOrder.discount,
-        total: sanitizedOrder.total,
-      });
+      const preference = await mpService.createPreference(
+        {
+          orderNumber: orderEntity.orderNumber as string,
+          items: sanitizedOrder.mercadoPagoPayload.items.map((item) => ({
+            productId: String(item.productId),
+            productName: item.productName,
+            description: item.description || undefined,
+            quantity: item.quantity,
+            price: item.price,
+            size: item.size,
+            color: item.color,
+          })),
+          user: sanitizedOrder.mercadoPagoPayload.user,
+          shippingAddress: sanitizedOrder.mercadoPagoPayload.address,
+          shippingMethod: sanitizedOrder.shippingMethod as 'pickup' | 'delivery',
+          shippingCost: sanitizedOrder.shippingCost,
+          subtotal: sanitizedOrder.subtotal,
+          discount: sanitizedOrder.discount,
+          total: sanitizedOrder.total,
+        },
+        deviceFingerprint
+      );
 
       const updatedOrder = await strapi.documents('api::order.order').update({
         documentId: orderEntity.documentId,
         data: {
           mpPreferenceId: preference.id,
-          status: 'PAYMENT_PENDING',
         } as any,
 
         populate: {
@@ -96,16 +98,6 @@ export default {
           user: true,
         },
       });
-
-      await orderManager.transitionStatus(
-        String(orderEntity.id),
-        OrderStatus.PENDING,
-        OrderStatus.PAYMENT_PENDING,
-        {
-          triggeredBy: 'system',
-          reason: 'MercadoPago preference created',
-        }
-      );
 
       const clientOrder = buildClientOrder(updatedOrder as any, sanitizedOrder.clientSummary);
 
@@ -158,7 +150,7 @@ export default {
 
       const orderStatus = mpService.mapPaymentStatus(paymentInfo.status, paymentInfo.status_detail);
 
-      const updatedOrder = await strapi.documents('api::order.order').update({
+      const _updatedOrder = await strapi.documents('api::order.order').update({
         documentId: order.documentId,
         data: {
           mpPaymentId: paymentInfo.id,
@@ -166,7 +158,7 @@ export default {
           status: orderStatus,
           paidAt: paymentInfo.status === 'approved' ? paymentInfo.date_approved : null,
           metadata: {
-            ...order.metadata,
+            ...((order as any).metadata || {}),
             lastPaymentCheck: new Date().toISOString(),
             paymentStatusDetail: paymentInfo.status_detail,
           },
@@ -175,10 +167,15 @@ export default {
 
       if (order.status !== orderStatus) {
         const orderManager = new OrderStateManager();
-        await orderManager.transitionStatus(String(order.id), order.status, orderStatus, {
-          triggeredBy: 'user',
-          reason: 'Payment status verification',
-        });
+        await orderManager.transitionStatus(
+          String(order.id),
+          order.status as OrderStatus,
+          orderStatus,
+          {
+            triggeredBy: 'user',
+            reason: 'Payment status verification',
+          }
+        );
       }
 
       ctx.body = {
@@ -303,7 +300,7 @@ export default {
         return ctx.notFound('Order not found');
       }
 
-      if (order.status !== 'PAID') {
+      if (order.status !== 'paid') {
         return ctx.badRequest('Only paid orders can be refunded');
       }
 
@@ -319,9 +316,9 @@ export default {
       await strapi.documents('api::order.order').update({
         documentId: order.documentId,
         data: {
-          status: 'REFUNDED',
+          status: 'refunded',
           metadata: {
-            ...order.metadata,
+            ...((order as any).metadata || {}),
             refundId: refundInfo.id,
             refundReason: reason,
             refundDate: new Date().toISOString(),

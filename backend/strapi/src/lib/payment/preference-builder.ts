@@ -58,7 +58,7 @@ export class PreferenceBuilder {
       binaryMode: config.binaryMode || false,
     };
 
-    this.baseUrl = process.env.API_BASE_URL || '';
+    this.baseUrl = process.env.PUBLIC_URL || '';
     this.appScheme = process.env.APP_SCHEME || 'tifossi';
   }
 

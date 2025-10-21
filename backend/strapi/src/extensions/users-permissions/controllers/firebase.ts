@@ -26,7 +26,7 @@ export default ({ strapi }: { strapi: any }) => ({
       try {
         decodedToken = await firebaseAdmin.verifyIdToken(firebaseToken);
       } catch (error) {
-        console.error('[Strapi Firebase] Token verification failed:', error);
+        strapi.log.error('[Strapi Firebase] Token verification failed:', error);
         return ctx.unauthorized('Invalid Firebase token');
       }
 
@@ -75,7 +75,7 @@ export default ({ strapi }: { strapi: any }) => ({
           },
         });
 
-        console.log('[Strapi Firebase] Updated existing user:', email);
+        strapi.log.info('[Strapi Firebase] Updated existing user:', email);
       } else {
         // Create new user from Firebase data
         const defaultRole = await strapi.db.query('plugin::users-permissions.role').findOne({
@@ -108,7 +108,7 @@ export default ({ strapi }: { strapi: any }) => ({
           },
         });
 
-        console.log('[Strapi Firebase] Created new user:', email);
+        strapi.log.info('[Strapi Firebase] Created new user:', email);
       }
 
       // Generate Strapi JWT token
@@ -128,7 +128,7 @@ export default ({ strapi }: { strapi: any }) => ({
         message: 'Authentication successful',
       });
     } catch (error) {
-      console.error('[Strapi Firebase] Token exchange error:', error);
+      strapi.log.error('[Strapi Firebase] Token exchange error:', error);
       ctx.internalServerError('Authentication failed');
     }
   },
@@ -151,7 +151,7 @@ export default ({ strapi }: { strapi: any }) => ({
       try {
         firebaseUser = await firebaseAdmin.getUser(user.firebaseUid);
       } catch (error) {
-        console.error('[Strapi Firebase] Failed to get Firebase user:', error);
+        strapi.log.error('[Strapi Firebase] Failed to get Firebase user:', error);
         return ctx.notFound('Firebase user not found');
       }
 
@@ -178,7 +178,7 @@ export default ({ strapi }: { strapi: any }) => ({
         message: 'User data synchronized successfully',
       });
     } catch (error) {
-      console.error('[Strapi Firebase] User sync error:', error);
+      strapi.log.error('[Strapi Firebase] User sync error:', error);
       ctx.internalServerError('User synchronization failed');
     }
   },
@@ -218,7 +218,7 @@ export default ({ strapi }: { strapi: any }) => ({
         message: 'Token is valid',
       });
     } catch (error) {
-      console.error('[Strapi Firebase] Token validation error:', error);
+      strapi.log.error('[Strapi Firebase] Token validation error:', error);
       ctx.unauthorized('Token validation failed');
     }
   },
@@ -239,9 +239,9 @@ export default ({ strapi }: { strapi: any }) => ({
       // Delete user from Firebase
       try {
         await firebaseAdmin.deleteUser(user.firebaseUid);
-        console.log('[Strapi Firebase] User deleted from Firebase:', user.firebaseUid);
+        strapi.log.info('[Strapi Firebase] User deleted from Firebase:', user.firebaseUid);
       } catch (error) {
-        console.error('[Strapi Firebase] Failed to delete Firebase user:', error);
+        strapi.log.error('[Strapi Firebase] Failed to delete Firebase user:', error);
         // Continue with Strapi deletion even if Firebase deletion fails
       }
 
@@ -250,13 +250,13 @@ export default ({ strapi }: { strapi: any }) => ({
         where: { id: user.id },
       });
 
-      console.log('[Strapi Firebase] User deleted from Strapi:', user.id);
+      strapi.log.info('[Strapi Firebase] User deleted from Strapi:', user.id);
 
       ctx.send({
         message: 'User deleted successfully',
       });
     } catch (error) {
-      console.error('[Strapi Firebase] User deletion error:', error);
+      strapi.log.error('[Strapi Firebase] User deletion error:', error);
       ctx.internalServerError('User deletion failed');
     }
   },

@@ -5,7 +5,7 @@ export default {
    *
    * This gives you an opportunity to extend code.
    */
-  register({ strapi }: { strapi: any }) {},
+  register({ strapi: _strapi }: { strapi: any }) {},
 
   /**
    * An asynchronous bootstrap function that runs before
@@ -51,7 +51,7 @@ async function initializeDefaultData(strapi: any) {
     const adminUsers = await strapi.db.query('admin::user').findMany();
 
     if (adminUsers.length === 0) {
-      console.log('Creating default admin user...');
+      strapi.log.info('Creating default admin user...');
       // Default admin creation logic would go here
       // This is typically done through Strapi CLI or admin panel
     }
@@ -60,7 +60,7 @@ async function initializeDefaultData(strapi: any) {
     const productStatuses = await strapi.db.query('api::product-status.product-status').findMany();
 
     if (productStatuses.length === 0) {
-      console.log('Creating default product statuses...');
+      strapi.log.info('Creating default product statuses...');
 
       const defaultStatuses = [
         {
@@ -101,10 +101,10 @@ async function initializeDefaultData(strapi: any) {
         });
       }
 
-      console.log('Default product statuses created');
+      strapi.log.info('Default product statuses created');
     }
   } catch (error) {
-    console.error('Error initializing default data:', error);
+    strapi.log.error('Error initializing default data:', error);
   }
 }
 
@@ -113,15 +113,63 @@ async function initializeDefaultData(strapi: any) {
  */
 function setupCronJobs(strapi: any) {
   try {
-    // Example: Clean up expired sessions daily
+    // Process webhook queue every 30 seconds
     strapi.cron.add({
-      cleanupSessions: {
-        task: ({ strapi }: { strapi: any }) => {
-          console.log('Running session cleanup...');
-          // Cleanup logic here
+      processWebhookQueue: {
+        task: async ({ strapi }: { strapi: any }) => {
+          try {
+            strapi.log.debug('Processing webhook queue...');
+            const { WebhookProcessor } = require('./lib/payment/webhook-processor');
+            const processor = new WebhookProcessor();
+            await processor.processQueue();
+          } catch (error) {
+            strapi.log.error('Error in webhook queue processor:', error);
+          }
         },
         options: {
-          rule: '0 0 * * *', // Daily at midnight
+          rule: '*/30 * * * * *', // Every 30 seconds
+        },
+      },
+    });
+
+    // Clean up old webhook logs and queued items (90 days retention)
+    strapi.cron.add({
+      cleanupWebhooks: {
+        task: async ({ strapi }: { strapi: any }) => {
+          try {
+            strapi.log.info('Cleaning up old webhook logs and completed queue items...');
+
+            const ninetyDaysAgo = new Date();
+            ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+            // Clean up old webhook logs
+            await strapi.db.query('api::webhook-log.webhook-log').deleteMany({
+              where: {
+                processedAt: {
+                  $lt: ninetyDaysAgo.toISOString(),
+                },
+              },
+            });
+
+            // Clean up completed/failed webhook queue items older than 90 days
+            await strapi.db.query('api::webhook-queue.webhook-queue').deleteMany({
+              where: {
+                processedAt: {
+                  $lt: ninetyDaysAgo.toISOString(),
+                },
+                status: {
+                  $in: ['completed', 'failed'],
+                },
+              },
+            });
+
+            strapi.log.info('Webhook cleanup completed');
+          } catch (error) {
+            strapi.log.error('Error cleaning up webhooks:', error);
+          }
+        },
+        options: {
+          rule: '0 2 * * *', // Daily at 2 AM
         },
       },
     });
@@ -130,7 +178,7 @@ function setupCronJobs(strapi: any) {
     strapi.cron.add({
       updateAnalytics: {
         task: ({ strapi }: { strapi: any }) => {
-          console.log('Updating product analytics...');
+          strapi.log.info('Updating product analytics...');
           // Analytics update logic here
         },
         options: {
@@ -139,9 +187,9 @@ function setupCronJobs(strapi: any) {
       },
     });
 
-    console.log('Cron jobs initialized');
+    strapi.log.info('Cron jobs initialized');
   } catch (error) {
-    console.error('Error setting up cron jobs:', error);
+    strapi.log.error('Error setting up cron jobs:', error);
   }
 }
 
@@ -150,25 +198,57 @@ function setupCronJobs(strapi: any) {
  */
 async function initializeExternalServices(strapi: any) {
   try {
-    // Initialize MercadoPago if enabled
-    if (process.env.FEATURE_PAYMENTS_ENABLED === 'true') {
-      console.log('Initializing MercadoPago service...');
-      // MercadoPago initialization would be handled in the payment service
+    // Validate MercadoPago configuration on startup
+    const paymentsEnabled = process.env.FEATURE_PAYMENTS_ENABLED === 'true';
+
+    if (paymentsEnabled) {
+      strapi.log.info('Validating MercadoPago configuration...');
+
+      try {
+        // This will throw if credentials are missing
+        const MercadoPagoService = require('./lib/payment/mercadopago-service').MercadoPagoService;
+        const mpService = new MercadoPagoService();
+
+        const status = mpService.getServiceStatus();
+        strapi.log.info('✅ MercadoPago service initialized successfully', {
+          mode: status.isProduction ? 'PRODUCTION' : 'TEST',
+          accessTokenSet: status.accessTokenSet,
+          publicKeySet: status.publicKeySet,
+          webhookSecretSet: status.webhookSecretSet,
+        });
+
+        // Store service instance for reuse
+        strapi.mercadoPago = mpService;
+      } catch (error: any) {
+        strapi.log.error('❌ MercadoPago configuration is invalid:', error.message);
+        strapi.log.error('Please check your environment variables:');
+        strapi.log.error('- MP_TEST_ACCESS_TOKEN (test mode)');
+        strapi.log.error('- MP_TEST_PUBLIC_KEY (test mode)');
+        strapi.log.error('- MP_ACCESS_TOKEN (production mode)');
+        strapi.log.error('- MP_PUBLIC_KEY (production mode)');
+        strapi.log.error('- MP_WEBHOOK_SECRET (required for both modes)');
+
+        // Fail startup to prevent running with broken configuration
+        throw new Error('MercadoPago configuration validation failed. Cannot start application.');
+      }
+    } else {
+      strapi.log.info('Payment features disabled (FEATURE_PAYMENTS_ENABLED=false)');
     }
 
     // Initialize email service if enabled
     if (process.env.FEATURE_EMAIL_NOTIFICATIONS === 'true') {
-      console.log('Initializing email service...');
+      strapi.log.info('Initializing email service...');
       // Email service initialization
     }
 
     // Test database connection
     await strapi.db.connection.raw('SELECT 1');
-    console.log('Database connection established');
+    strapi.log.info('Database connection established');
 
-    console.log('External services initialized');
+    strapi.log.info('External services initialized');
   } catch (error) {
-    console.error('Error initializing external services:', error);
-    // Don't throw - let the app start even if some services fail
+    strapi.log.error('Error initializing external services:', error);
+    // Throw the error to halt startup if critical services fail
+    throw error;
   }
 }
