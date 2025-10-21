@@ -4,18 +4,13 @@
  */
 
 import { Context } from 'koa';
-import {
-  MPPaymentResponse,
-  MPWebhookPayload,
-  MPWebhookType,
-} from '../lib/payment/types/mercadopago';
+import { MPPaymentResponse, MPWebhookPayload } from '../lib/payment/types/mercadopago';
 import { OrderStatus } from '../lib/payment/types/orders';
 
 // Declare global strapi for TypeScript
 declare const strapi: any;
 
-const MercadoPagoService = require('../lib/payment/mercadopago-service');
-const OrderStateManager = require('../lib/payment/order-state-manager');
+const { OrderStateManager } = require('../lib/payment/order-state-manager');
 
 interface StrapiOrder {
   id: number;
@@ -54,8 +49,16 @@ module.exports = {
   /**
    * Handle MercadoPago webhook notifications
    * POST /webhooks/mercadopago
+   *
+   * This handler implements a fast-response queue pattern:
+   * 1. Validate signature (SYNC - fast)
+   * 2. Check for duplicates (SYNC - fast)
+   * 3. Queue for async processing (SYNC - fast)
+   * 4. Return 200 OK immediately (<50ms target)
    */
   async handleWebhook(ctx: Context): Promise<void> {
+    const startTime = Date.now();
+
     try {
       // Get webhook data and headers for signature verification
       const webhookData: MPWebhookPayload = (ctx.request as any).body;
@@ -73,7 +76,8 @@ module.exports = {
       });
 
       // Verify webhook signature for security with correct parameters
-      const mpService = new MercadoPagoService();
+      // Use singleton instance from strapi startup (prevents production crash)
+      const mpService = strapi.mercadoPago;
       if (!signature || !requestId || !dataId) {
         strapi.log.warn('Missing required webhook headers or data');
         ctx.badRequest('Missing required webhook data');
@@ -93,43 +97,91 @@ module.exports = {
         return;
       }
 
-      // Process different types of notifications
-      switch (webhookData.type) {
-        case MPWebhookType.PAYMENT:
-          await this.handlePaymentNotification(webhookData.data, requestId);
-          break;
+      // Check for duplicates using webhook-log
+      const webhookKey = `${requestId}_${webhookData.type}_${dataId}`;
+      const existingLog = await strapi.documents('api::webhook-log.webhook-log').findMany({
+        filters: {
+          webhookKey: webhookKey,
+        },
+        limit: 1,
+      });
 
-        case MPWebhookType.MERCHANT_ORDER:
-          // Handle merchant order changes (if applicable in future)
-          strapi.log.info('Merchant order notification received (not implemented)');
-          break;
+      if (existingLog && existingLog.length > 0) {
+        strapi.log.warn('Duplicate webhook detected', {
+          requestId,
+          webhookKey,
+          originalProcessedAt: existingLog[0].processedAt,
+        });
 
-        case MPWebhookType.CHARGEBACKS:
-          // Handle chargeback notifications (if applicable in future)
-          strapi.log.info('Chargeback notification received (not implemented)');
-          break;
-
-        default:
-          strapi.log.warn(`Unknown webhook type: ${webhookData.type}`);
-          break;
+        const responseTime = Date.now() - startTime;
+        ctx.status = 200;
+        ctx.body = {
+          success: true,
+          status: 'duplicate',
+          requestId,
+          responseTime: `${responseTime}ms`,
+        };
+        return;
       }
 
-      // Always return 200 OK to acknowledge webhook receipt
+      // Log webhook as received to prevent duplicates
+      await strapi.documents('api::webhook-log.webhook-log').create({
+        data: {
+          requestId,
+          webhookType: webhookData.type,
+          dataId: dataId,
+          webhookKey,
+          processedAt: new Date().toISOString(),
+          status: 'success',
+          metadata: {
+            action: webhookData.action,
+            apiVersion: webhookData.api_version,
+            receivedAt: new Date().toISOString(),
+          } as any,
+        },
+      });
+
+      // Queue for async processing
+      await strapi.documents('api::webhook-queue.webhook-queue').create({
+        data: {
+          requestId,
+          webhookType: webhookData.type,
+          dataId: dataId,
+          payload: webhookData,
+          status: 'queued',
+          retryCount: 0,
+          maxRetries: 5,
+          scheduledAt: new Date().toISOString(),
+          metadata: {
+            queuedAt: new Date().toISOString(),
+            userAgent: ctx.request.headers['user-agent'],
+          },
+        },
+      });
+
+      const responseTime = Date.now() - startTime;
+      strapi.log.info(`Webhook queued successfully in ${responseTime}ms`);
+
+      // Always return 200 OK immediately to acknowledge webhook receipt
       ctx.status = 200;
       ctx.body = {
         success: true,
-        message: 'Webhook processed successfully',
+        status: 'queued',
         requestId,
+        responseTime: `${responseTime}ms`,
       };
     } catch (error: any) {
       strapi.log.error('Error processing MercadoPago webhook:', error);
+
+      const responseTime = Date.now() - startTime;
 
       // Return 200 OK even on error to prevent MercadoPago retries for unrecoverable errors
       ctx.status = 200;
       ctx.body = {
         success: false,
-        error: 'Webhook processing failed',
+        error: 'Webhook queueing failed',
         message: error.message,
+        responseTime: `${responseTime}ms`,
       };
     }
   },
@@ -151,8 +203,8 @@ module.exports = {
 
       strapi.log.info(`Processing payment notification for payment ID: ${paymentId}`);
 
-      // Initialize services
-      const mpService = new MercadoPagoService();
+      // Initialize services - use singleton instance from strapi startup
+      const mpService = strapi.mercadoPago;
       const orderManager = new OrderStateManager();
 
       // Get payment information from MercadoPago
@@ -198,6 +250,76 @@ module.exports = {
       }
 
       strapi.log.info(`Found order ${order.orderNumber} for payment ${paymentId}`);
+
+      // Validate payment amount matches order total
+      const amountDifference = Math.abs(paymentInfo.transaction_amount - order.total);
+      if (amountDifference > 0.01) {
+        strapi.log.error('Payment fraud attempt detected - amount mismatch', {
+          orderId: order.orderNumber,
+          expectedAmount: order.total,
+          receivedAmount: paymentInfo.transaction_amount,
+          paymentId: paymentInfo.id,
+          webhookRequestId: requestId,
+        });
+
+        // Mark order as cancelled due to fraud
+        await strapi.documents('api::order.order').update({
+          documentId: order.documentId,
+          data: {
+            status: OrderStatus.CANCELLED,
+            metadata: {
+              ...order.metadata,
+              fraudDetected: true,
+              fraudReason: 'amount_mismatch',
+              fraudDetails: {
+                expectedAmount: order.total,
+                receivedAmount: paymentInfo.transaction_amount,
+                difference: amountDifference,
+              },
+            },
+          },
+        });
+
+        return;
+      }
+
+      // Validate currency is UYU (Uruguayan Peso)
+      if (paymentInfo.currency_id !== 'UYU') {
+        strapi.log.error('Payment fraud attempt detected - invalid currency', {
+          orderId: order.orderNumber,
+          expectedCurrency: 'UYU',
+          receivedCurrency: paymentInfo.currency_id,
+          paymentId: paymentInfo.id,
+          webhookRequestId: requestId,
+        });
+
+        await strapi.documents('api::order.order').update({
+          documentId: order.documentId,
+          data: {
+            status: OrderStatus.CANCELLED,
+            metadata: {
+              ...order.metadata,
+              fraudDetected: true,
+              fraudReason: 'invalid_currency',
+              fraudDetails: {
+                expectedCurrency: 'UYU',
+                receivedCurrency: paymentInfo.currency_id,
+              },
+            },
+          },
+        });
+
+        return;
+      }
+
+      // Log payment method for analytics
+      strapi.log.info('Payment processed with method', {
+        orderId: order.orderNumber,
+        paymentMethod: paymentInfo.payment_method_id,
+        paymentType: paymentInfo.payment_type_id,
+        amount: paymentInfo.transaction_amount,
+        currency: paymentInfo.currency_id,
+      });
 
       // Map MercadoPago status to internal order status
       const newOrderStatus: OrderStatus = mpService.mapPaymentStatus(
@@ -275,16 +397,13 @@ module.exports = {
           await this.handlePaymentApproved(order, paymentInfo);
           break;
 
-        case OrderStatus.PAYMENT_FAILED:
-          await this.handlePaymentRejected(order, paymentInfo);
+        case OrderStatus.CANCELLED:
+          // CANCELLED handles both explicit cancellations and payment rejections
+          await this.handlePaymentCancelled(order, paymentInfo);
           break;
 
         case OrderStatus.REFUNDED:
           await this.handlePaymentRefunded(order, paymentInfo);
-          break;
-
-        case OrderStatus.CANCELLED:
-          await this.handlePaymentCancelled(order, paymentInfo);
           break;
 
         default:

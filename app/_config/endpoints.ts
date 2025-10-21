@@ -1,4 +1,4 @@
-import { currentEnvironment, config } from './environment';
+import { currentEnvironment, config, safeLog, safeWarn, safeError } from './environment';
 
 /**
  * API Endpoint Configuration
@@ -108,11 +108,9 @@ const getApiBaseUrl = (environment: string): string => {
 
   // In development, allow localhost as fallback for developer convenience
   if (environment === 'development' && !envUrl) {
-    if (__DEV__) {
-      console.warn(
-        '⚠️ API URL not configured. Using localhost:1337. Set EXPO_PUBLIC_API_BASE_URL in .env'
-      );
-    }
+    safeWarn(
+      '⚠️ API URL not configured. Using localhost:1337. Set EXPO_PUBLIC_API_BASE_URL in .env'
+    );
     return 'http://localhost:1337';
   }
 
@@ -134,9 +132,7 @@ For local development:
 Please create a .env file or set the environment variable before building.
 `;
 
-    if (__DEV__) {
-      console.error(errorMsg);
-    }
+    safeError(errorMsg);
     throw new Error('API_URL_NOT_CONFIGURED: Missing required environment variable');
   }
 
@@ -465,33 +461,25 @@ export const validateEndpoints = (): boolean => {
     // Check if baseUrl is a valid URL
     const urlPattern = /^https?:\/\/.+/;
     if (!urlPattern.test(endpoints.baseUrl)) {
-      if (__DEV__) {
-        console.error(`❌ Invalid API URL format: ${endpoints.baseUrl}`);
-      }
+      safeError(`❌ Invalid API URL format: ${endpoints.baseUrl}`);
       return false;
     }
 
     // Check if timeout is reasonable
     if (endpoints.timeout < 1000 || endpoints.timeout > 60000) {
-      if (__DEV__) {
-        console.error(`❌ Invalid timeout value: ${endpoints.timeout}`);
-      }
+      safeError(`❌ Invalid timeout value: ${endpoints.timeout}`);
       return false;
     }
 
     // Warn if using localhost in non-development environment
     if (currentEnvironment !== 'development' && endpoints.baseUrl.includes('localhost')) {
-      if (__DEV__) {
-        console.error('❌ Using localhost URL in non-development environment!');
-      }
+      safeError('❌ Using localhost URL in non-development environment!');
       return false;
     }
 
     return true;
   } catch (error) {
-    if (__DEV__) {
-      console.error('❌ Failed to validate endpoints:', error);
-    }
+    safeError('❌ Failed to validate endpoints:', error);
     return false;
   }
 };
@@ -501,17 +489,13 @@ export const validateEndpoints = (): boolean => {
  * Call this early in app initialization to fail fast
  */
 export const initializeEndpoints = (): void => {
-  if (__DEV__) {
-    console.log(`🔧 Initializing API endpoints for ${currentEnvironment} environment...`);
-  }
+  safeLog(`🔧 Initializing API endpoints for ${currentEnvironment} environment...`);
 
   if (!validateEndpoints()) {
     throw new Error('INVALID_API_CONFIGURATION: Endpoints validation failed');
   }
 
-  if (__DEV__) {
-    console.log(`✅ API configured: ${endpoints.baseUrl}`);
-  }
+  safeLog(`✅ API configured: ${endpoints.baseUrl}`);
 };
 
 /**

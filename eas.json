@@ -7,7 +7,8 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_ENVIRONMENT": "development"
+        "EXPO_PUBLIC_ENVIRONMENT": "development",
+        "EXPO_PUBLIC_API_BASE_URL": "http://localhost:1337"
       },
       "ios": {
         "simulator": true,
@@ -24,7 +25,8 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_ENVIRONMENT": "staging"
+        "EXPO_PUBLIC_ENVIRONMENT": "staging",
+        "EXPO_PUBLIC_API_BASE_URL": "https://tifossi-strapi-backend.onrender.com"
       },
       "ios": {
         "entitlements": {
@@ -35,7 +37,8 @@
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_ENVIRONMENT": "production"
+        "EXPO_PUBLIC_ENVIRONMENT": "production",
+        "EXPO_PUBLIC_API_BASE_URL": "https://tifossi-strapi-backend.onrender.com"
       },
       "ios": {
         "bundleIdentifier": "com.tifossi.app",

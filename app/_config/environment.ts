@@ -109,7 +109,8 @@ const environmentConfigs: Record<Environment, EnvironmentConfig> = {
     useMockApi: false, // Always use real Strapi
     enableConsoleLogging: false,
     enableErrorReporting: true,
-    enableAnalytics: true,
+    // Analytics disabled to avoid requiring NSUserTrackingUsageDescription (App Store compliance)
+    enableAnalytics: false,
     enableFeatureFlags: false,
     version: Constants.expoConfig?.version || '1.0.0',
     buildNumber:
@@ -211,21 +212,21 @@ export const getEnvironmentBanner = () => {
 /**
  * Safe Console Logging
  */
-export const safeLog = (..._args: any[]) => {
+export const safeLog = (...args: any[]) => {
   if (config.enableConsoleLogging) {
-    // Log message would be displayed here
+    console.log(...args);
   }
 };
 
-export const safeWarn = (..._args: any[]) => {
+export const safeWarn = (...args: any[]) => {
   if (config.enableConsoleLogging) {
-    // Warning message would be displayed here
+    console.warn(...args);
   }
 };
 
-export const safeError = (..._args: any[]) => {
+export const safeError = (...args: any[]) => {
   if (config.enableConsoleLogging) {
-    // Error message would be displayed here
+    console.error(...args);
   }
 };
 

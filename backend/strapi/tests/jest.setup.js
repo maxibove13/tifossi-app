@@ -41,6 +41,13 @@ beforeAll(async () => {
   process.env.DATABASE_FILENAME = ':memory:';
   process.env.STRAPI_TELEMETRY_DISABLED = 'true';
 
+  // Mock MercadoPago credentials for testing
+  process.env.MP_TEST_ACCESS_TOKEN = 'TEST_ACCESS_TOKEN_MOCK';
+  process.env.MP_TEST_PUBLIC_KEY = 'TEST_PUBLIC_KEY_MOCK';
+  process.env.MP_WEBHOOK_SECRET = 'TEST_WEBHOOK_SECRET_MOCK';
+  process.env.MP_ACCESS_TOKEN = 'PROD_ACCESS_TOKEN_MOCK';
+  process.env.MP_PUBLIC_KEY = 'PROD_PUBLIC_KEY_MOCK';
+
   // Mock console methods to reduce test noise
   global.console = {
     ...console,

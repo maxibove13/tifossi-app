@@ -11,9 +11,11 @@ import {
   ImageStyle,
   Alert,
   Modal,
+  Linking,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import Constants from 'expo-constants';
 import { spacing, radius } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
@@ -219,6 +221,18 @@ export default function ProfileScreen() {
             IconComponent={() => <Feather name="lock" size={24} color={colors.primary} />}
             text="Cambiar Contraseña"
             onPress={() => router.push('/profile/change-password')}
+          />
+          <ProfileListItem
+            IconComponent={() => <Feather name="shield" size={24} color={colors.primary} />}
+            text="Política de Privacidad"
+            onPress={() => {
+              const privacyUrl =
+                Constants.expoConfig?.extra?.privacyPolicyUrl ||
+                'https://tifossi-strapi-backend.onrender.com/privacy.html';
+              Linking.openURL(privacyUrl).catch(() => {
+                Alert.alert('Error', 'No se pudo abrir la política de privacidad.');
+              });
+            }}
           />
 
           {/* Logout Button */}

@@ -1,0 +1,775 @@
+/**
+ * MercadoPago Webhook Tests - Revenue Critical
+ *
+ * Following TESTING_PRINCIPLES.md:
+ * - These tests protect against payment fraud
+ * - Test webhook signature validation
+ * - Test payment status updates
+ * - Would definitely "wake you up at 3 AM" if broken
+ */
+
+const crypto = require('crypto');
+
+// Mock OrderStateManager before any imports
+jest.mock('../src/lib/payment/order-state-manager', () => {
+  return jest.fn().mockImplementation(() => ({
+    transitionStatus: jest.fn(() => Promise.resolve()),
+  }));
+});
+
+describe('MercadoPago Webhook - Revenue Critical', () => {
+  beforeAll(() => {
+    process.env.MP_TEST_ACCESS_TOKEN = 'test-access-token';
+    process.env.MP_TEST_PUBLIC_KEY = 'test-public-key';
+    process.env.MP_WEBHOOK_SECRET = 'test-webhook-secret';
+  });
+
+  // These require full Strapi instance with webhook endpoint
+  describe('Webhook Signature Validation', () => {
+    it('should reject webhooks with invalid signature', async () => {
+      const webhookPayload = {
+        id: 12345,
+        type: 'payment',
+        data: { id: 'payment-123' },
+        action: 'payment.updated',
+        date_created: new Date().toISOString(),
+        api_version: 'v1',
+      };
+
+      const xRequestId = 'req-' + Date.now();
+      const dataId = 'payment-123';
+      const wrongSecret = 'wrong-secret';
+      const timestamp = Math.floor(Date.now() / 1000);
+      const manifest = `id:${dataId};request-id:${xRequestId};ts:${timestamp};`;
+      const invalidSignature = crypto
+        .createHmac('sha256', wrongSecret)
+        .update(manifest)
+        .digest('hex');
+
+      const ctx = {
+        request: {
+          body: webhookPayload,
+          headers: {
+            'x-signature': `ts=${timestamp},v1=${invalidSignature}`,
+            'x-request-id': xRequestId,
+            'user-agent': 'MercadoPago/Test',
+          },
+        },
+        badRequest: jest.fn(),
+        unauthorized: jest.fn(),
+        status: null,
+        body: null,
+      };
+
+      global.strapi = {
+        log: {
+          info: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const webhookHandler = require('../dist/src/webhooks/mercadopago');
+      await webhookHandler.handleWebhook(ctx);
+
+      expect(ctx.unauthorized).toHaveBeenCalledWith('Invalid signature');
+      expect(ctx.badRequest).not.toHaveBeenCalled();
+    });
+
+    it('should accept webhooks with valid signature', async () => {
+      const webhookPayload = {
+        id: 12346,
+        type: 'payment',
+        data: { id: 'payment-124' },
+        action: 'payment.updated',
+        date_created: new Date().toISOString(),
+        api_version: 'v1',
+      };
+
+      const xRequestId = 'req-' + Date.now();
+      const dataId = 'payment-124';
+      const webhookSecret = process.env.MP_WEBHOOK_SECRET || 'test-webhook-secret';
+      const timestamp = Math.floor(Date.now() / 1000);
+      const manifest = `id:${dataId};request-id:${xRequestId};ts:${timestamp};`;
+      const validSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(manifest)
+        .digest('hex');
+
+      const mockPaymentInfo = {
+        id: 124,
+        status: 'approved',
+        status_detail: 'accredited',
+        transaction_amount: 100,
+        currency_id: 'UYU',
+        external_reference: 'ORDER-123',
+        payment_method_id: 'visa',
+        payment_type_id: 'credit_card',
+        date_approved: new Date().toISOString(),
+      };
+
+      const ctx = {
+        request: {
+          body: webhookPayload,
+          headers: {
+            'x-signature': `ts=${timestamp},v1=${validSignature}`,
+            'x-request-id': xRequestId,
+            'user-agent': 'MercadoPago/Test',
+          },
+        },
+        badRequest: jest.fn(),
+        unauthorized: jest.fn(),
+        status: null,
+        body: null,
+      };
+
+      global.strapi = {
+        log: {
+          info: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+        documents: jest.fn(() => ({
+          findMany: jest.fn(() => Promise.resolve([])),
+          update: jest.fn(() => Promise.resolve({})),
+        })),
+      };
+
+      const MercadoPagoService = require('../dist/src/lib/payment/mercadopago-service').default;
+      const originalGetPayment = MercadoPagoService.prototype.getPayment;
+      MercadoPagoService.prototype.getPayment = jest.fn(() => Promise.resolve(mockPaymentInfo));
+
+      const webhookHandler = require('../dist/src/webhooks/mercadopago');
+
+      try {
+        await webhookHandler.handleWebhook(ctx);
+
+        expect(ctx.unauthorized).not.toHaveBeenCalled();
+        expect(ctx.badRequest).not.toHaveBeenCalled();
+        expect(ctx.status).toBe(200);
+        expect(ctx.body).toBeDefined();
+
+        if (ctx.body.success === false) {
+          throw new Error(`Webhook test failed: ${ctx.body.error} - ${ctx.body.message}`);
+        }
+
+        expect(ctx.body.success).toBe(true);
+      } finally {
+        MercadoPagoService.prototype.getPayment = originalGetPayment;
+      }
+    });
+
+    it('should handle replay attacks', async () => {
+      const webhookPayload = {
+        id: 12347,
+        type: 'payment',
+        data: { id: 'payment-125' },
+        action: 'payment.updated',
+        date_created: new Date().toISOString(),
+        api_version: 'v1',
+      };
+
+      const xRequestId = 'req-replay-test-' + Date.now();
+      const dataId = 'payment-125';
+      const webhookSecret = process.env.MP_WEBHOOK_SECRET || 'test-webhook-secret';
+      const timestamp = Math.floor(Date.now() / 1000);
+      const manifest = `id:${dataId};request-id:${xRequestId};ts:${timestamp};`;
+      const validSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(manifest)
+        .digest('hex');
+
+      const createContext = () => ({
+        request: {
+          body: { ...webhookPayload },
+          headers: {
+            'x-signature': `ts=${timestamp},v1=${validSignature}`,
+            'x-request-id': xRequestId,
+            'user-agent': 'MercadoPago/Test',
+          },
+        },
+        badRequest: jest.fn(),
+        unauthorized: jest.fn(),
+        status: null,
+        body: null,
+      });
+
+      global.strapi = {
+        log: {
+          info: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+        documents: jest.fn(() => ({
+          findMany: jest.fn(() => Promise.resolve([])),
+          update: jest.fn(() => Promise.resolve({})),
+        })),
+      };
+
+      const MercadoPagoService = require('../dist/src/lib/payment/mercadopago-service').default;
+      const originalGetPayment = MercadoPagoService.prototype.getPayment;
+      MercadoPagoService.prototype.getPayment = jest.fn(() =>
+        Promise.resolve({
+          id: 125,
+          status: 'approved',
+          status_detail: 'accredited',
+          transaction_amount: 100,
+          currency_id: 'UYU',
+          external_reference: 'ORDER-125',
+          payment_method_id: 'visa',
+          payment_type_id: 'credit_card',
+          date_approved: new Date().toISOString(),
+        })
+      );
+
+      const webhookHandler = require('../dist/src/webhooks/mercadopago');
+
+      try {
+        const ctx1 = createContext();
+        await webhookHandler.handleWebhook(ctx1);
+        expect(ctx1.status).toBe(200);
+        expect(ctx1.body.success).toBe(true);
+
+        const ctx2 = createContext();
+        await webhookHandler.handleWebhook(ctx2);
+        expect(ctx2.status).toBe(200);
+        expect(ctx2.body.success).toBe(true);
+      } finally {
+        MercadoPagoService.prototype.getPayment = originalGetPayment;
+      }
+    });
+  });
+
+  describe('Payment Status Updates', () => {
+    beforeEach(() => {
+      // Clear all mocks before each test
+      jest.clearAllMocks();
+    });
+
+    it('should update order to PAID on approved payment', async () => {
+      // Mock data
+      const orderId = 'ORDER-APPROVED-001';
+      const paymentId = 'payment-approved-123';
+
+      const mockOrder = {
+        id: 1,
+        documentId: 'doc-1',
+        orderNumber: orderId,
+        status: 'PENDING_PAYMENT',
+        total: 150.0,
+        user: { id: 1, email: 'test@example.com' },
+        items: [],
+      };
+
+      const mockPayment = {
+        id: 123,
+        status: 'approved',
+        status_detail: 'accredited',
+        transaction_amount: 150.0,
+        currency_id: 'UYU',
+        external_reference: orderId,
+        payment_method_id: 'visa',
+        payment_type_id: 'credit_card',
+        date_approved: new Date().toISOString(),
+      };
+
+      // Mock Strapi documents API
+      const mockUpdate = jest.fn((params) => {
+        expect(params.documentId).toBe('doc-1');
+        expect(params.data.status).toBe('PAID');
+        expect(params.data.mpPaymentId).toBe('123');
+        expect(params.data.mpPaymentStatus).toBe('approved');
+        expect(params.data.paidAt).toBeDefined();
+        return Promise.resolve(mockOrder);
+      });
+
+      global.strapi = {
+        documents: jest.fn(() => ({
+          findMany: jest.fn(() => Promise.resolve([mockOrder])),
+          update: mockUpdate,
+        })),
+        log: {
+          info: jest.fn(),
+          warn: jest.fn(),
+          error: jest.fn(),
+          debug: jest.fn(),
+        },
+      };
+
+      // Mock MercadoPagoService
+      const MercadoPagoService =
+        require('../src/lib/payment/mercadopago-service').MercadoPagoService;
+      MercadoPagoService.prototype.getPayment = jest.fn(() => Promise.resolve(mockPayment));
+      MercadoPagoService.prototype.mapPaymentStatus = jest.fn(() => 'PAID');
+
+      // Load and execute handler
+      const webhookHandler = require('../src/webhooks/mercadopago');
+
+      await webhookHandler.handlePaymentNotification({ id: paymentId }, 'req-test-123');
+
+      // Verify order was updated to PAID
+      expect(strapi.documents).toHaveBeenCalledWith('api::order.order');
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(strapi.log.info).toHaveBeenCalledWith(
+        expect.stringContaining('Found order')
+      );
+    });
+
+    it('should update order to PAYMENT_FAILED on rejection', async () => {
+      const orderId = 'ORDER-REJECTED-001';
+      const paymentId = 'payment-rejected-123';
+
+      const mockOrder = {
+        id: 2,
+        documentId: 'doc-2',
+        orderNumber: orderId,
+        status: 'PENDING_PAYMENT',
+        total: 200.0,
+        user: { id: 2, email: 'test@example.com' },
+        items: [],
+      };
+
+      const mockPayment = {
+        id: 124,
+        status: 'rejected',
+        status_detail: 'cc_rejected_insufficient_amount',
+        transaction_amount: 200.0,
+        currency_id: 'UYU',
+        external_reference: orderId,
+        payment_method_id: 'visa',
+        payment_type_id: 'credit_card',
+      };
+
+      const mockUpdate = jest.fn((params) => {
+        expect(params.data.status).toBe('PAYMENT_FAILED');
+        expect(params.data.mpPaymentStatus).toBe('rejected');
+        return Promise.resolve(mockOrder);
+      });
+
+      global.strapi = {
+        documents: jest.fn(() => ({
+          findMany: jest.fn(() => Promise.resolve([mockOrder])),
+          update: mockUpdate,
+        })),
+        log: {
+          info: jest.fn(),
+          warn: jest.fn(),
+          error: jest.fn(),
+          debug: jest.fn(),
+        },
+      };
+
+      const MercadoPagoService =
+        require('../src/lib/payment/mercadopago-service').MercadoPagoService;
+      MercadoPagoService.prototype.getPayment = jest.fn(() => Promise.resolve(mockPayment));
+      MercadoPagoService.prototype.mapPaymentStatus = jest.fn(() => 'PAYMENT_FAILED');
+
+      const webhookHandler = require('../src/webhooks/mercadopago');
+
+      await webhookHandler.handlePaymentNotification({ id: paymentId }, 'req-test-124');
+
+      expect(strapi.documents).toHaveBeenCalled();
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+
+    it('should handle pending payments correctly', async () => {
+      const orderId = 'ORDER-PENDING-001';
+      const paymentId = 'payment-pending-123';
+
+      const mockOrder = {
+        id: 3,
+        documentId: 'doc-3',
+        orderNumber: orderId,
+        status: 'PENDING_PAYMENT',
+        total: 300.0,
+        user: { id: 3, email: 'test@example.com' },
+        items: [],
+      };
+
+      const mockPayment = {
+        id: 125,
+        status: 'pending',
+        status_detail: 'pending_waiting_payment',
+        transaction_amount: 300.0,
+        currency_id: 'UYU',
+        external_reference: orderId,
+        payment_method_id: 'bolbradesco',
+        payment_type_id: 'ticket',
+      };
+
+      const mockUpdate = jest.fn((params) => {
+        // Should stay in PENDING_PAYMENT status (mapped to PAYMENT_PENDING)
+        expect(params.data.status).toBe('PAYMENT_PENDING');
+        expect(params.data.mpPaymentStatus).toBe('pending');
+        return Promise.resolve(mockOrder);
+      });
+
+      global.strapi = {
+        documents: jest.fn(() => ({
+          findMany: jest.fn(() => Promise.resolve([mockOrder])),
+          update: mockUpdate,
+        })),
+        log: {
+          info: jest.fn(),
+          warn: jest.fn(),
+          error: jest.fn(),
+          debug: jest.fn(),
+        },
+      };
+
+      const MercadoPagoService =
+        require('../src/lib/payment/mercadopago-service').MercadoPagoService;
+      MercadoPagoService.prototype.getPayment = jest.fn(() => Promise.resolve(mockPayment));
+      MercadoPagoService.prototype.mapPaymentStatus = jest.fn(() => 'PAYMENT_PENDING');
+
+      const webhookHandler = require('../src/webhooks/mercadopago');
+
+      await webhookHandler.handlePaymentNotification({ id: paymentId }, 'req-test-125');
+
+      expect(strapi.documents).toHaveBeenCalled();
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+
+    it('should handle refund webhooks', async () => {
+      const orderId = 'ORDER-REFUND-001';
+      const paymentId = 'payment-refund-123';
+
+      const mockOrder = {
+        id: 4,
+        documentId: 'doc-4',
+        orderNumber: orderId,
+        status: 'PAID',
+        total: 400.0,
+        user: { id: 4, email: 'test@example.com' },
+        items: [],
+      };
+
+      const mockPayment = {
+        id: 126,
+        status: 'refunded',
+        status_detail: 'refunded',
+        transaction_amount: 400.0,
+        currency_id: 'UYU',
+        external_reference: orderId,
+        payment_method_id: 'visa',
+        payment_type_id: 'credit_card',
+      };
+
+      const mockUpdate = jest.fn((params) => {
+        expect(params.data.status).toBe('REFUNDED');
+        expect(params.data.mpPaymentStatus).toBe('refunded');
+        return Promise.resolve(mockOrder);
+      });
+
+      global.strapi = {
+        documents: jest.fn(() => ({
+          findMany: jest.fn(() => Promise.resolve([mockOrder])),
+          update: mockUpdate,
+        })),
+        log: {
+          info: jest.fn(),
+          warn: jest.fn(),
+          error: jest.fn(),
+          debug: jest.fn(),
+        },
+      };
+
+      const MercadoPagoService =
+        require('../src/lib/payment/mercadopago-service').MercadoPagoService;
+      MercadoPagoService.prototype.getPayment = jest.fn(() => Promise.resolve(mockPayment));
+      MercadoPagoService.prototype.mapPaymentStatus = jest.fn(() => 'REFUNDED');
+
+      const webhookHandler = require('../src/webhooks/mercadopago');
+
+      await webhookHandler.handlePaymentNotification({ id: paymentId }, 'req-test-126');
+
+      expect(strapi.documents).toHaveBeenCalled();
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+  });
+
+  describe('Webhook Data Validation', () => {
+    beforeEach(() => {
+      // Clear all module mocks before each test
+      jest.clearAllMocks();
+    });
+
+    it('should validate required fields', async () => {
+      // Test missing payment.id
+      const webhookPayload1 = {
+        type: 'payment',
+        data: {}, // Missing id
+        action: 'payment.updated',
+      };
+
+      // Mock strapi
+      global.strapi = {
+        log: {
+          warn: jest.fn(),
+          info: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const webhookHandler = require('../src/webhooks/mercadopago');
+
+      await webhookHandler.handlePaymentNotification(webhookPayload1.data, 'req-missing-id');
+
+      // Should log warning about missing payment ID
+      expect(strapi.log.warn).toHaveBeenCalledWith(
+        expect.stringContaining('missing payment ID')
+      );
+    });
+
+    it('should match payment amount with order total', async () => {
+      const orderId = 'ORDER-AMOUNT-MISMATCH-001';
+
+      const mockOrder = {
+        id: 5,
+        documentId: 'doc-5',
+        orderNumber: orderId,
+        status: 'PENDING_PAYMENT',
+        total: 100.0, // Order expects 100
+        user: { id: 5, email: 'test@example.com' },
+        items: [],
+        metadata: {},
+      };
+
+      const mockPayment = {
+        id: 128,
+        status: 'approved',
+        status_detail: 'accredited',
+        transaction_amount: 50.0, // But payment is only 50!
+        currency_id: 'UYU',
+        external_reference: orderId,
+        payment_method_id: 'visa',
+        payment_type_id: 'credit_card',
+      };
+
+      // Track whether early return was triggered
+      let earlyReturnTriggered = false;
+      const mockUpdate = jest.fn((params) => {
+        if (params.data.metadata?.fraudDetected) {
+          // Fraud was detected, early return should happen
+          earlyReturnTriggered = true;
+          expect(params.data.status).toBe('PAYMENT_FAILED');
+          expect(params.data.metadata.fraudDetected).toBe(true);
+          expect(params.data.metadata.fraudReason).toBe('amount_mismatch');
+        }
+        return Promise.resolve(mockOrder);
+      });
+
+      global.strapi = {
+        documents: jest.fn(() => ({
+          findMany: jest.fn(() => Promise.resolve([mockOrder])),
+          update: mockUpdate,
+        })),
+        log: {
+          error: jest.fn(),
+          warn: jest.fn(),
+          info: jest.fn(),
+          debug: jest.fn(),
+        },
+      };
+
+      const MercadoPagoService =
+        require('../src/lib/payment/mercadopago-service').MercadoPagoService;
+      MercadoPagoService.prototype.getPayment = jest.fn(() => Promise.resolve(mockPayment));
+
+      const webhookHandler = require('../src/webhooks/mercadopago');
+
+      await webhookHandler.handlePaymentNotification({ id: '128' }, 'req-amount-mismatch');
+
+      // Should log fraud detection
+      expect(strapi.log.error).toHaveBeenCalledWith(
+        expect.stringContaining('Payment fraud attempt detected - amount mismatch'),
+      );
+
+      // Should update order with fraud flag
+      expect(earlyReturnTriggered).toBe(true);
+      expect(strapi.documents).toHaveBeenCalledWith('api::order.order');
+    });
+
+    it('should verify payment currency is UYU', async () => {
+      const orderId = 'ORDER-CURRENCY-INVALID-001';
+
+      const mockOrder = {
+        id: 6,
+        documentId: 'doc-6',
+        orderNumber: orderId,
+        status: 'PENDING_PAYMENT',
+        total: 100.0,
+        user: { id: 6, email: 'test@example.com' },
+        items: [],
+        metadata: {},
+      };
+
+      const mockPayment = {
+        id: 129,
+        status: 'approved',
+        status_detail: 'accredited',
+        transaction_amount: 100.0,
+        currency_id: 'USD', // Wrong currency! Should be UYU
+        external_reference: orderId,
+        payment_method_id: 'visa',
+        payment_type_id: 'credit_card',
+      };
+
+      let earlyReturnTriggered = false;
+      const mockUpdate = jest.fn((params) => {
+        if (params.data.metadata?.fraudDetected) {
+          earlyReturnTriggered = true;
+          expect(params.data.status).toBe('PAYMENT_FAILED');
+          expect(params.data.metadata.fraudDetected).toBe(true);
+          expect(params.data.metadata.fraudReason).toBe('invalid_currency');
+        }
+        return Promise.resolve(mockOrder);
+      });
+
+      global.strapi = {
+        documents: jest.fn(() => ({
+          findMany: jest.fn(() => Promise.resolve([mockOrder])),
+          update: mockUpdate,
+        })),
+        log: {
+          error: jest.fn(),
+          warn: jest.fn(),
+          info: jest.fn(),
+          debug: jest.fn(),
+        },
+      };
+
+      const MercadoPagoService =
+        require('../src/lib/payment/mercadopago-service').MercadoPagoService;
+      MercadoPagoService.prototype.getPayment = jest.fn(() => Promise.resolve(mockPayment));
+
+      const webhookHandler = require('../src/webhooks/mercadopago');
+
+      await webhookHandler.handlePaymentNotification({ id: '129' }, 'req-currency-invalid');
+
+      // Should log fraud detection
+      expect(strapi.log.error).toHaveBeenCalledWith(
+        expect.stringContaining('Payment fraud attempt detected - invalid currency'),
+      );
+
+      // Should update order with fraud flag
+      expect(earlyReturnTriggered).toBe(true);
+      expect(strapi.documents).toHaveBeenCalledWith('api::order.order');
+    });
+  });
+
+  describe('Error Handling', () => {
+    it.skip('should handle missing orders gracefully', async () => {
+      // This test would:
+      // 1. Send webhook for non-existent order
+      // 2. Log warning
+      // 3. Return success (to prevent retries)
+      // 4. Not crash the system
+    });
+
+    it.skip('should handle database errors', async () => {
+      // This test would:
+      // 1. Simulate database connection error
+      // 2. Return 503 Service Unavailable
+      // 3. Allow MercadoPago to retry
+      // 4. Log error for monitoring
+    });
+
+    it.skip('should handle malformed webhook data', async () => {
+      // This test would:
+      // 1. Send invalid JSON
+      // 2. Send missing required fields
+      // 3. Return 400 Bad Request
+      // 4. Not process the webhook
+    });
+  });
+
+  // Smoke tests that can run without full Strapi
+  describe('Webhook Configuration', () => {
+    it('should have webhook endpoint configured', () => {
+      const fs = require('fs');
+      const path = require('path');
+
+      // Check for webhook routes
+      const customRoutesPath = path.join(
+        __dirname,
+        '..',
+        'src',
+        'api',
+        'order',
+        'routes',
+        'custom-order.js'
+      );
+
+      if (fs.existsSync(customRoutesPath)) {
+        const routes = require(customRoutesPath);
+
+        // Check if webhook route exists
+        const webhookRoute = routes.routes?.find(
+          (route) => route.path?.includes('webhook') && route.path?.includes('mercadopago')
+        );
+
+        expect(webhookRoute).toBeDefined();
+        expect(webhookRoute?.method).toBe('POST');
+      } else {
+        // If custom routes don't exist, mark as pending implementation
+        console.warn('Webhook routes not yet implemented');
+      }
+    });
+
+    it('should have webhook secret configured in example env', () => {
+      const fs = require('fs');
+      const path = require('path');
+
+      const envExamplePath = path.join(__dirname, '..', '.env.example');
+
+      // Check if file exists first (might not exist in CI)
+      if (!fs.existsSync(envExamplePath)) {
+        console.warn('.env.example not found - this is normal in CI environments');
+        return;
+      }
+
+      const envContent = fs.readFileSync(envExamplePath, 'utf8');
+
+      // Check for MercadoPago webhook configuration
+      expect(envContent).toMatch(/MP_WEBHOOK_SECRET/);
+      expect(envContent).toMatch(/MP_ACCESS_TOKEN/);
+    });
+  });
+
+  describe('Webhook Security Helpers', () => {
+    it('should correctly generate webhook signature', () => {
+      // Test signature generation logic
+      const secret = 'test-webhook-secret';
+      const data = {
+        id: 12345,
+        type: 'payment',
+        data: { id: 'payment-123' },
+      };
+
+      const payload = JSON.stringify(data);
+      const signature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+
+      expect(signature).toBeDefined();
+      expect(signature).toHaveLength(64); // SHA256 produces 64 hex characters
+    });
+
+    it('should validate webhook timestamp to prevent replay', () => {
+      const now = Date.now();
+      const fiveMinutesAgo = now - 5 * 60 * 1000;
+      const oneHourAgo = now - 60 * 60 * 1000;
+
+      // Helper function to check if timestamp is recent
+      const isRecentTimestamp = (timestamp, maxAgeMs = 10 * 60 * 1000) => {
+        const age = Date.now() - timestamp;
+        return age >= 0 && age <= maxAgeMs;
+      };
+
+      expect(isRecentTimestamp(fiveMinutesAgo)).toBe(true);
+      expect(isRecentTimestamp(oneHourAgo)).toBe(false);
+    });
+  });
+});

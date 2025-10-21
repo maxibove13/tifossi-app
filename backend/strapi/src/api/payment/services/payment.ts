@@ -3,7 +3,6 @@
  * Business logic for payment processing
  */
 
-import { factories } from '@strapi/strapi';
 import { OrderStatus } from '../../../lib/payment/types/orders';
 
 interface CartItem {
@@ -64,297 +63,305 @@ interface OrderStats {
   ordersByStatus: Record<OrderStatus, number>;
 }
 
-export default factories.createCoreService(
-  'api::payment.payment',
-  ({ strapi }: { strapi: any }) => ({
-    /**
-     * Generate unique order number
-     * @returns {string} Formatted order number
-     */
-    generateOrderNumber(): string {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const timestamp = now.getTime().toString().slice(-6); // Last 6 digits of timestamp
+/**
+ * Payment utilities service
+ * Provides helper functions for payment and order processing
+ */
+export class PaymentService {
+  private strapi: any;
 
-      return `TIF-${year}${month}${day}-${timestamp}`;
-    },
+  constructor(strapi: any) {
+    this.strapi = strapi;
+  }
 
-    /**
-     * Validate cart data before order creation
-     * @param {Object} cartData - Cart data to validate
-     * @returns {Object} Validation result
-     */
-    async validateCartData(cartData: CartData): Promise<ValidationResult> {
-      const errors: string[] = [];
+  /**
+   * Generate unique order number
+   * @returns {string} Formatted order number
+   */
+  generateOrderNumber(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const timestamp = now.getTime().toString().slice(-6); // Last 6 digits of timestamp
 
-      // Required fields validation
-      if (!cartData.items || !Array.isArray(cartData.items) || cartData.items.length === 0) {
-        errors.push('Cart must contain at least one item');
-      }
+    return `TIF-${year}${month}${day}-${timestamp}`;
+  }
 
-      if (!cartData.user || !cartData.user.id) {
-        errors.push('User information is required');
-      }
+  /**
+   * Validate cart data before order creation
+   * @param {Object} cartData - Cart data to validate
+   * @returns {Object} Validation result
+   */
+  async validateCartData(cartData: CartData): Promise<ValidationResult> {
+    const errors: string[] = [];
 
-      if (!cartData.shippingAddress) {
-        errors.push('Shipping address is required');
-      }
+    // Required fields validation
+    if (!cartData.items || !Array.isArray(cartData.items) || cartData.items.length === 0) {
+      errors.push('Cart must contain at least one item');
+    }
 
-      if (!cartData.total || cartData.total <= 0) {
-        errors.push('Invalid total amount');
-      }
+    if (!cartData.user || !cartData.user.id) {
+      errors.push('User information is required');
+    }
 
-      // Validate each cart item
-      if (cartData.items) {
-        for (let i = 0; i < cartData.items.length; i++) {
-          const item = cartData.items[i];
+    if (!cartData.shippingAddress) {
+      errors.push('Shipping address is required');
+    }
 
-          if (!item.productId) {
-            errors.push(`Item ${i + 1}: Product ID is required`);
-          }
+    if (!cartData.total || cartData.total <= 0) {
+      errors.push('Invalid total amount');
+    }
 
-          if (!item.quantity || item.quantity <= 0) {
-            errors.push(`Item ${i + 1}: Valid quantity is required`);
-          }
+    // Validate each cart item
+    if (cartData.items) {
+      for (let i = 0; i < cartData.items.length; i++) {
+        const item = cartData.items[i];
 
-          if (!item.price || item.price <= 0) {
-            errors.push(`Item ${i + 1}: Valid price is required`);
-          }
+        if (!item.productId) {
+          errors.push(`Item ${i + 1}: Product ID is required`);
+        }
 
-          // Check if product exists and is available
-          if (item.productId) {
-            try {
-              const product = await strapi.documents('api::product.product').findOne({
-                documentId: item.productId,
-              });
-              if (!product) {
-                errors.push(`Item ${i + 1}: Product not found`);
-              } else if (!product.available) {
-                errors.push(`Item ${i + 1}: Product is not available`);
-              }
-            } catch (error) {
-              errors.push(`Item ${i + 1}: Error validating product`);
+        if (!item.quantity || item.quantity <= 0) {
+          errors.push(`Item ${i + 1}: Valid quantity is required`);
+        }
+
+        if (!item.price || item.price <= 0) {
+          errors.push(`Item ${i + 1}: Valid price is required`);
+        }
+
+        // Check if product exists and is available
+        if (item.productId) {
+          try {
+            const product = await this.strapi.documents('api::product.product').findOne({
+              documentId: item.productId,
+            });
+            if (!product) {
+              errors.push(`Item ${i + 1}: Product not found`);
+            } else if (!product.available) {
+              errors.push(`Item ${i + 1}: Product is not available`);
             }
+          } catch (_error) {
+            errors.push(`Item ${i + 1}: Error validating product`);
           }
         }
       }
+    }
 
-      // Validate shipping address
-      if (cartData.shippingAddress) {
-        const address = cartData.shippingAddress;
-        if (!address.street || !address.city || !address.country) {
-          errors.push('Complete shipping address is required');
-        }
+    // Validate shipping address
+    if (cartData.shippingAddress) {
+      const address = cartData.shippingAddress;
+      if (!address.street || !address.city || !address.country) {
+        errors.push('Complete shipping address is required');
+      }
+    }
+
+    // Validate user email format
+    if (cartData.user && cartData.user.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cartData.user.email)) {
+        errors.push('Invalid email format');
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+
+  /**
+   * Calculate order totals
+   * @param {Object} cartData - Cart data
+   * @returns {Object} Calculated totals
+   */
+  calculateTotals(cartData: CartData): CalculatedTotals {
+    let subtotal = 0;
+
+    // Calculate subtotal from items
+    if (cartData.items) {
+      subtotal = cartData.items.reduce((sum, item) => {
+        return sum + item.price * item.quantity;
+      }, 0);
+    }
+
+    const discount = cartData.discount || 0;
+    const shippingCost = cartData.shippingCost || 0;
+    const total = subtotal - discount + shippingCost;
+
+    return {
+      subtotal: Number(subtotal.toFixed(2)),
+      discount: Number(discount.toFixed(2)),
+      shippingCost: Number(shippingCost.toFixed(2)),
+      total: Number(total.toFixed(2)),
+    };
+  }
+
+  /**
+   * Reserve inventory for order items
+   * @param {Array} items - Order items
+   * @returns {Promise<boolean>} Success status
+   */
+  async reserveInventory(items: CartItem[]): Promise<boolean> {
+    try {
+      for (const item of items) {
+        // This would typically update product inventory
+        // For now, we'll just log the reservation
+        this.strapi.log.info(`Reserving ${item.quantity} units of product ${item.productId}`);
+
+        // In a real implementation, you would:
+        // 1. Check current inventory
+        // 2. Update available quantity
+        // 3. Create inventory reservation record
+        // 4. Set expiration time for reservation
       }
 
-      // Validate user email format
-      if (cartData.user && cartData.user.email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(cartData.user.email)) {
-          errors.push('Invalid email format');
-        }
+      return true;
+    } catch (error) {
+      this.strapi.log.error('Error reserving inventory:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Release inventory reservation
+   * @param {Array} items - Order items
+   * @returns {Promise<boolean>} Success status
+   */
+  async releaseInventory(items: CartItem[]): Promise<boolean> {
+    try {
+      for (const item of items) {
+        this.strapi.log.info(`Releasing ${item.quantity} units of product ${item.productId}`);
+
+        // In a real implementation, you would:
+        // 1. Find inventory reservation
+        // 2. Return quantity to available inventory
+        // 3. Delete reservation record
       }
 
-      return {
-        isValid: errors.length === 0,
-        errors,
+      return true;
+    } catch (error) {
+      this.strapi.log.error('Error releasing inventory:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send order confirmation email
+   * @param {Object} order - Order data
+   * @returns {Promise<boolean>} Success status
+   */
+  async sendOrderConfirmation(order: Order): Promise<boolean> {
+    try {
+      // This would integrate with your email service
+      this.strapi.log.info(
+        `Sending order confirmation for order ${order.orderNumber} to ${order.user.email}`
+      );
+
+      // Example email content structure:
+      const _emailData = {
+        to: order.user.email,
+        subject: `Confirmación de pedido #${order.orderNumber}`,
+        template: 'order-confirmation',
+        data: {
+          orderNumber: order.orderNumber,
+          customerName: `${order.user.firstName} ${order.user.lastName}`,
+          items: order.items,
+          total: order.total,
+          shippingAddress: order.shippingAddress,
+          estimatedDelivery: order.estimatedDelivery,
+        },
       };
-    },
 
-    /**
-     * Calculate order totals
-     * @param {Object} cartData - Cart data
-     * @returns {Object} Calculated totals
-     */
-    calculateTotals(cartData: CartData): CalculatedTotals {
-      let subtotal = 0;
+      // Send email using your preferred service (SendGrid, AWS SES, etc.)
+      // await emailService.send(_emailData);
 
-      // Calculate subtotal from items
-      if (cartData.items) {
-        subtotal = cartData.items.reduce((sum, item) => {
-          return sum + item.price * item.quantity;
-        }, 0);
-      }
+      return true;
+    } catch (error) {
+      this.strapi.log.error('Error sending order confirmation:', error);
+      return false;
+    }
+  }
 
-      const discount = cartData.discount || 0;
-      const shippingCost = cartData.shippingCost || 0;
-      const total = subtotal - discount + shippingCost;
-
-      return {
-        subtotal: Number(subtotal.toFixed(2)),
-        discount: Number(discount.toFixed(2)),
-        shippingCost: Number(shippingCost.toFixed(2)),
-        total: Number(total.toFixed(2)),
+  /**
+   * Send payment notification
+   * @param {Object} order - Order data
+   * @param {string} status - Payment status
+   * @returns {Promise<boolean>} Success status
+   */
+  async sendPaymentNotification(order: Order, status: string): Promise<boolean> {
+    try {
+      const statusMessages: Record<string, string> = {
+        paid: 'confirmado',
+        refunded: 'reembolsado',
+        cancelled: 'cancelado',
       };
-    },
 
-    /**
-     * Reserve inventory for order items
-     * @param {Array} items - Order items
-     * @returns {Promise<boolean>} Success status
-     */
-    async reserveInventory(items: CartItem[]): Promise<boolean> {
-      try {
-        for (const item of items) {
-          // This would typically update product inventory
-          // For now, we'll just log the reservation
-          strapi.log.info(`Reserving ${item.quantity} units of product ${item.productId}`);
+      const statusMessage = statusMessages[status] || 'actualizado';
 
-          // In a real implementation, you would:
-          // 1. Check current inventory
-          // 2. Update available quantity
-          // 3. Create inventory reservation record
-          // 4. Set expiration time for reservation
+      this.strapi.log.info(
+        `Sending payment notification for order ${order.orderNumber}: ${statusMessage}`
+      );
+
+      // Send notification email/SMS/push notification
+      // Implementation would depend on your notification service
+
+      return true;
+    } catch (error) {
+      this.strapi.log.error('Error sending payment notification:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get order statistics for a user
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>} Order statistics
+   */
+  async getOrderStats(userId: string): Promise<OrderStats> {
+    try {
+      const orders = await this.strapi.documents('api::order.order').findMany({
+        filters: { user: userId },
+        populate: false,
+      });
+
+      const stats: OrderStats = {
+        totalOrders: orders.length,
+        totalSpent: 0,
+        ordersByStatus: {
+          [OrderStatus.PENDING]: 0,
+          [OrderStatus.PROCESSING]: 0,
+          [OrderStatus.PAID]: 0,
+          [OrderStatus.SHIPPED]: 0,
+          [OrderStatus.DELIVERED]: 0,
+          [OrderStatus.CANCELLED]: 0,
+          [OrderStatus.REFUNDED]: 0,
+        },
+      };
+
+      orders.forEach((order: any) => {
+        if (
+          order.status === 'paid' ||
+          order.status === 'processing' ||
+          order.status === 'shipped' ||
+          order.status === 'delivered'
+        ) {
+          stats.totalSpent += order.total;
         }
 
-        return true;
-      } catch (error) {
-        strapi.log.error('Error reserving inventory:', error);
-        return false;
-      }
-    },
-
-    /**
-     * Release inventory reservation
-     * @param {Array} items - Order items
-     * @returns {Promise<boolean>} Success status
-     */
-    async releaseInventory(items: CartItem[]): Promise<boolean> {
-      try {
-        for (const item of items) {
-          strapi.log.info(`Releasing ${item.quantity} units of product ${item.productId}`);
-
-          // In a real implementation, you would:
-          // 1. Find inventory reservation
-          // 2. Return quantity to available inventory
-          // 3. Delete reservation record
+        const status = order.status as keyof typeof stats.ordersByStatus;
+        if (status in stats.ordersByStatus) {
+          stats.ordersByStatus[status] = (stats.ordersByStatus[status] || 0) + 1;
         }
+      });
 
-        return true;
-      } catch (error) {
-        strapi.log.error('Error releasing inventory:', error);
-        return false;
-      }
-    },
+      return stats;
+    } catch (error) {
+      this.strapi.log.error('Error calculating order stats:', error);
+      throw error;
+    }
+  }
+}
 
-    /**
-     * Send order confirmation email
-     * @param {Object} order - Order data
-     * @returns {Promise<boolean>} Success status
-     */
-    async sendOrderConfirmation(order: Order): Promise<boolean> {
-      try {
-        // This would integrate with your email service
-        strapi.log.info(
-          `Sending order confirmation for order ${order.orderNumber} to ${order.user.email}`
-        );
-
-        // Example email content structure:
-        const emailData = {
-          to: order.user.email,
-          subject: `Confirmación de pedido #${order.orderNumber}`,
-          template: 'order-confirmation',
-          data: {
-            orderNumber: order.orderNumber,
-            customerName: `${order.user.firstName} ${order.user.lastName}`,
-            items: order.items,
-            total: order.total,
-            shippingAddress: order.shippingAddress,
-            estimatedDelivery: order.estimatedDelivery,
-          },
-        };
-
-        // Send email using your preferred service (SendGrid, AWS SES, etc.)
-        // await emailService.send(emailData);
-
-        return true;
-      } catch (error) {
-        strapi.log.error('Error sending order confirmation:', error);
-        return false;
-      }
-    },
-
-    /**
-     * Send payment notification
-     * @param {Object} order - Order data
-     * @param {string} status - Payment status
-     * @returns {Promise<boolean>} Success status
-     */
-    async sendPaymentNotification(order: Order, status: string): Promise<boolean> {
-      try {
-        const statusMessages: Record<string, string> = {
-          PAID: 'confirmado',
-          PAYMENT_FAILED: 'rechazado',
-          REFUNDED: 'reembolsado',
-        };
-
-        const statusMessage = statusMessages[status] || 'actualizado';
-
-        strapi.log.info(
-          `Sending payment notification for order ${order.orderNumber}: ${statusMessage}`
-        );
-
-        // Send notification email/SMS/push notification
-        // Implementation would depend on your notification service
-
-        return true;
-      } catch (error) {
-        strapi.log.error('Error sending payment notification:', error);
-        return false;
-      }
-    },
-
-    /**
-     * Get order statistics for a user
-     * @param {string} userId - User ID
-     * @returns {Promise<Object>} Order statistics
-     */
-    async getOrderStats(userId: string): Promise<OrderStats> {
-      try {
-        const orders = await strapi.documents('api::order.order').findMany({
-          filters: { user: userId },
-          populate: false,
-        });
-
-        const stats: OrderStats = {
-          totalOrders: orders.length,
-          totalSpent: 0,
-          ordersByStatus: {
-            [OrderStatus.PENDING]: 0,
-            [OrderStatus.PAYMENT_PENDING]: 0,
-            [OrderStatus.PAID]: 0,
-            [OrderStatus.PAYMENT_FAILED]: 0,
-            [OrderStatus.PROCESSING]: 0,
-            [OrderStatus.SHIPPED]: 0,
-            [OrderStatus.DELIVERED]: 0,
-            [OrderStatus.CANCELLED]: 0,
-            [OrderStatus.REFUNDED]: 0,
-          },
-        };
-
-        orders.forEach((order: any) => {
-          if (
-            order.status === 'PAID' ||
-            order.status === 'PROCESSING' ||
-            order.status === 'SHIPPED' ||
-            order.status === 'DELIVERED'
-          ) {
-            stats.totalSpent += order.total;
-          }
-
-          const status = order.status as keyof typeof stats.ordersByStatus;
-          if (status in stats.ordersByStatus) {
-            stats.ordersByStatus[status] = (stats.ordersByStatus[status] || 0) + 1;
-          }
-        });
-
-        return stats;
-      } catch (error) {
-        strapi.log.error('Error calculating order stats:', error);
-        throw error;
-      }
-    },
-  })
-);
+// Export default for Strapi to load
+export default {};

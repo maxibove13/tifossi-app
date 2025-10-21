@@ -31,8 +31,53 @@ interface StatusTransition {
 export class OrderStateManager {
   private validTransitions: Map<string, StatusTransition>;
 
+  /**
+   * Valid order state transitions
+   * Defines which status changes are allowed
+   */
+  private static VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+    [OrderStatus.PENDING]: [OrderStatus.PAID, OrderStatus.PROCESSING, OrderStatus.CANCELLED],
+    [OrderStatus.PAID]: [OrderStatus.PROCESSING, OrderStatus.REFUNDED, OrderStatus.CANCELLED],
+    [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED, OrderStatus.REFUNDED],
+    [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED, OrderStatus.REFUNDED],
+    [OrderStatus.DELIVERED]: [OrderStatus.REFUNDED],
+    [OrderStatus.CANCELLED]: [],
+    [OrderStatus.REFUNDED]: [],
+  };
+
   constructor() {
     this.validTransitions = this.initializeTransitions();
+  }
+
+  /**
+   * Validate if a state transition is allowed
+   */
+  static isValidTransition(from: OrderStatus, to: OrderStatus): boolean {
+    const allowedTransitions = this.VALID_TRANSITIONS[from] || [];
+    return allowedTransitions.includes(to);
+  }
+
+  /**
+   * Validate and log state transition
+   * Throws error if transition is invalid
+   */
+  async validateTransition(
+    orderId: number,
+    fromStatus: OrderStatus,
+    toStatus: OrderStatus
+  ): Promise<void> {
+    if (!OrderStateManager.isValidTransition(fromStatus, toStatus)) {
+      const error = new Error(`Invalid order state transition: ${fromStatus} → ${toStatus}`);
+
+      strapi.log.error('Invalid state transition attempted', {
+        orderId,
+        fromStatus,
+        toStatus,
+        allowedTransitions: OrderStateManager.VALID_TRANSITIONS[fromStatus],
+      });
+
+      throw error;
+    }
   }
 
   /**
@@ -42,38 +87,23 @@ export class OrderStateManager {
     const transitions = new Map<string, StatusTransition>();
 
     // From PENDING
-    transitions.set('PENDING->PAYMENT_PENDING', {
+    transitions.set('PENDING->PAID', {
       from: OrderStatus.PENDING,
-      to: OrderStatus.PAYMENT_PENDING,
-      allowed: true,
-      notifyCustomer: false,
-    });
-
-    transitions.set('PENDING->CANCELLED', {
-      from: OrderStatus.PENDING,
-      to: OrderStatus.CANCELLED,
-      allowed: true,
-      notifyCustomer: true,
-    });
-
-    // From PAYMENT_PENDING
-    transitions.set('PAYMENT_PENDING->PAID', {
-      from: OrderStatus.PAYMENT_PENDING,
       to: OrderStatus.PAID,
       allowed: true,
       requiresPayment: true,
       notifyCustomer: true,
     });
 
-    transitions.set('PAYMENT_PENDING->PAYMENT_FAILED', {
-      from: OrderStatus.PAYMENT_PENDING,
-      to: OrderStatus.PAYMENT_FAILED,
+    transitions.set('PENDING->PROCESSING', {
+      from: OrderStatus.PENDING,
+      to: OrderStatus.PROCESSING,
       allowed: true,
       notifyCustomer: true,
     });
 
-    transitions.set('PAYMENT_PENDING->CANCELLED', {
-      from: OrderStatus.PAYMENT_PENDING,
+    transitions.set('PENDING->CANCELLED', {
+      from: OrderStatus.PENDING,
       to: OrderStatus.CANCELLED,
       allowed: true,
       notifyCustomer: true,
@@ -94,16 +124,8 @@ export class OrderStateManager {
       notifyCustomer: true,
     });
 
-    // From PAYMENT_FAILED
-    transitions.set('PAYMENT_FAILED->PAYMENT_PENDING', {
-      from: OrderStatus.PAYMENT_FAILED,
-      to: OrderStatus.PAYMENT_PENDING,
-      allowed: true,
-      notifyCustomer: false,
-    });
-
-    transitions.set('PAYMENT_FAILED->CANCELLED', {
-      from: OrderStatus.PAYMENT_FAILED,
+    transitions.set('PAID->CANCELLED', {
+      from: OrderStatus.PAID,
       to: OrderStatus.CANCELLED,
       allowed: true,
       notifyCustomer: true,
@@ -190,7 +212,7 @@ export class OrderStateManager {
 
       // Check if transition is valid
       if (!this.isValidTransition(currentStatus, newStatus)) {
-        console.warn(`Invalid status transition: ${currentStatus} -> ${newStatus}`);
+        strapi.log.warn(`Invalid status transition: ${currentStatus} -> ${newStatus}`);
         return {
           success: false,
           previousStatus: currentStatus,
@@ -230,14 +252,14 @@ export class OrderStateManager {
         await this.triggerCustomerNotification(order, newStatus, metadata);
       }
 
-      console.log(`Order ${orderId} status updated: ${currentStatus} -> ${newStatus}`);
+      strapi.log.info(`Order ${orderId} status updated: ${currentStatus} -> ${newStatus}`);
 
       return {
         success: true,
         previousStatus: currentStatus,
       };
     } catch (error) {
-      console.error('Error updating order status:', error);
+      strapi.log.error('Error updating order status:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -254,6 +276,9 @@ export class OrderStateManager {
     toStatus: OrderStatus,
     metadata?: StatusTransitionMetadata
   ): Promise<void> {
+    // Validate transition is allowed
+    await this.validateTransition(Number(orderId), fromStatus, toStatus);
+
     await this.logStatusTransition(orderId, fromStatus, toStatus, metadata);
   }
 
@@ -275,7 +300,7 @@ export class OrderStateManager {
     };
 
     // In production, save to database
-    console.log('Status transition logged:', {
+    strapi.log.debug('Status transition logged:', {
       orderId,
       fromStatus,
       toStatus,
@@ -292,7 +317,7 @@ export class OrderStateManager {
     metadata?: StatusTransitionMetadata
   ): Promise<void> {
     // In production, update database
-    console.log(`Updating order ${order.id} status to ${newStatus}`);
+    strapi.log.debug(`Updating order ${order.id} status to ${newStatus}`);
 
     // Set specific timestamps based on status
     const timestamps: Partial<Order> = {};
@@ -327,7 +352,9 @@ export class OrderStateManager {
     newStatus: OrderStatus,
     metadata?: StatusTransitionMetadata
   ): Promise<void> {
-    console.log(`Triggering customer notification for order ${order.orderNumber}: ${newStatus}`);
+    strapi.log.debug(
+      `Triggering customer notification for order ${order.orderNumber}: ${newStatus}`
+    );
 
     // In production, send actual notification
     // @ts-ignore - Future implementation placeholder
@@ -347,7 +374,7 @@ export class OrderStateManager {
    */
   private async getOrder(orderId: string): Promise<Order | null> {
     // In production, fetch from database
-    console.log(`Fetching order ${orderId}`);
+    strapi.log.debug(`Fetching order ${orderId}`);
 
     // Placeholder return
     return null;
@@ -385,10 +412,8 @@ export class OrderStateManager {
     // In production, query database
     const stats: Record<OrderStatus, number> = {
       [OrderStatus.PENDING]: 0,
-      [OrderStatus.PAYMENT_PENDING]: 0,
-      [OrderStatus.PAID]: 0,
-      [OrderStatus.PAYMENT_FAILED]: 0,
       [OrderStatus.PROCESSING]: 0,
+      [OrderStatus.PAID]: 0,
       [OrderStatus.SHIPPED]: 0,
       [OrderStatus.DELIVERED]: 0,
       [OrderStatus.CANCELLED]: 0,
@@ -396,7 +421,7 @@ export class OrderStateManager {
     };
 
     // Placeholder - would query database
-    console.log('Fetching order status statistics');
+    strapi.log.debug('Fetching order status statistics');
 
     return stats;
   }
@@ -405,9 +430,7 @@ export class OrderStateManager {
    * Cancel expired orders
    */
   async cancelExpiredOrders(expirationMinutes: number = 30): Promise<number> {
-    console.log(
-      `Cancelling orders older than ${expirationMinutes} minutes in PAYMENT_PENDING status`
-    );
+    strapi.log.info(`Cancelling orders older than ${expirationMinutes} minutes in PENDING status`);
 
     // In production, query and update database
     // const expiredOrders = await database.query({
@@ -434,7 +457,7 @@ export class OrderStateManager {
    */
   async getOrderTransitionHistory(orderId: string): Promise<OrderStatusHistoryEntry[]> {
     // In production, fetch from database
-    console.log(`Fetching transition history for order ${orderId}`);
+    strapi.log.debug(`Fetching transition history for order ${orderId}`);
 
     return [];
   }

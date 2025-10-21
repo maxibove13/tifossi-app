@@ -99,7 +99,7 @@ class FirebaseAdminService {
       };
 
       this.app = initializeApp(options);
-      console.log('Firebase Admin SDK initialized successfully');
+      strapi?.log?.info?.('Firebase Admin SDK initialized successfully');
     }
 
     this.auth = getAuth(this.app);
@@ -119,7 +119,7 @@ class FirebaseAdminService {
       return decodedToken;
     } catch (error: any) {
       const message = error?.message ?? 'Unknown error';
-      console.error('Token verification failed:', error);
+      strapi?.log?.error?.('Token verification failed:', error);
 
       switch (error?.code) {
         case 'auth/id-token-expired':
@@ -141,7 +141,7 @@ class FirebaseAdminService {
       const userRecord = await auth.getUser(uid);
       return this.sanitizeUserRecord(userRecord);
     } catch (error: any) {
-      console.error('Failed to get user:', error);
+      strapi?.log?.error?.('Failed to get user:', error);
       if (error?.code === 'auth/user-not-found') {
         throw new Error('User not found');
       }
@@ -156,7 +156,7 @@ class FirebaseAdminService {
       const userRecord = await auth.getUserByEmail(email);
       return this.sanitizeUserRecord(userRecord);
     } catch (error: any) {
-      console.error('Failed to get user by email:', error);
+      strapi?.log?.error?.('Failed to get user by email:', error);
       if (error?.code === 'auth/user-not-found') {
         throw new Error('User not found');
       }
@@ -176,10 +176,10 @@ class FirebaseAdminService {
 
     try {
       const userRecord = await auth.createUser(payload);
-      console.log('User created successfully:', userRecord.uid);
+      strapi?.log?.info?.('User created successfully:', userRecord.uid);
       return this.sanitizeUserRecord(userRecord);
     } catch (error: any) {
-      console.error('Failed to create user:', error);
+      strapi?.log?.error?.('Failed to create user:', error);
 
       switch (error?.code) {
         case 'auth/email-already-exists':
@@ -200,10 +200,10 @@ class FirebaseAdminService {
 
     try {
       const userRecord = await auth.updateUser(uid, updates);
-      console.log('User updated successfully:', uid);
+      strapi?.log?.info?.('User updated successfully:', uid);
       return this.sanitizeUserRecord(userRecord);
     } catch (error: any) {
-      console.error('Failed to update user:', error);
+      strapi?.log?.error?.('Failed to update user:', error);
       throw new Error(`Failed to update user: ${error?.message ?? 'Unknown error'}`);
     }
   }
@@ -213,9 +213,9 @@ class FirebaseAdminService {
 
     try {
       await auth.deleteUser(uid);
-      console.log('User deleted successfully:', uid);
+      strapi?.log?.info?.('User deleted successfully:', uid);
     } catch (error: any) {
-      console.error('Failed to delete user:', error);
+      strapi?.log?.error?.('Failed to delete user:', error);
       throw new Error(`Failed to delete user: ${error?.message ?? 'Unknown error'}`);
     }
   }
@@ -225,9 +225,9 @@ class FirebaseAdminService {
 
     try {
       await auth.setCustomUserClaims(uid, customClaims);
-      console.log('Custom claims set successfully:', uid);
+      strapi?.log?.info?.('Custom claims set successfully:', uid);
     } catch (error: any) {
-      console.error('Failed to set custom claims:', error);
+      strapi?.log?.error?.('Failed to set custom claims:', error);
       throw new Error(`Failed to set custom claims: ${error?.message ?? 'Unknown error'}`);
     }
   }
@@ -237,9 +237,9 @@ class FirebaseAdminService {
 
     try {
       await auth.revokeRefreshTokens(uid);
-      console.log('Refresh tokens revoked successfully:', uid);
+      strapi?.log?.info?.('Refresh tokens revoked successfully:', uid);
     } catch (error: any) {
-      console.error('Failed to revoke refresh tokens:', error);
+      strapi?.log?.error?.('Failed to revoke refresh tokens:', error);
       throw new Error(`Failed to revoke tokens: ${error?.message ?? 'Unknown error'}`);
     }
   }
@@ -250,7 +250,7 @@ class FirebaseAdminService {
     try {
       return await auth.createCustomToken(uid, claims);
     } catch (error: any) {
-      console.error('Failed to create custom token:', error);
+      strapi?.log?.error?.('Failed to create custom token:', error);
       throw new Error(`Failed to create custom token: ${error?.message ?? 'Unknown error'}`);
     }
   }
@@ -266,7 +266,7 @@ class FirebaseAdminService {
         totalUsers: listUsersResult.users.length,
       };
     } catch (error: any) {
-      console.error('Failed to list users:', error);
+      strapi?.log?.error?.('Failed to list users:', error);
       throw new Error(`Failed to list users: ${error?.message ?? 'Unknown error'}`);
     }
   }
@@ -312,9 +312,9 @@ class FirebaseAdminService {
       this.auth = null;
       this.db = null;
       this.initialized = false;
-      console.log('Firebase Admin SDK shutdown successfully');
+      strapi?.log?.info?.('Firebase Admin SDK shutdown successfully');
     } catch (error) {
-      console.error('Error during Firebase Admin SDK shutdown:', error);
+      strapi?.log?.error?.('Error during Firebase Admin SDK shutdown:', error);
     }
   }
 
@@ -348,13 +348,13 @@ class FirebaseAdminService {
 
     process.on('unhandledRejection', (reason: any) => {
       if (reason?.code && typeof reason.code === 'string' && reason.code.startsWith('auth/')) {
-        console.error('Firebase Auth unhandled rejection:', reason);
+        strapi?.log?.error?.('Firebase Auth unhandled rejection:', reason);
       }
     });
 
     process.on('uncaughtException', (error: any) => {
       if (error?.code && typeof error.code === 'string' && error.code.startsWith('auth/')) {
-        console.error('Uncaught Firebase Auth error:', error);
+        strapi?.log?.error?.('Uncaught Firebase Auth error:', error);
       }
     });
   }
@@ -363,7 +363,7 @@ class FirebaseAdminService {
     const now = Math.floor(Date.now() / 1000);
 
     if (decodedToken.iat && now - decodedToken.iat > 3600) {
-      console.warn('Token is older than 1 hour:', decodedToken.iat);
+      strapi?.log?.warn?.('Token is older than 1 hour:', decodedToken.iat);
     }
 
     const projectId = process.env.FIREBASE_PROJECT_ID;

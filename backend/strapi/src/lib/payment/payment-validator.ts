@@ -507,7 +507,7 @@ export class PaymentValidator {
 
       return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
     } catch (error) {
-      console.error('Error validating webhook signature:', error);
+      strapi?.log?.error?.('Error validating webhook signature:', error);
       return false;
     }
   }

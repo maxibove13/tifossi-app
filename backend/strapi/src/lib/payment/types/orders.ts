@@ -19,17 +19,15 @@ export interface AuditableEntity extends TimestampedEntity {
   deletedAt?: Date | string | null;
 }
 
-// Order status enum
+// Order status enum - aligned with Strapi schema
 export enum OrderStatus {
-  PENDING = 'PENDING',
-  PAYMENT_PENDING = 'PAYMENT_PENDING',
-  PAID = 'PAID',
-  PAYMENT_FAILED = 'PAYMENT_FAILED',
-  PROCESSING = 'PROCESSING',
-  SHIPPED = 'SHIPPED',
-  DELIVERED = 'DELIVERED',
-  CANCELLED = 'CANCELLED',
-  REFUNDED = 'REFUNDED',
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  PAID = 'paid',
+  SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
+  CANCELLED = 'cancelled',
+  REFUNDED = 'refunded',
 }
 
 // Shipping method enum

@@ -3,12 +3,35 @@
  * Following TESTING_PRINCIPLES.md: Mock only at system boundaries
  */
 
+// Load test environment variables
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
 import '@testing-library/jest-native/extend-expect';
 import { cleanup } from '@testing-library/react-native';
 import { TextEncoder, TextDecoder } from 'util';
 
 // Setup custom matchers for domain-specific assertions
 import { setupCustomMatchers } from './utils/custom-matchers';
+
+// Load .env.test file for test environment
+config({ path: resolve(__dirname, '../../.env.test') });
+
+// Polyfill fetch for Node.js environment (needed for MercadoPago integration tests)
+// Use whatwg-fetch polyfill for Jest environment
+if (typeof global.fetch === 'undefined') {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require('whatwg-fetch');
+  } catch (_e) {
+    // Fallback: Use a minimal fetch implementation that throws a helpful error
+    global.fetch = (() => {
+      throw new Error(
+        'fetch is not available. Install whatwg-fetch or node-fetch to run integration tests.'
+      );
+    }) as any;
+  }
+}
 
 // Provide default API endpoints for tests
 process.env['EXPO_PUBLIC_API_BASE_URL'] =
@@ -453,6 +476,26 @@ jest.mock('../_services/api/httpClient', () => {
         const mergedItems = Array.isArray(data?.guestItems) ? data.guestItems : [];
         return {
           mergedItems,
+        };
+      }
+
+      if (url === '/orders') {
+        // Mock order creation for payment integration tests
+        const mockOrder = {
+          id: `order-mock-${Date.now()}`,
+          orderNumber: `ORD-${Date.now().toString().slice(-6)}`,
+          items: data?.items || [],
+          shippingAddress: data?.shippingAddress,
+          shippingMethod: data?.shippingMethod || 'delivery',
+          shippingCost: data?.shippingCost || 0,
+          subtotal: data?.subtotal || 0,
+          discount: data?.discount || 0,
+          total: data?.total || 0,
+          status: 'pending_payment',
+          createdAt: new Date().toISOString(),
+        };
+        return {
+          data: mockOrder,
         };
       }
 

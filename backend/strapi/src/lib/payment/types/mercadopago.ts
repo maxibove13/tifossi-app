@@ -134,6 +134,7 @@ export interface MPPreferenceRequest {
   statement_descriptor?: string;
   notification_url?: string;
   binary_mode?: boolean;
+  three_d_secure_mode?: 'optional' | 'not_supported';
   expires?: boolean;
   expiration_date_from?: string;
   expiration_date_to?: string;
@@ -295,6 +296,7 @@ export const MPStatusDetailMessages: Record<string, string> = {
   accredited: 'Pago acreditado',
   pending_contingency: 'Pendiente de contingencia',
   pending_review_manual: 'Pendiente de revisión manual',
+  pending_challenge: 'Pendiente de autenticación 3DS',
   cc_rejected_insufficient_amount: 'Fondos insuficientes',
   cc_rejected_bad_filled_security_code: 'Código de seguridad incorrecto',
   cc_rejected_bad_filled_date: 'Fecha de vencimiento incorrecta',
@@ -303,6 +305,7 @@ export const MPStatusDetailMessages: Record<string, string> = {
   cc_rejected_invalid_installments: 'Cuotas inválidas',
   cc_rejected_max_attempts: 'Máximo de intentos alcanzado',
   cc_rejected_card_disabled: 'Tarjeta deshabilitada',
+  cc_rejected_3ds_challenge: 'Rechazado por fallo en autenticación 3DS',
   cc_rejected_other_reason: 'Rechazado por otro motivo',
   pending_waiting_transfer: 'Esperando transferencia',
   pending_waiting_payment: 'Esperando pago',

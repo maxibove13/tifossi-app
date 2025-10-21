@@ -121,7 +121,7 @@ class PaymentTestUtils {
       webhookSecret: process.env.MP_WEBHOOK_SECRET || 'your-webhook-secret',
 
       // Test endpoints
-      baseUrl: process.env.API_BASE_URL || 'http://localhost:1337',
+      baseUrl: process.env.PUBLIC_URL || 'http://localhost:1337',
       appScheme: 'tifossi',
     };
 

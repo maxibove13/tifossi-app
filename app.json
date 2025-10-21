@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.tifossi", // TODO: Update with production Apple Developer account ID
+      "bundleIdentifier": "com.tifossi.app", // TODO: Update with production Apple Developer account ID
       "usesAppleSignIn": true,
       "googleServicesFile": "./GoogleService-Info.plist",
       "associatedDomains": [
@@ -18,7 +18,16 @@
         "applinks:auth.tifossi.app",
         "applinks:pay.tifossi.app",
         "applinks:appleid.apple.com"
-      ]
+      ],
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSPrivacyAccessedAPITypes": []
+      }
+    },
+    "extra": {
+      "privacyPolicyUrl": "https://tifossi-strapi-backend.onrender.com/privacy.html"
     },
     "web": {
       "bundler": "metro",
@@ -46,7 +55,7 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.123456789012-placeholder" // TODO: Replace with actual Google OAuth client ID from Firebase console
+          "iosUrlScheme": "com.googleusercontent.apps.123456789012-placeholder" // TODO: Replace with actual reversed client ID from GoogleService-Info.plist (REVERSED_CLIENT_ID key). Also update webClientId in firebaseAuth.ts
         }
       ],
       [
@@ -60,7 +69,7 @@
       "typedRoutes": true
     },
     "android": {
-      "package": "com.anonymous.tifossi", // TODO: Update with production Google Play account ID
+      "package": "com.tifossi.app", // TODO: Update with production Google Play account ID
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
