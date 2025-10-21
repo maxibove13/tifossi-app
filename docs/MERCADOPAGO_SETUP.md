@@ -438,4 +438,3 @@ MP_WEBHOOK_SECRET=...
 - **Main Overview**: [MERCADOPAGO.md](./MERCADOPAGO.md)
 - **Production Deployment**: [deployment/PRODUCTION_DEPLOYMENT_GUIDE.md](./deployment/PRODUCTION_DEPLOYMENT_GUIDE.md)
 - **Troubleshooting**: [deployment/TROUBLESHOOTING_QUICK_REFERENCE.md](./deployment/TROUBLESHOOTING_QUICK_REFERENCE.md)
-- **Historical Docs**: [archive/mercadopago/](./archive/mercadopago/) (reference only)

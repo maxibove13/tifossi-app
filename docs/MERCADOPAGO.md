@@ -166,7 +166,6 @@ psql $DATABASE_URL -c "SELECT COUNT(*) FROM webhook_queues WHERE status = 'queue
 ### Internal Documentation
 - **Setup Guide**: [MERCADOPAGO_SETUP.md](./MERCADOPAGO_SETUP.md)
 - **Deployment Guide**: [deployment/PRODUCTION_DEPLOYMENT_GUIDE.md](./deployment/PRODUCTION_DEPLOYMENT_GUIDE.md)
-- **Historical Docs**: [archive/mercadopago/](./archive/mercadopago/) (reference only)
 
 ---
 
