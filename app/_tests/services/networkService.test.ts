@@ -65,6 +65,7 @@ jest.mock('@react-native-community/netinfo', () => {
   };
 });
 
+// eslint-disable-next-line import/first
 import { NetInfoStateType } from '@react-native-community/netinfo';
 
 // Helper to await pending microtasks scheduled during initialize()

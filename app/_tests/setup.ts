@@ -23,7 +23,7 @@ if (typeof global.fetch === 'undefined') {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     require('whatwg-fetch');
-  } catch (_e) {
+  } catch {
     // Fallback: Use a minimal fetch implementation that throws a helpful error
     global.fetch = (() => {
       throw new Error(
