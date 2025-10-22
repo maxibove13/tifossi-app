@@ -73,7 +73,7 @@ MP_TEST_PUBLIC_KEY=TEST-6f7d3927-50fe-403e-b32c-...
 MP_WEBHOOK_SECRET=<generated-secret-from-step-4>
 
 # Webhook URL (local development)
-WEBHOOK_URL=http://localhost:1337/webhooks/mercadopago
+WEBHOOK_URL=http://localhost:1337/api/webhooks/mercadopago
 
 # API Configuration
 MP_API_URL=https://api.mercadopago.com
@@ -196,10 +196,10 @@ ngrok http 1337
 
 # 4. Copy HTTPS URL (e.g., https://abc123.ngrok.io)
 # 5. Update backend/.env:
-WEBHOOK_URL=https://abc123.ngrok.io/webhooks/mercadopago
+WEBHOOK_URL=https://abc123.ngrok.io/api/webhooks/mercadopago
 
 # 6. Register webhook in MercadoPago Dashboard:
-#    Dashboard → Webhooks → Add URL: https://abc123.ngrok.io/webhooks/mercadopago
+#    Dashboard → Webhooks → Add URL: https://abc123.ngrok.io/api/webhooks/mercadopago
 ```
 
 ### Option 2: Simplified Flow (No Webhooks)
@@ -325,7 +325,7 @@ npm run test:payment
 2. **Verify webhook URL**: Dashboard → Webhooks → Check URL matches ngrok
 3. **Test webhook endpoint**:
    ```bash
-   curl http://localhost:1337/webhooks/mercadopago
+   curl http://localhost:1337/api/webhooks/mercadopago
    # Expected: 400 (missing signature, but endpoint exists)
    ```
 
@@ -398,7 +398,7 @@ FEATURE_PAYMENTS_ENABLED=true
 MP_TEST_ACCESS_TOKEN=TEST-...
 MP_TEST_PUBLIC_KEY=TEST-...
 MP_WEBHOOK_SECRET=...
-WEBHOOK_URL=http://localhost:1337/webhooks/mercadopago
+WEBHOOK_URL=http://localhost:1337/api/webhooks/mercadopago
 
 # Optional configuration
 MP_API_URL=https://api.mercadopago.com

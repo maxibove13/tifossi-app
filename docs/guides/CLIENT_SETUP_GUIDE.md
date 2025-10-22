@@ -73,7 +73,7 @@ MERCADOPAGO_SANDBOX_ACCESS_TOKEN=
 
 **Configuración importante:**
 
-- Configurar URL de webhook: `https://tifossi-backend.onrender.com/api/webhooks/mercadopago`
+- Configurar URL de webhook: `https://tifossi-strapi-backend.onrender.com/api/webhooks/mercadopago`
 - Activar notificaciones IPN (Instant Payment Notification)
 - Configurar URLs de retorno:
   - Success: `tifossi://payment-success`

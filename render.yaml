@@ -134,7 +134,7 @@ databases:
 # - MP_TEST_ACCESS_TOKEN (test token - starts with TEST-)
 # - MP_TEST_PUBLIC_KEY (test key - starts with TEST-)
 # - MP_WEBHOOK_SECRET (webhook secret for signature verification)
-# - WEBHOOK_URL (https://tifossi-strapi-backend.onrender.com/webhooks/mercadopago)
+# - WEBHOOK_URL (https://tifossi-strapi-backend.onrender.com/api/webhooks/mercadopago)
 # - APP_SCHEME (tifossi - already set as value)
 #
 # REQUIRED Firebase Admin Credentials (Choose ONE option):
