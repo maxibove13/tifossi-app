@@ -198,41 +198,35 @@ function setupCronJobs(strapi: any) {
  */
 async function initializeExternalServices(strapi: any) {
   try {
-    // Validate MercadoPago configuration on startup
-    const paymentsEnabled = process.env.FEATURE_PAYMENTS_ENABLED === 'true';
+    // Initialize MercadoPago service (always enabled)
+    strapi.log.info('Validating MercadoPago configuration...');
 
-    if (paymentsEnabled) {
-      strapi.log.info('Validating MercadoPago configuration...');
+    try {
+      // This will throw if credentials are missing
+      const MercadoPagoService = require('./lib/payment/mercadopago-service').MercadoPagoService;
+      const mpService = new MercadoPagoService();
 
-      try {
-        // This will throw if credentials are missing
-        const MercadoPagoService = require('./lib/payment/mercadopago-service').MercadoPagoService;
-        const mpService = new MercadoPagoService();
+      const status = mpService.getServiceStatus();
+      strapi.log.info('✅ MercadoPago service initialized successfully', {
+        mode: status.isProduction ? 'PRODUCTION' : 'TEST',
+        accessTokenSet: status.accessTokenSet,
+        publicKeySet: status.publicKeySet,
+        webhookSecretSet: status.webhookSecretSet,
+      });
 
-        const status = mpService.getServiceStatus();
-        strapi.log.info('✅ MercadoPago service initialized successfully', {
-          mode: status.isProduction ? 'PRODUCTION' : 'TEST',
-          accessTokenSet: status.accessTokenSet,
-          publicKeySet: status.publicKeySet,
-          webhookSecretSet: status.webhookSecretSet,
-        });
+      // Store service instance for reuse
+      strapi.mercadoPago = mpService;
+    } catch (error: any) {
+      strapi.log.error('❌ MercadoPago configuration is invalid:', error.message);
+      strapi.log.error('Please check your environment variables:');
+      strapi.log.error('- MP_TEST_ACCESS_TOKEN (test mode)');
+      strapi.log.error('- MP_TEST_PUBLIC_KEY (test mode)');
+      strapi.log.error('- MP_ACCESS_TOKEN (production mode)');
+      strapi.log.error('- MP_PUBLIC_KEY (production mode)');
+      strapi.log.error('- MP_WEBHOOK_SECRET (required for both modes)');
 
-        // Store service instance for reuse
-        strapi.mercadoPago = mpService;
-      } catch (error: any) {
-        strapi.log.error('❌ MercadoPago configuration is invalid:', error.message);
-        strapi.log.error('Please check your environment variables:');
-        strapi.log.error('- MP_TEST_ACCESS_TOKEN (test mode)');
-        strapi.log.error('- MP_TEST_PUBLIC_KEY (test mode)');
-        strapi.log.error('- MP_ACCESS_TOKEN (production mode)');
-        strapi.log.error('- MP_PUBLIC_KEY (production mode)');
-        strapi.log.error('- MP_WEBHOOK_SECRET (required for both modes)');
-
-        // Fail startup to prevent running with broken configuration
-        throw new Error('MercadoPago configuration validation failed. Cannot start application.');
-      }
-    } else {
-      strapi.log.info('Payment features disabled (FEATURE_PAYMENTS_ENABLED=false)');
+      // Fail startup to prevent running with broken configuration
+      throw new Error('MercadoPago configuration validation failed. Cannot start application.');
     }
 
     // Initialize email service if enabled

@@ -102,7 +102,6 @@ services:
       - EMAIL_FROM=${EMAIL_FROM}
 
       # Feature Flags
-      - FEATURE_PAYMENTS_ENABLED=${FEATURE_PAYMENTS_ENABLED:-true}
       - FEATURE_EMAIL_NOTIFICATIONS=${FEATURE_EMAIL_NOTIFICATIONS:-false}
 
     ports:

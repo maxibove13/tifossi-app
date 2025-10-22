@@ -268,7 +268,6 @@ SUPPORTED_LOCALES=es,en,pt
 # ============================================
 # FEATURE FLAGS
 # ============================================
-FEATURE_PAYMENTS_ENABLED=true
 FEATURE_EMAIL_NOTIFICATIONS=false
 ADMIN_PANEL_ENABLED=true
 API_DOCUMENTATION_ENABLED=false

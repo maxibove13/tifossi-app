@@ -34,7 +34,6 @@ services:
       - BROWSER_OPEN=false
       - AUTH_RATE_LIMIT_ENABLED=false
       - FEATURE_DEBUG_TOOLBAR=true
-      - FEATURE_PAYMENTS_ENABLED=true
       - FEATURE_EMAIL_NOTIFICATIONS=false
       - SEED_DATA_ENABLED=true
     ports:
