@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tifossi.app", // TODO: Update with production Apple Developer account ID
+      "bundleIdentifier": "app.tiffosi.store",
       "usesAppleSignIn": true,
       "googleServicesFile": "./GoogleService-Info.plist",
       "associatedDomains": [
@@ -69,7 +69,7 @@
       "typedRoutes": true
     },
     "android": {
-      "package": "com.tifossi.app", // TODO: Update with production Google Play account ID
+      "package": "app.tiffosi.store",
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
