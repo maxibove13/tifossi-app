@@ -119,9 +119,11 @@ export default function PrivacyScreen() {
 
             <Text style={styles.sectionTitle}>8. Contacto</Text>
             <Text style={styles.paragraph}>
-              Si tiene alguna pregunta sobre esta Política de Privacidad, por favor contáctenos a
-              través de la sección de contacto en nuestra aplicación o escriba a
-              privacy@tifossi.com.
+              Si tiene alguna pregunta sobre esta Política de Privacidad, por favor contáctenos:
+              {'\n\n'}
+              TIFFOSI S.A.S - RUT 219102480013{'\n'}
+              Wilson Ferreira aldunate 1341{'\n'}
+              InfoTiffosiuy@gmail.com
             </Text>
           </View>
         </ScrollView>

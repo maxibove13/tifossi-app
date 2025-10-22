@@ -310,8 +310,8 @@ npm run test:payment
 
 **Solutions**:
 1. **Check secret matches**: Webhook secret must be same in `.env` and test code
-2. **Verify timestamp**: Signatures expire after 5 minutes
-3. **Use real webhook**: Manual cURL tests won't work (signature is cryptographic)
+2. **Use real webhook**: Manual cURL tests won't work (signature is cryptographic)
+3. **Check duplicate detection**: Verify webhook wasn't already processed (check webhook_logs table)
 
 ### Payment created but webhook not received
 

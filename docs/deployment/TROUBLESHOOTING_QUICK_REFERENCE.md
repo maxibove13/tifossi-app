@@ -57,12 +57,13 @@ render logs --tail | grep "Invalid.*signature"
 
 **Common Causes**:
 1. Wrong webhook secret → Check `MP_WEBHOOK_SECRET` matches MercadoPago dashboard
-2. Server time off → Check `date -u` matches current UTC
-3. MercadoPago sent old webhook → Safe to ignore (MercadoPago will retry)
+2. Duplicate webhook → Check webhook_logs table for previous processing
+3. Malformed request → Verify MercadoPago is sending correct signature headers (x-signature, x-request-id)
 
 **Fix**:
 - Verify webhook secret: Render Environment → `MP_WEBHOOK_SECRET`
-- If urgent: Disable webhook verification temporarily (NOT RECOMMENDED)
+- Check database: Query webhook_logs table to see if webhook was already processed
+- If urgent: Review signature validation logic in mercadopago-service.ts
 
 ---
 

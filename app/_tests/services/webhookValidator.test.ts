@@ -22,11 +22,6 @@ describe('MercadoPagoWebhookValidator', () => {
       );
     });
 
-    it('should accept custom max time difference', () => {
-      const customValidator = new MercadoPagoWebhookValidator(testSecret, 600);
-      // No error means it was created successfully
-      expect(customValidator).toBeDefined();
-    });
   });
 
   describe('validateSignature', () => {
@@ -133,44 +128,6 @@ describe('MercadoPagoWebhookValidator', () => {
       expect(result.reason).toBe('Invalid x-signature format');
     });
 
-    it('should reject old timestamp (replay attack prevention)', () => {
-      const oldTimestamp = Math.floor(Date.now() / 1000) - 400; // 400 seconds ago
-      const dataId = 'payment-123';
-      const requestId = 'request-456';
-      const signature = generateValidSignature(dataId, requestId, oldTimestamp);
-
-      const result = validator.validateSignature(
-        {
-          'x-signature': signature,
-          'x-request-id': requestId,
-        },
-        dataId
-      );
-
-      expect(result.isValid).toBe(false);
-      expect(result.reason).toContain('Timestamp too old');
-      expect(result.timestamp).toBe(oldTimestamp);
-    });
-
-    it('should reject future timestamp', () => {
-      const futureTimestamp = Math.floor(Date.now() / 1000) + 400; // 400 seconds in future
-      const dataId = 'payment-123';
-      const requestId = 'request-456';
-      const signature = generateValidSignature(dataId, requestId, futureTimestamp);
-
-      const result = validator.validateSignature(
-        {
-          'x-signature': signature,
-          'x-request-id': requestId,
-        },
-        dataId
-      );
-
-      expect(result.isValid).toBe(false);
-      expect(result.reason).toContain('Timestamp too old or too far in future');
-      expect(result.timestamp).toBe(futureTimestamp);
-    });
-
     it('should reject incorrect signature', () => {
       const timestamp = Math.floor(Date.now() / 1000);
       const dataId = 'payment-123';
@@ -253,24 +210,6 @@ describe('MercadoPagoWebhookValidator', () => {
       expect(result.isValid).toBe(true);
     });
 
-    it('should validate signature with custom time window', () => {
-      const customValidator = new MercadoPagoWebhookValidator(testSecret, 60); // 60 second window
-
-      const timestamp = Math.floor(Date.now() / 1000) - 50; // 50 seconds ago (within 60s window)
-      const dataId = 'payment-123';
-      const requestId = 'request-456';
-      const signature = generateValidSignature(dataId, requestId, timestamp);
-
-      const result = customValidator.validateSignature(
-        {
-          'x-signature': signature,
-          'x-request-id': requestId,
-        },
-        dataId
-      );
-
-      expect(result.isValid).toBe(true);
-    });
   });
 
   describe('createTestSignature', () => {

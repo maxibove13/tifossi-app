@@ -404,7 +404,7 @@ All technical blockers have been resolved. Remaining items are configuration-onl
 - ✅ Bundle ID consistency - Verified across all config files
 - ✅ URL schemes - Updated to production values (tifossi, com.tifossi.app)
 - ✅ Microphone permission - Removed unnecessary declaration
-- 🟡 Privacy policy text - Awaiting client update (non-blocking for technical review)
+- ✅ Privacy policy business contact - TIFFOSI S.A.S details configured (2025-10-22)
 
 ### ✅ Low Risk Items (Complete)
 
@@ -413,6 +413,33 @@ All technical blockers have been resolved. Remaining items are configuration-onl
 - ✅ Privacy manifest configured
 - ✅ Build system and tests passing (99.5%)
 - ✅ TypeScript and ESLint clean
+
+## 📄 Privacy Policy Business Contact Update (COMPLETED 2025-10-22)
+
+### Business Contact Information Configured
+
+**Updated Files**:
+1. `backend/strapi/public/privacy.html` - HTML privacy policy with business details
+2. `app/legal/privacy.tsx` - In-app privacy screen with business details
+3. `render.yaml` - Environment variables with business configuration
+
+**Business Details Configured**:
+- Legal Name: TIFFOSI S.A.S - RUT 219102480013
+- Address: Wilson Ferreira aldunate 1341
+- Email: InfoTiffosiuy@gmail.com
+
+**Status**: Business contact information is production-ready. Privacy policy content remains comprehensive and compliant with App Store requirements.
+
+**Documentation Updated**:
+- PRIVACY_POLICY_SETUP.md - Marked business info steps as completed
+- TIFOSSI_DELIVERY_PLAN.md - Updated status from "awaiting client update" to completed
+- PRODUCTION_DEPLOYMENT_GUIDE.md - Updated with actual configured values
+- PRODUCTION_CHECKLIST.md - Added privacy policy verification steps
+
+**Next Steps**:
+- Verify business details are correct
+- Test privacy policy URL accessibility after deployment
+- Update App Store Connect with privacy policy URL
 
 ## 🏗️ Media Architecture (COMPLETED 2025-09-26)
 

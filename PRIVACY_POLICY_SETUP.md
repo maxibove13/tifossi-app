@@ -38,47 +38,54 @@ The privacy policy is accessible from the Profile screen:
 
 ## Required Actions Before Deployment
 
-### Step 1: Update Business Information
+### Step 1: Business Information Status
 
-You need to replace the following placeholders in the privacy policy HTML file:
+✅ **Business information has been configured** (as of 2025-10-22):
 
-**File to edit:** `backend/strapi/public/privacy.html`
+The following business details are already configured in the privacy policy files:
 
-**Search for and replace:**
+1. **Legal Name**: TIFFOSI S.A.S - RUT 219102480013
+2. **Address**: Wilson Ferreira aldunate 1341
+3. **Contact Email**: InfoTiffosiuy@gmail.com
 
-1. **Line ~613:** `TODO: Razón Social Completa`
-   - Replace with your full legal business name
-   - Example: "Tifossi Sport S.A." or "Juan Pérez - Tifossi Sport"
+These values are configured in:
+- `backend/strapi/public/privacy.html`
+- `app/legal/privacy.tsx`
+- `render.yaml` environment variables
 
-2. **Line ~614:** `TODO: Dirección Completa`
-   - Replace with your complete business address
-   - Example: "Av. 18 de Julio 1234, Montevideo 11200, Uruguay"
+**Action Required**: Verify these details are correct before App Store submission.
 
-### Step 2: Update Environment Variables
+### Step 2: Environment Variables Status
 
-**File to edit:** `render.yaml`
-
-Update the following environment variables in the Render.com dashboard or in the YAML file:
+✅ **Environment variables have been configured** in `render.yaml`:
 
 ```yaml
-BUSINESS_LEGAL_NAME: "TODO: Full legal business name (e.g., Tifossi Sport S.A.)"
-BUSINESS_ADDRESS: "TODO: Complete business address (Street, City, Country)"
+BUSINESS_LEGAL_NAME: 'TIFFOSI S.A.S - RUT 219102480013'
+BUSINESS_ADDRESS: 'Wilson Ferreira aldunate 1341'
+BUSINESS_EMAIL: InfoTiffosiuy@gmail.com
+PRIVACY_CONTACT_EMAIL: InfoTiffosiuy@gmail.com
 ```
 
-**Replace with:**
-- Your actual registered business name
-- Your actual physical business address
+These values are automatically deployed to Render.com when you deploy the backend.
+
+**Action Required**: Verify these values in the Render Dashboard after deployment.
 
 ### Step 3: Verify Email Addresses
 
-The privacy policy currently uses `info@tifossi.com` for all contact purposes. Verify this is correct:
+The privacy policy currently uses `InfoTiffosiuy@gmail.com` for all contact purposes:
 
-- **General contact:** info@tifossi.com
-- **Privacy inquiries:** info@tifossi.com
+- **General contact:** InfoTiffosiuy@gmail.com
+- **Privacy inquiries:** InfoTiffosiuy@gmail.com
 
-If you want to use a different email for privacy inquiries, update:
+**Action Required**: Verify this email address is:
+1. Actively monitored for customer inquiries
+2. Configured to receive privacy-related requests
+3. The same email you want displayed to users in the app
+
+If you want to use a different email, update:
 - `PRIVACY_CONTACT_EMAIL` in `render.yaml`
-- Email addresses in `privacy.html` (search for "info@tifossi.com")
+- Email addresses in `privacy.html` (search for "InfoTiffosiuy@gmail.com")
+- Contact information in `app/legal/privacy.tsx`
 
 ### Step 4: App Store Connect Configuration
 
@@ -233,11 +240,11 @@ If you have questions about the privacy policy or need assistance:
 
 ## Checklist Before App Store Submission
 
-- [ ] Replace "TODO" placeholders in `privacy.html` with actual business information
-- [ ] Update `BUSINESS_LEGAL_NAME` and `BUSINESS_ADDRESS` in Render environment variables
+- [x] Replace "TODO" placeholders in `privacy.html` with actual business information ✅ COMPLETED 2025-10-22
+- [x] Update `BUSINESS_LEGAL_NAME` and `BUSINESS_ADDRESS` in Render environment variables ✅ COMPLETED 2025-10-22
 - [ ] Verify privacy policy URL is accessible: https://tifossi-strapi-backend.onrender.com/privacy.html
 - [ ] Test opening privacy policy from within the app
-- [ ] Review privacy policy content for accuracy
+- [ ] Review privacy policy content for accuracy and verify business details are correct
 - [ ] Add privacy policy URL to App Store Connect
 - [ ] Fill out App Privacy questionnaire in App Store Connect based on privacy policy
 - [ ] Ensure privacy policy is up-to-date before each app update
