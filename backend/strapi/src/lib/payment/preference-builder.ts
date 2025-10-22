@@ -256,7 +256,7 @@ export class PreferenceBuilder {
    * Build notification URL for webhooks
    */
   private buildNotificationUrl(): string {
-    return `${this.baseUrl}/webhooks/mercadopago`;
+    return `${this.baseUrl}/api/webhooks/mercadopago`;
   }
 
   /**

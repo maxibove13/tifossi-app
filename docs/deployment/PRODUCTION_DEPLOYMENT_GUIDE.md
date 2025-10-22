@@ -205,7 +205,7 @@ MP_TEST_ACCESS_TOKEN=TEST-[your-test-token]
 MP_TEST_PUBLIC_KEY=TEST-[your-test-public-key]
 
 # Webhook Configuration
-WEBHOOK_URL=https://tifossi-strapi-backend.onrender.com/webhooks/mercadopago
+WEBHOOK_URL=https://tifossi-strapi-backend.onrender.com/api/webhooks/mercadopago
 
 # ============================================
 # FIREBASE PRODUCTION CREDENTIALS (REQUIRED)
@@ -350,8 +350,8 @@ STRAPI_TELEMETRY_DISABLED=true
 ```bash
 # This would be done via the MCP tool interface
 mcp__mercadopago__save_webhook({
-  callback: "https://tifossi-strapi-backend.onrender.com/webhooks/mercadopago",
-  callback_sandbox: "https://tifossi-strapi-backend.onrender.com/webhooks/mercadopago",
+  callback: "https://tifossi-strapi-backend.onrender.com/api/webhooks/mercadopago",
+  callback_sandbox: "https://tifossi-strapi-backend.onrender.com/api/webhooks/mercadopago",
   topics: [
     "payment",                    // Payment status updates (CRITICAL)
     "topic_merchant_order_wh",    // Order completion events
@@ -381,7 +381,7 @@ mcp__mercadopago__save_webhook({
 
 2. **Add New Webhook**:
    - Click **"Add webhook"** or **"Configure webhooks"**
-   - URL: `https://tifossi-strapi-backend.onrender.com/webhooks/mercadopago`
+   - URL: `https://tifossi-strapi-backend.onrender.com/api/webhooks/mercadopago`
    - Environment: **Production**
 
 3. **Select Topics** (check these boxes):
@@ -877,7 +877,7 @@ open https://tifossi-strapi-backend.onrender.com/admin
 
 ```bash
 # Test webhook endpoint responds
-curl -X POST https://tifossi-strapi-backend.onrender.com/webhooks/mercadopago \
+curl -X POST https://tifossi-strapi-backend.onrender.com/api/webhooks/mercadopago \
   -H "Content-Type: application/json" \
   -d '{"test": true}'
 

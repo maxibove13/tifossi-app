@@ -263,7 +263,8 @@ export class MercadoPagoService {
 
       statement_descriptor: 'TIFOSSI',
 
-      notification_url: process.env.WEBHOOK_URL || `${process.env.PUBLIC_URL}/webhooks/mercadopago`,
+      notification_url:
+        process.env.WEBHOOK_URL || `${process.env.PUBLIC_URL}/api/webhooks/mercadopago`,
 
       binary_mode: false, // Must be false to enable 3DS authentication
 
