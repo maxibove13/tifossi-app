@@ -72,13 +72,13 @@ services:
       - key: BUSINESS_NAME
         value: 'Tifossi Sport'
       - key: BUSINESS_EMAIL
-        value: info@tifossi.com
+        value: InfoTiffosiuy@gmail.com
       - key: BUSINESS_LEGAL_NAME
-        value: 'TODO: Full legal business name (e.g., Tifossi Sport S.A.)'
+        value: 'TIFFOSI S.A.S - RUT 219102480013'
       - key: BUSINESS_ADDRESS
-        value: 'TODO: Complete business address (Street, City, Country)'
+        value: 'Wilson Ferreira aldunate 1341'
       - key: PRIVACY_CONTACT_EMAIL
-        value: info@tifossi.com
+        value: InfoTiffosiuy@gmail.com
       - key: IS_PROXIED
         value: true
       - key: PUBLIC_URL

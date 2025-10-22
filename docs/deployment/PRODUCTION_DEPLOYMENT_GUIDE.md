@@ -125,9 +125,10 @@
    - Terms of Service URL: `[Your terms URL]`
 
 3. **Contact Information**:
-   - Business Email: `info@tifossi.com`
+   - Business Email: `InfoTiffosiuy@gmail.com`
    - Business Phone: `[Your Uruguay phone number]`
-   - Business Address: `[Your complete address in Uruguay]`
+   - Business Address: `Wilson Ferreira aldunate 1341`
+   - Legal Name: `TIFFOSI S.A.S - RUT 219102480013`
 
 4. **Payment Methods** to activate:
    - ✅ Credit/Debit Cards
@@ -255,10 +256,10 @@ APP_SCHEME=tifossi
 
 # Business Information
 BUSINESS_NAME=Tifossi Sport
-BUSINESS_EMAIL=info@tifossi.com
-BUSINESS_LEGAL_NAME=[Your full legal business name]
-BUSINESS_ADDRESS=[Your complete business address]
-PRIVACY_CONTACT_EMAIL=info@tifossi.com
+BUSINESS_EMAIL=InfoTiffosiuy@gmail.com
+BUSINESS_LEGAL_NAME=TIFFOSI S.A.S - RUT 219102480013
+BUSINESS_ADDRESS=Wilson Ferreira aldunate 1341
+PRIVACY_CONTACT_EMAIL=InfoTiffosiuy@gmail.com
 
 # Currency and Locale
 DEFAULT_CURRENCY=UYU
@@ -306,10 +307,10 @@ STRAPI_TELEMETRY_DISABLED=true
 # Uncomment when ready to enable email notifications
 # SMTP_HOST=smtp.gmail.com
 # SMTP_PORT=587
-# SMTP_USERNAME=info@tifossi.com
+# SMTP_USERNAME=InfoTiffosiuy@gmail.com
 # SMTP_PASSWORD=[your-app-password]
-# EMAIL_FROM=info@tifossi.com
-# EMAIL_REPLY_TO=support@tifossi.com
+# EMAIL_FROM=InfoTiffosiuy@gmail.com
+# EMAIL_REPLY_TO=InfoTiffosiuy@gmail.com
 
 # ============================================
 # OPTIONAL - ERROR MONITORING
@@ -1286,16 +1287,12 @@ Integrate with monitoring services:
 
 **Possible Causes**:
 1. Wrong webhook secret
-2. Timestamp too old (>5 min)
-3. MercadoPago sent test webhook
+2. MercadoPago sent test webhook with old timestamp (expected behavior for test webhooks)
 
 **Solution**:
 ```bash
 # 1. Verify webhook secret matches MercadoPago
-# 2. Check server time is synchronized
-date -u  # Should match current UTC time
-
-# 3. Check logs for signature details
+# Check logs for signature details
 render logs --tail | grep "signature"
 ```
 

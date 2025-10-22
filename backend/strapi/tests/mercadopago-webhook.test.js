@@ -15,9 +15,9 @@
  *
  * Implementation Notes:
  * - Signature format (v1): HMAC SHA256 of "id:{dataId};request-id:{xRequestId};ts:{timestamp};"
- * - Timestamp tolerance: 5 minutes (300 seconds) to prevent replay attacks
+ * - No timestamp validation (MercadoPago doesn't require it)
  * - Response time target: < 50ms (async queue pattern)
- * - Duplicate detection: Database-backed webhook-log with unique webhookKey
+ * - Duplicate detection: Database-backed webhook-log with unique webhookKey (prevents replay attacks)
  */
 
 const crypto = require('crypto');
@@ -92,13 +92,8 @@ function createStrapiMock(options = {}) {
         const timestamp = signatureParts[0].replace('ts=', '');
         const receivedHash = signatureParts[1].replace('v1=', '');
 
-        // Check timestamp is not too old (5 minutes = 300 seconds)
-        const currentTimestamp = Math.floor(Date.now() / 1000);
-        if (Math.abs(currentTimestamp - parseInt(timestamp)) > 300) {
-          return false;
-        }
-
         // Generate expected signature
+        // Note: No timestamp validation - MercadoPago doesn't require it
         const manifest = `id:${dataId};request-id:${requestId};ts:${timestamp};`;
         const expectedHash = crypto
           .createHmac('sha256', webhookSecret)

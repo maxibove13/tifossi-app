@@ -18,14 +18,12 @@ export interface WebhookHeaders {
 
 export class MercadoPagoWebhookValidator {
   private webhookSecret: string;
-  private maxTimeDifference: number;
 
-  constructor(webhookSecret: string, maxTimeDifference: number = 300) {
+  constructor(webhookSecret: string) {
     if (!webhookSecret) {
       throw new Error('Webhook secret is required for validation');
     }
     this.webhookSecret = webhookSecret;
-    this.maxTimeDifference = maxTimeDifference; // 5 minutes default
   }
 
   /**
@@ -63,21 +61,11 @@ export class MercadoPagoWebhookValidator {
 
       const timestamp = timestampPart.split('=')[1];
       const signature = signaturePart.split('=')[1];
-
-      // Validate timestamp to prevent replay attacks
-      const currentTime = Math.floor(Date.now() / 1000);
       const requestTime = parseInt(timestamp, 10);
-      const timeDifference = Math.abs(currentTime - requestTime);
-
-      if (timeDifference > this.maxTimeDifference) {
-        return {
-          isValid: false,
-          reason: `Timestamp too old or too far in future (${timeDifference}s difference)`,
-          timestamp: requestTime,
-        };
-      }
 
       // Create the manifest string according to MercadoPago spec
+      // Note: We don't validate timestamp age - MercadoPago doesn't require it.
+      // Replay attacks are prevented by database duplicate detection in webhook handler.
       const manifest = `id:${dataId};request-id:${xRequestId};ts:${timestamp};`;
 
       // Generate expected signature

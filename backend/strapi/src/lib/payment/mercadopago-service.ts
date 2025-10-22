@@ -395,18 +395,9 @@ export class MercadoPagoService {
       const timestamp = timestampPart.split('=')[1];
       const signatureHash = signaturePart.split('=')[1];
 
-      // Check timestamp (prevent replay attacks)
-      const currentTime = Math.floor(Date.now() / 1000);
-      const requestTime = parseInt(timestamp);
-      const timeDifference = Math.abs(currentTime - requestTime);
-
-      if (timeDifference > 300) {
-        // 5 minutes tolerance
-        strapi?.log?.warn?.('Webhook timestamp too old or too far in future');
-        return false;
-      }
-
       // Compute expected signature using correct MercadoPago format
+      // Note: We don't validate timestamp age - MercadoPago doesn't require it.
+      // Replay attacks are prevented by database duplicate detection in webhook handler.
       // Format: id:${dataId};request-id:${xRequestId};ts:${timestamp};
       const manifest = `id:${dataId};request-id:${xRequestId};ts:${timestamp};`;
       const expectedSignature = crypto

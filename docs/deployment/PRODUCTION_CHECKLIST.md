@@ -69,6 +69,8 @@
 - [ ] Health check: `curl https://tifossi-strapi-backend.onrender.com/_health`
 - [ ] Check logs for: "MercadoPago service initialized in PRODUCTION mode"
 - [ ] Admin panel accessible
+- [ ] **Privacy policy accessible**: `curl https://tifossi-strapi-backend.onrender.com/privacy.html`
+- [ ] **Verify business contact info** in privacy policy (TIFFOSI S.A.S, InfoTiffosiuy@gmail.com)
 - [ ] Create test order ($1 UYU)
 - [ ] Complete test payment with MercadoPago test card
 - [ ] Verify webhook received and order updated to PAID

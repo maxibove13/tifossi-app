@@ -29,9 +29,9 @@
 - **Refund Processing**: Full and partial refunds supported
 
 ### Security Features
-- **Signature Verification**: HMAC-SHA256 with replay attack prevention
+- **Signature Verification**: HMAC-SHA256 signature validation (no timestamp validation - not required by MercadoPago)
 - **Fraud Detection**: Amount/currency validation, device fingerprinting
-- **Duplicate Prevention**: Database-backed webhook deduplication
+- **Duplicate Prevention**: Database-backed webhook deduplication (prevents replay attacks)
 - **Deep Link Security**: Parameter validation and injection prevention
 - **State Validation**: Order state transition enforcement
 
