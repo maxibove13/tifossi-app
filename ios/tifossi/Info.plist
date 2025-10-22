@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>tifossi</string>
-          <string>com.tifossi.app</string>
+          <string>app.tiffosi.store</string>
         </array>
       </dict>
       <dict>
