@@ -45,8 +45,6 @@ services:
         value: 5
       - key: AUTH_RATE_LIMIT_DURATION
         value: 60000
-      - key: FEATURE_PAYMENTS_ENABLED
-        value: true
       - key: FEATURE_EMAIL_NOTIFICATIONS
         value: false
       - key: ADMIN_PANEL_ENABLED

@@ -64,9 +64,6 @@ cp .env.example .env
 ### Edit `backend/strapi/.env`
 
 ```bash
-# Feature Flags
-FEATURE_PAYMENTS_ENABLED=true
-
 # MercadoPago Test Credentials
 MP_TEST_ACCESS_TOKEN=TEST-4166909433694983-072404-...
 MP_TEST_PUBLIC_KEY=TEST-6f7d3927-50fe-403e-b32c-...
@@ -394,7 +391,6 @@ ENABLE_PAYMENT_TESTS=true npm run test:payment
 
 ```bash
 # Required for payment features
-FEATURE_PAYMENTS_ENABLED=true
 MP_TEST_ACCESS_TOKEN=TEST-...
 MP_TEST_PUBLIC_KEY=TEST-...
 MP_WEBHOOK_SECRET=...

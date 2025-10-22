@@ -29,7 +29,6 @@ services:
       - CORS_ORIGINS=http://localhost:3000,http://localhost:8081,exp://localhost:8081
       - AUTH_RATE_LIMIT_ENABLED=false
       - LOG_LEVEL=debug
-      - FEATURE_PAYMENTS_ENABLED=true
       - FEATURE_EMAIL_NOTIFICATIONS=true
       - ADMIN_PANEL_ENABLED=true
       - STRAPI_TELEMETRY_DISABLED=true
