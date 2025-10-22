@@ -13,7 +13,7 @@
  * ```
  */
 
-export default (policyContext: any, config: any, { strapi }: any) => {
+export default (policyContext: any, _config: any, { strapi: _strapi }: any) => {
   // Check if a user session exists (JWT was validated by users-permissions plugin)
   if (policyContext.state.user) {
     return true; // User is authenticated, allow request

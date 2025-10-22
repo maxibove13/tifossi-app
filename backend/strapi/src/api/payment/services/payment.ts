@@ -141,7 +141,7 @@ export class PaymentService {
             } else if (!product.available) {
               errors.push(`Item ${i + 1}: Product is not available`);
             }
-          } catch (_error) {
+          } catch {
             errors.push(`Item ${i + 1}: Error validating product`);
           }
         }
