@@ -502,6 +502,35 @@ All technical blockers have been resolved. Remaining items are configuration-onl
    - ✅ Easy migration to production CDN
    - ✅ Consistent across all environments
 
+### Video Asset Strategy
+
+**IMPORTANT**: The app uses two different strategies for video assets:
+
+#### Strapi-Managed Videos (Dynamic Content)
+- **What**: Product videos (e.g., bag rotations, product demos)
+- **Where**: Stored in Strapi via `videoSource` field in product schema
+- **Purpose**: Client can update product videos through admin panel
+- **Loading**: Fetched from Cloudinary CDN at runtime
+- **Example**: Backpack rotation video in product detail view
+
+#### Local Bundled Videos (App UI)
+- **What**: App interface videos (home screen background, splash animations)
+- **Where**: `assets/videos/` folder, bundled with app
+- **Purpose**: Instant load, no network dependency, consistent branding
+- **Loading**: Via `require()` statements (e.g., `require('../../assets/videos/splash-screen-background.mov')`)
+- **Example**: Home screen background video (`app/(home)/index.tsx`)
+
+**Why This Split?**
+- **UI videos** must load instantly for smooth UX (no loading states on app launch)
+- **Product videos** are business content that changes frequently (managed via CMS)
+- **Bundle size** considerations (UI videos are small and rarely change)
+- **Offline experience** (app UI works without network, product catalog requires connection)
+
+**Current Local Video Assets**:
+- `assets/videos/splash-screen-background.mov` - Home screen background
+- `assets/videos/mochila-gold.mov` - Gold backpack product demo (can migrate to Strapi)
+- `assets/videos/mochila-black.mov` - Black backpack product demo (can migrate to Strapi)
+
 ## 💰 Infrastructure & Budget Breakdown
 
 ### Monthly Costs (Production)
