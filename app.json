@@ -55,13 +55,13 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.123456789012-placeholder" // TODO: Replace with actual reversed client ID from GoogleService-Info.plist (REVERSED_CLIENT_ID key). Also update webClientId in firebaseAuth.ts
+          "iosUrlScheme": "com.googleusercontent.apps.REDACTED_GOOGLE_CLIENT_ID"
         }
       ],
       [
         "expo-apple-authentication",
         {
-          "appleTeamId": "PLACEHOLDER_TEAM_ID" // TODO: Replace with actual Apple Team ID from Apple Developer account
+          "appleTeamId": "KM7UAMA5MF"
         }
       ]
     ],

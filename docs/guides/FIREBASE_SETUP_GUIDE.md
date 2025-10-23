@@ -2,13 +2,16 @@
 
 This guide will help you set up Firebase for your Tifossi mobile app, including Apple Sign-In and Google Sign-In authentication.
 
-## ⚠️ CRITICAL: Google Sign-In Web Client ID Required
+## ✅ COMPLETED: Google Sign-In Web Client ID Configured
 
-**Before deploying to production, you MUST replace the placeholder Web Client ID in the code.**
+**Status**: The production Web Client ID has been configured (2025-10-22).
 
-The app currently has a placeholder value that will cause Google Sign-In to fail. Follow **Step 5** of this guide carefully to obtain and configure your production Web Client ID.
+**Configured Value**: `REDACTED_GOOGLE_CLIENT_ID.apps.googleusercontent.com`
 
-**File to update**: `app/_services/auth/firebaseAuth.ts` (Line 178)
+**Files Updated**:
+- `app/_services/auth/firebaseAuth.ts` (Line 178) - Web Client ID configured
+- `app.json` - iOS URL Scheme configured with reversed client ID
+- `GoogleService-Info.plist` - Production Firebase iOS config installed
 
 ## Prerequisites
 
@@ -44,10 +47,11 @@ Before starting, make sure you have:
    - **App nickname**: Enter "Tifossi iOS Production"
    - **App Store ID**: Leave blank for now (add after App Store submission)
 
-2. **Download Configuration File**
+2. **Download Configuration File** ✅ COMPLETED
    - Download the `GoogleService-Info.plist` file
    - **Important**: Save this file in your project's `/ios` folder
    - Replace any existing placeholder file
+   - **Status**: Production `GoogleService-Info.plist` installed (2025-10-22)
 
 3. **Continue Through Setup**
    - The Firebase setup wizard will show additional steps
@@ -107,9 +111,9 @@ Before starting, make sure you have:
    - Enter your Apple Team ID in the designated field
    - Click "Save"
 
-## Step 5: Configure Google Sign-In ⚠️ CRITICAL
+## Step 5: Configure Google Sign-In ✅ COMPLETED
 
-### ⚠️ This step is REQUIRED for Google Sign-In to work in production
+### ✅ This configuration has been completed for production (2025-10-22)
 
 1. **Find Your Web Client ID in Firebase Console**
 
@@ -192,31 +196,31 @@ EXPO_PUBLIC_ENVIRONMENT=production
 
 2. **Alternative**: Look in your downloaded `GoogleService-Info.plist` file
 
-## Step 7: Update App Configuration
+## Step 7: Update App Configuration ✅ COMPLETED
 
-1. **Update Bundle Identifier** (in `app.json`):
+1. **Update Bundle Identifier** (in `app.json`) ✅ COMPLETED:
 
    ```json
    {
      "expo": {
        "ios": {
-         "bundleIdentifier": "com.tifossi.app"
+         "bundleIdentifier": "app.tiffosi.store"  // ✅ Configured
        },
        "android": {
-         "package": "com.tifossi.app"
+         "package": "app.tiffosi.store"  // ✅ Configured
        }
      }
    }
    ```
 
-2. **Update Apple Team ID** (in `app.json`):
+2. **Update Apple Team ID** (in `app.json`) ✅ COMPLETED:
    ```json
    {
      "plugins": [
        [
          "expo-apple-authentication",
          {
-           "appleTeamId": "YOUR_ACTUAL_TEAM_ID"
+           "appleTeamId": "KM7UAMA5MF"  // ✅ Configured
          }
        ]
      ]

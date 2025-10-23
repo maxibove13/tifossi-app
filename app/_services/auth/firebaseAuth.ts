@@ -175,7 +175,7 @@ class FirebaseAuthService {
     try {
       // Configure Google Sign-In
       GoogleSignin.configure({
-        webClientId: '123456789012-placeholder.apps.googleusercontent.com', // TODO: REPLACE WITH PRODUCTION WEB CLIENT ID
+        webClientId: 'REDACTED_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
         offlineAccess: false,
       });
 

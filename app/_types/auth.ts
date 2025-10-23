@@ -158,3 +158,11 @@ export const APPLE_AUTH_ERRORS_ES = {
 } as const;
 
 export type AppleAuthErrorCode = keyof typeof APPLE_AUTH_ERRORS_ES;
+
+// Add default export to fix router warnings
+const utilityExport = {
+  name: 'AuthTypes',
+  version: '1.0.0',
+};
+
+export default utilityExport;

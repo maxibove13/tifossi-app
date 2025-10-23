@@ -232,3 +232,11 @@ export function getFullMediaUrl(relativeUrl: string, baseUrl?: string): string {
 
   return `${apiBaseUrl}${normalizedPath}`;
 }
+
+// Add default export to fix router warnings
+const utilityExport = {
+  name: 'ApiTransforms',
+  version: '1.0.0',
+};
+
+export default utilityExport;

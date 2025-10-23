@@ -74,3 +74,11 @@ export const getFeaturedProducts = (): Product[] => {
 export const getNewProducts = (): Product[] => {
   return products.filter((product) => product.statuses?.includes(ProductStatus.NEW));
 };
+
+// Add default export to fix router warnings
+const utilityExport = {
+  name: 'ProductsMock',
+  version: '1.0.0',
+};
+
+export default utilityExport;
