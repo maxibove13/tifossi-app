@@ -32,6 +32,9 @@ export default {
     // Initialize default data if needed
     await initializeDefaultData(strapi);
 
+    // Initialize public permissions for API access
+    await initializePublicPermissions(strapi);
+
     // Set up cron jobs
     setupCronJobs(strapi);
 
@@ -105,6 +108,106 @@ async function initializeDefaultData(strapi: any) {
     }
   } catch (error) {
     strapi.log.error('Error initializing default data:', error);
+  }
+}
+
+/**
+ * Initialize public permissions for API endpoints
+ * This ensures mobile app can access product data without authentication
+ */
+async function initializePublicPermissions(strapi: any) {
+  try {
+    strapi.log.info('Initializing public API permissions...');
+
+    // Get the Public role
+    const publicRole = await strapi.db.query('plugin::users-permissions.role').findOne({
+      where: { type: 'public' },
+    });
+
+    if (!publicRole) {
+      strapi.log.error('Public role not found!');
+      return;
+    }
+
+    // Define required permissions for mobile app
+    const requiredPermissions = [
+      // Products - read access
+      'api::product.product.find',
+      'api::product.product.findOne',
+
+      // Categories - read access
+      'api::category.category.find',
+      'api::category.category.findOne',
+
+      // Product Models - read access
+      'api::product-model.product-model.find',
+      'api::product-model.product-model.findOne',
+
+      // Product Statuses - read access
+      'api::product-status.product-status.find',
+      'api::product-status.product-status.findOne',
+
+      // Store Locations - read access
+      'api::store-location.store-location.find',
+      'api::store-location.store-location.findOne',
+
+      // Upload (media files) - read access
+      'plugin::upload.content-api.find',
+    ];
+
+    let createdCount = 0;
+    let existingCount = 0;
+    let activatedCount = 0;
+
+    for (const action of requiredPermissions) {
+      // Check if permission already exists
+      const existingPermission = await strapi.db
+        .query('plugin::users-permissions.permission')
+        .findOne({
+          where: {
+            action,
+            role: publicRole.id,
+          },
+        });
+
+      if (!existingPermission) {
+        // Create the permission
+        await strapi.db.query('plugin::users-permissions.permission').create({
+          data: {
+            action,
+            role: publicRole.id,
+            enabled: true,
+          },
+        });
+        createdCount++;
+        strapi.log.debug(`✅ Created permission: ${action}`);
+      } else if (!existingPermission.enabled) {
+        await strapi.db.query('plugin::users-permissions.permission').update({
+          where: { id: existingPermission.id },
+          data: { enabled: true },
+        });
+        activatedCount++;
+        strapi.log.debug(`✅ Enabled permission: ${action}`);
+      } else {
+        existingCount++;
+      }
+    }
+
+    if (createdCount > 0) {
+      strapi.log.info(`✅ Created ${createdCount} new public permissions`);
+    }
+    if (activatedCount > 0) {
+      strapi.log.info(`✅ Enabled ${activatedCount} existing permissions`);
+    }
+    if (existingCount > 0) {
+      strapi.log.info(`ℹ️  ${existingCount} permissions already active`);
+    }
+
+    strapi.log.info('Public API permissions initialized successfully');
+  } catch (error) {
+    strapi.log.error('Error initializing public permissions:', error);
+    // Don't throw - allow app to start even if this fails
+    // Permissions can be set manually via admin panel if needed
   }
 }
 
