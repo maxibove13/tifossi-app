@@ -4,12 +4,24 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 
 ## Recent Updates (October 2025)
 
-**App Store Compliance Audit Completed (2025-10-18)** - Multi-agent audit identified critical blockers:
+**iOS Production Configuration Completed (2025-10-22)** - All production credentials configured:
+- Bundle ID registered: `app.tiffosi.store`
+- Apple Team ID configured: `KM7UAMA5MF`
+- Firebase iOS production config installed
+- Google Sign-In fully configured with production credentials
+- iOS-first release strategy adopted (Android deferred to Phase 2)
 
-- **8 Critical App Store Blockers**: Empty iOS entitlements, incomplete privacy manifest, missing ATT permission, backend payment configuration
+**Major Dependency Upgrades (2025-10-23)**:
+- Expo SDK 52.0.47 (latest patch)
+- iOS build system fixes (RNReanimated static linking, react-native-mmkv zlib)
+- Package downgrades for SDK compatibility (flash-list 1.7.3, expo-apple-authentication 7.1.3)
+
+**App Store Readiness**: 98% complete - Ready for EAS build and TestFlight distribution
+
+**Previous Updates**:
+- **8 Critical App Store Blockers Resolved (2025-10-21)**: iOS entitlements, privacy manifest, ATT permission, code quality
 - **5 Critical Strapi Integration Fixes Completed**: Product variants, inventory tracking, store pickup, content filtering, API mapping
 - **Privacy Policy Implemented**: Spanish-language privacy policy with in-app access
-- **Current Status**: Code complete at 85% readiness, requires configuration fixes before App Store submission
 
 See [TIFOSSI_DELIVERY_PLAN.md](./docs/project/TIFOSSI_DELIVERY_PLAN.md) for complete audit findings and [STRAPI_INTEGRATION_AUDIT_REPORT.md](./backend/strapi/STRAPI_INTEGRATION_AUDIT_REPORT.md) for technical details.
 
@@ -24,7 +36,7 @@ See [TIFOSSI_DELIVERY_PLAN.md](./docs/project/TIFOSSI_DELIVERY_PLAN.md) for comp
 
 ## Technologies
 
-- **React Native & Expo**: Cross-platform mobile development
+- **React Native & Expo SDK 52.0.47**: Cross-platform mobile development
 - **TypeScript**: Type-safe development experience
 - **Firebase**: Authentication and user management
 - **Strapi**: Headless CMS for content management
@@ -75,6 +87,18 @@ See [TIFOSSI_DELIVERY_PLAN.md](./docs/project/TIFOSSI_DELIVERY_PLAN.md) for comp
 - **Version bump**: `./scripts/version-bump.sh [major|minor|patch]`
 - **Environment check**: `./scripts/check-environment.js`
 - **Bundle analysis**: `./scripts/bundle-analyzer.js`
+
+### iOS Build System
+
+The iOS build includes critical Podfile fixes for Expo SDK 52:
+
+1. **RNReanimated Static Linking**: Forces static library build to prevent JSI linking issues
+2. **react-native-mmkv zlib Dependency**: Adds `libz.tbd` framework for dynamic framework builds
+
+If you encounter iOS build issues, clean everything:
+```bash
+cd ios && pod deintegrate && pod cache clean --all && rm -rf Pods Podfile.lock ~/Library/Developer/Xcode/DerivedData && cd .. && npm install && cd ios && pod install && cd ..
+```
 
 ## Project Structure
 

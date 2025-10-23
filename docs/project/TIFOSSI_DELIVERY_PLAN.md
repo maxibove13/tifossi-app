@@ -1,11 +1,14 @@
 # Tifossi E-commerce App - Implementation Status
 
-**Last Updated**: 2025-10-21 (App Store Blockers Resolved)
+**Last Updated**: 2025-10-22 (iOS-First Release Strategy)
 **Purpose**: This document tracks the CURRENT STATE vs DELIVERY GOALS for the Tifossi app project.
+
+**Release Strategy**: iOS-only for initial release. Android deployment deferred to Phase 2.
 
 ## 📊 Executive Summary
 
-**Project Status**: ✅ PRODUCTION-READY - ALL APP STORE BLOCKERS RESOLVED (2025-10-21)
+**Project Status**: ✅ iOS PRODUCTION-READY - ALL APP STORE BLOCKERS RESOLVED (2025-10-22)
+**Release Approach**: iOS-first (Phase 1), Android deferred to Phase 2
 **Live Backend**: https://tifossi-strapi-backend.onrender.com
 **Admin Panel**: https://tifossi-strapi-backend.onrender.com/admin
 **Monthly Infrastructure Cost**: $35 USD (Render.com)
@@ -13,6 +16,7 @@
 **Build Status**: ✅ ALL CHECKS PASSING - 0 TS errors, 0 ESLint errors, 99.5% tests passing (797 passing)
 **Deployment**: ✅ LIVE IN PRODUCTION - Health check verified
 **Integration Status**: ✅ ALL 5 CRITICAL STRAPI FIXES COMPLETED (2025-10-18)
+**iOS Configuration**: ✅ COMPLETE - Bundle ID registered, Firebase configured, Apple Team ID set
 **App Store Readiness**: ✅ BLOCKERS RESOLVED - 7 critical issues fixed, rejection risk reduced from 95% to <5%
 
 ## 🚀 MAJOR MILESTONES ACHIEVED
@@ -71,6 +75,31 @@
 
 **Impact**: App Store rejection risk reduced from 95% to <5%, project readiness increased from 95% to 98%
 
+### Milestone 3: iOS Production Configuration Complete (2025-10-22)
+
+**Achievement**: Completed all iOS production configuration and adopted iOS-first release strategy
+
+**Configuration Completed**:
+1. ✅ Bundle ID registered with Apple: `app.tiffosi.store`
+2. ✅ Apple Team ID configured: `KM7UAMA5MF`
+3. ✅ Firebase iOS config installed: `GoogleService-Info.plist`
+4. ✅ Google Sign-In credentials updated: iOS URL scheme and Web Client ID
+5. ✅ iOS capabilities enabled: Sign In with Apple + Associated Domains
+
+**Strategic Decision**:
+- **iOS-first release approach adopted** - Focus on App Store submission
+- Android deployment deferred to Phase 2 post-iOS launch
+- Reduces complexity and accelerates time-to-market
+
+**Updated Files**:
+- `app.json` - Bundle ID, Team ID, Google Sign-In config
+- `eas.json` - Production bundle ID updated
+- `ios/tifossi/Info.plist` - URL schemes updated
+- `firebaseAuth.ts` - Web Client ID configured
+- `GoogleService-Info.plist` - Production Firebase config installed
+
+**Impact**: iOS app now ready for EAS build and TestFlight distribution
+
 ---
 
 ## 🎯 Client Commitments (Ground Truth)
@@ -79,13 +108,14 @@ Based on **FUNCIONALIDADES_APP_TIFOSSI.md** and **COSTOS_OPERATIVOS_URUGUAY_2025
 
 ### Core Deliverables
 
-1. **Mobile App** (iOS & Android) with:
-   - Google and Apple Sign-In authentication
+1. **Mobile App** (iOS-first, Android Phase 2) with:
+   - Google and Apple Sign-In authentication (iOS ready)
    - Product catalog with search and filters
    - Shopping cart and favorites
    - MercadoPago Checkout Pro integration
    - Physical store locator
    - User profile management
+   - **Note**: Android deployment deferred to Phase 2 post-iOS launch
 
 2. **Strapi Backend** with:
    - Admin panel for product management
@@ -600,7 +630,7 @@ Based on audit report, these 5 critical fixes were required for MVP. **ALL COMPL
 - [x] Push to main branch to trigger automatic deployment ✅ COMPLETED
 - [x] Verify deployment via health check ✅ COMPLETED (https://tifossi-strapi-backend.onrender.com/api/health)
 
-### Critical Development Tasks
+### Critical Development Tasks (iOS-First Release)
 
 - [x] ~~Implement store locator UI~~ ✅ COMPLETED
 - [x] ~~Fix product-color schema~~ ✅ COMPLETED (2025-10-18)
@@ -608,10 +638,16 @@ Based on audit report, these 5 critical fixes were required for MVP. **ALL COMPL
 - [x] ~~Persist store selection to orders~~ ✅ COMPLETED (2025-10-18)
 - [x] ~~Map size stock field~~ ✅ COMPLETED (2025-10-18)
 - [x] ~~Implement isActive filtering~~ ✅ COMPLETED (2025-10-18)
-- [ ] Update bundle identifiers to production values
-- [ ] Configure Firebase with production credentials
+- [x] Update bundle identifiers to production values ✅ COMPLETED (2025-10-22) - iOS: `app.tiffosi.store`
+- [x] Configure Firebase with production credentials ✅ COMPLETED (2025-10-22) - iOS only, Android deferred
 - [ ] Remove placeholder content
 - [ ] Test payment integration with sandbox
+
+**Android Phase 2 (Post-iOS Launch)**:
+- [ ] Register Android app in Firebase Console
+- [ ] Download and configure google-services.json
+- [ ] Register Google Play Console account
+- [ ] Configure Android build in EAS
 
 ### App Store Blockers (2025-10-18 Audit) - ALL RESOLVED ✅
 
@@ -655,10 +691,10 @@ Based on audit report, these 5 critical fixes were required for MVP. **ALL COMPL
    - MercadoPago merchant account (or provide sandbox credentials)
    - Cloudinary account (free tier)
 
-2. **For App Store Submission**:
-   - Apple Developer account ($99/year)
-   - Google Play Console account ($25 one-time)
+2. **For App Store Submission** (iOS-First):
+   - Apple Developer account ($99/year) ✅ ACTIVE
    - Host privacy policy and terms of service
+   - **Phase 2**: Google Play Console account ($25 one-time) - Deferred
 
 3. **Provide Content**:
    - Product catalog with images

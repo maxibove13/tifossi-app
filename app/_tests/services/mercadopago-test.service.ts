@@ -12,7 +12,7 @@ import {
   createTestPreferenceData,
   generateTestOrderReference,
 } from '../../_config/mercadopago-uruguay.config';
-import { MercadoPagoWebhookValidator } from '../../_services/payment/webhookValidator';
+import { MercadoPagoWebhookValidator } from '../../../backend/strapi/src/webhooks/webhookValidator';
 
 export interface MercadoPagoTestConfig {
   accessToken: string;

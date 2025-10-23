@@ -59,10 +59,14 @@
 - [ ] Production Public Key (starts with `APP-`)
 - [ ] Production Webhook Secret (64-character hex string)
 
-**REQUIRED - Firebase**:
-- [ ] Production Service Account JSON
-- [ ] Project ID verified
-- [ ] Authentication methods enabled (Email, Apple Sign-In)
+**CONFIGURED - Firebase** ✅:
+- ✅ Production Service Account JSON (configured in backend)
+- ✅ Production iOS Configuration (GoogleService-Info.plist installed)
+- ✅ Project ID: `tiffosi-production`
+- ✅ Bundle ID: `app.tiffosi.store`
+- ✅ Apple Team ID: `KM7UAMA5MF`
+- ✅ Google Sign-In Web Client ID configured
+- ✅ Authentication methods enabled (Email, Apple Sign-In, Google)
 
 **REQUIRED - Cloudinary**:
 - [ ] Production Cloud Name
@@ -75,28 +79,51 @@
 
 ### 1.3 App Store Compliance Checklist
 
-**CRITICAL BLOCKERS** (must fix before submission):
+**PREVIOUSLY CRITICAL BLOCKERS - NOW RESOLVED** ✅:
 
-- [ ] **iOS Entitlements File** (BLOCKING)
-  - File: `ios/tifossi/tifossi.entitlements` is EMPTY
-  - Must add: Apple Sign-In capability, Associated Domains
-  - Risk: App crashes on Apple Sign-In button tap
+- ✅ **iOS Entitlements File** (RESOLVED 2025-10-21)
+  - Apple Sign-In capability and associated domains configured
 
-- [ ] **Privacy Manifest Data Collection** (BLOCKING)
-  - File: `ios/tifossi/PrivacyInfo.xcprivacy`
-  - Issue: `NSPrivacyCollectedDataTypes` array is empty
-  - Must declare: Name, Email, Phone, Address, Purchase History, etc.
-  - Risk: Automatic rejection
+- ✅ **Privacy Manifest Data Collection** (RESOLVED 2025-10-21)
+  - 10 data types declared with purposes
 
-- [ ] **App Tracking Transparency** (BLOCKING)
-  - Missing: `NSUserTrackingUsageDescription` in Info.plist
-  - Analytics enabled but no ATT permission requested
-  - Risk: Legal violation, instant rejection
+- ✅ **App Tracking Transparency** (RESOLVED 2025-10-21)
+  - Analytics disabled in production (no tracking permission needed)
 
-- [ ] **Production Code Quality**
-  - 83 `console.log` statements need removal
-  - Generic URL scheme `myapp` should be `tifossi`
-  - Unnecessary microphone permission should be removed
+- ✅ **Production Code Quality** (RESOLVED 2025-10-21)
+  - 64 console.log statements converted to safe logging
+  - URL schemes updated to production values (tifossi, com.tifossi.app)
+
+**iOS PRODUCTION CONFIGURATION** ✅ (COMPLETED 2025-10-22):
+
+- ✅ **Bundle ID Configured**: `app.tiffosi.store`
+- ✅ **Apple Team ID**: `KM7UAMA5MF`
+- ✅ **Firebase iOS Config**: Production `GoogleService-Info.plist` installed
+- ✅ **Google Sign-In**: Web Client ID configured in firebaseAuth.ts
+- ✅ **iOS URL Scheme**: Production reversed client ID configured
+
+### 1.4 iOS Build System Configuration ✅
+
+**COMPLETED - iOS Build Fixes** (2025-10-23):
+
+The iOS Podfile includes two critical fixes:
+
+1. ✅ **RNReanimated Static Linking**
+   - Issue: JSI linking errors with dynamic frameworks
+   - Solution: Force RNReanimated to static library build type
+   - File: `ios/Podfile` (pre_install hook)
+
+2. ✅ **react-native-mmkv zlib Dependency**
+   - Issue: Missing `libz.tbd` framework in dynamic builds
+   - Solution: Add zlib framework reference to react-native-mmkv target
+   - File: `ios/Podfile` (post_install hook)
+
+**Dependency Versions** (2025-10-23):
+- Expo SDK: 52.0.47
+- expo-router: 4.0.21
+- @shopify/flash-list: 1.7.3 (downgraded for compatibility)
+- expo-apple-authentication: 7.1.3 (downgraded for SDK 52)
+- expo-application: 6.0.2 (downgraded for SDK 52)
 
 ---
 

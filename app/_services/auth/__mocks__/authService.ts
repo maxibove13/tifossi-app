@@ -16,4 +16,11 @@ const authService = {
   getApiToken: jest.fn(),
 };
 
-export default authService;
+// Add default export to fix router warnings
+const utilityExport = {
+  name: 'AuthServiceMock',
+  version: '1.0.0',
+  service: authService,
+};
+
+export default utilityExport;

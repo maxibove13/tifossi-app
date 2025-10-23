@@ -210,3 +210,11 @@ export const createTestPreferenceData = (overrides: any = {}) => {
     ...overrides,
   };
 };
+
+// Add default export to fix router warnings
+const utilityExport = {
+  name: 'MercadoPagoUruguayConfig',
+  version: '1.0.0',
+};
+
+export default utilityExport;

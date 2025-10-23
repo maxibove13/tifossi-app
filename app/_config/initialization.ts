@@ -14,6 +14,7 @@ import {
   safeError,
   safeWarn,
 } from './environment';
+import { networkService } from '../_services/network/NetworkService';
 
 /**
  * Critical configuration that must be present
@@ -107,6 +108,15 @@ Current environment: ${currentEnvironment}
     if (currentEnvironment !== 'development') {
       throw error;
     }
+  }
+
+  // Initialize network monitoring
+  try {
+    networkService.initialize();
+    safeLog('✅ Network monitoring initialized');
+  } catch (error) {
+    safeError('❌ Failed to initialize network monitoring:', error);
+    // Non-critical, don't throw
   }
 
   safeLog('✅ App initialization complete');

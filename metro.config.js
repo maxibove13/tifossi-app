@@ -13,6 +13,16 @@ module.exports = (() => {
     ...resolver,
     assetExts: resolver.assetExts.filter((ext) => ext !== 'svg'),
     sourceExts: [...resolver.sourceExts, 'svg'],
+    blockList: [
+      // Exclude test files from bundle
+      /.*\/__tests__\/.*$/,
+      /.*\.test\.[jt]sx?$/,
+      /.*\/_tests\/.*$/,
+      // Exclude mock files from bundle
+      /.*\/__mocks__\/.*$/,
+      // Exclude backend directory (Strapi) from React Native bundle
+      /^.*\/backend\/.*$/,
+    ],
   };
 
   return config;
