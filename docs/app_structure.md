@@ -343,13 +343,58 @@ The app uses Expo Router with a tab-based navigation structure:
 
 1. **Utility Components**
    - Error boundaries for error handling
-   - Video backgrounds
+   - Video backgrounds (see VideoBackground documentation below)
    - Animation utilities
 
 2. **Navigation Components**
    - Tab bar with icons
    - Category navigation
    - Header navigation elements
+
+#### VideoBackground Component
+
+**Location**: `app/_components/common/VideoBackground.tsx`
+
+A reusable component for displaying video backgrounds with fallback support.
+
+**Features**:
+- Supports both local (bundled) and remote (Strapi/CDN) video sources
+- Automatic fallback to static image on error
+- Configurable overlay gradient
+- Preloading integration
+- Memoized for performance
+
+**Usage**:
+
+```typescript
+// Local bundled video (app UI)
+<VideoBackground source={require('../../assets/videos/splash-screen-background.mov')}>
+  <YourContent />
+</VideoBackground>
+
+// Remote video from Strapi (product videos)
+<VideoBackground source="https://cdn.example.com/video.mp4" fallbackImage={productImage}>
+  <YourContent />
+</VideoBackground>
+```
+
+**Video Asset Strategy**:
+- **Local videos** (via `require()`): App UI elements (home screen, splash)
+  - Instant load, no network dependency
+  - Bundled with app binary
+  - Example: Home screen background
+- **Remote videos** (via URL): Dynamic content from Strapi
+  - Product videos, demos
+  - Managed through CMS
+  - Example: Product rotation videos
+
+**Props**:
+- `source`: number (require) or string (URL)
+- `fallbackImage`: Static image to show if video fails
+- `overlayOpacity`: Gradient overlay opacity (default: 0.4)
+- `shouldLoop`: Loop video (default: true)
+- `shouldMute`: Mute audio (default: true)
+- `shouldAutoPlay`: Autoplay on mount (default: true)
 
 ## Type System
 

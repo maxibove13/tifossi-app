@@ -16,7 +16,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <VideoBackground source="/videos/splash-screen-background.mp4">
+    <VideoBackground source={require('../../assets/videos/splash-screen-background.mov')}>
       <StatusBar style="light" />
       <View style={styles.container}>
         <HomeHeader />
