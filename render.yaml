@@ -118,9 +118,8 @@ services:
 databases:
   # PostgreSQL Database
   - name: tifossi_postgres
-    plan: starter # Starter plan - $7/month, won't expire
-    # Note: Storage size is configured via Render Dashboard, not in YAML
-    # Starter: 1 CPU, 1GB RAM, 10GB storage
+    plan: basic_256mb # Basic plan - $7/month, 256MB RAM, 1GB storage, won't expire
+    # Note: For larger databases, consider basic_1gb ($15/month) or higher plans
 # Environment Variables for External Services
 # These must be configured manually via Render Dashboard → Service Settings → Environment
 #
