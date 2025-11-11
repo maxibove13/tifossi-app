@@ -39,6 +39,14 @@ services:
         value: https://tifossi.app,https://www.tifossi.app,https://admin.tifossi.app
       - key: UPLOAD_PROVIDER
         value: cloudinary
+      - key: CLOUDINARY_NAME
+        sync: false
+      - key: CLOUDINARY_KEY
+        sync: false
+      - key: CLOUDINARY_SECRET
+        sync: false
+      - key: CLOUDINARY_FOLDER
+        value: tifossi
       - key: AUTH_RATE_LIMIT_ENABLED
         value: true
       - key: AUTH_RATE_LIMIT_MAX
@@ -110,9 +118,9 @@ services:
 databases:
   # PostgreSQL Database
   - name: tifossi_postgres
-    plan: free # Free tier - expires after 30 days, upgrade to basic-1gb for production
+    plan: starter # Starter plan - $7/month, won't expire
     # Note: Storage size is configured via Render Dashboard, not in YAML
-    # Free tier: 1GB, Paid: multiples of 5GB at $0.30/GB/month
+    # Starter: 1 CPU, 1GB RAM, 10GB storage
 # Environment Variables for External Services
 # These must be configured manually via Render Dashboard → Service Settings → Environment
 #
@@ -122,9 +130,10 @@ databases:
 # - DATABASE_SSL (true for Render)
 # - DATABASE_SSL_REJECT_UNAUTHORIZED (false for Render)
 # - PUBLIC_URL (your Render service URL, e.g., https://tifossi-strapi-backend.onrender.com)
-# - CLOUDINARY_NAME (from Cloudinary account)
-# - CLOUDINARY_KEY (from Cloudinary account)
-# - CLOUDINARY_SECRET (from Cloudinary account)
+# - CLOUDINARY_NAME (from Cloudinary account - sync: false, must be set in dashboard)
+# - CLOUDINARY_KEY (from Cloudinary account - sync: false, must be set in dashboard)
+# - CLOUDINARY_SECRET (from Cloudinary account - sync: false, must be set in dashboard)
+# - CLOUDINARY_FOLDER (default: tifossi, set in YAML)
 #
 # MercadoPago Environment Variables (defined above, values set in Render Dashboard):
 # - MP_ACCESS_TOKEN (production token - starts with APP-)
