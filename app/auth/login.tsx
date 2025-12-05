@@ -39,19 +39,12 @@ export default function LoginScreen() {
   // Apple Sign-In specific state
   const [appleError, setAppleError] = useState<string | null>(null);
 
-  const {
-    login,
-    loginWithGoogle,
-    loginWithApple,
-    isLoading,
-    error: authError,
-  } = useAuthStore((state) => ({
-    login: state.login,
-    loginWithGoogle: state.loginWithGoogle,
-    loginWithApple: state.loginWithApple,
-    isLoading: state.isLoading,
-    error: state.error,
-  }));
+  // Use separate selectors to avoid infinite render loop
+  const login = useAuthStore((state: any) => state.login);
+  const loginWithGoogle = useAuthStore((state: any) => state.loginWithGoogle);
+  const loginWithApple = useAuthStore((state: any) => state.loginWithApple);
+  const isLoading = useAuthStore((state: any) => state.isLoading);
+  const authError = useAuthStore((state: any) => state.error);
 
   const validateEmail = (text: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
