@@ -18,6 +18,7 @@ import ProductDetailScreen from '../../products/[id]';
 // Stores
 import { useCartStore } from '../../_stores/cartStore';
 import { useFavoritesStore } from '../../_stores/favoritesStore';
+import { useAuthStore } from '../../_stores/authStore';
 
 // Types
 import { Product } from '../../_types/product';
@@ -170,6 +171,12 @@ describe('Product Detail Flow - Integration', () => {
 
     useFavoritesStore.setState({
       items: [],
+      productIds: [],
+    });
+
+    useAuthStore.setState({
+      isLoggedIn: false,
+      user: null,
     });
 
     // Clear mocks
@@ -437,7 +444,13 @@ describe('Product Detail Flow - Integration', () => {
   });
 
   describe('Favorites Management', () => {
-    it('should add product to favorites', async () => {
+    it('should add product to favorites when logged in', async () => {
+      // Set up authenticated user
+      useAuthStore.setState({
+        isLoggedIn: true,
+        user: { id: 'user-1', name: 'Test User', email: 'test@test.com', profilePicture: null },
+      });
+
       const { getByTestId } = render(
         <TestWrapper>
           <ProductDetailScreen />
@@ -460,7 +473,13 @@ describe('Product Detail Flow - Integration', () => {
       expect(favoritesState.items).toContain('prod-1');
     });
 
-    it('should remove product from favorites', async () => {
+    it('should remove product from favorites when logged in', async () => {
+      // Set up authenticated user
+      useAuthStore.setState({
+        isLoggedIn: true,
+        user: { id: 'user-1', name: 'Test User', email: 'test@test.com', profilePicture: null },
+      });
+
       // Pre-populate favorites
       useFavoritesStore.setState({
         items: ['prod-1'],
@@ -485,6 +504,38 @@ describe('Product Detail Flow - Integration', () => {
       });
 
       // Check favorites store
+      const favoritesState = useFavoritesStore.getState();
+      expect(favoritesState.items).not.toContain('prod-1');
+    });
+
+    it('should redirect to login when clicking favorite while not logged in', async () => {
+      // Ensure user is NOT logged in
+      useAuthStore.setState({
+        isLoggedIn: false,
+        user: null,
+      });
+
+      const { getByTestId } = render(
+        <TestWrapper>
+          <ProductDetailScreen />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        const favoriteButton = getByTestId('favorite-button');
+        expect(favoriteButton).toBeTruthy();
+      });
+
+      const favoriteButton = getByTestId('favorite-button');
+
+      await act(async () => {
+        fireEvent.press(favoriteButton);
+      });
+
+      // Should redirect to login
+      expect(mockPush).toHaveBeenCalledWith('/auth/login');
+
+      // Favorites should NOT be updated
       const favoritesState = useFavoritesStore.getState();
       expect(favoritesState.items).not.toContain('prod-1');
     });
