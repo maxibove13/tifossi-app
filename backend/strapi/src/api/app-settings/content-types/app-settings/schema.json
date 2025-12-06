@@ -1,0 +1,27 @@
+{
+  "kind": "singleType",
+  "collectionName": "app_settings",
+  "info": {
+    "singularName": "app-settings",
+    "pluralName": "app-settings",
+    "displayName": "App Settings",
+    "description": "Global app configuration managed by admins"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "supportPhoneNumber": {
+      "type": "string",
+      "required": true,
+      "default": "+59899000000"
+    },
+    "supportEmail": {
+      "type": "email"
+    },
+    "businessName": {
+      "type": "string",
+      "default": "Tifossi"
+    }
+  }
+}

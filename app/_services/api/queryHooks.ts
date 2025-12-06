@@ -81,6 +81,50 @@ export function useProduct(productId: string | null): QueryResult<Product> {
   };
 }
 
+/**
+ * Hook to fetch app settings
+ */
+export interface AppSettings {
+  supportPhoneNumber: string;
+  supportEmail?: string;
+  businessName?: string;
+}
+
+export function useAppSettings(): QueryResult<AppSettings> {
+  const [data, setData] = useState<AppSettings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const settings = await apiManager.fetchAppSettings();
+      setData(settings);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch app settings');
+      // Return defaults on error
+      setData({
+        supportPhoneNumber: '+59899000000',
+        businessName: 'Tifossi',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  return {
+    data,
+    isLoading,
+    error,
+    refetch: fetchSettings,
+  };
+}
+
 // Default export utility
 const utilityExport = {
   name: 'QueryHooks',

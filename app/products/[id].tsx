@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Linking } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Header from '../_components/store/layout/Header';
 import EnhancedProductGallery from '../_components/store/product/gallery/EnhancedProductGallery';
@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useCartStore } from '../_stores/cartStore';
 import { useFavoritesStore } from '../_stores/favoritesStore';
-import { useProduct, useProducts } from '../_services/api/queryHooks';
+import { useProduct, useProducts, useAppSettings } from '../_services/api/queryHooks';
 import { SkeletonLoader } from '../_components/common/SkeletonLoader';
 
 export default function ProductDetailScreen() {
@@ -22,6 +22,8 @@ export default function ProductDetailScreen() {
   const { data: product, isLoading: isLoadingProduct, error: productError } = useProduct(productId);
   // Also fetch all products for related/recommended products
   const { data: allProducts } = useProducts();
+  // Fetch app settings for support phone number
+  const { data: appSettings } = useAppSettings();
 
   // Helper functions to filter products by status
   const getProductsByStatus = (products: Product[], status: ProductStatus) => {
@@ -126,8 +128,10 @@ export default function ProductDetailScreen() {
     setSelectedQuantity(1);
   }, [product?.id]);
 
-  const handleSupportAction = (_action: 'chat' | 'faq' | 'call') => {
-    // Handle support actions
+  const handleSupportAction = (action: 'chat' | 'faq' | 'call') => {
+    if (action === 'call' && appSettings?.supportPhoneNumber) {
+      Linking.openURL(`tel:${appSettings.supportPhoneNumber}`);
+    }
   };
 
   const handleViewMore = (_section: string) => {
