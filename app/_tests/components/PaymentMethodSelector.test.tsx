@@ -273,11 +273,13 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
         expect(screen.getByText('Métodos predeterminados')).toBeTruthy();
         expect(screen.getByText('Otros métodos')).toBeTruthy();
 
-        // Check payment methods
+        // Only enabled payment methods are shown (Mercado Pago)
         expect(screen.getByText('Mercado Pago')).toBeTruthy();
-        expect(screen.getByText('PayPal')).toBeTruthy();
-        expect(screen.getByText('Crédito Tiffosi')).toBeTruthy();
-        expect(screen.getByText('Efectivo')).toBeTruthy();
+
+        // Disabled methods (PayPal, Tiffosi, Efectivo) are filtered out
+        expect(screen.queryByText('PayPal')).toBeNull();
+        expect(screen.queryByText('Crédito Tiffosi')).toBeNull();
+        expect(screen.queryByText('Efectivo')).toBeNull();
 
         // Check action buttons
         expect(screen.getByText('Continuar con el pago')).toBeTruthy();
@@ -296,13 +298,18 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       });
     });
 
-    it('should show disabled state for unavailable payment methods', async () => {
+    it('should only render enabled payment methods', async () => {
       render(<PaymentSelectionScreen />);
 
       await waitFor(() => {
-        // PayPal, Tiffosi, and Cash should show "Próximamente"
-        const proximamenteTexts = screen.getAllByText('Próximamente');
-        expect(proximamenteTexts.length).toBe(3); // PayPal, Tiffosi Credit, Cash
+        // Only Mercado Pago is enabled and should be rendered
+        expect(screen.getByText('Mercado Pago')).toBeTruthy();
+        expect(screen.getByTestId('payment-method-mercadopago')).toBeTruthy();
+
+        // Disabled methods are not rendered at all
+        expect(screen.queryByTestId('payment-method-paypal')).toBeNull();
+        expect(screen.queryByTestId('payment-method-tiffosi')).toBeNull();
+        expect(screen.queryByTestId('payment-method-efectivo')).toBeNull();
       });
     });
 
@@ -310,11 +317,8 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       render(<PaymentSelectionScreen />);
 
       await waitFor(() => {
-        // Payment methods should have their respective names
+        // Only enabled payment method should have icon rendered
         expect(screen.getByText('Mercado Pago')).toBeTruthy();
-        expect(screen.getByText('PayPal')).toBeTruthy();
-        expect(screen.getByText('Crédito Tiffosi')).toBeTruthy();
-        expect(screen.getByText('Efectivo')).toBeTruthy();
       });
     });
   });
@@ -327,54 +331,6 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
 
       // Should be selectable (no alert for disabled method)
       expect(mockAlert).not.toHaveBeenCalled();
-    });
-
-    it('should show alert for disabled payment methods', async () => {
-      render(<PaymentSelectionScreen />);
-
-      const paypalOption = await screen.findByTestId('payment-method-paypal');
-      await act(async () => {
-        fireEvent.press(paypalOption);
-      });
-
-      await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(
-          'Método no disponible',
-          'PayPal estará disponible próximamente.'
-        );
-      });
-    });
-
-    it('should show alert for Tiffosi Credit when selected', async () => {
-      render(<PaymentSelectionScreen />);
-
-      const tiffosiOption = await screen.findByTestId('payment-method-tiffosi');
-      await act(async () => {
-        fireEvent.press(tiffosiOption);
-      });
-
-      await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(
-          'Método no disponible',
-          'Crédito Tiffosi estará disponible próximamente.'
-        );
-      });
-    });
-
-    it('should show alert for Cash payment when selected', async () => {
-      render(<PaymentSelectionScreen />);
-
-      const cashOption = await screen.findByTestId('payment-method-efectivo');
-      await act(async () => {
-        fireEvent.press(cashOption);
-      });
-
-      await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith(
-          'Método no disponible',
-          'Efectivo estará disponible próximamente.'
-        );
-      });
     });
 
     it('should enable continue button when valid method is selected', async () => {
@@ -571,23 +527,14 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       expect(mockRouter.navigate).toHaveBeenCalledWith('/(tabs)');
     });
 
-    it('should navigate to home for unimplemented payment methods', async () => {
+    it('should only show Mercado Pago as selectable option', async () => {
       render(<PaymentSelectionScreen />);
 
       await waitFor(() => {
-        const tiffosiOption = screen.getByText('Crédito Tiffosi');
-        fireEvent.press(tiffosiOption);
+        // Only Mercado Pago is available - disabled methods are not rendered
+        expect(screen.getByText('Mercado Pago')).toBeTruthy();
+        expect(screen.queryByText('Crédito Tiffosi')).toBeNull();
       });
-
-      // After alert is dismissed, continue with that method
-      mockAlert.mockImplementation((title, message, buttons) => {
-        if (buttons && buttons[0] && buttons[0].onPress) {
-          buttons[0].onPress();
-        }
-      });
-
-      // Note: This test verifies the alert behavior rather than actual navigation
-      // since the unimplemented methods show alerts first
     });
   });
 
@@ -731,21 +678,20 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       render(<PaymentSelectionScreen />);
 
       await waitFor(() => {
-        // All payment methods should be accessible
+        // Only enabled payment methods are accessible
         expect(screen.getByText('Mercado Pago')).toBeTruthy();
-        expect(screen.getByText('PayPal')).toBeTruthy();
-        expect(screen.getByText('Crédito Tiffosi')).toBeTruthy();
-        expect(screen.getByText('Efectivo')).toBeTruthy();
+        expect(screen.getByTestId('payment-method-mercadopago')).toBeTruthy();
       });
     });
 
-    it('should provide visual feedback for disabled methods', async () => {
+    it('should have proper accessibility state on selected method', async () => {
       render(<PaymentSelectionScreen />);
 
+      await selectMercadoPagoOption();
+
       await waitFor(() => {
-        // Disabled methods should show "Próximamente"
-        const proximamenteTexts = screen.getAllByText('Próximamente');
-        expect(proximamenteTexts.length).toBe(3);
+        const mercadoPagoOption = screen.getByTestId('payment-method-mercadopago');
+        expect(mercadoPagoOption.props.accessibilityState?.selected).toBe(true);
       });
     });
   });
