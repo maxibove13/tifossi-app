@@ -2,6 +2,7 @@
  * StrapiApi Service Tests
  * Following TESTING_PRINCIPLES.md: Test revenue-critical data transformations
  * Focus: Product data integrity, error recovery, user-facing failures
+ * Updated for Strapi v5 flat response format
  */
 
 import strapiApi from '../../_services/api/strapiApi';
@@ -11,121 +12,89 @@ import { transformStrapiProduct, StrapiProduct, StrapiResponse } from '../../_ut
 // Mock httpClient (already mocked in setup.ts, but we need typed access)
 const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
-// Test helper - create mock Strapi product
-const createStrapiProduct = (overrides?: Partial<StrapiProduct['attributes']>): StrapiProduct => ({
+// Test helper - create mock Strapi v5 product (flat structure, no attributes wrapper)
+const createStrapiProduct = (overrides?: Partial<StrapiProduct>): StrapiProduct => ({
   id: 1,
-  attributes: {
-    title: 'Camiseta Nacional 2025',
-    price: 2500,
-    discountedPrice: 2000,
-    isCustomizable: true,
-    warranty: '12 meses',
-    returnPolicy: '30 días para cambios',
-    shortDescription: {
-      line1: 'Nueva camiseta',
-      line2: 'Temporada 2025',
-    },
-    longDescription: '<p>Descripción detallada del producto</p><p>Segunda línea</p>',
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
-    publishedAt: '2024-01-01T00:00:00Z',
-    category: {
-      data: {
-        id: 1,
-        attributes: {
-          slug: 'camisetas',
-          name: 'Camisetas',
-        },
-      },
-    },
-    model: {
-      data: {
-        id: 1,
-        attributes: {
-          slug: 'nacional',
-          name: 'Nacional',
-        },
-      },
-    },
-    statuses: {
-      data: [
-        {
-          id: 1,
-          attributes: {
-            name: 'NEW',
-            priority: 1,
-          },
-        },
-      ],
-    },
-    frontImage: {
-      data: {
-        id: 1,
-        attributes: {
-          url: '/uploads/camiseta_front.jpg',
-          alternativeText: 'Front view',
-        },
-      },
-    },
-    images: {
-      data: [
-        {
-          id: 2,
-          attributes: {
-            url: '/uploads/camiseta_back.jpg',
-            alternativeText: 'Back view',
-          },
-        },
-      ],
-    },
-    videoSource: {
-      data: {
-        id: 1,
-        attributes: {
-          url: '/uploads/product_video.mp4',
-        },
-      },
-    },
-    colors: [
-      {
-        id: 1,
-        colorName: 'Rojo',
-        quantity: 50,
-        hex: '#FF0000',
-        mainImage: {
-          data: {
-            id: 3,
-            attributes: {
-              url: '/uploads/camiseta_roja.jpg',
-            },
-          },
-        },
-        additionalImages: {
-          data: [],
-        },
-      },
-    ],
-    sizes: [
-      {
-        id: 1,
-        name: 'M',
-        isActive: true,
-        stock: 10,
-      },
-      {
-        id: 2,
-        name: 'L',
-        isActive: false,
-        stock: 0,
-      },
-    ],
-    dimensions: {
-      height: '70cm',
-      width: '50cm',
-      depth: '1cm',
-    },
-    ...overrides,
+  title: 'Camiseta Nacional 2025',
+  price: 2500,
+  discountedPrice: 2000,
+  isCustomizable: true,
+  warranty: '12 meses',
+  returnPolicy: '30 días para cambios',
+  shortDescription: {
+    line1: 'Nueva camiseta',
+    line2: 'Temporada 2025',
   },
+  longDescription: '<p>Descripción detallada del producto</p><p>Segunda línea</p>',
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
+  publishedAt: '2024-01-01T00:00:00Z',
+  category: {
+    id: 1,
+    slug: 'camisetas',
+    name: 'Camisetas',
+  },
+  model: {
+    id: 1,
+    slug: 'nacional',
+    name: 'Nacional',
+  },
+  statuses: [
+    {
+      id: 1,
+      name: 'NEW',
+      priority: 1,
+    },
+  ],
+  frontImage: {
+    id: 1,
+    url: '/uploads/camiseta_front.jpg',
+    alternativeText: 'Front view',
+  },
+  images: [
+    {
+      id: 2,
+      url: '/uploads/camiseta_back.jpg',
+      alternativeText: 'Back view',
+    },
+  ],
+  videoSource: {
+    id: 1,
+    url: '/uploads/product_video.mp4',
+  },
+  colors: [
+    {
+      id: 1,
+      colorName: 'Rojo',
+      quantity: 50,
+      hex: '#FF0000',
+      mainImage: {
+        id: 3,
+        url: '/uploads/camiseta_roja.jpg',
+      },
+      additionalImages: [],
+    },
+  ],
+  sizes: [
+    {
+      id: 1,
+      name: 'M',
+      isActive: true,
+      stock: 10,
+    },
+    {
+      id: 2,
+      name: 'L',
+      isActive: false,
+      stock: 0,
+    },
+  ],
+  dimensions: {
+    height: '70cm',
+    width: '50cm',
+    depth: '1cm',
+  },
+  ...overrides,
 });
 
 describe('StrapiApi Service', () => {
@@ -136,7 +105,7 @@ describe('StrapiApi Service', () => {
   });
 
   describe('Revenue-Critical: Product Data Transformation', () => {
-    it('should transform Strapi product to app format with all fields', async () => {
+    it('should transform Strapi v5 product to app format with all fields', async () => {
       const strapiProduct = createStrapiProduct();
       const strapiResponse: StrapiResponse<StrapiProduct[]> = {
         data: [strapiProduct],
@@ -244,14 +213,10 @@ describe('StrapiApi Service', () => {
             quantity: 25,
             hex: '#0000FF',
             mainImage: {
-              data: {
-                id: 1,
-                attributes: { url: '/uploads/azul.jpg' },
-              },
+              id: 1,
+              url: '/uploads/azul.jpg',
             },
-            additionalImages: {
-              data: [{ id: 2, attributes: { url: '/uploads/azul_2.jpg' } }],
-            },
+            additionalImages: [{ id: 2, url: '/uploads/azul_2.jpg' }],
           },
           {
             id: 2,
@@ -259,7 +224,7 @@ describe('StrapiApi Service', () => {
             quantity: 0, // Out of stock
             hex: '#00FF00',
             mainImage: undefined,
-            additionalImages: { data: [] },
+            additionalImages: [],
           },
         ],
       });
@@ -286,16 +251,15 @@ describe('StrapiApi Service', () => {
     });
 
     it('should handle malformed product data without throwing', async () => {
-      const malformedProduct = {
+      const malformedProduct: StrapiProduct = {
         id: 999,
-        attributes: {
-          // Missing most required fields
-          title: 'Broken Product',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
-        },
-      } as StrapiProduct;
+        // Missing most required fields
+        title: 'Broken Product',
+        price: 0,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
+      };
 
       mockHttpClient.get.mockResolvedValueOnce({
         data: [malformedProduct],
@@ -555,21 +519,15 @@ describe('StrapiApi Service', () => {
         data: [
           {
             id: 1,
-            attributes: {
-              slug: 'centro',
-              cityId: 'montevideo',
-              zoneId: 'centro',
-              name: 'Tienda Centro',
-              address: '18 de Julio 1234',
-              hours: '9:00 - 21:00',
-              phone: '099123456',
-              image: {
-                data: {
-                  attributes: {
-                    url: '/uploads/store_centro.jpg',
-                  },
-                },
-              },
+            slug: 'centro',
+            cityId: 'montevideo',
+            zoneId: 'centro',
+            name: 'Tienda Centro',
+            address: '18 de Julio 1234',
+            hours: '9:00 - 21:00',
+            phone: '099123456',
+            image: {
+              url: '/uploads/store_centro.jpg',
             },
           },
         ],

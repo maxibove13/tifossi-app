@@ -223,99 +223,66 @@ function ProductDiscoveryScreen() {
   );
 }
 
-// Transform mock to Strapi format
+// Transform mock to Strapi v5 format (flat structure, no attributes wrapper)
 const transformMockToStrapi = (mockProduct: any) => {
   const attrs = mockProduct.attributes;
 
   return {
     id: parseInt(mockProduct.id),
-    attributes: {
-      title: attrs.name,
-      price: attrs.price,
-      discountedPrice: attrs.discountPrice,
-      shortDescription: attrs.shortDescription,
-      longDescription: attrs.longDescription,
-      createdAt: attrs.createdAt,
-      updatedAt: attrs.updatedAt,
-      publishedAt: attrs.createdAt,
-      category: {
-        data: attrs.category
-          ? {
-              id: 1,
-              attributes: {
-                slug: attrs.category,
-                name: attrs.category.charAt(0).toUpperCase() + attrs.category.slice(1),
-              },
-            }
-          : null,
-      },
-      model: {
-        data: attrs.team
-          ? {
-              id: 1,
-              attributes: {
-                slug: `model-${attrs.team}`,
-                name: `Modelo ${attrs.team}`,
-              },
-            }
-          : null,
-      },
-      statuses: {
-        data: [
-          ...(attrs.featured
-            ? [
-                {
-                  id: 1,
-                  attributes: { name: 'FEATURED', priority: 1 },
-                },
-              ]
-            : []),
-          ...(attrs.isNew
-            ? [
-                {
-                  id: 2,
-                  attributes: { name: 'NEW', priority: 2 },
-                },
-              ]
-            : []),
-        ],
-      },
-      frontImage: {
-        data: attrs.images?.data?.[0]
-          ? {
-              id: parseInt(attrs.images.data[0].id),
-              attributes: {
-                url: attrs.images.data[0].attributes.url,
-                alternativeText: attrs.images.data[0].attributes.alternativeText,
-              },
-            }
-          : null,
-      },
-      images: {
-        data:
-          attrs.images?.data?.map((img: any) => ({
-            id: parseInt(img.id),
-            attributes: {
-              url: img.attributes.url,
-              alternativeText: img.attributes.alternativeText,
-            },
-          })) || [],
-      },
-      colors:
-        attrs.colors?.map((color: string, index: number) => ({
-          id: index + 1,
-          colorName: color,
-          quantity: Math.floor(Math.random() * 50) + 10,
-          hex: getColorHex(color),
-        })) || [],
-      sizes:
-        attrs.sizes?.map((size: string, index: number) => ({
-          id: index + 1,
-          name: size, // Strapi format: 'name' field
-          isActive: attrs.stock > 0, // Strapi format: 'isActive' field
-          stock: attrs.stock > 0 ? Math.floor(attrs.stock / attrs.sizes.length) : 0,
-        })) || [],
-    },
+    documentId: `doc-${mockProduct.id}`,
+    title: attrs.name,
+    price: attrs.price,
+    discountedPrice: attrs.discountPrice,
+    shortDescription: attrs.shortDescription,
+    longDescription: attrs.longDescription,
+    createdAt: attrs.createdAt,
+    updatedAt: attrs.updatedAt,
+    publishedAt: attrs.createdAt,
+    category: attrs.category
+      ? {
+          id: 1,
+          slug: attrs.category,
+          name: attrs.category.charAt(0).toUpperCase() + attrs.category.slice(1),
+        }
+      : null,
+    model: attrs.team
+      ? {
+          id: 1,
+          slug: `model-${attrs.team}`,
+          name: `Modelo ${attrs.team}`,
+        }
+      : null,
+    statuses: [
+      ...(attrs.featured ? [{ id: 1, name: 'FEATURED', priority: 1 }] : []),
+      ...(attrs.isNew ? [{ id: 2, name: 'NEW', priority: 2 }] : []),
+    ],
+    frontImage: attrs.images?.data?.[0]
+      ? {
+          id: parseInt(attrs.images.data[0].id),
+          url: attrs.images.data[0].attributes.url,
+          alternativeText: attrs.images.data[0].attributes.alternativeText,
+        }
+      : null,
+    images:
+      attrs.images?.data?.map((img: any) => ({
+        id: parseInt(img.id),
+        url: img.attributes.url,
+        alternativeText: img.attributes.alternativeText,
+      })) || [],
+    colors:
+      attrs.colors?.map((color: string, index: number) => ({
+        id: index + 1,
+        colorName: color,
+        quantity: Math.floor(Math.random() * 50) + 10,
+        hex: getColorHex(color),
+      })) || [],
+    sizes:
+      attrs.sizes?.map((size: string, index: number) => ({
+        id: index + 1,
+        name: size,
+        isActive: attrs.stock > 0,
+        stock: attrs.stock > 0 ? Math.floor(attrs.stock / attrs.sizes.length) : 0,
+      })) || [],
   };
 };
 

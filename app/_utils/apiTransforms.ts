@@ -15,149 +15,115 @@ export interface StrapiResponse<T> {
   };
 }
 
+// Strapi v5 flat media structure
+interface StrapiMedia {
+  id: number;
+  url: string;
+  alternativeText?: string | null;
+  formats?: Record<string, { url: string }>;
+}
+
+// Strapi v5 flat product structure (no attributes wrapper)
 export interface StrapiProduct {
   id: number;
-  attributes: {
-    title: string;
-    price: number;
-    discountedPrice?: number;
-    isCustomizable?: boolean;
-    warranty?: string;
-    returnPolicy?: string;
-    shortDescription?: {
-      line1: string;
-      line2: string;
-    };
-    longDescription?: string;
-    createdAt: string;
-    updatedAt: string;
-    publishedAt: string;
-    // Relations
-    category?: {
-      data?: {
-        id: number;
-        attributes: {
-          slug: string;
-          name: string;
-        };
-      };
-    };
-    model?: {
-      data?: {
-        id: number;
-        attributes: {
-          slug: string;
-          name: string;
-        };
-      };
-    };
-    statuses?: {
-      data: {
-        id: number;
-        attributes: {
-          name: string;
-          priority: number;
-        };
-      }[];
-    };
-    frontImage?: {
-      data?: {
-        id: number;
-        attributes: {
-          url: string;
-          alternativeText?: string;
-        };
-      };
-    };
-    images?: {
-      data: {
-        id: number;
-        attributes: {
-          url: string;
-          alternativeText?: string;
-        };
-      }[];
-    };
-    videoSource?: {
-      data?: {
-        id: number;
-        attributes: {
-          url: string;
-        };
-      };
-    };
-    colors?: {
-      id: number;
-      colorName: string;
-      quantity: number;
-      hex?: string;
-      isActive?: boolean;
-      mainImage?: {
-        data?: {
-          id: number;
-          attributes: {
-            url: string;
-          };
-        };
-      };
-      additionalImages?: {
-        data: {
-          id: number;
-          attributes: {
-            url: string;
-          };
-        }[];
-      };
-    }[];
-    sizes?: {
-      id: number;
-      name: string;
-      isActive: boolean;
-      stock?: number;
-      code?: string;
-    }[];
-    dimensions?: {
-      height?: string;
-      width?: string;
-      depth?: string;
-    };
+  documentId?: string;
+  title: string;
+  slug?: string;
+  price: number;
+  discountedPrice?: number;
+  isCustomizable?: boolean;
+  warranty?: string;
+  returnPolicy?: string;
+  shortDescription?: {
+    id?: number;
+    line1: string;
+    line2: string;
+  };
+  longDescription?: string;
+  totalStock?: number;
+  isActive?: boolean;
+  viewCount?: number;
+  favoriteCount?: number;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  // Relations (flat in Strapi v5)
+  category?: {
+    id: number;
+    slug: string;
+    name: string;
+  };
+  model?: {
+    id: number;
+    slug: string;
+    name: string;
+  };
+  statuses?: {
+    id: number;
+    name: string;
+    priority: number;
+  }[];
+  frontImage?: StrapiMedia;
+  images?: StrapiMedia[];
+  videoSource?: StrapiMedia;
+  colors?: {
+    id: number;
+    colorName: string;
+    quantity: number;
+    hex?: string;
+    isActive?: boolean;
+    mainImage?: StrapiMedia;
+    additionalImages?: StrapiMedia[];
+  }[];
+  sizes?: {
+    id: number;
+    name: string;
+    isActive: boolean;
+    stock?: number;
+    code?: string;
+  }[];
+  dimensions?: {
+    height?: string;
+    width?: string;
+    depth?: string;
   };
 }
 
 /**
- * Transforms a Strapi product response to the app's Product interface
+ * Transforms a Strapi v5 product response to the app's Product interface
  */
 export function transformStrapiProduct(strapiProduct: StrapiProduct): Product {
-  const attrs = strapiProduct.attributes;
+  // Strapi v5 uses flat structure - no attributes wrapper
+  const product = strapiProduct;
 
-  // Transform images
-  const frontImage = attrs.frontImage?.data?.attributes?.url || '';
-  const images = attrs.images?.data?.map((img) => img.attributes.url) || [];
+  // Transform images - direct url access in v5
+  const frontImage = product.frontImage?.url || '';
+  const images = product.images?.map((img) => img.url) || [];
 
   // Transform video source
-  const videoSource = attrs.videoSource?.data?.attributes?.url;
+  const videoSource = product.videoSource?.url;
 
-  // Transform statuses
-  const statuses = attrs.statuses?.data?.map((status) => status.attributes.name) || [];
+  // Transform statuses - flat array in v5
+  const statuses = product.statuses?.map((status) => status.name) || [];
 
   // Transform colors - filter out inactive colors
   const colors: ProductColor[] =
-    attrs.colors
-      ?.filter((color) => color.isActive !== false) // Keep colors where isActive is true or undefined
+    product.colors
+      ?.filter((color) => color.isActive !== false)
       .map((color) => ({
         colorName: color.colorName,
         quantity: color.quantity,
         hex: color.hex,
         isActive: color.isActive,
         images: {
-          main: color.mainImage?.data?.attributes?.url || frontImage,
-          additional: color.additionalImages?.data?.map((img) => img.attributes.url) || [],
+          main: color.mainImage?.url || frontImage,
+          additional: color.additionalImages?.map((img) => img.url) || [],
         },
       })) || [];
 
   // Transform sizes to match mobile app format
   const sizes =
-    attrs.sizes?.map((size) => ({
+    product.sizes?.map((size) => ({
       value: size.name,
       available: size.isActive,
       stock: size.stock || 0,
@@ -166,29 +132,31 @@ export function transformStrapiProduct(strapiProduct: StrapiProduct): Product {
 
   // Transform long description from rich text to string array
   const longDescription =
-    attrs.longDescription !== undefined
-      ? transformRichTextToArray(attrs.longDescription)
+    product.longDescription !== undefined
+      ? transformRichTextToArray(product.longDescription)
       : undefined;
 
   return {
-    id: strapiProduct.id.toString(),
-    title: attrs.title,
-    price: attrs.price,
-    discountedPrice: attrs.discountedPrice,
-    categoryId: attrs.category?.data?.attributes?.slug || '',
-    modelId: attrs.model?.data?.attributes?.slug || '',
+    id: product.id.toString(),
+    title: product.title,
+    price: product.price,
+    discountedPrice: product.discountedPrice,
+    categoryId: product.category?.slug || '',
+    modelId: product.model?.slug || '',
     frontImage,
     images,
     videoSource,
-    statuses: statuses as any, // Type assertion for ProductStatus enum
-    shortDescription: attrs.shortDescription,
+    statuses: statuses as any,
+    shortDescription: product.shortDescription
+      ? { line1: product.shortDescription.line1, line2: product.shortDescription.line2 }
+      : undefined,
     longDescription,
-    isCustomizable: attrs.isCustomizable || false,
+    isCustomizable: product.isCustomizable || false,
     colors,
     sizes,
-    warranty: attrs.warranty,
-    returnPolicy: attrs.returnPolicy,
-    dimensions: attrs.dimensions,
+    warranty: product.warranty,
+    returnPolicy: product.returnPolicy,
+    dimensions: product.dimensions,
   };
 }
 
@@ -203,8 +171,8 @@ function transformRichTextToArray(richText: string): string[] {
     .replace(/<p>/g, '')
     .replace(/<\/p>/g, '\n')
     .replace(/<br\s*\/?>/g, '\n')
-    .replace(/<\/li>/g, '\n') // Add newline after list items
-    .replace(/<[^>]*>/g, '') // Remove remaining HTML tags
+    .replace(/<\/li>/g, '\n')
+    .replace(/<[^>]*>/g, '')
     .trim();
 
   // Split by newlines and filter empty strings
