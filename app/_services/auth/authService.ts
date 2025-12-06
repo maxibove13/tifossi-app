@@ -64,7 +64,7 @@ class AuthService {
 
       this.isInitialized = true;
     } catch (error) {
-      throw new Error(`Error al inicializar el servicio de autenticación: ${error}`);
+      throw new Error(`Failed to initialize auth service: ${error}`);
     }
   }
 
@@ -73,9 +73,7 @@ class AuthService {
    */
   private ensureInitialized(): void {
     if (!this.isInitialized) {
-      throw new Error(
-        'El servicio de autenticación no ha sido inicializado. Llama initialize() primero.'
-      );
+      throw new Error('Auth service not initialized. Call initialize() first.');
     }
   }
 
@@ -95,7 +93,7 @@ class AuthService {
       );
 
       if (!authResult.success || !authResult.user) {
-        throw new Error(authResult.error || 'Error de autenticación');
+        throw new Error(authResult.error || 'Authentication failed');
       }
 
       // Sync tokens after successful login
@@ -138,7 +136,7 @@ class AuthService {
       );
 
       if (!authResult.success || !authResult.user) {
-        throw new Error(authResult.error || 'Error en el registro');
+        throw new Error(authResult.error || 'Registration failed');
       }
 
       // Sync tokens after successful registration
@@ -171,7 +169,7 @@ class AuthService {
       const authResult = await firebaseAuth.signInWithGoogle();
 
       if (!authResult.success || !authResult.user) {
-        throw new Error(authResult.error || 'Error de autenticación con Google');
+        throw new Error(authResult.error || 'Google authentication failed');
       }
 
       // Sync tokens after successful login
@@ -204,7 +202,7 @@ class AuthService {
       const authResult = await firebaseAuth.signInWithApple();
 
       if (!authResult.success || !authResult.user) {
-        throw new Error(authResult.error || 'Error en Apple Sign-In');
+        throw new Error(authResult.error || 'Apple Sign-In failed');
       }
 
       // Sync tokens after successful login
@@ -237,19 +235,19 @@ class AuthService {
       const validation = await tokenManager.validateTokens();
 
       if (!validation.isValid) {
-        throw new Error('Token inválido o expirado');
+        throw new Error('Invalid or expired token');
       }
 
       // Get current user from Firebase
       const currentUser = firebaseAuth.getCurrentAppUser();
 
       if (!currentUser) {
-        throw new Error('No se encontró un usuario autenticado');
+        throw new Error('No authenticated user found');
       }
 
       return currentUser;
     } catch (error: any) {
-      throw new Error(`Error al validar el token: ${error.message}`);
+      throw new Error(`Token validation failed: ${error.message}`);
     }
   }
 

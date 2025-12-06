@@ -107,7 +107,7 @@ class MercadoPagoService {
   async createPaymentPreference(orderData: OrderData): Promise<PaymentPreference> {
     try {
       if (!this.authToken) {
-        throw new Error('Se requiere autenticación');
+        throw new Error('Authentication required');
       }
 
       // Get device fingerprint for fraud prevention
@@ -128,14 +128,14 @@ class MercadoPagoService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Error ${response.status}: Error al crear preferencia de pago`
+          errorData.message || `HTTP ${response.status}: Failed to create payment preference`
         );
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data) {
-        throw new Error('Formato de respuesta inválido');
+        throw new Error('Invalid response format');
       }
 
       return {
@@ -145,7 +145,7 @@ class MercadoPagoService {
       };
     } catch (error) {
       throw new Error(
-        `Error al crear preferencia de pago: ${error instanceof Error ? error.message : 'Error desconocido'}`
+        `Failed to create payment preference: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -318,7 +318,7 @@ class MercadoPagoService {
   async verifyPaymentStatus(paymentId: string): Promise<PaymentStatus> {
     try {
       if (!this.authToken) {
-        throw new Error('Se requiere autenticación');
+        throw new Error('Authentication required');
       }
 
       const response = await fetch(`${this.baseUrl}/api/payment/verify/${paymentId}`, {
@@ -330,21 +330,19 @@ class MercadoPagoService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Error ${response.status}: Error al verificar el pago`
-        );
+        throw new Error(errorData.message || `HTTP ${response.status}: Failed to verify payment`);
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data) {
-        throw new Error('Formato de respuesta inválido');
+        throw new Error('Invalid response format');
       }
 
       return result.data;
     } catch (error) {
       throw new Error(
-        `Error al verificar pago: ${error instanceof Error ? error.message : 'Error desconocido'}`
+        `Failed to verify payment: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -355,7 +353,7 @@ class MercadoPagoService {
   async getUserOrders(page: number = 1, pageSize: number = 10, status?: string): Promise<any> {
     try {
       if (!this.authToken) {
-        throw new Error('Se requiere autenticación');
+        throw new Error('Authentication required');
       }
 
       const params = new URLSearchParams({
@@ -373,19 +371,19 @@ class MercadoPagoService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Error ${response.status}: Error al obtener pedidos`);
+        throw new Error(errorData.message || `HTTP ${response.status}: Failed to fetch orders`);
       }
 
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error('Error al obtener pedidos');
+        throw new Error('Failed to fetch orders');
       }
 
       return result.data;
     } catch (error) {
       throw new Error(
-        `Error al obtener pedidos: ${error instanceof Error ? error.message : 'Error desconocido'}`
+        `Failed to fetch orders: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -396,7 +394,7 @@ class MercadoPagoService {
   async getOrder(orderId: string): Promise<any> {
     try {
       if (!this.authToken) {
-        throw new Error('Se requiere autenticación');
+        throw new Error('Authentication required');
       }
 
       const response = await fetch(`${this.baseUrl}/api/payment/orders/${orderId}`, {
@@ -408,19 +406,19 @@ class MercadoPagoService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Error ${response.status}: Error al obtener pedido`);
+        throw new Error(errorData.message || `HTTP ${response.status}: Failed to fetch order`);
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data) {
-        throw new Error('Formato de respuesta inválido');
+        throw new Error('Invalid response format');
       }
 
       return result.data;
     } catch (error) {
       throw new Error(
-        `Error al obtener pedido: ${error instanceof Error ? error.message : 'Error desconocido'}`
+        `Failed to fetch order: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -431,7 +429,7 @@ class MercadoPagoService {
   async requestRefund(orderId: string, reason?: string): Promise<any> {
     try {
       if (!this.authToken) {
-        throw new Error('Se requiere autenticación');
+        throw new Error('Authentication required');
       }
 
       const response = await fetch(`${this.baseUrl}/api/payment/refund`, {
@@ -445,21 +443,19 @@ class MercadoPagoService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Error ${response.status}: Error al procesar reembolso`
-        );
+        throw new Error(errorData.message || `HTTP ${response.status}: Failed to process refund`);
       }
 
       const result = await response.json();
 
       if (!result.success || !result.data) {
-        throw new Error('Formato de respuesta inválido');
+        throw new Error('Invalid response format');
       }
 
       return result.data;
     } catch (error) {
       throw new Error(
-        `Error al procesar reembolso: ${error instanceof Error ? error.message : 'Error desconocido'}`
+        `Failed to process refund: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
