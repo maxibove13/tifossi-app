@@ -44,6 +44,7 @@ export default function SignupScreen() {
   const [appleError, setAppleError] = useState<string | null>(null);
 
   const register = useAuthStore((state) => state.register);
+  const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
   const loginWithApple = useAuthStore((state) => state.loginWithApple);
   const isLoading = useAuthStore((state) => state.isLoading);
 
@@ -149,6 +150,20 @@ export default function SignupScreen() {
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      await loginWithGoogle();
+      router.replace('/(tabs)/profile');
+    } catch (error: UnknownError) {
+      setError(getErrorMessage(error) || 'Error al registrarse con Google.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleClose = () => {
     if (router.canGoBack()) {
       router.back();
@@ -193,6 +208,12 @@ export default function SignupScreen() {
                 </View>
               </>
             )}
+
+            {/* General error message - shown once at top, not under each input */}
+            {error && error.includes('Por favor, completa') && (
+              <Text style={styles.errorText}>{error}</Text>
+            )}
+
             <Input
               placeholder="Nombre Completo"
               value={name}
@@ -200,11 +221,7 @@ export default function SignupScreen() {
                 setName(text);
                 if (error) setError(null);
               }}
-              error={
-                error && (error.includes('nombre') || error.includes('Por favor, completa'))
-                  ? error
-                  : undefined
-              }
+              error={error && error.includes('nombre') ? error : undefined}
               containerStyle={styles.inputSpacing}
             />
             <Input
@@ -216,11 +233,7 @@ export default function SignupScreen() {
                 setEmail(text);
                 if (error) setError(null);
               }}
-              error={
-                error && (error.includes('correo') || error.includes('Por favor, completa'))
-                  ? error
-                  : undefined
-              }
+              error={error && error.includes('correo') ? error : undefined}
               containerStyle={styles.inputSpacing}
             />
             <Input
@@ -232,9 +245,7 @@ export default function SignupScreen() {
                 if (error) setError(null);
               }}
               error={
-                error &&
-                ((error.includes('contraseña') && !error.includes('coinciden')) ||
-                  error.includes('Por favor, completa'))
+                error && error.includes('contraseña') && !error.includes('coinciden')
                   ? error
                   : undefined
               }
@@ -248,13 +259,7 @@ export default function SignupScreen() {
                 setConfirmPassword(text);
                 if (error) setError(null);
               }}
-              error={
-                error &&
-                (error.includes('contraseñas no coinciden') ||
-                  error.includes('Por favor, completa'))
-                  ? error
-                  : undefined
-              }
+              error={error && error.includes('contraseñas no coinciden') ? error : undefined}
               containerStyle={styles.inputSpacing}
             />
 
@@ -313,6 +318,14 @@ export default function SignupScreen() {
           ) : (
             <Text style={styles.primaryButtonText}>Crear Cuenta</Text>
           )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.googleButton, (isSubmitting || isLoading) && styles.disabledButton]}
+          onPress={handleGoogleSignUp}
+          activeOpacity={0.7}
+          disabled={isSubmitting || isLoading}
+        >
+          <Text style={styles.googleButtonText}>Registrarse con Google</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.secondaryButton}
@@ -423,6 +436,24 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.7,
     backgroundColor: colors.background.medium,
+  },
+  googleButton: {
+    width: '100%',
+    height: 48,
+    borderRadius: radius.xxl,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background.light,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.xl,
+  },
+  googleButtonText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.md,
+    color: colors.primary,
   },
   primaryButtonText: {
     fontFamily: fonts.secondary,
