@@ -1,7 +1,6 @@
 /**
  * API Transforms Tests
- * Testing data transformation functions that convert Strapi responses to app format
- * Quick wins for coverage and ensures data integrity
+ * Testing data transformation functions that convert Strapi v5 responses to app format
  */
 
 import { transformStrapiProduct, getFullMediaUrl, StrapiProduct } from '../../_utils/apiTransforms';
@@ -10,14 +9,11 @@ describe('API Transforms', () => {
   describe('transformStrapiProduct', () => {
     const createMockStrapiProduct = (overrides?: Partial<StrapiProduct>): StrapiProduct => ({
       id: 1,
-      attributes: {
-        title: 'Test Product',
-        price: 99.99,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        publishedAt: '2024-01-01T00:00:00Z',
-        ...overrides?.attributes,
-      },
+      title: 'Test Product',
+      price: 99.99,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+      publishedAt: '2024-01-01T00:00:00Z',
       ...overrides,
     });
 
@@ -50,14 +46,8 @@ describe('API Transforms', () => {
 
     it('should transform product with discount', () => {
       const strapiProduct = createMockStrapiProduct({
-        attributes: {
-          title: 'Discounted Product',
-          price: 100,
-          discountedPrice: 75,
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
-        },
+        price: 100,
+        discountedPrice: 75,
       });
 
       const result = transformStrapiProduct(strapiProduct);
@@ -69,31 +59,21 @@ describe('API Transforms', () => {
     it('should transform category and model relations', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Product with Relations',
-          price: 99.99,
-          category: {
-            data: {
-              id: 1,
-              attributes: {
-                slug: 'shirts',
-                name: 'Shirts',
-              },
-            },
-          },
-          model: {
-            data: {
-              id: 2,
-              attributes: {
-                slug: 'casual',
-                name: 'Casual',
-              },
-            },
-          },
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
+        title: 'Product with Relations',
+        price: 99.99,
+        category: {
+          id: 1,
+          slug: 'shirts',
+          name: 'Shirts',
         },
+        model: {
+          id: 2,
+          slug: 'casual',
+          name: 'Casual',
+        },
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -105,40 +85,28 @@ describe('API Transforms', () => {
     it('should transform images correctly', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Product with Images',
-          price: 99.99,
-          frontImage: {
-            data: {
-              id: 1,
-              attributes: {
-                url: '/uploads/front_image.jpg',
-                alternativeText: 'Front view',
-              },
-            },
-          },
-          images: {
-            data: [
-              {
-                id: 2,
-                attributes: {
-                  url: '/uploads/image1.jpg',
-                  alternativeText: 'View 1',
-                },
-              },
-              {
-                id: 3,
-                attributes: {
-                  url: '/uploads/image2.jpg',
-                  alternativeText: 'View 2',
-                },
-              },
-            ],
-          },
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
+        title: 'Product with Images',
+        price: 99.99,
+        frontImage: {
+          id: 1,
+          url: '/uploads/front_image.jpg',
+          alternativeText: 'Front view',
         },
+        images: [
+          {
+            id: 2,
+            url: '/uploads/image1.jpg',
+            alternativeText: 'View 1',
+          },
+          {
+            id: 3,
+            url: '/uploads/image2.jpg',
+            alternativeText: 'View 2',
+          },
+        ],
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -150,55 +118,41 @@ describe('API Transforms', () => {
     it('should transform product colors with images', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Colorful Product',
-          price: 99.99,
-          frontImage: {
-            data: {
-              id: 1,
-              attributes: {
-                url: '/uploads/default.jpg',
-                alternativeText: 'Default',
-              },
-            },
-          },
-          colors: [
-            {
-              id: 1,
-              colorName: 'Red',
-              quantity: 10,
-              hex: '#FF0000',
-              mainImage: {
-                data: {
-                  id: 2,
-                  attributes: {
-                    url: '/uploads/red_main.jpg',
-                  },
-                },
-              },
-              additionalImages: {
-                data: [
-                  {
-                    id: 3,
-                    attributes: {
-                      url: '/uploads/red_1.jpg',
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              id: 2,
-              colorName: 'Blue',
-              quantity: 5,
-              hex: '#0000FF',
-              // No images for this color
-            },
-          ],
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
+        title: 'Colorful Product',
+        price: 99.99,
+        frontImage: {
+          id: 1,
+          url: '/uploads/default.jpg',
+          alternativeText: 'Default',
         },
+        colors: [
+          {
+            id: 1,
+            colorName: 'Red',
+            quantity: 10,
+            hex: '#FF0000',
+            mainImage: {
+              id: 2,
+              url: '/uploads/red_main.jpg',
+            },
+            additionalImages: [
+              {
+                id: 3,
+                url: '/uploads/red_1.jpg',
+              },
+            ],
+          },
+          {
+            id: 2,
+            colorName: 'Blue',
+            quantity: 5,
+            hex: '#0000FF',
+            // No images for this color
+          },
+        ],
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -227,19 +181,17 @@ describe('API Transforms', () => {
     it('should transform sizes array', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Sized Product',
-          price: 99.99,
-          sizes: [
-            { id: 1, name: 'S', isActive: true, stock: 10 },
-            { id: 2, name: 'M', isActive: true, stock: 15 },
-            { id: 3, name: 'L', isActive: false, stock: 0 },
-            { id: 4, name: 'XL', isActive: true, stock: 20 },
-          ],
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
-        },
+        title: 'Sized Product',
+        price: 99.99,
+        sizes: [
+          { id: 1, name: 'S', isActive: true, stock: 10 },
+          { id: 2, name: 'M', isActive: true, stock: 15 },
+          { id: 3, name: 'L', isActive: false, stock: 0 },
+          { id: 4, name: 'XL', isActive: true, stock: 20 },
+        ],
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -256,31 +208,15 @@ describe('API Transforms', () => {
     it('should transform product statuses', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Product with Statuses',
-          price: 99.99,
-          statuses: {
-            data: [
-              {
-                id: 1,
-                attributes: {
-                  name: 'new',
-                  priority: 1,
-                },
-              },
-              {
-                id: 2,
-                attributes: {
-                  name: 'sale',
-                  priority: 2,
-                },
-              },
-            ],
-          },
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
-        },
+        title: 'Product with Statuses',
+        price: 99.99,
+        statuses: [
+          { id: 1, name: 'new', priority: 1 },
+          { id: 2, name: 'sale', priority: 2 },
+        ],
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -291,17 +227,15 @@ describe('API Transforms', () => {
     it('should transform short description', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Described Product',
-          price: 99.99,
-          shortDescription: {
-            line1: 'First line of description',
-            line2: 'Second line of description',
-          },
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
+        title: 'Described Product',
+        price: 99.99,
+        shortDescription: {
+          line1: 'First line of description',
+          line2: 'Second line of description',
         },
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -315,14 +249,12 @@ describe('API Transforms', () => {
     it('should transform long description from rich text', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Product with Rich Text',
-          price: 99.99,
-          longDescription: '<p>First paragraph</p><p>Second paragraph</p><br/>Third line',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
-        },
+        title: 'Product with Rich Text',
+        price: 99.99,
+        longDescription: '<p>First paragraph</p><p>Second paragraph</p><br/>Third line',
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -333,14 +265,12 @@ describe('API Transforms', () => {
     it('should handle empty long description', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Product',
-          price: 99.99,
-          longDescription: '',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
-        },
+        title: 'Product',
+        price: 99.99,
+        longDescription: '',
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -351,15 +281,13 @@ describe('API Transforms', () => {
     it('should handle complex HTML in long description', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Product',
-          price: 99.99,
-          longDescription:
-            '<div><p>Paragraph with <strong>bold</strong> and <em>italic</em></p><ul><li>Item 1</li><li>Item 2</li></ul></div>',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
-        },
+        title: 'Product',
+        price: 99.99,
+        longDescription:
+          '<div><p>Paragraph with <strong>bold</strong> and <em>italic</em></p><ul><li>Item 1</li><li>Item 2</li></ul></div>',
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -374,18 +302,16 @@ describe('API Transforms', () => {
     it('should transform product dimensions', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Product with Dimensions',
-          price: 99.99,
-          dimensions: {
-            height: '10cm',
-            width: '20cm',
-            depth: '5cm',
-          },
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
+        title: 'Product with Dimensions',
+        price: 99.99,
+        dimensions: {
+          height: '10cm',
+          width: '20cm',
+          depth: '5cm',
         },
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -400,20 +326,18 @@ describe('API Transforms', () => {
     it('should handle missing or null values gracefully', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Minimal Product',
-          price: 99.99,
-          category: undefined,
-          model: { data: undefined },
-          frontImage: { data: null } as any,
-          images: undefined,
-          colors: undefined,
-          sizes: null as any,
-          statuses: { data: [] },
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
-        },
+        title: 'Minimal Product',
+        price: 99.99,
+        category: undefined,
+        model: undefined,
+        frontImage: null as any,
+        images: undefined,
+        colors: undefined,
+        sizes: null as any,
+        statuses: [],
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -430,21 +354,15 @@ describe('API Transforms', () => {
     it('should transform video source', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Product with Video',
-          price: 99.99,
-          videoSource: {
-            data: {
-              id: 1,
-              attributes: {
-                url: '/uploads/product_video.mp4',
-              },
-            },
-          },
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
+        title: 'Product with Video',
+        price: 99.99,
+        videoSource: {
+          id: 1,
+          url: '/uploads/product_video.mp4',
         },
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -455,15 +373,13 @@ describe('API Transforms', () => {
     it('should transform warranty and return policy', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Product with Policies',
-          price: 99.99,
-          warranty: '2 years manufacturer warranty',
-          returnPolicy: '30 days return policy',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
-        },
+        title: 'Product with Policies',
+        price: 99.99,
+        warranty: '2 years manufacturer warranty',
+        returnPolicy: '30 days return policy',
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);
@@ -475,14 +391,12 @@ describe('API Transforms', () => {
     it('should set isCustomizable flag', () => {
       const strapiProduct: StrapiProduct = {
         id: 1,
-        attributes: {
-          title: 'Customizable Product',
-          price: 99.99,
-          isCustomizable: true,
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          publishedAt: '2024-01-01T00:00:00Z',
-        },
+        title: 'Customizable Product',
+        price: 99.99,
+        isCustomizable: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        publishedAt: '2024-01-01T00:00:00Z',
       };
 
       const result = transformStrapiProduct(strapiProduct);

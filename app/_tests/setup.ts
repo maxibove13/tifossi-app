@@ -208,121 +208,75 @@ jest.mock('expo-apple-authentication', () => ({
 jest.mock('../_services/api/httpClient', () => {
   const { productMockData } = require('../_tests/mocks/data/products');
 
+  // Transform mock data to Strapi v5 format (flat structure, no attributes wrapper)
   const transformMockToStrapi = (mockProduct: any): any => {
     const attrs = mockProduct.attributes;
 
     return {
       id: parseInt(mockProduct.id),
-      attributes: {
-        title: attrs.name,
-        price: attrs.price,
-        discountedPrice: attrs.discountPrice,
-        isCustomizable: false,
-        warranty: '12 meses',
-        returnPolicy: '30 días para cambios y devoluciones',
-        shortDescription: attrs.shortDescription,
-        longDescription: attrs.longDescription,
-        createdAt: attrs.createdAt,
-        updatedAt: attrs.updatedAt,
-        publishedAt: attrs.createdAt,
-        category: {
-          data: {
-            id: 1,
-            attributes: {
-              slug: attrs.category,
-              name: attrs.category.charAt(0).toUpperCase() + attrs.category.slice(1),
-            },
-          },
-        },
-        model: {
-          data: {
-            id: 1,
-            attributes: {
-              slug: `model-${attrs.team}`,
-              name: `Modelo ${attrs.team}`,
-            },
-          },
-        },
-        statuses: {
-          data: [
-            ...(attrs.featured
-              ? [
-                  {
-                    id: 1,
-                    attributes: {
-                      name: 'FEATURED',
-                      priority: 1,
-                    },
-                  },
-                ]
-              : []),
-            ...(attrs.isNew
-              ? [
-                  {
-                    id: 2,
-                    attributes: {
-                      name: 'NEW',
-                      priority: 2,
-                    },
-                  },
-                ]
-              : []),
-          ],
-        },
-        frontImage: {
-          data: attrs.images.data[0]
-            ? {
-                id: parseInt(attrs.images.data[0].id),
-                attributes: {
-                  url: attrs.images.data[0].attributes.url,
-                  alternativeText: attrs.images.data[0].attributes.alternativeText,
-                },
-              }
-            : null,
-        },
-        images: {
-          data: attrs.images.data.map((img: any) => ({
-            id: parseInt(img.id),
-            attributes: {
-              url: img.attributes.url,
-              alternativeText: img.attributes.alternativeText,
-            },
-          })),
-        },
-        colors: attrs.colors.map((color: string, index: number) => ({
-          id: index + 1,
-          colorName: color,
-          quantity: 25 + index,
-          hex: '#000000',
-          mainImage: attrs.images.data[0]
-            ? {
-                data: {
-                  id: parseInt(attrs.images.data[0].id),
-                  attributes: {
-                    url: attrs.images.data[0].attributes.url,
-                  },
-                },
-              }
-            : null,
-          additionalImages: {
-            data: attrs.images.data.slice(1).map((img: any) => ({
-              id: parseInt(img.id),
-              attributes: {
-                url: img.attributes.url,
-              },
-            })),
-          },
+      documentId: `doc-${mockProduct.id}`,
+      title: attrs.name,
+      price: attrs.price,
+      discountedPrice: attrs.discountPrice,
+      isCustomizable: false,
+      warranty: '12 meses',
+      returnPolicy: '30 días para cambios y devoluciones',
+      shortDescription: attrs.shortDescription,
+      longDescription: attrs.longDescription,
+      createdAt: attrs.createdAt,
+      updatedAt: attrs.updatedAt,
+      publishedAt: attrs.createdAt,
+      category: {
+        id: 1,
+        slug: attrs.category,
+        name: attrs.category.charAt(0).toUpperCase() + attrs.category.slice(1),
+      },
+      model: {
+        id: 1,
+        slug: `model-${attrs.team}`,
+        name: `Modelo ${attrs.team}`,
+      },
+      statuses: [
+        ...(attrs.featured ? [{ id: 1, name: 'FEATURED', priority: 1 }] : []),
+        ...(attrs.isNew ? [{ id: 2, name: 'NEW', priority: 2 }] : []),
+      ],
+      frontImage: attrs.images.data[0]
+        ? {
+            id: parseInt(attrs.images.data[0].id),
+            url: attrs.images.data[0].attributes.url,
+            alternativeText: attrs.images.data[0].attributes.alternativeText,
+          }
+        : null,
+      images: attrs.images.data.map((img: any) => ({
+        id: parseInt(img.id),
+        url: img.attributes.url,
+        alternativeText: img.attributes.alternativeText,
+      })),
+      colors: attrs.colors.map((color: string, index: number) => ({
+        id: index + 1,
+        colorName: color,
+        quantity: 25 + index,
+        hex: '#000000',
+        mainImage: attrs.images.data[0]
+          ? {
+              id: parseInt(attrs.images.data[0].id),
+              url: attrs.images.data[0].attributes.url,
+            }
+          : null,
+        additionalImages: attrs.images.data.slice(1).map((img: any) => ({
+          id: parseInt(img.id),
+          url: img.attributes.url,
         })),
-        sizes: attrs.sizes.map((size: string, index: number) => ({
-          id: index + 1,
-          value: size,
-          available: true,
-        })),
-        dimensions: {
-          height: '30cm',
-          width: '20cm',
-          depth: '2cm',
-        },
+      })),
+      sizes: attrs.sizes.map((size: string, index: number) => ({
+        id: index + 1,
+        name: size,
+        isActive: true,
+      })),
+      dimensions: {
+        height: '30cm',
+        width: '20cm',
+        depth: '2cm',
       },
     };
   };

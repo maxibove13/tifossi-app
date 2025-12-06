@@ -658,17 +658,17 @@ class StrapiApiService {
       );
       const validatedResponse = validateStrapiResponse<any[]>(response);
 
-      // Transform Strapi store data to app format
+      // Transform Strapi v5 store data to app format (flat structure, no .attributes)
       const stores: StoreDetails[] = validatedResponse.data.map((store: any) => ({
-        id: store.id || store.attributes?.slug,
-        cityId: store.attributes?.cityId || 'mvd',
-        zoneId: store.attributes?.zoneId || 'centro',
-        name: store.attributes?.name || 'Tienda',
-        address: store.attributes?.address || '',
-        hours: store.attributes?.hours || '',
-        phone: store.attributes?.phone,
-        image: store.attributes?.image?.data?.attributes?.url
-          ? { uri: store.attributes.image.data.attributes.url }
+        id: store.id || store.slug,
+        cityId: store.cityId || 'mvd',
+        zoneId: store.zoneId || 'centro',
+        name: store.name || 'Tienda',
+        address: store.address || '',
+        hours: store.hours || '',
+        phone: store.phone,
+        image: store.image?.url
+          ? { uri: store.image.url }
           : require('../../../assets/images/locations/montevideo.png'),
       }));
 
