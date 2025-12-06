@@ -300,26 +300,6 @@ class AuthService {
   }
 
   /**
-   * Update profile picture
-   *
-   * Maintains compatibility with existing authStore.updateProfilePicture() interface
-   */
-  async updateProfilePicture(
-    _token: string,
-    imageUri: string
-  ): Promise<{ profilePictureUrl: string }> {
-    this.ensureInitialized();
-
-    try {
-      // Update profile in Firebase (mock implementation)
-
-      return { profilePictureUrl: imageUri };
-    } catch (error: any) {
-      throw error;
-    }
-  }
-
-  /**
    * Resend verification email
    *
    * Maintains compatibility with existing authStore.resendVerificationEmail() interface
@@ -416,6 +396,12 @@ class AuthService {
   onAuthStateChanged(callback: (user: AppUser | null) => void): () => void {
     this.ensureInitialized();
 
+    // Clean up any existing listener before setting a new one
+    if (this.authStateListener) {
+      this.authStateListener();
+      this.authStateListener = null;
+    }
+
     this.authStateListener = firebaseAuth.initializeAuthStateListener(callback);
     return this.authStateListener || (() => {});
   }
@@ -496,8 +482,6 @@ export const validateToken = (token: string) => authService.validateToken(token)
 export const logout = (token: string | null) => authService.logout(token);
 export const changePassword = (token: string, credentials: PasswordChangeCredentials) =>
   authService.changePassword(token, credentials);
-export const updateProfilePicture = (token: string, imageUri: string) =>
-  authService.updateProfilePicture(token, imageUri);
 export const resendVerificationEmail = (token: string) =>
   authService.resendVerificationEmail(token);
 export const verifyEmail = (token: string, code: string) => authService.verifyEmail(token, code);

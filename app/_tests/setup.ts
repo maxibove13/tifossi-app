@@ -55,7 +55,6 @@ jest.mock('../_services/auth/authService', () => {
     validateToken: jest.fn(),
     onAuthStateChanged: jest.fn(() => jest.fn()),
     getApiToken: jest.fn(),
-    updateProfilePicture: jest.fn(),
     resendVerificationEmail: jest.fn(),
     verifyEmail: jest.fn(),
     confirmPasswordReset: jest.fn(),
@@ -63,6 +62,7 @@ jest.mock('../_services/auth/authService', () => {
     getCurrentUser: jest.fn(),
     isAppleSignInAvailable: jest.fn(),
     getAppleCredentialState: jest.fn(),
+    cleanup: jest.fn(),
   };
 
   return {
@@ -100,6 +100,33 @@ jest.mock('react-native-mmkv', () => ({
     clearAll: jest.fn(),
   })),
 }));
+
+// Mock SafeAreaContext - native module that requires device context
+jest.mock('react-native-safe-area-context', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+
+  const defaultInsets = { top: 0, right: 0, bottom: 0, left: 0 };
+  const defaultFrame = { x: 0, y: 0, width: 390, height: 844 };
+
+  return {
+    SafeAreaProvider: ({ children }: { children: React.ReactNode }) =>
+      React.createElement(View, { testID: 'safe-area-provider' }, children),
+    SafeAreaView: ({ children, ...props }: any) =>
+      React.createElement(View, { ...props, testID: 'safe-area-view' }, children),
+    useSafeAreaInsets: () => defaultInsets,
+    useSafeAreaFrame: () => defaultFrame,
+    SafeAreaInsetsContext: {
+      Consumer: ({ children }: { children: (insets: any) => React.ReactNode }) =>
+        children(defaultInsets),
+      Provider: ({ children }: { children: React.ReactNode }) => children,
+    },
+    initialWindowMetrics: {
+      insets: defaultInsets,
+      frame: defaultFrame,
+    },
+  };
+});
 
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')

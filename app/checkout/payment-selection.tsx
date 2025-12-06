@@ -143,14 +143,6 @@ export default function PaymentSelectionScreen() {
   ];
 
   const handlePaymentMethodSelect = (methodId: string) => {
-    const allMethods = [...defaultPaymentMethods, ...otherPaymentMethods];
-    const method = allMethods.find((m) => m.id === methodId);
-
-    if (method && method.enabled === false) {
-      Alert.alert('Método no disponible', `${method.name} estará disponible próximamente.`);
-      return;
-    }
-
     setSelectedPaymentMethod(methodId);
   };
 
@@ -164,13 +156,6 @@ export default function PaymentSelectionScreen() {
 
     if (selectedPaymentMethod === 'mercadopago') {
       await handleMercadoPagoPayment();
-    } else {
-      // Handle other payment methods
-      Alert.alert(
-        'Método de pago',
-        `${getPaymentMethodName(selectedPaymentMethod)} será implementado próximamente.`,
-        [{ text: 'OK', onPress: () => navigation.navigate('/(tabs)') }]
-      );
     }
   };
 
@@ -220,7 +205,7 @@ export default function PaymentSelectionScreen() {
         items: cartItems,
         shippingAddress: selectedAddress,
         shippingMethod,
-        storeLocationId: selectedStore?.strapiId,
+        storeLocationCode: selectedStore?.id,
         notes: 'Pedido realizado desde la app móvil',
       };
 
@@ -267,16 +252,6 @@ export default function PaymentSelectionScreen() {
     }
   };
 
-  const getPaymentMethodName = (methodId: string): string => {
-    const methods: Record<string, string> = {
-      mercadopago: 'Mercado Pago',
-      paypal: 'PayPal',
-      tiffosi: 'Crédito Tiffosi',
-      efectivo: 'Efectivo',
-    };
-    return methods[methodId] || methodId;
-  };
-
   const handleClose = () => {
     // Navigate back to the product screen or wherever the flow started
     navigation.navigate('/(tabs)');
@@ -285,27 +260,19 @@ export default function PaymentSelectionScreen() {
   const renderPaymentMethod = (method: PaymentMethod) => (
     <Pressable
       key={method.id}
-      style={({ pressed }) => [
-        styles.paymentMethodItem,
-        pressed && method.enabled !== false && styles.pressedPaymentMethod,
-        method.enabled === false && styles.disabledPaymentMethod,
-      ]}
+      style={({ pressed }) => [styles.paymentMethodItem, pressed && styles.pressedPaymentMethod]}
       onPress={() => handlePaymentMethodSelect(method.id)}
       testID={`payment-method-${method.id}`}
       accessibilityRole="button"
       accessibilityState={{
-        disabled: method.enabled === false,
         selected: selectedPaymentMethod === method.id,
       }}
     >
       <View style={styles.paymentMethodInfo}>
         <Image source={method.icon} style={styles.paymentIcon} resizeMode="contain" />
-        <Text style={[styles.paymentMethodText, !method.enabled && styles.disabledText]}>
-          {method.name}
-        </Text>
-        {!method.enabled && <Text style={styles.comingSoonText}>Próximamente</Text>}
+        <Text style={styles.paymentMethodText}>{method.name}</Text>
       </View>
-      <RadioButton selected={selectedPaymentMethod === method.id} disabled={!method.enabled} />
+      <RadioButton selected={selectedPaymentMethod === method.id} />
     </Pressable>
   );
 
@@ -340,7 +307,9 @@ export default function PaymentSelectionScreen() {
             <Text style={styles.sectionTitle}>Métodos predeterminados</Text>
 
             <View style={styles.paymentMethodsList}>
-              {defaultPaymentMethods.map(renderPaymentMethod)}
+              {defaultPaymentMethods
+                .filter((method) => method.enabled !== false)
+                .map(renderPaymentMethod)}
             </View>
           </View>
 
@@ -349,7 +318,9 @@ export default function PaymentSelectionScreen() {
             <Text style={styles.sectionTitle}>Otros métodos</Text>
 
             <View style={styles.paymentMethodsList}>
-              {otherPaymentMethods.map(renderPaymentMethod)}
+              {otherPaymentMethods
+                .filter((method) => method.enabled !== false)
+                .map(renderPaymentMethod)}
             </View>
           </View>
         </View>
@@ -403,12 +374,9 @@ type Styles = {
   paymentMethodsList: ViewStyle;
   paymentMethodItem: ViewStyle;
   pressedPaymentMethod: ViewStyle;
-  disabledPaymentMethod: ViewStyle;
   paymentMethodInfo: ViewStyle;
   paymentIcon: ImageStyle;
   paymentMethodText: TextStyle;
-  disabledText: TextStyle;
-  comingSoonText: TextStyle;
   actionButtons: ViewStyle;
   primaryButton: ViewStyle;
   disabledButton: ViewStyle;
@@ -475,9 +443,6 @@ const styles = StyleSheet.create<Styles>({
   pressedPaymentMethod: {
     backgroundColor: '#F2F2F2',
   },
-  disabledPaymentMethod: {
-    opacity: 0.6,
-  },
   paymentMethodInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -494,17 +459,6 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: fontWeights.regular,
     lineHeight: 24,
     color: '#0C0C0C',
-  },
-  disabledText: {
-    color: '#999999',
-  },
-  comingSoonText: {
-    fontFamily: 'Inter',
-    fontSize: 12,
-    fontWeight: fontWeights.regular,
-    color: '#999999',
-    fontStyle: 'italic',
-    marginLeft: spacing.sm,
   },
   actionButtons: {
     paddingHorizontal: spacing.lg,
