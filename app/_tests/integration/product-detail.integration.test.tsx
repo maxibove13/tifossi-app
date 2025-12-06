@@ -155,9 +155,10 @@ const relatedProducts: Product[] = [
 jest.mock('../../_services/api/queryHooks', () => ({
   useProduct: jest.fn(),
   useProducts: jest.fn(),
+  useAppSettings: jest.fn(),
 }));
 
-const { useProduct, useProducts } = require('../../_services/api/queryHooks');
+const { useProduct, useProducts, useAppSettings } = require('../../_services/api/queryHooks');
 
 describe('Product Detail Flow - Integration', () => {
   // Simple wrapper for tests - no need for full navigation setup
@@ -192,6 +193,12 @@ describe('Product Detail Flow - Integration', () => {
 
     useProducts.mockReturnValue({
       data: [...relatedProducts, mockProduct],
+      isLoading: false,
+      error: null,
+    });
+
+    useAppSettings.mockReturnValue({
+      data: { supportPhoneNumber: '+59899000000', businessName: 'Tifossi' },
       isLoading: false,
       error: null,
     });

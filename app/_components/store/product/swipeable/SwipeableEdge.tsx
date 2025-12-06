@@ -25,7 +25,8 @@ import { colors, spacing, typography, radius } from './styles';
 import ProductInfoHeader from './ProductInfoHeader';
 import ProductDetails from './ProductDetails';
 import ProductSections from '../sections/ProductSections';
-import SupportOption from './SupportOption';
+// TODO: Re-enable when support options are implemented
+// import SupportOption from './SupportOption';
 
 // utils + types
 import { Product, ProductColor, ProductSize } from '../../../../_types/product';
@@ -176,7 +177,6 @@ const SwipeableEdge = ({
     return product.sizes?.find((size) => size.available)?.value || '';
   }, [product.sizes]);
   const [selectedSize, setSelectedSize] = useState<string>(selectedSizeProp || firstAvailableSize);
-  const previousSelectedSizePropRef = useRef<string | undefined>(selectedSizeProp);
   const [showConfirmation, setShowConfirmation] = useState(false);
   // More reliable test environment detection for Jest
   const isTestEnv = typeof jest !== 'undefined';
@@ -239,17 +239,27 @@ const SwipeableEdge = ({
 
   const availableSizes = useMemo(() => product.sizes || [], [product.sizes]);
 
-  const handleSelectSize = useCallback((sizeValue: string) => {
-    setSelectedSize(sizeValue);
-  }, []);
+  const handleSelectSize = useCallback(
+    (sizeValue: string) => {
+      setSelectedSize(sizeValue);
+      onSizeChange?.(sizeValue);
+    },
+    [onSizeChange]
+  );
 
   const handleQuantityDecrease = useCallback(() => {
-    setQuantity((prev) => (prev > 1 ? prev - 1 : prev));
-  }, []);
+    if (quantity > 1) {
+      const newQty = quantity - 1;
+      setQuantity(newQty);
+      onQuantityChange?.(newQty);
+    }
+  }, [quantity, onQuantityChange]);
 
   const handleQuantityIncrease = useCallback(() => {
-    setQuantity((prev) => prev + 1);
-  }, []);
+    const newQty = quantity + 1;
+    setQuantity(newQty);
+    onQuantityChange?.(newQty);
+  }, [quantity, onQuantityChange]);
 
   const renderStockStatus = () => {
     if (!isOutOfStock) return null;
@@ -400,54 +410,38 @@ const SwipeableEdge = ({
           <Text style={styles.callText}>Llamar</Text>
         </TouchableOpacity>
       </View>
+      {/* TODO: Enable when chat support is implemented
       <SupportOption
         title="Iniciar chat"
         description="Conversa con uno de nuestros agentes."
         iconType="chat"
         onPress={() => handleSupportPress('chat')}
       />
+      */}
+      {/* TODO: Enable when FAQ section is implemented
       <SupportOption
         title="Soporte | FAQ"
         description="Ve a la sección de ayuda."
         iconType="help"
         onPress={() => handleSupportPress('faq')}
       />
+      */}
     </>
   );
 
+  // Sync quantity from prop only when prop changes externally
   useEffect(() => {
-    if (typeof quantityProp === 'number' && quantityProp !== quantity) {
+    if (typeof quantityProp === 'number') {
       setQuantity(quantityProp);
     }
-  }, [quantityProp, quantity]);
+  }, [quantityProp]);
 
+  // Sync size from prop only when prop changes from parent
   useEffect(() => {
-    const previouslyProvidedSize = previousSelectedSizePropRef.current;
-
-    if (
-      selectedSizeProp &&
-      selectedSizeProp !== previouslyProvidedSize &&
-      selectedSizeProp !== selectedSize
-    ) {
+    if (selectedSizeProp) {
       setSelectedSize(selectedSizeProp);
-    } else if (!selectedSizeProp && !selectedSize && firstAvailableSize) {
-      setSelectedSize(firstAvailableSize);
     }
-
-    previousSelectedSizePropRef.current = selectedSizeProp;
-  }, [selectedSizeProp, firstAvailableSize, selectedSize]);
-
-  useEffect(() => {
-    if (onQuantityChange) {
-      onQuantityChange(quantity);
-    }
-  }, [quantity, onQuantityChange]);
-
-  useEffect(() => {
-    if (onSizeChange && selectedSize) {
-      onSizeChange(selectedSize);
-    }
-  }, [onSizeChange, selectedSize]);
+  }, [selectedSizeProp]);
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | undefined;

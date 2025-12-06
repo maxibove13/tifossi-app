@@ -687,6 +687,44 @@ class StrapiApiService {
     }
   }
 
+  // --- App Settings Methods ---
+
+  /**
+   * Fetches app settings from Strapi (single type)
+   */
+  async fetchAppSettings(): Promise<{
+    supportPhoneNumber: string;
+    supportEmail?: string;
+    businessName?: string;
+  }> {
+    const cacheKey = createCacheKey('app-settings');
+    const cached = cache.get<{
+      supportPhoneNumber: string;
+      supportEmail?: string;
+      businessName?: string;
+    }>(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const response = await httpClient.get<{ data: any }>('/app-settings');
+
+      const settings = {
+        supportPhoneNumber: response.data?.supportPhoneNumber || '+59899000000',
+        supportEmail: response.data?.supportEmail,
+        businessName: response.data?.businessName || 'Tifossi',
+      };
+
+      cache.set(cacheKey, settings, CACHE_TTL.CATEGORIES); // Long cache for settings
+      return settings;
+    } catch {
+      // Return defaults if API fails
+      return {
+        supportPhoneNumber: '+59899000000',
+        businessName: 'Tifossi',
+      };
+    }
+  }
+
   // --- Utility Methods ---
 
   /**
@@ -724,6 +762,7 @@ const strapiApiExport = {
   syncCart: strapiApi.syncCart.bind(strapiApi),
   syncFavorites: strapiApi.syncFavorites.bind(strapiApi),
   fetchStores: strapiApi.fetchStores.bind(strapiApi),
+  fetchAppSettings: strapiApi.fetchAppSettings.bind(strapiApi),
   login: strapiApi.login.bind(strapiApi),
   register: strapiApi.register.bind(strapiApi),
   validateToken: strapiApi.validateToken.bind(strapiApi),

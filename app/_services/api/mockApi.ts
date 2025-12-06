@@ -103,6 +103,21 @@ export const mockFetchStores = async (): Promise<import('../../_types').StoreDet
   return storesData;
 };
 
+// --- App Settings Mocks ---
+export const mockFetchAppSettings = async (): Promise<{
+  supportPhoneNumber: string;
+  supportEmail?: string;
+  businessName?: string;
+}> => {
+  await simulateNetworkConditions();
+  safeLog('[Mock API] Fetching app settings');
+
+  return {
+    supportPhoneNumber: '+59899000000',
+    businessName: 'Tifossi',
+  };
+};
+
 // --- Auth Mocks ---
 export interface User {
   id: string;
@@ -291,6 +306,7 @@ const mockApi = {
   syncCart: mockSyncCart,
   syncFavorites: mockSyncFavorites,
   fetchStores: mockFetchStores,
+  fetchAppSettings: mockFetchAppSettings,
 
   // Authentication APIs
   login: mockLogin,

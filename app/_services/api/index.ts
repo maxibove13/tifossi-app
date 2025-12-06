@@ -4,6 +4,13 @@ import strapiApi from './strapiApi';
 // Simple configuration
 const USE_STRAPI = true; // Use Strapi API by default
 
+// App Settings type
+export interface AppSettings {
+  supportPhoneNumber: string;
+  supportEmail?: string;
+  businessName?: string;
+}
+
 // Type definitions for the API interface
 export interface ApiInterface {
   // Product methods
@@ -18,6 +25,9 @@ export interface ApiInterface {
 
   // Store methods
   fetchStores(): Promise<import('../../_types').StoreDetails[]>;
+
+  // App settings methods
+  fetchAppSettings(): Promise<AppSettings>;
 
   // Authentication methods
   login(credentials: {
