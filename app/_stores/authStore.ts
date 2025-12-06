@@ -40,7 +40,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
         status: 'idle' as const,
         error: null,
         isChangingPassword: false,
-        isUploadingProfilePicture: false,
         isVerifyingEmail: false,
 
         initializeAuth: async () => {
@@ -74,7 +73,14 @@ export const useAuthStore = create<ExtendedAuthState>()(
                         });
                       }
                     })
-                    .catch(() => {});
+                    .catch((_tokenError) => {
+                      // Token fetch failed - user has Firebase auth but no API access
+                      set({
+                        error:
+                          'Error al sincronizar la sesión. Por favor inicie sesión nuevamente.',
+                        status: 'failed',
+                      });
+                    });
                 }
               } else {
                 // User is signed out from Firebase
@@ -322,6 +328,9 @@ export const useAuthStore = create<ExtendedAuthState>()(
             }
           } catch {
           } finally {
+            // Clean up auth state listener to prevent memory leaks
+            authService.cleanup();
+
             await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
             const currentState = get();
             if (currentState.clearAuthData && typeof currentState.clearAuthData === 'function') {
@@ -356,34 +365,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
               isChangingPassword: false,
               status: 'failed',
               error: error.message || 'Failed to change password. Please try again.',
-            });
-            throw error;
-          }
-        },
-
-        updateProfilePicture: async (imageUri: string) => {
-          const { token } = get();
-          if (!token) {
-            throw new Error('No authentication token found. Please login first.');
-          }
-
-          set({ isUploadingProfilePicture: true, error: null, status: 'loading' });
-          try {
-            const result = await authService.updateProfilePicture(token, imageUri);
-            const currentState = get();
-            const currentUser = currentState.user;
-            if (currentUser) {
-              set({
-                user: { ...currentUser, profilePicture: result.profilePictureUrl } as UserFromTypes,
-                isUploadingProfilePicture: false,
-                status: 'succeeded',
-              });
-            }
-          } catch (error: any) {
-            set({
-              isUploadingProfilePicture: false,
-              status: 'failed',
-              error: error.message || 'Failed to update profile picture. Please try again.',
             });
             throw error;
           }
@@ -474,7 +455,6 @@ export const useAuthStore = create<ExtendedAuthState>()(
             status: 'idle',
             error: null,
             isChangingPassword: false,
-            isUploadingProfilePicture: false,
             isVerifyingEmail: false,
           });
         },

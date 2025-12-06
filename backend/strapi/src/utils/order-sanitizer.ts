@@ -34,6 +34,7 @@ interface RawOrder {
   discount?: number | string;
   shippingAddress: RawAddress;
   storeLocationId?: number | string;
+  storeLocationCode?: string;
 }
 
 interface AuthUser {
@@ -365,17 +366,28 @@ export const sanitizeOrderPayload = async ({
 
   // Validate storeLocation for pickup orders
   let storeLocationId: number | null = null;
-  if (shippingMethod === 'pickup' && rawOrder.storeLocationId) {
-    const parsedStoreId = Number(rawOrder.storeLocationId);
-    if (Number.isInteger(parsedStoreId) && parsedStoreId > 0) {
-      // Verify store location exists and is active
-      const storeLocation = await strapi.documents('api::store-location.store-location').findOne({
-        documentId: String(parsedStoreId),
-        filters: { isActive: true, hasPickupService: true },
+  if (shippingMethod === 'pickup') {
+    // Try lookup by code first (preferred), then by numeric ID
+    if (rawOrder.storeLocationCode) {
+      const storeLocations = await strapi.documents('api::store-location.store-location').findMany({
+        filters: { code: rawOrder.storeLocationCode, isActive: true, hasPickupService: true },
+        limit: 1,
       });
 
-      if (storeLocation) {
-        storeLocationId = parsedStoreId;
+      if (storeLocations.length > 0) {
+        storeLocationId = storeLocations[0].id;
+      }
+    } else if (rawOrder.storeLocationId) {
+      const parsedStoreId = Number(rawOrder.storeLocationId);
+      if (Number.isInteger(parsedStoreId) && parsedStoreId > 0) {
+        const storeLocation = await strapi.documents('api::store-location.store-location').findOne({
+          documentId: String(parsedStoreId),
+          filters: { isActive: true, hasPickupService: true },
+        });
+
+        if (storeLocation) {
+          storeLocationId = parsedStoreId;
+        }
       }
     }
   }
