@@ -33,7 +33,7 @@ const PromotionCard = memo(function PromotionCard({
 
   // Memoize expensive computations
   const computedValues = useMemo(() => {
-    const hasDiscount = discountedPrice !== undefined && discountedPrice < price;
+    const hasDiscount = price != null && discountedPrice != null && discountedPrice < price;
     const labelColor = hasDiscount ? colors.error : colors.tag.new;
     const hasNewStatus = hasStatus(statuses, ProductStatus.NEW);
 
@@ -84,16 +84,18 @@ const PromotionCard = memo(function PromotionCard({
         <Text style={titleStyles} numberOfLines={1}>
           {title}
         </Text>
-        <View style={styles.priceContainer}>
-          {computedValues.hasDiscount ? (
-            <>
-              <Text style={originalPriceStyles}>${price.toFixed(2)}</Text>
-              <Text style={styles.salePrice}>${discountedPrice!.toFixed(2)}</Text>
-            </>
-          ) : (
-            <Text style={regularPriceStyles}>${price.toFixed(2)}</Text>
-          )}
-        </View>
+        {price != null && (
+          <View style={styles.priceContainer}>
+            {computedValues.hasDiscount ? (
+              <>
+                <Text style={originalPriceStyles}>${price.toFixed(2)}</Text>
+                <Text style={styles.salePrice}>${discountedPrice!.toFixed(2)}</Text>
+              </>
+            ) : (
+              <Text style={regularPriceStyles}>${price.toFixed(2)}</Text>
+            )}
+          </View>
+        )}
       </View>
     </Pressable>
   );
