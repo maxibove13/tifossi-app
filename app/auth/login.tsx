@@ -155,6 +155,11 @@ export default function LoginScreen() {
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.formContainer}>
+            {/* General error message - shown once at top */}
+            {error && error.includes('Por favor, completa') && (
+              <Text style={styles.errorText}>{error}</Text>
+            )}
+
             <Input
               placeholder="Correo Electrónico"
               keyboardType="email-address"
@@ -165,8 +170,7 @@ export default function LoginScreen() {
                 if (error) setError(null);
               }}
               error={
-                (error && (error.includes('correo') || error.includes('Por favor, completa'))) ||
-                (authError && authError.includes('email'))
+                (error && error.includes('correo')) || (authError && authError.includes('email'))
                   ? (error ?? authError ?? undefined)
                   : undefined
               }
@@ -181,8 +185,7 @@ export default function LoginScreen() {
                 if (error) setError(null);
               }}
               error={
-                (error &&
-                  (error.includes('contraseña') || error.includes('Por favor, completa'))) ||
+                (error && error.includes('contraseña')) ||
                 (authError && authError.includes('password'))
                   ? (error ?? authError ?? undefined)
                   : undefined
