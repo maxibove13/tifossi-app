@@ -180,6 +180,7 @@ class StrapiApiService {
           'colors.additionalImages',
           'sizes',
           'dimensions',
+          'shortDescription',
         ],
         sort: ['createdAt:desc'],
       });
@@ -242,6 +243,7 @@ class StrapiApiService {
           'colors.additionalImages',
           'sizes',
           'dimensions',
+          'shortDescription',
         ],
         filters: {
           $or: [
@@ -324,6 +326,7 @@ class StrapiApiService {
           'colors.additionalImages',
           'sizes',
           'dimensions',
+          'shortDescription',
         ],
       });
 
