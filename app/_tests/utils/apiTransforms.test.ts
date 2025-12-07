@@ -111,8 +111,11 @@ describe('API Transforms', () => {
 
       const result = transformStrapiProduct(strapiProduct);
 
-      expect(result.frontImage).toBe('/uploads/front_image.jpg');
-      expect(result.images).toEqual(['/uploads/image1.jpg', '/uploads/image2.jpg']);
+      expect(result.frontImage).toBe('http://localhost:1337/uploads/front_image.jpg');
+      expect(result.images).toEqual([
+        'http://localhost:1337/uploads/image1.jpg',
+        'http://localhost:1337/uploads/image2.jpg',
+      ]);
     });
 
     it('should transform product colors with images', () => {
@@ -162,17 +165,19 @@ describe('API Transforms', () => {
         colorName: 'Red',
         quantity: 10,
         hex: '#FF0000',
+        isActive: undefined,
         images: {
-          main: '/uploads/red_main.jpg',
-          additional: ['/uploads/red_1.jpg'],
+          main: 'http://localhost:1337/uploads/red_main.jpg',
+          additional: ['http://localhost:1337/uploads/red_1.jpg'],
         },
       });
       expect(result.colors[1]).toEqual({
         colorName: 'Blue',
         quantity: 5,
         hex: '#0000FF',
+        isActive: undefined,
         images: {
-          main: '/uploads/default.jpg', // Falls back to frontImage
+          main: 'http://localhost:1337/uploads/default.jpg', // Falls back to frontImage
           additional: [],
         },
       });
@@ -367,7 +372,7 @@ describe('API Transforms', () => {
 
       const result = transformStrapiProduct(strapiProduct);
 
-      expect(result.videoSource).toBe('/uploads/product_video.mp4');
+      expect(result.videoSource).toBe('http://localhost:1337/uploads/product_video.mp4');
     });
 
     it('should transform warranty and return policy', () => {
