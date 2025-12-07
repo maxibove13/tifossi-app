@@ -25,6 +25,7 @@ import { colors, spacing, typography, radius } from './styles';
 import ProductInfoHeader from './ProductInfoHeader';
 import ProductDetails from './ProductDetails';
 import ProductSections from '../sections/ProductSections';
+import OverlayCheckoutShipping from '../overlay/OverlayCheckoutShipping';
 // TODO: Re-enable when support options are implemented
 // import SupportOption from './SupportOption';
 
@@ -178,6 +179,7 @@ const SwipeableEdge = ({
   }, [product.sizes]);
   const [selectedSize, setSelectedSize] = useState<string>(selectedSizeProp || firstAvailableSize);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showCheckoutOverlay, setShowCheckoutOverlay] = useState(false);
   // More reliable test environment detection for Jest
   const isTestEnv = typeof jest !== 'undefined';
 
@@ -247,20 +249,6 @@ const SwipeableEdge = ({
     [onSizeChange]
   );
 
-  const handleQuantityDecrease = useCallback(() => {
-    if (quantity > 1) {
-      const newQty = quantity - 1;
-      setQuantity(newQty);
-      onQuantityChange?.(newQty);
-    }
-  }, [quantity, onQuantityChange]);
-
-  const handleQuantityIncrease = useCallback(() => {
-    const newQty = quantity + 1;
-    setQuantity(newQty);
-    onQuantityChange?.(newQty);
-  }, [quantity, onQuantityChange]);
-
   const renderStockStatus = () => {
     if (!isOutOfStock) return null;
 
@@ -316,37 +304,6 @@ const SwipeableEdge = ({
       </View>
     );
   };
-
-  const renderQuantitySelector = () => (
-    <View style={styles.selectorBlock}>
-      <Text style={styles.selectorTitle}>Cantidad</Text>
-      <View style={styles.quantityRow} testID="quantity-selector">
-        <TouchableOpacity
-          testID="quantity-decrease"
-          style={[styles.quantityButton, quantity <= 1 && styles.quantityButtonDisabled]}
-          onPress={handleQuantityDecrease}
-          activeOpacity={0.7}
-          disabled={quantity <= 1}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: quantity <= 1 }}
-        >
-          <Text style={styles.quantityButtonLabel}>-</Text>
-        </TouchableOpacity>
-        <Text style={styles.quantityValue} testID="quantity-value">
-          {quantity}
-        </Text>
-        <TouchableOpacity
-          testID="quantity-increase"
-          style={styles.quantityButton}
-          onPress={handleQuantityIncrease}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-        >
-          <Text style={styles.quantityButtonLabel}>+</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
 
   const renderConfirmationBanner = () => {
     if (!showConfirmation) return null;
@@ -470,22 +427,32 @@ const SwipeableEdge = ({
     [measuredHeaderHeight]
   );
 
-  const handleAddToCartPress = useCallback(async () => {
+  const handleAddToCartPress = useCallback(() => {
     if (isOutOfStock) return;
+    setShowCheckoutOverlay(true);
+  }, [isOutOfStock]);
 
-    const selection = {
-      quantity,
-      size: selectedSize || undefined,
-      color: selectedColor,
-    };
+  const handleOverlayAddToCart = useCallback(
+    async (size: string, qty: number) => {
+      const selection = {
+        quantity: qty,
+        size: size || undefined,
+        color: selectedColor,
+      };
 
-    try {
-      await onAddToCart?.(selection);
-      setShowConfirmation(true);
-    } catch (error) {
-      console.error('Failed to add product to cart', error);
-    }
-  }, [isOutOfStock, onAddToCart, quantity, selectedColor, selectedSize]);
+      try {
+        await onAddToCart?.(selection);
+        setSelectedSize(size);
+        setQuantity(qty);
+        onSizeChange?.(size);
+        onQuantityChange?.(qty);
+        setShowConfirmation(true);
+      } catch (error) {
+        console.error('Failed to add product to cart', error);
+      }
+    },
+    [onAddToCart, selectedColor, onSizeChange, onQuantityChange]
+  );
 
   const handleSupportPress = useCallback(
     (type: 'chat' | 'faq' | 'call') => onSupportAction?.(type),
@@ -520,7 +487,6 @@ const SwipeableEdge = ({
           <View style={[styles.paddedHorizontal, styles.testSelectorsBlock]}>
             {renderStockStatus()}
             {renderSizeSelector()}
-            {renderQuantitySelector()}
             <ProductDetails
               isCustomizable={product.isCustomizable}
               shortDescription={product.shortDescription}
@@ -538,6 +504,26 @@ const SwipeableEdge = ({
             {renderSupportContent()}
           </View>
         </ScrollView>
+
+        <OverlayCheckoutShipping
+          isVisible={showCheckoutOverlay}
+          onClose={() => setShowCheckoutOverlay(false)}
+          onSelectSize={handleSelectSize}
+          onSelectQuantity={(qty) => {
+            setQuantity(qty);
+            onQuantityChange?.(qty);
+          }}
+          onAddToCart={handleOverlayAddToCart}
+          initialQuantity={quantity}
+          initialSize={selectedSize}
+          product={
+            {
+              id: product.id,
+              title: product.name,
+              sizes: product.sizes,
+            } as any
+          }
+        />
       </View>
     );
   }
@@ -610,7 +596,6 @@ const SwipeableEdge = ({
             <BottomSheetView style={styles.paddedHorizontal}>
               {renderStockStatus()}
               {renderSizeSelector()}
-              {renderQuantitySelector()}
               <ProductDetails
                 isCustomizable={product.isCustomizable}
                 shortDescription={product.shortDescription}
@@ -632,6 +617,26 @@ const SwipeableEdge = ({
           </BottomSheetScrollView>
         </BottomSheet>
       )}
+
+      <OverlayCheckoutShipping
+        isVisible={showCheckoutOverlay}
+        onClose={() => setShowCheckoutOverlay(false)}
+        onSelectSize={handleSelectSize}
+        onSelectQuantity={(qty) => {
+          setQuantity(qty);
+          onQuantityChange?.(qty);
+        }}
+        onAddToCart={handleOverlayAddToCart}
+        initialQuantity={quantity}
+        initialSize={selectedSize}
+        product={
+          {
+            id: product.id,
+            title: product.name,
+            sizes: product.sizes,
+          } as any
+        }
+      />
     </>
   );
 };
@@ -722,35 +727,6 @@ const styles = StyleSheet.create({
   },
   sizeChipLabelDisabled: {
     color: colors.secondary.textDisabled,
-  },
-  quantityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  quantityButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  quantityButtonDisabled: {
-    opacity: 0.4,
-  },
-  quantityButtonLabel: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: typography.body.fontSize,
-    color: colors.primary.text,
-  },
-  quantityValue: {
-    minWidth: 32,
-    textAlign: 'center',
-    fontFamily: typography.productTitle.fontFamily,
-    fontSize: typography.productTitle.fontSize * 0.6,
-    color: colors.primary.text,
   },
   confirmationContainer: {
     marginTop: spacing.sm,
