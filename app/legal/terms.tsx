@@ -29,7 +29,7 @@ export default function TermsScreen() {
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.contentContainer}>
-            <Text style={styles.lastUpdated}>Última actualización: 1 de Mayo, 2024</Text>
+            <Text style={styles.lastUpdated}>Última actualización: 7 de Diciembre, 2025</Text>
 
             <Text style={styles.sectionTitle}>1. Aceptación de los Términos</Text>
             <Text style={styles.paragraph}>

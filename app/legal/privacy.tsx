@@ -29,7 +29,7 @@ export default function PrivacyScreen() {
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.contentContainer}>
-            <Text style={styles.lastUpdated}>Última actualización: 1 de Mayo, 2024</Text>
+            <Text style={styles.lastUpdated}>Última actualización: 7 de Diciembre, 2025</Text>
 
             <Text style={styles.paragraph}>
               En Tifossi, valoramos su privacidad y nos comprometemos a proteger sus datos

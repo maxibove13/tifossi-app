@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.expo/
+backend/
+ios/
+android/
+*.js
+!.eslintrc.js

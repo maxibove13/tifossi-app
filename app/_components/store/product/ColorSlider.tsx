@@ -5,17 +5,35 @@ import { Product } from '../../../_types/product';
 
 type Props = {
   product: Product;
+  onColorChange?: (colorIndex: number) => void;
 };
 
-export default function ColorSlider({ product: _product }: Props) {
+export default function ColorSlider({ product, onColorChange }: Props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // For demo purposes, create an array of the same image
-  const images = [
-    require('../../../../assets/images/products/product_socks_0.png'),
-    require('../../../../assets/images/products/product_socks_1.png'),
-    require('../../../../assets/images/products/product_socks_2.png'),
-  ];
+  // Get color images from product data
+  const colorImages =
+    product.colors?.filter((color) => color.images?.main).map((color) => color.images!.main) ?? [];
+
+  // If no color images, fall back to frontImage or return null
+  if (colorImages.length === 0) {
+    if (!product.frontImage) return null;
+    // Show single frontImage if no colors
+    return (
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <View style={[styles.colorButton, styles.selectedColor]}>
+            <ProductImage source={product.frontImage} size={96} />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  const handleColorPress = (index: number) => {
+    setSelectedIndex(index);
+    onColorChange?.(index);
+  };
 
   return (
     <View style={styles.container}>
@@ -25,10 +43,10 @@ export default function ColorSlider({ product: _product }: Props) {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
       >
-        {images.map((image, index) => (
+        {colorImages.map((image, index) => (
           <Pressable
-            key={`${image}-${index}`}
-            onPress={() => setSelectedIndex(index)}
+            key={`color-${index}`}
+            onPress={() => handleColorPress(index)}
             style={[styles.colorButton, selectedIndex === index && styles.selectedColor]}
           >
             <ProductImage
@@ -47,7 +65,7 @@ export default function ColorSlider({ product: _product }: Props) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: 112, // Account for padding and image size
+    height: 112,
     backgroundColor: '#FBFBFB',
   },
   scrollView: {

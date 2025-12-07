@@ -1,24 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  Animated,
-  Easing,
-  Dimensions,
-  ViewStyle,
-} from 'react-native';
+import { StyleSheet, View, ScrollView, Animated, Easing, ViewStyle } from 'react-native';
 import { colors } from '../../_styles/colors';
 import { spacing, radius } from '../../_styles/spacing';
-import { getCardDimensions } from '../../_types/product-card';
-
-const screenWidth = Dimensions.get('window').width;
-
-// Get dimensions using the helper function for consistent sizing
-const cardDimensions = getCardDimensions('default', 'large');
-const cardHeight = cardDimensions.height;
-const cardWidth = cardDimensions.width as number;
-const imageSize = cardDimensions.imageSize;
 
 interface SkeletonPlaceholderProps {
   style?: ViewStyle | ViewStyle[];
@@ -97,9 +80,7 @@ const SkeletonPlaceholder: React.FC<SkeletonPlaceholderProps> = ({
 // Product Card Skeleton
 const ProductCardSkeleton: React.FC = () => (
   <View style={styles.cardContainer}>
-    <SkeletonPlaceholder
-      style={[styles.imagePlaceholder, { width: imageSize, height: imageSize }]}
-    />
+    <SkeletonPlaceholder style={styles.imagePlaceholder} />
     <View style={styles.textContainer}>
       <SkeletonPlaceholder style={styles.textLineShort} />
       <SkeletonPlaceholder style={styles.textLineLong} />
@@ -165,15 +146,10 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   const renderSkeleton = () => {
     switch (type) {
       case 'productGrid':
-        const totalCardsWidth = cardWidth * 2;
-        const remainingSpace = screenWidth - totalCardsWidth;
-        const sidePadding = Math.max(spacing.lg, remainingSpace / 3);
-        const gap = screenWidth - sidePadding * 2 - totalCardsWidth;
-
         return (
-          <View style={[styles.gridContainer, { paddingHorizontal: sidePadding }]}>
+          <View style={styles.gridContainer}>
             {Array.from({ length: rows }).map((_, rowIndex) => (
-              <View style={[styles.gridRow, { gap }]} key={`skeleton-row-${rowIndex}`}>
+              <View style={styles.gridRow} key={`skeleton-row-${rowIndex}`}>
                 <View style={styles.gridItem}>
                   <ProductCardSkeleton />
                 </View>
@@ -359,11 +335,12 @@ const styles = StyleSheet.create({
   gridRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: spacing.md,
     width: '100%',
+    gap: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
   gridItem: {
-    width: cardWidth,
+    flex: 1,
   },
   favoritesGrid: {
     padding: spacing.md,
@@ -371,16 +348,13 @@ const styles = StyleSheet.create({
   },
   // Card styles
   cardContainer: {
-    width: '48.5%',
-    height: cardHeight,
-    backgroundColor: colors.background.medium,
-    borderRadius: radius.md,
-    padding: spacing.sm,
-    overflow: 'hidden',
+    flex: 1,
+    gap: spacing.sm,
   },
   imagePlaceholder: {
+    width: '100%',
+    aspectRatio: 1,
     borderRadius: radius.sm,
-    marginBottom: spacing.sm,
   },
   textContainer: {
     paddingHorizontal: 0,
@@ -448,8 +422,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   promotionCard: {
-    width: 160,
-    height: 200,
+    width: 132,
+    height: 132,
     borderRadius: 8,
   },
   productGrid: {
@@ -461,7 +435,7 @@ const styles = StyleSheet.create({
   },
   homeGridCard: {
     width: '48%',
-    height: 240,
+    aspectRatio: 1,
     borderRadius: 8,
   },
   footer: {

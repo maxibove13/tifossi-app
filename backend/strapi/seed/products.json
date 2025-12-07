@@ -34,284 +34,798 @@
         "displayOrder": 2
       },
       {
-        "colorName": "Azul",
+        "colorName": "Naranja",
         "quantity": 5,
-        "hex": "#2E5BFF",
-        "isActive": true,
-        "displayOrder": 3
-      }
-    ],
-    "sizes": [
-      {
-        "value": "S",
-        "available": true,
-        "stock": 15,
-        "displayOrder": 1
-      },
-      {
-        "value": "M",
-        "available": true,
-        "stock": 20,
-        "displayOrder": 2
-      },
-      {
-        "value": "L",
-        "available": true,
-        "stock": 18,
-        "displayOrder": 3
-      },
-      {
-        "value": "XL",
-        "available": true,
-        "stock": 12,
-        "displayOrder": 4
-      }
-    ],
-    "totalStock": 23,
-    "isActive": true,
-    "isCustomizable": false
-  },
-  {
-    "title": "Mochila Premium Sport",
-    "slug": "mochila-premium-sport",
-    "price": 2500,
-    "discountedPrice": 2200,
-    "categorySlug": "mochilas",
-    "modelSlug": "premium",
-    "statusNames": ["sale", "featured"],
-    "shortDescription": {
-      "line1": "Mochila premium con compartimentos.",
-      "line2": "Ideal para deportistas profesionales."
-    },
-    "longDescription": "Mochila Premium Sport diseñada para atletas exigentes. Cuenta con múltiples compartimentos para organizar tu equipamiento deportivo. Material resistente al agua y cremalleras de alta calidad. Correas acolchadas ajustables para máximo confort durante el transporte.",
-    "warranty": "1 año",
-    "returnPolicy": "30 días para devoluciones sin uso",
-    "dimensions": {
-      "height": "45",
-      "width": "30",
-      "depth": "20",
-      "unit": "cm"
-    },
-    "colors": [
-      {
-        "colorName": "Negro",
-        "quantity": 12,
-        "hex": "#000000",
-        "isActive": true,
-        "displayOrder": 1
-      },
-      {
-        "colorName": "Azul Marino",
-        "quantity": 8,
-        "hex": "#1B365D",
-        "isActive": true,
-        "displayOrder": 2
-      },
-      {
-        "colorName": "Rojo",
-        "quantity": 6,
-        "hex": "#DC143C",
-        "isActive": true,
-        "displayOrder": 3
-      }
-    ],
-    "totalStock": 26,
-    "isActive": true,
-    "isCustomizable": true
-  },
-  {
-    "title": "Remera Oversize Cotton",
-    "slug": "remera-oversize-cotton",
-    "price": 1200,
-    "categorySlug": "remeras",
-    "modelSlug": "oversize",
-    "statusNames": ["popular", "recommended"],
-    "shortDescription": {
-      "line1": "Remera oversize 100% algodón.",
-      "line2": "Corte moderno y cómodo."
-    },
-    "longDescription": "Remera Oversize Cotton confeccionada en 100% algodón de primera calidad. Corte oversize que brinda comodidad y estilo. Perfecta para uso casual y actividades deportivas ligeras. Tejido suave y transpirable que se adapta a cualquier ocasión.",
-    "warranty": "3 meses",
-    "returnPolicy": "30 días para devoluciones sin uso",
-    "colors": [
-      {
-        "colorName": "Blanco",
-        "quantity": 25,
-        "hex": "#FFFFFF",
-        "isActive": true,
-        "displayOrder": 1
-      },
-      {
-        "colorName": "Negro",
-        "quantity": 20,
-        "hex": "#000000",
-        "isActive": true,
-        "displayOrder": 2
-      },
-      {
-        "colorName": "Gris",
-        "quantity": 15,
-        "hex": "#808080",
+        "hex": "#FFBA54",
         "isActive": true,
         "displayOrder": 3
       },
       {
         "colorName": "Verde",
-        "quantity": 10,
-        "hex": "#228B22",
+        "quantity": 12,
+        "hex": "#70BF73",
         "isActive": true,
         "displayOrder": 4
+      },
+      {
+        "colorName": "Amarillo",
+        "quantity": 7,
+        "hex": "#FFF27C",
+        "isActive": true,
+        "displayOrder": 5
       }
     ],
     "sizes": [
-      {
-        "value": "XS",
-        "available": true,
-        "stock": 8,
-        "displayOrder": 1
-      },
-      {
-        "value": "S",
-        "available": true,
-        "stock": 15,
-        "displayOrder": 2
-      },
-      {
-        "value": "M",
-        "available": true,
-        "stock": 25,
-        "displayOrder": 3
-      },
-      {
-        "value": "L",
-        "available": true,
-        "stock": 20,
-        "displayOrder": 4
-      },
-      {
-        "value": "XL",
-        "available": true,
-        "stock": 12,
-        "displayOrder": 5
-      },
-      {
-        "value": "XXL",
-        "available": false,
-        "stock": 0,
-        "displayOrder": 6
-      }
+      { "value": "S", "available": true, "stock": 10, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 15, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 12, "displayOrder": 3 },
+      { "value": "XL", "available": false, "stock": 0, "displayOrder": 4 }
     ],
-    "totalStock": 70,
+    "totalStock": 42,
     "isActive": true,
     "isCustomizable": false
   },
   {
-    "title": "Canilleras Pro Protection",
-    "slug": "canilleras-pro-protection",
-    "price": 800,
-    "categorySlug": "canilleras",
-    "modelSlug": "pro",
-    "statusNames": ["app_exclusive"],
+    "title": "Classic Socks",
+    "slug": "classic-socks",
+    "price": 590,
+    "categorySlug": "medias",
+    "modelSlug": "classic",
+    "statusNames": ["featured", "highlighted"],
     "shortDescription": {
-      "line1": "Protección profesional para fútbol.",
-      "line2": "Material ultra liviano y resistente."
+      "line1": "Tecnología de secado rápido.",
+      "line2": "Máxima comodidad y durabilidad."
     },
-    "longDescription": "Canilleras Pro Protection diseñadas para jugadores profesionales. Material ultra liviano que no compromete la movilidad. Protección superior contra impactos y lesiones. Sistema de ventilación integrado para mantener las piernas frescas durante el juego.",
-    "warranty": "6 meses",
+    "longDescription": "Classic Socks ofrece máxima comodidad y durabilidad. Tecnología de secado rápido que mantiene tus pies secos durante todo el día. Tejido suelto que brinda mayor confortabilidad y reduce la presión sobre los pies.",
+    "colors": [
+      {
+        "colorName": "Verde",
+        "quantity": 10,
+        "hex": "#70BF73",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 10, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 10, "displayOrder": 2 },
+      { "value": "L", "available": false, "stock": 0, "displayOrder": 3 }
+    ],
+    "totalStock": 10,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Socks V2",
+    "slug": "socks-v2",
+    "price": 590,
+    "categorySlug": "medias",
+    "modelSlug": "sport",
+    "statusNames": ["new", "highlighted"],
+    "shortDescription": {
+      "line1": "Calcetines versátiles y personalizables.",
+      "line2": "Diseñados para máximo rendimiento deportivo."
+    },
+    "longDescription": "Socks V2 representa nuestra línea más avanzada de calcetines deportivos. Tecnología de secado rápido para máximo confort durante actividades intensas. Tejido suelto que brinda mayor confortabilidad sin sacrificar sujeción. Completamente personalizables con tus colores y diseños preferidos.",
+    "colors": [
+      {
+        "colorName": "Blanco",
+        "quantity": 10,
+        "hex": "#FAFAFA",
+        "isActive": true,
+        "displayOrder": 1
+      },
+      {
+        "colorName": "Negro",
+        "quantity": 10,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 2
+      }
+    ],
+    "sizes": [
+      { "value": "XS", "available": false, "stock": 0, "displayOrder": 1 },
+      { "value": "S", "available": true, "stock": 5, "displayOrder": 2 },
+      { "value": "M", "available": true, "stock": 8, "displayOrder": 3 },
+      { "value": "L", "available": true, "stock": 5, "displayOrder": 4 },
+      { "value": "XL", "available": true, "stock": 2, "displayOrder": 5 }
+    ],
+    "totalStock": 20,
+    "isActive": true,
+    "isCustomizable": true
+  },
+  {
+    "title": "Regular Black",
+    "slug": "regular-black",
+    "price": 990,
+    "categorySlug": "bolsos",
+    "modelSlug": "regular",
+    "statusNames": ["featured"],
+    "shortDescription": {
+      "line1": "Diseño moderno y versátil.",
+      "line2": "Material resistente al uso diario."
+    },
+    "longDescription": "Regular Black ofrece el equilibrio perfecto entre estilo y funcionalidad. Diseño moderno y versátil que se adapta a cualquier ocasión. Disponible en múltiples opciones de color para complementar tu estilo personal. Fabricado con materiales premium resistentes al uso diario intensivo. Interior espacioso con compartimentos organizados para todos tus objetos esenciales.",
+    "colors": [
+      {
+        "colorName": "Blanco",
+        "quantity": 10,
+        "hex": "#FAFAFA",
+        "isActive": true,
+        "displayOrder": 1
+      },
+      {
+        "colorName": "Negro",
+        "quantity": 10,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 2
+      },
+      {
+        "colorName": "Naranja",
+        "quantity": 10,
+        "hex": "#FFBA54",
+        "isActive": true,
+        "displayOrder": 3
+      },
+      {
+        "colorName": "Amarillo",
+        "quantity": 10,
+        "hex": "#FFF27C",
+        "isActive": true,
+        "displayOrder": 4
+      },
+      {
+        "colorName": "Verde",
+        "quantity": 10,
+        "hex": "#70BF73",
+        "isActive": true,
+        "displayOrder": 5
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 15, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 20, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 10, "displayOrder": 3 },
+      { "value": "XL", "available": false, "stock": 0, "displayOrder": 4 }
+    ],
+    "totalStock": 50,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Mochila SQ",
+    "slug": "mochila-sq",
+    "price": 1190,
+    "discountedPrice": 890,
+    "categorySlug": "mochilas",
+    "modelSlug": "standard",
+    "statusNames": ["opportunity"],
+    "shortDescription": {
+      "line1": "Mochila espaciosa y personalizable.",
+      "line2": "Máxima versatilidad para tu día a día."
+    },
+    "longDescription": "Mochila SQ ofrece la máxima versatilidad para tu día a día. Amplio espacio interior con múltiples compartimentos para una organización óptima. Diseño resistente a las inclemencias del tiempo para proteger tus pertenencias. Completamente personalizable con tus colores, parches o iniciales favoritas.",
+    "colors": [
+      {
+        "colorName": "Gris",
+        "quantity": 12,
+        "hex": "#9E9E9E",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "totalStock": 12,
+    "isActive": true,
+    "isCustomizable": true
+  },
+  {
+    "title": "Buzo Oversize",
+    "slug": "buzo-oversize",
+    "price": 1590,
+    "discountedPrice": 1190,
+    "categorySlug": "buzos",
+    "modelSlug": "oversize",
+    "statusNames": ["opportunity"],
+    "shortDescription": {
+      "line1": "Sudadera estilo oversize con máxima comodidad.",
+      "line2": "Diseño amplio que proporciona libertad de movimiento."
+    },
+    "longDescription": "Buzo Oversize combina estilo urbano con funcionalidad deportiva. Diseño amplio que proporciona total libertad de movimiento y un look desenfadado. Tejido de alta calidad con interior suave para máximo confort durante todo el día. Disponible en varios colores y completamente personalizable.",
+    "colors": [
+      {
+        "colorName": "Blanco",
+        "quantity": 10,
+        "hex": "#FAFAFA",
+        "isActive": true,
+        "displayOrder": 1
+      },
+      {
+        "colorName": "Negro",
+        "quantity": 10,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 2
+      }
+    ],
+    "sizes": [
+      { "value": "XS", "available": true, "stock": 3, "displayOrder": 1 },
+      { "value": "S", "available": true, "stock": 5, "displayOrder": 2 },
+      { "value": "M", "available": true, "stock": 6, "displayOrder": 3 },
+      { "value": "L", "available": true, "stock": 4, "displayOrder": 4 },
+      { "value": "XL", "available": false, "stock": 0, "displayOrder": 5 }
+    ],
+    "totalStock": 20,
+    "isActive": true,
+    "isCustomizable": true
+  },
+  {
+    "title": "Neceser Ball",
+    "slug": "neceser-ball",
+    "price": 590,
+    "discountedPrice": 390,
+    "categorySlug": "neceser",
+    "modelSlug": "ball",
+    "statusNames": ["new"],
+    "shortDescription": {
+      "line1": "Neceser redondo compacto en oferta.",
+      "line2": "Pequeño por fuera, espacioso por dentro."
+    },
+    "longDescription": "Neceser Ball es la solución perfecta para tus artículos de cuidado personal. Su forma redonda ofrece un diseño innovador y cómodo de transportar. Pequeño por fuera pero espacioso por dentro para todos tus esenciales. Fabricado con material de alta resistencia al agua y rasgaduras.",
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 10,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "totalStock": 10,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Mochila Classic",
+    "slug": "mochila-classic",
+    "price": 590,
+    "categorySlug": "mochilas",
+    "modelSlug": "standard",
+    "statusNames": ["recommended"],
+    "shortDescription": {
+      "line1": "Mochila clásica de diseño atemporal.",
+      "line2": "Fabricada con materiales resistentes y duraderos."
+    },
+    "longDescription": "Mochila Classic combina la esencia del diseño tradicional con toques modernos. Proporciona espacio suficiente para tus objetos cotidianos con un estilo sobrio. Su diseño atemporal garantiza que nunca pase de moda, convirtiéndola en una inversión duradera. Fabricada con materiales resistentes para acompañarte en todas tus aventuras.",
+    "colors": [
+      {
+        "colorName": "Gris",
+        "quantity": 8,
+        "hex": "#9E9E9E",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "totalStock": 8,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Cap V3",
+    "slug": "cap-v3",
+    "price": 590,
+    "categorySlug": "gorros",
+    "modelSlug": "cap",
+    "statusNames": ["popular"],
+    "shortDescription": {
+      "line1": "Gorra urbana de estilo contemporáneo.",
+      "line2": "Material transpirable para máxima comodidad."
+    },
+    "longDescription": "Cap V3 representa la tercera generación de nuestras populares gorras urbanas. Diseño contemporáneo con un ajuste cómodo para todos los tamaños de cabeza. El material transpirable garantiza comodidad incluso en los días más calurosos. Un accesorio versátil que complementa cualquier conjunto casual o deportivo.",
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 12,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "totalStock": 12,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Relaxed Classic",
+    "slug": "relaxed-classic",
+    "price": 590,
+    "categorySlug": "remeras",
+    "modelSlug": "relaxed",
+    "statusNames": ["popular"],
+    "shortDescription": {
+      "line1": "Camisa de corte relajado para máximo confort.",
+      "line2": "Tejido de alta calidad que mantiene su forma."
+    },
+    "longDescription": "Relaxed Classic es nuestra camisa insignia de corte holgado y casual. Diseñada para proporcionar la máxima comodidad sin sacrificar el estilo. Tejido de alta calidad que mantiene su forma incluso después de múltiples lavados. Perfecta para ocasiones informales o para un look elegante pero relajado en la oficina.",
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 15,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 4, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 5, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 4, "displayOrder": 3 },
+      { "value": "XL", "available": true, "stock": 2, "displayOrder": 4 }
+    ],
+    "totalStock": 15,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Regular Shirt",
+    "slug": "regular-shirt",
+    "price": 790,
+    "categorySlug": "remeras",
+    "modelSlug": "regular",
+    "statusNames": ["popular"],
+    "shortDescription": {
+      "line1": "Camisa de corte regular para uso diario.",
+      "line2": "Un básico imprescindible en cualquier armario."
+    },
+    "longDescription": "Regular Shirt ofrece el equilibrio perfecto entre comodidad y elegancia. Su corte clásico se adapta a cualquier tipo de cuerpo y ocasión. Fabricada con algodón de primera calidad que garantiza durabilidad y transpirabilidad. Un básico imprescindible en cualquier armario que combina con todo tipo de prendas.",
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 20,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 5, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 7, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 5, "displayOrder": 3 },
+      { "value": "XL", "available": false, "stock": 0, "displayOrder": 4 }
+    ],
+    "totalStock": 20,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "White Shirt",
+    "slug": "white-shirt",
+    "price": 790,
+    "categorySlug": "remeras",
+    "modelSlug": "regular",
+    "statusNames": ["popular"],
+    "shortDescription": {
+      "line1": "Camisa blanca elegante y versátil.",
+      "line2": "Perfecta para ocasiones formales e informales."
+    },
+    "longDescription": "White Shirt es la pieza elegante y atemporal que todo guardarropa necesita. Confeccionada con tejido premium que garantiza un acabado impecable y duradero. Su diseño versátil la hace perfecta tanto para ocasiones formales como informales. El corte estudiado proporciona un ajuste cómodo y favorecedor para cualquier silueta.",
+    "colors": [
+      {
+        "colorName": "Blanco",
+        "quantity": 18,
+        "hex": "#FAFAFA",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "XS", "available": false, "stock": 0, "displayOrder": 1 },
+      { "value": "S", "available": true, "stock": 4, "displayOrder": 2 },
+      { "value": "M", "available": true, "stock": 6, "displayOrder": 3 },
+      { "value": "L", "available": true, "stock": 5, "displayOrder": 4 },
+      { "value": "XL", "available": true, "stock": 3, "displayOrder": 5 }
+    ],
+    "totalStock": 18,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "T-Shirt Black",
+    "slug": "t-shirt-black",
+    "price": 690,
+    "categorySlug": "remeras",
+    "modelSlug": "tshirt",
+    "statusNames": ["recommended"],
+    "shortDescription": {
+      "line1": "Camiseta negra esencial para todo guardarropa.",
+      "line2": "Confeccionada con algodón orgánico de alta densidad."
+    },
+    "longDescription": "T-Shirt Black es la camiseta básica que nunca pasa de moda. Confeccionada con algodón orgánico de alta densidad para mayor durabilidad. Su color negro profundo mantiene su intensidad lavado tras lavado. Versátil y combinable con cualquier prenda para un look casual o deportivo.",
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 25,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 6, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 8, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 7, "displayOrder": 3 },
+      { "value": "XL", "available": true, "stock": 4, "displayOrder": 4 }
+    ],
+    "totalStock": 25,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Backpack Pro",
+    "slug": "backpack-pro",
+    "price": 1290,
+    "categorySlug": "mochilas",
+    "modelSlug": "premium",
+    "statusNames": ["opportunity"],
+    "shortDescription": {
+      "line1": "Mochila premium con características profesionales.",
+      "line2": "Compartimentos especiales para dispositivos electrónicos."
+    },
+    "longDescription": "Backpack Pro está diseñada para profesionales y viajeros exigentes. Cuenta con compartimentos especiales para dispositivos electrónicos y documentos importantes. Fabricada con materiales resistentes al agua y al desgaste para una durabilidad excepcional. Sistema ergonómico de correas que distribuye el peso de forma óptima para mayor comodidad. Ideal para el uso diario en entornos profesionales o viajes de negocios.",
+    "colors": [
+      {
+        "colorName": "Gris",
+        "quantity": 15,
+        "hex": "#9E9E9E",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "totalStock": 15,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Neceser Globo",
+    "slug": "neceser-globo",
+    "price": 590,
+    "discountedPrice": 390,
+    "categorySlug": "neceser",
+    "modelSlug": "globo",
+    "statusNames": ["new"],
+    "shortDescription": {
+      "line1": "Neceser compacto y funcional para todos tus viajes.",
+      "line2": "Diseño práctico y organizado para tus artículos personales."
+    },
+    "longDescription": "El Neceser Globo ha sido diseñado para viajeros exigentes que necesitan organización y practicidad. Su diseño compacto permite guardarlo fácilmente en maletas o mochilas sin ocupar demasiado espacio. Fabricado con materiales de alta resistencia que garantizan durabilidad y protección de tus artículos personales. Cuenta con múltiples compartimentos organizados para mantener todos tus productos de higiene y belleza en perfecto orden. Ideal tanto para viajes cortos como para largas estancias, adaptándose a todas tus necesidades. El cierre resistente al agua protege el contenido de salpicaduras y pequeños derrames.",
+    "warranty": "3 meses",
     "returnPolicy": "30 días para devoluciones sin uso",
     "dimensions": {
-      "height": "20",
-      "width": "8",
-      "depth": "2",
+      "height": "25",
+      "width": "18",
+      "depth": "10",
       "unit": "cm"
     },
     "colors": [
       {
         "colorName": "Negro",
         "quantity": 15,
-        "hex": "#000000",
+        "hex": "#0C0C0C",
         "isActive": true,
         "displayOrder": 1
-      },
+      }
+    ],
+    "totalStock": 15,
+    "isActive": true,
+    "isCustomizable": true
+  },
+  {
+    "title": "Backpack Travel",
+    "slug": "backpack-travel",
+    "price": 1490,
+    "categorySlug": "mochilas",
+    "modelSlug": "travel",
+    "statusNames": ["opportunity"],
+    "shortDescription": {
+      "line1": "Mochila espaciosa diseñada para viajes largos.",
+      "line2": "Sistema ergonómico para máxima comodidad en travesías."
+    },
+    "longDescription": "Backpack Travel es tu compañera ideal para aventuras y viajes extensos. Diseño de gran capacidad con múltiples bolsillos y compartimentos para una organización perfecta. Sistema de compresión que permite ajustar el volumen según tus necesidades. Materiales impermeables y costuras reforzadas que protegen tus pertenencias en cualquier clima. Correas acolchadas y soporte lumbar para distribuir el peso de forma óptima en largas caminatas.",
+    "colors": [
       {
-        "colorName": "Blanco",
-        "quantity": 12,
-        "hex": "#FFFFFF",
+        "colorName": "Gris",
+        "quantity": 10,
+        "hex": "#9E9E9E",
         "isActive": true,
-        "displayOrder": 2
-      }
-    ],
-    "sizes": [
-      {
-        "value": "S",
-        "available": true,
-        "stock": 10,
         "displayOrder": 1
-      },
-      {
-        "value": "M",
-        "available": true,
-        "stock": 12,
-        "displayOrder": 2
-      },
-      {
-        "value": "L",
-        "available": true,
-        "stock": 5,
-        "displayOrder": 3
       }
     ],
-    "totalStock": 27,
+    "totalStock": 10,
     "isActive": true,
     "isCustomizable": false
   },
   {
-    "title": "Gorro Cap Classic",
-    "slug": "gorro-cap-classic",
-    "price": 450,
-    "discountedPrice": 350,
-    "categorySlug": "gorros",
-    "modelSlug": "cap",
-    "statusNames": ["opportunity", "sale"],
+    "title": "Mochila Gold",
+    "slug": "mochila-gold",
+    "price": 1890,
+    "categorySlug": "mochilas",
+    "modelSlug": "premium",
+    "statusNames": ["app_exclusive", "highlighted"],
     "shortDescription": {
-      "line1": "Gorra clásica ajustable.",
-      "line2": "Protección UV y comodidad."
+      "line1": "Mochila premium con detalles dorados.",
+      "line2": "Diseño elegante para destacar en cualquier ocasión."
     },
-    "longDescription": "Gorro Cap Classic con diseño atemporal y funcional. Protección UV para actividades al aire libre. Correa ajustable para un ajuste perfecto. Material transpirable y liviano ideal para cualquier deporte.",
-    "warranty": "3 meses",
+    "longDescription": "Mochila Gold es nuestra propuesta más exclusiva y elegante. Confeccionada con materiales premium y detalles en tonos dorados que la convierten en un accesorio único. Cuenta con múltiples compartimentos interiores para una organización perfecta de tus pertenencias. Correas ergonómicas que garantizan comodidad incluso en largas jornadas. Resistente al agua y al desgaste diario sin perder su aspecto lujoso.",
+    "warranty": "12 meses",
     "returnPolicy": "30 días para devoluciones sin uso",
+    "dimensions": {
+      "height": "45",
+      "width": "30",
+      "depth": "15",
+      "unit": "cm"
+    },
+    "colors": [
+      {
+        "colorName": "Dorado",
+        "quantity": 8,
+        "hex": "#D4AF37",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "Único", "available": true, "stock": 8, "displayOrder": 1 }
+    ],
+    "totalStock": 8,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Mochila Black",
+    "slug": "mochila-black",
+    "price": 1690,
+    "categorySlug": "mochilas",
+    "modelSlug": "premium",
+    "statusNames": ["app_exclusive"],
+    "shortDescription": {
+      "line1": "Mochila negra de diseño minimalista y versátil.",
+      "line2": "Perfecta para uso diario y viajes cortos."
+    },
+    "longDescription": "Mochila Black combina elegancia y funcionalidad con su diseño minimalista. Material resistente al agua y rasguños para proteger tus pertenencias en cualquier situación. Interior espacioso con compartimentos organizados para dispositivos electrónicos y objetos personales. Sistema de correas acolchadas que distribuyen el peso de forma óptima para mayor comodidad. Versátil para uso diario en la ciudad o escapadas de fin de semana.",
+    "warranty": "12 meses",
+    "returnPolicy": "30 días para devoluciones sin uso",
+    "dimensions": {
+      "height": "42",
+      "width": "28",
+      "depth": "14",
+      "unit": "cm"
+    },
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 15,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "Único", "available": true, "stock": 15, "displayOrder": 1 }
+    ],
+    "totalStock": 15,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Campera Deportiva",
+    "slug": "campera-deportiva",
+    "price": 1890,
+    "categorySlug": "buzos",
+    "modelSlug": "campera",
+    "statusNames": ["new", "app_exclusive"],
+    "shortDescription": {
+      "line1": "Campera deportiva de alto rendimiento.",
+      "line2": "Material de primera calidad con tecnología térmica."
+    },
+    "longDescription": "Campera deportiva diseñada para atletas de alto rendimiento. Material premium que proporciona aislamiento térmico sin sacrificar la transpirabilidad. Diseño ergonómico que permite total libertad de movimiento durante la actividad física. Bolsillos estratégicamente ubicados para mantener tus pertenencias seguras durante el ejercicio. Acabado resistente al agua que te protege durante condiciones climáticas adversas.",
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 12,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 3, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 4, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 3, "displayOrder": 3 },
+      { "value": "XL", "available": false, "stock": 0, "displayOrder": 4 }
+    ],
+    "totalStock": 12,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Antideslizantes",
+    "slug": "antideslizantes-1",
+    "price": 490,
+    "categorySlug": "medias",
+    "modelSlug": "antideslizante",
+    "statusNames": ["recommended"],
+    "shortDescription": {
+      "line1": "Calcetines antideslizantes para mayor agarre.",
+      "line2": "Perfectos para entrenamientos de alta intensidad."
+    },
+    "longDescription": "Los calcetines antideslizantes proporcionan un agarre excepcional en cualquier superficie. Ideales para prácticas deportivas donde la tracción es fundamental como yoga, pilates o fútbol sala. Fabricados con materiales transpirables que mantienen tus pies secos durante toda la actividad. Diseño anatómico que se adapta perfectamente al pie para mayor comodidad y rendimiento. La tecnología antisudor evita malos olores incluso después de entrenamientos intensos.",
     "colors": [
       {
         "colorName": "Negro",
         "quantity": 20,
-        "hex": "#000000",
+        "hex": "#0C0C0C",
         "isActive": true,
         "displayOrder": 1
-      },
-      {
-        "colorName": "Azul",
-        "quantity": 15,
-        "hex": "#0066CC",
-        "isActive": true,
-        "displayOrder": 2
-      },
-      {
-        "colorName": "Rojo",
-        "quantity": 10,
-        "hex": "#FF0000",
-        "isActive": true,
-        "displayOrder": 3
-      },
-      {
-        "colorName": "Blanco",
-        "quantity": 8,
-        "hex": "#FFFFFF",
-        "isActive": true,
-        "displayOrder": 4
       }
     ],
-    "totalStock": 53,
+    "sizes": [
+      { "value": "S", "available": true, "stock": 7, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 8, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 5, "displayOrder": 3 }
+    ],
+    "totalStock": 20,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Antideslizantes V2",
+    "slug": "antideslizantes-2",
+    "price": 490,
+    "categorySlug": "medias",
+    "modelSlug": "antideslizante",
+    "statusNames": ["recommended"],
+    "shortDescription": {
+      "line1": "Segunda generación de calcetines con mejor agarre.",
+      "line2": "Diseño mejorado para mayor durabilidad."
+    },
+    "longDescription": "Los Antideslizantes V2 representan la evolución de nuestros populares calcetines deportivos. Tecnología de agarre mejorada que proporciona estabilidad en cualquier tipo de superficie. Tejido reforzado en puntos estratégicos para extender significativamente su vida útil. Mayor densidad de puntos de silicona en la planta para un agarre sin precedentes. Perfectos para deportes indoor y actividades que requieren máxima tracción sin calzado.",
+    "colors": [
+      {
+        "colorName": "Gris",
+        "quantity": 15,
+        "hex": "#9E9E9E",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 5, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 6, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 4, "displayOrder": 3 }
+    ],
+    "totalStock": 15,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Tiffosi Antideslizante",
+    "slug": "tiffosi-antideslizante-1",
+    "price": 550,
+    "categorySlug": "medias",
+    "modelSlug": "antideslizante",
+    "statusNames": ["recommended"],
+    "shortDescription": {
+      "line1": "Calcetines premium con tecnología antideslizante.",
+      "line2": "La mejor opción para deportes de alta exigencia."
+    },
+    "longDescription": "Tiffosi Antideslizante representa lo último en tecnología de calcetines deportivos. Combina el diseño exclusivo de Tiffosi con una funcionalidad superior para deportistas exigentes. El patrón antideslizante cubre toda la planta del pie proporcionando un agarre incomparable. Materiales de primera calidad que garantizan durabilidad sin sacrificar comodidad. Recomendados por atletas profesionales por su rendimiento excepcional en competiciones.",
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 18,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 6, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 7, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 5, "displayOrder": 3 }
+    ],
+    "totalStock": 18,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Shinguards Pro",
+    "slug": "shinguards-pro",
+    "price": 790,
+    "categorySlug": "canilleras",
+    "modelSlug": "pro",
+    "statusNames": ["new"],
+    "shortDescription": {
+      "line1": "Espinilleras profesionales con protección avanzada.",
+      "line2": "Personalizables con tu nombre o número."
+    },
+    "longDescription": "Las Shinguards Pro ofrecen protección de nivel profesional para futbolistas exigentes. Desarrolladas con tecnología de absorción de impactos para garantizar máxima seguridad durante el juego. Estructura ligera que no compromete la movilidad ni velocidad en el campo. Sistema de ventilación que mantiene tus piernas frescas incluso en los partidos más intensos. Completamente personalizables con tu nombre, número o iniciales para un toque único.",
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 15,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 5, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 6, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 4, "displayOrder": 3 }
+    ],
+    "totalStock": 15,
     "isActive": true,
     "isCustomizable": true
+  },
+  {
+    "title": "Shinguards Lite",
+    "slug": "shinguards-lite",
+    "price": 690,
+    "categorySlug": "canilleras",
+    "modelSlug": "lite",
+    "statusNames": ["featured"],
+    "shortDescription": {
+      "line1": "Espinilleras ultraligeras para máxima velocidad.",
+      "line2": "Protección efectiva sin sacrificar agilidad."
+    },
+    "longDescription": "Shinguards Lite está diseñado para jugadores que priorizan la velocidad y agilidad. Su construcción ultraligera minimiza el peso sin comprometer la protección necesaria. Material flexible que se adapta a la forma de tu pierna para un ajuste perfecto. Sistema de sujeción que mantiene las espinilleras en su lugar durante todo el partido. Diseño minimalista ideal para jugadores ofensivos que necesitan máxima libertad de movimiento.",
+    "colors": [
+      {
+        "colorName": "Blanco",
+        "quantity": 10,
+        "hex": "#FAFAFA",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 3, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 4, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 3, "displayOrder": 3 }
+    ],
+    "totalStock": 10,
+    "isActive": true,
+    "isCustomizable": false
+  },
+  {
+    "title": "Shirt OS Black",
+    "slug": "shirt-os-black",
+    "price": 890,
+    "categorySlug": "remeras",
+    "modelSlug": "oversize",
+    "statusNames": ["featured"],
+    "shortDescription": {
+      "line1": "Camisa oversize de corte moderno.",
+      "line2": "Estilo urbano con máxima comodidad."
+    },
+    "longDescription": "Shirt OS Black representa la esencia del estilo urbano contemporáneo. Corte oversize que proporciona una silueta moderna y relajada, perfecta para el día a día. Fabricada con algodón premium que garantiza suavidad y durabilidad excepcionales. Diseño minimalista que facilita combinaciones infinitas con el resto de tu guardarropa. Los detalles sutiles en el acabado le otorgan un toque de distinción a una prenda aparentemente simple.",
+    "colors": [
+      {
+        "colorName": "Negro",
+        "quantity": 25,
+        "hex": "#0C0C0C",
+        "isActive": true,
+        "displayOrder": 1
+      }
+    ],
+    "sizes": [
+      { "value": "S", "available": true, "stock": 6, "displayOrder": 1 },
+      { "value": "M", "available": true, "stock": 8, "displayOrder": 2 },
+      { "value": "L", "available": true, "stock": 7, "displayOrder": 3 },
+      { "value": "XL", "available": true, "stock": 4, "displayOrder": 4 }
+    ],
+    "totalStock": 25,
+    "isActive": true,
+    "isCustomizable": false
   }
 ]
