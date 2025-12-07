@@ -300,8 +300,8 @@ function HomeScreen() {
           isLoading={sectionLoadingState.recommended}
           skeleton={createSectionSkeleton({
             title: true,
-            height: 200,
-            width: 160,
+            height: 132,
+            width: 132,
             count: 4,
             horizontal: true,
             style: styles.section,
@@ -337,8 +337,8 @@ function HomeScreen() {
           isLoading={sectionLoadingState.trending}
           skeleton={createSectionSkeleton({
             title: true,
-            height: 240,
-            width: 160,
+            height: 256,
+            width: 128,
             count: 4,
             horizontal: true,
             style: styles.section,
@@ -406,7 +406,7 @@ function HomeScreen() {
                     <View key={key} style={styles.gridItem}>
                       {createSectionSkeleton({
                         title: false,
-                        height: 240,
+                        height: 160,
                         borderRadius: 8,
                       })}
                     </View>
@@ -417,7 +417,7 @@ function HomeScreen() {
                     <View key={key} style={styles.gridItem}>
                       {createSectionSkeleton({
                         title: false,
-                        height: 240,
+                        height: 160,
                         borderRadius: 8,
                       })}
                     </View>
