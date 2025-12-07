@@ -250,14 +250,23 @@ export const useAuthStore = create<ExtendedAuthState>()(
             if (loginResult.needsEmailVerification) {
             }
           } catch (error: any) {
+            // Check if user cancelled - don't set error, just reset state
+            const errorMessage = error.message || '';
+            const isCancelled =
+              errorMessage.includes('cancel') ||
+              errorMessage.includes('Cancel') ||
+              errorMessage.includes('cancelado') ||
+              errorMessage.includes('dismissed');
+
             set({
               user: null,
               token: null,
               isLoggedIn: false,
               isLoading: false,
-              status: 'failed',
-              error: error.message || 'Google login failed. Please try again.',
+              status: isCancelled ? 'idle' : 'failed',
+              error: isCancelled ? null : errorMessage || 'Google login failed. Please try again.',
             });
+            throw error;
           }
         },
 
@@ -314,6 +323,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
               status: 'failed',
               error: appleError,
             });
+            throw error;
           }
         },
 
