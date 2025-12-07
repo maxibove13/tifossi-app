@@ -13,6 +13,26 @@ import { endpoints } from '../../_config/endpoints';
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 const AUTH_TOKEN_KEY = 'tifossi_auth_token';
 
+/**
+ * Custom params serializer for Strapi API compatibility
+ * Strapi requires array params as repeated keys: populate=a&populate=b
+ * NOT as comma-separated: populate=a,b
+ */
+function strapiParamsSerializer(params: Record<string, any>): string {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      // Repeat the key for each array value (Strapi format)
+      value.forEach((v) => searchParams.append(key, String(v)));
+    } else if (value !== undefined && value !== null) {
+      searchParams.append(key, String(value));
+    }
+  });
+
+  return searchParams.toString();
+}
+
 class HttpClient {
   private axiosInstance: AxiosInstance;
 
@@ -25,6 +45,7 @@ class HttpClient {
         Accept: 'application/json',
         'User-Agent': `TifossiApp/${Platform.OS}`,
       },
+      paramsSerializer: strapiParamsSerializer,
     });
 
     this.setupInterceptors();

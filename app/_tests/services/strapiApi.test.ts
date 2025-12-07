@@ -124,9 +124,9 @@ describe('StrapiApi Service', () => {
       expect(product.price).toBe(2500);
       expect(product.discountedPrice).toBe(2000);
 
-      // Images (critical for sales)
-      expect(product.frontImage).toBe('/uploads/camiseta_front.jpg');
-      expect(product.images).toEqual(['/uploads/camiseta_back.jpg']);
+      // Images (critical for sales) - full URLs in test environment
+      expect(product.frontImage).toBe('http://localhost:1337/uploads/camiseta_front.jpg');
+      expect(product.images).toEqual(['http://localhost:1337/uploads/camiseta_back.jpg']);
 
       // Product details
       expect(product.categoryId).toBe('camisetas');
@@ -238,16 +238,16 @@ describe('StrapiApi Service', () => {
 
       expect(colors).toHaveLength(2);
 
-      // First color with images
+      // First color with images - full URLs in test environment
       expect(colors[0].colorName).toBe('Azul');
       expect(colors[0].quantity).toBe(25);
-      expect(colors[0].images.main).toBe('/uploads/azul.jpg');
-      expect(colors[0].images.additional).toEqual(['/uploads/azul_2.jpg']);
+      expect(colors[0].images.main).toBe('http://localhost:1337/uploads/azul.jpg');
+      expect(colors[0].images.additional).toEqual(['http://localhost:1337/uploads/azul_2.jpg']);
 
       // Second color without images (should fallback to front image)
       expect(colors[1].colorName).toBe('Verde');
       expect(colors[1].quantity).toBe(0); // Out of stock
-      expect(colors[1].images.main).toBe('/uploads/camiseta_front.jpg'); // Fallback
+      expect(colors[1].images.main).toBe('http://localhost:1337/uploads/camiseta_front.jpg'); // Fallback
     });
 
     it('should handle malformed product data without throwing', async () => {

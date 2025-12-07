@@ -96,12 +96,14 @@ export function transformStrapiProduct(strapiProduct: StrapiProduct): Product {
   // Strapi v5 uses flat structure - no attributes wrapper
   const product = strapiProduct;
 
-  // Transform images - direct url access in v5
-  const frontImage = product.frontImage?.url || '';
-  const images = product.images?.map((img) => img.url) || [];
+  // Transform images - direct url access in v5, converting to full URLs
+  const frontImage = getFullMediaUrl(product.frontImage?.url || '');
+  const images = product.images?.map((img) => getFullMediaUrl(img.url)) || [];
 
   // Transform video source
-  const videoSource = product.videoSource?.url;
+  const videoSource = product.videoSource?.url
+    ? getFullMediaUrl(product.videoSource.url)
+    : undefined;
 
   // Transform statuses - flat array in v5
   const statuses = product.statuses?.map((status) => status.name) || [];
@@ -116,8 +118,8 @@ export function transformStrapiProduct(strapiProduct: StrapiProduct): Product {
         hex: color.hex,
         isActive: color.isActive,
         images: {
-          main: color.mainImage?.url || frontImage,
-          additional: color.additionalImages?.map((img) => img.url) || [],
+          main: getFullMediaUrl(color.mainImage?.url || '') || frontImage,
+          additional: color.additionalImages?.map((img) => getFullMediaUrl(img.url)) || [],
         },
       })) || [];
 
@@ -137,7 +139,7 @@ export function transformStrapiProduct(strapiProduct: StrapiProduct): Product {
       : undefined;
 
   return {
-    id: product.id.toString(),
+    id: product.documentId || product.id.toString(),
     title: product.title,
     price: product.price,
     discountedPrice: product.discountedPrice,

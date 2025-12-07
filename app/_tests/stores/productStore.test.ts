@@ -142,16 +142,19 @@ describe('productStore', () => {
   describe('fetchProductById', () => {
     it('should fetch single product successfully', async () => {
       const { result } = renderHook(() => useProductStore());
-      const testProductId = productMockData[0].id;
+      const rawProductId = productMockData[0].id;
+      // The mock transforms id "1" to documentId "doc-1"
+      const transformedProductId = `doc-${rawProductId}`;
 
       let product: any;
       await act(async () => {
-        product = await result.current.fetchProductById(testProductId);
+        product = await result.current.fetchProductById(rawProductId);
       });
 
       expect(product).toBeDefined();
-      expect(product.id).toBe(testProductId);
-      expect(result.current.productCache[testProductId]).toBeDefined();
+      expect(product.id).toBe(transformedProductId);
+      // Cache uses the request ID as the key, not the transformed product ID
+      expect(result.current.productCache[rawProductId]).toBeDefined();
       expect(result.current.actionStatus.fetchProductById).toBe('success');
     });
 
@@ -170,22 +173,23 @@ describe('productStore', () => {
 
     it('should use cache for repeated requests', async () => {
       const { result } = renderHook(() => useProductStore());
-      const testProductId = productMockData[0].id;
+      const rawProductId = productMockData[0].id;
 
       // First fetch
       let product1: any;
       await act(async () => {
-        product1 = await result.current.fetchProductById(testProductId);
+        product1 = await result.current.fetchProductById(rawProductId);
       });
 
       // Second fetch should use cache
       let product2: any;
       await act(async () => {
-        product2 = await result.current.fetchProductById(testProductId);
+        product2 = await result.current.fetchProductById(rawProductId);
       });
 
       expect(product1).toEqual(product2);
-      expect(result.current.productCache[testProductId]).toBeDefined();
+      // Cache uses the request ID as the key
+      expect(result.current.productCache[rawProductId]).toBeDefined();
     });
   });
 
@@ -206,17 +210,20 @@ describe('productStore', () => {
 
     it('should get product from cache', async () => {
       const { result } = renderHook(() => useProductStore());
-      const testProductId = productMockData[0].id;
+      const rawProductId = productMockData[0].id;
+      const transformedProductId = `doc-${rawProductId}`;
 
-      // Add product to cache
+      // Add product to cache via fetchProductById
       await act(async () => {
-        await result.current.fetchProductById(testProductId);
+        await result.current.fetchProductById(rawProductId);
       });
 
-      const product = result.current.getProductById(testProductId);
+      // getProductById looks in both products array and productCache using the given ID
+      // Cache uses request ID as key, so we look up by rawProductId
+      const product = result.current.getProductById(rawProductId);
 
       expect(product).toBeDefined();
-      expect(product?.id).toBe(testProductId);
+      expect(product?.id).toBe(transformedProductId);
     });
 
     it('should return undefined for non-existent product', () => {
@@ -366,7 +373,7 @@ describe('productStore', () => {
       // Verify data was loaded
       expect(result.current.products.length).toBeGreaterThan(0);
 
-      // Fetch a specific product
+      // Fetch a specific product (use raw ID - mock will transform to doc-X)
       await act(async () => {
         await result.current.fetchProductById(productMockData[0].id);
       });
