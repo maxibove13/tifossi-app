@@ -457,26 +457,6 @@ jobs:
               echo "Note: EAS build submitted. Check Expo dashboard for status."
             }
 
-      - name: Submit to app stores
-        if: |
-          github.event_name == 'push' &&
-          startsWith(github.ref, 'refs/tags/v') &&
-          steps.build-config.outputs.profile == 'production'
-        run: |
-          echo "Preparing store submission..."
-
-          # Submit to TestFlight
-          if [ "${{ steps.build-config.outputs.platform }}" = "all" ] || [ "${{ steps.build-config.outputs.platform }}" = "ios" ]; then
-            echo "Submitting to TestFlight..."
-            eas submit --platform ios --latest || echo "iOS submission requires manual review"
-          fi
-
-          # Submit to Google Play
-          if [ "${{ steps.build-config.outputs.platform }}" = "all" ] || [ "${{ steps.build-config.outputs.platform }}" = "android" ]; then
-            echo "Submitting to Google Play..."
-            eas submit --platform android --latest || echo "Android submission requires manual review"
-          fi
-
       - name: Build summary
         if: always()
         run: |
@@ -485,7 +465,16 @@ jobs:
           echo "======================================"
           echo "Platform: ${{ steps.build-config.outputs.platform }}"
           echo "Profile: ${{ steps.build-config.outputs.profile }}"
-          echo "Check Expo dashboard for build status"
+          echo ""
+          echo "Builds are submitted to EAS Build (Expo cloud)."
+          echo "App Store submission is MANUAL by design."
+          echo ""
+          echo "Next steps:"
+          echo "1. Check build status: https://expo.dev"
+          echo "2. Download .ipa/.aab when build completes"
+          echo "3. Upload to TestFlight/Play Console manually"
+          echo "   - iOS: Use Transporter app or 'eas submit --platform ios'"
+          echo "   - Android: Upload via Play Console or 'eas submit --platform android'"
           echo "======================================"
 
   # ============================
