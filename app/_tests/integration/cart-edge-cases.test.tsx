@@ -88,22 +88,26 @@ describe('Cart Edge Cases - Revenue Protection', () => {
       const button1 = getByTestId('add-screen1');
       const button2 = getByTestId('add-screen2');
 
-      // Fire both events without waiting
-      const promise1 = fireEvent.press(button1);
-      const promise2 = fireEvent.press(button2);
-
-      // Wait for both operations
-      await Promise.all([promise1, promise2]);
+      // Fire both events - fireEvent.press is sync, but handlers are async
+      await act(async () => {
+        fireEvent.press(button1);
+        fireEvent.press(button2);
+        // Allow time for async handlers to complete
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      });
 
       // Should result in single item with combined quantity
-      await waitFor(() => {
-        const cartStore = useCartStore.getState();
-        // Should have 1 item with quantity 2, not 2 items with quantity 1
-        expect(cartStore.items).toHaveLength(1);
-        expect(cartStore.items[0].quantity).toBe(2);
-        expect(cartStore.items[0].productId).toBe('edge-1');
-      });
-    });
+      await waitFor(
+        () => {
+          const cartStore = useCartStore.getState();
+          // Should have 1 item with quantity 2, not 2 items with quantity 1
+          expect(cartStore.items).toHaveLength(1);
+          expect(cartStore.items[0].quantity).toBe(2);
+          expect(cartStore.items[0].productId).toBe('edge-1');
+        },
+        { timeout: 3000 }
+      );
+    }, 10000);
 
     it('should handle rapid successive add operations without losing data', async () => {
       const { result } = renderHook(() => useCartStore());

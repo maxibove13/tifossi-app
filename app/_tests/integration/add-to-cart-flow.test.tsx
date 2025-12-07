@@ -113,22 +113,28 @@ describe('Add-to-Cart Integration Flow', () => {
     it('should complete full add-to-cart flow from product list to cart', async () => {
       const { getByTestId } = render(<ProductListWithCart />);
 
-      // Wait for products to load
-      await waitFor(() => {
-        expect(getByTestId('products-container')).toBeTruthy();
-      });
+      // Wait for products to load and get product IDs dynamically
+      await waitFor(
+        () => {
+          expect(getByTestId('products-container')).toBeTruthy();
+          expect(useProductStore.getState().products.length).toBeGreaterThan(0);
+        },
+        { timeout: 10000 }
+      );
+
+      const firstProductId = useProductStore.getState().products[0].id;
 
       // Verify products are displayed
-      const product1 = getByTestId('product-1');
+      const product1 = getByTestId(`product-${firstProductId}`);
       expect(product1).toBeTruthy();
 
       // Add first product to cart
-      const addButton1 = getByTestId('add-to-cart-1');
+      const addButton1 = getByTestId(`add-to-cart-${firstProductId}`);
       fireEvent.press(addButton1);
 
       // Verify item is added to cart
       await waitFor(() => {
-        const cartItem = getByTestId('cart-item-1');
+        const cartItem = getByTestId(`cart-item-${firstProductId}`);
         expect(cartItem).toBeTruthy();
       });
 
@@ -136,7 +142,7 @@ describe('Add-to-Cart Integration Flow', () => {
       const cartStore = useCartStore.getState();
       expect(cartStore.items).toHaveLength(1);
       expect(cartStore.items[0]).toMatchObject({
-        productId: '1',
+        productId: firstProductId,
         quantity: 1,
         // Size will be whatever the first size in the mock data is
       });
@@ -152,24 +158,32 @@ describe('Add-to-Cart Integration Flow', () => {
       const { getByTestId } = render(<ProductListWithCart />);
 
       // Wait for products to load
-      await waitFor(() => {
-        expect(getByTestId('products-container')).toBeTruthy();
-      });
+      await waitFor(
+        () => {
+          expect(getByTestId('products-container')).toBeTruthy();
+          expect(useProductStore.getState().products.length).toBeGreaterThan(1);
+        },
+        { timeout: 10000 }
+      );
+
+      const products = useProductStore.getState().products;
+      const firstProductId = products[0].id;
+      const secondProductId = products[1].id;
 
       // Add first product
-      const addButton1 = getByTestId('add-to-cart-1');
+      const addButton1 = getByTestId(`add-to-cart-${firstProductId}`);
       fireEvent.press(addButton1);
 
       // Add second product
-      const addButton2 = getByTestId('add-to-cart-2');
+      const addButton2 = getByTestId(`add-to-cart-${secondProductId}`);
       fireEvent.press(addButton2);
 
       // Verify both items in cart
       await waitFor(() => {
         const cartStore = useCartStore.getState();
         expect(cartStore.items).toHaveLength(2);
-        expect(getByTestId('cart-item-1')).toBeTruthy();
-        expect(getByTestId('cart-item-2')).toBeTruthy();
+        expect(getByTestId(`cart-item-${firstProductId}`)).toBeTruthy();
+        expect(getByTestId(`cart-item-${secondProductId}`)).toBeTruthy();
       });
     });
   });
@@ -178,12 +192,18 @@ describe('Add-to-Cart Integration Flow', () => {
     it('should persist cart state across component re-renders', async () => {
       const { getByTestId, rerender } = render(<ProductListWithCart />);
 
-      await waitFor(() => {
-        expect(getByTestId('products-container')).toBeTruthy();
-      });
+      await waitFor(
+        () => {
+          expect(getByTestId('products-container')).toBeTruthy();
+          expect(useProductStore.getState().products.length).toBeGreaterThan(0);
+        },
+        { timeout: 10000 }
+      );
+
+      const firstProductId = useProductStore.getState().products[0].id;
 
       // Add item to cart
-      const addButton = getByTestId('add-to-cart-1');
+      const addButton = getByTestId(`add-to-cart-${firstProductId}`);
       fireEvent.press(addButton);
 
       await waitFor(() => {
@@ -196,7 +216,7 @@ describe('Add-to-Cart Integration Flow', () => {
 
       // Cart should still have the item
       await waitFor(() => {
-        const cartItem = getByTestId('cart-item-1');
+        const cartItem = getByTestId(`cart-item-${firstProductId}`);
         expect(cartItem).toBeTruthy();
       });
     });
@@ -204,21 +224,27 @@ describe('Add-to-Cart Integration Flow', () => {
     it('should update quantities in cart', async () => {
       const { getByTestId } = render(<ProductListWithCart />);
 
-      await waitFor(() => {
-        expect(getByTestId('products-container')).toBeTruthy();
-      });
+      await waitFor(
+        () => {
+          expect(getByTestId('products-container')).toBeTruthy();
+          expect(useProductStore.getState().products.length).toBeGreaterThan(0);
+        },
+        { timeout: 10000 }
+      );
+
+      const firstProductId = useProductStore.getState().products[0].id;
 
       // Add product to cart
-      const addButton = getByTestId('add-to-cart-1');
+      const addButton = getByTestId(`add-to-cart-${firstProductId}`);
       fireEvent.press(addButton);
 
       // Wait for cart item to appear
       await waitFor(() => {
-        expect(getByTestId('cart-item-1')).toBeTruthy();
+        expect(getByTestId(`cart-item-${firstProductId}`)).toBeTruthy();
       });
 
       // Increment quantity
-      const incrementButton = getByTestId('increment-1');
+      const incrementButton = getByTestId(`increment-${firstProductId}`);
       fireEvent.press(incrementButton);
 
       await waitFor(() => {
@@ -230,21 +256,27 @@ describe('Add-to-Cart Integration Flow', () => {
     it('should remove items from cart', async () => {
       const { getByTestId, queryByTestId } = render(<ProductListWithCart />);
 
-      await waitFor(() => {
-        expect(getByTestId('products-container')).toBeTruthy();
-      });
+      await waitFor(
+        () => {
+          expect(getByTestId('products-container')).toBeTruthy();
+          expect(useProductStore.getState().products.length).toBeGreaterThan(0);
+        },
+        { timeout: 10000 }
+      );
+
+      const firstProductId = useProductStore.getState().products[0].id;
 
       // Add product to cart
-      const addButton = getByTestId('add-to-cart-1');
+      const addButton = getByTestId(`add-to-cart-${firstProductId}`);
       fireEvent.press(addButton);
 
       // Wait for cart item
       await waitFor(() => {
-        expect(getByTestId('cart-item-1')).toBeTruthy();
+        expect(getByTestId(`cart-item-${firstProductId}`)).toBeTruthy();
       });
 
       // Remove item
-      const removeButton = getByTestId('remove-1');
+      const removeButton = getByTestId(`remove-${firstProductId}`);
       fireEvent.press(removeButton);
 
       await waitFor(() => {
@@ -253,7 +285,7 @@ describe('Add-to-Cart Integration Flow', () => {
       });
 
       // Verify cart item is gone
-      expect(queryByTestId('cart-item-1')).toBeNull();
+      expect(queryByTestId(`cart-item-${firstProductId}`)).toBeNull();
     });
   });
 
@@ -261,12 +293,18 @@ describe('Add-to-Cart Integration Flow', () => {
     it('should calculate total price correctly', async () => {
       const { getByTestId } = render(<ProductListWithCart />);
 
-      await waitFor(() => {
-        expect(getByTestId('products-container')).toBeTruthy();
-      });
+      await waitFor(
+        () => {
+          expect(getByTestId('products-container')).toBeTruthy();
+          expect(useProductStore.getState().products.length).toBeGreaterThan(0);
+        },
+        { timeout: 10000 }
+      );
+
+      const firstProductId = useProductStore.getState().products[0].id;
 
       // Add product with discount price
-      const addButton = getByTestId('add-to-cart-1');
+      const addButton = getByTestId(`add-to-cart-${firstProductId}`);
       fireEvent.press(addButton);
 
       await waitFor(() => {
@@ -286,7 +324,7 @@ describe('Add-to-Cart Integration Flow', () => {
       });
 
       // Increase quantity
-      const incrementButton = getByTestId('increment-1');
+      const incrementButton = getByTestId(`increment-${firstProductId}`);
       fireEvent.press(incrementButton);
 
       await waitFor(() => {
@@ -302,12 +340,18 @@ describe('Add-to-Cart Integration Flow', () => {
     it('should sync cart with backend', async () => {
       const { getByTestId } = render(<ProductListWithCart />);
 
-      await waitFor(() => {
-        expect(getByTestId('products-container')).toBeTruthy();
-      });
+      await waitFor(
+        () => {
+          expect(getByTestId('products-container')).toBeTruthy();
+          expect(useProductStore.getState().products.length).toBeGreaterThan(0);
+        },
+        { timeout: 10000 }
+      );
+
+      const firstProductId = useProductStore.getState().products[0].id;
 
       // Add product
-      const addButton = getByTestId('add-to-cart-1');
+      const addButton = getByTestId(`add-to-cart-${firstProductId}`);
       fireEvent.press(addButton);
 
       // Verify cart state is updated
@@ -324,12 +368,18 @@ describe('Add-to-Cart Integration Flow', () => {
     it('should handle rapid successive additions', async () => {
       const { getByTestId } = render(<ProductListWithCart />);
 
-      await waitFor(() => {
-        expect(getByTestId('products-container')).toBeTruthy();
-      });
+      await waitFor(
+        () => {
+          expect(getByTestId('products-container')).toBeTruthy();
+          expect(useProductStore.getState().products.length).toBeGreaterThan(0);
+        },
+        { timeout: 10000 }
+      );
+
+      const firstProductId = useProductStore.getState().products[0].id;
 
       // Rapid fire additions
-      const addButton = getByTestId('add-to-cart-1');
+      const addButton = getByTestId(`add-to-cart-${firstProductId}`);
       fireEvent.press(addButton);
       fireEvent.press(addButton);
       fireEvent.press(addButton);
@@ -341,7 +391,7 @@ describe('Add-to-Cart Integration Flow', () => {
         expect(cartStore.items).toHaveLength(1);
         // The quantity might be 3 due to rapid additions
         expect(cartStore.items[0].quantity).toBeGreaterThanOrEqual(1);
-        expect(cartStore.items[0].productId).toBe('1');
+        expect(cartStore.items[0].productId).toBe(firstProductId);
       });
     });
   });
