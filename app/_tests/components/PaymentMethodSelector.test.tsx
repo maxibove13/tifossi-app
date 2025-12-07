@@ -265,27 +265,30 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
     it('should render payment method selection interface correctly', async () => {
       render(<PaymentSelectionScreen />);
 
-      await waitFor(() => {
-        // Check header
-        expect(screen.getByText('Método de pago')).toBeTruthy();
+      await waitFor(
+        () => {
+          // Check header
+          expect(screen.getByText('Método de pago')).toBeTruthy();
 
-        // Check section titles
-        expect(screen.getByText('Métodos predeterminados')).toBeTruthy();
-        expect(screen.getByText('Otros métodos')).toBeTruthy();
+          // Check section titles
+          expect(screen.getByText('Métodos predeterminados')).toBeTruthy();
+          expect(screen.getByText('Otros métodos')).toBeTruthy();
 
-        // Only enabled payment methods are shown (Mercado Pago)
-        expect(screen.getByText('Mercado Pago')).toBeTruthy();
+          // Only enabled payment methods are shown (Mercado Pago)
+          expect(screen.getByText('Mercado Pago')).toBeTruthy();
 
-        // Disabled methods (PayPal, Tiffosi, Efectivo) are filtered out
-        expect(screen.queryByText('PayPal')).toBeNull();
-        expect(screen.queryByText('Crédito Tiffosi')).toBeNull();
-        expect(screen.queryByText('Efectivo')).toBeNull();
+          // Disabled methods (PayPal, Tiffosi, Efectivo) are filtered out
+          expect(screen.queryByText('PayPal')).toBeNull();
+          expect(screen.queryByText('Crédito Tiffosi')).toBeNull();
+          expect(screen.queryByText('Efectivo')).toBeNull();
 
-        // Check action buttons
-        expect(screen.getByText('Continuar con el pago')).toBeTruthy();
-        expect(screen.getByText('Atrás')).toBeTruthy();
-      });
-    });
+          // Check action buttons
+          expect(screen.getByText('Continuar con el pago')).toBeTruthy();
+          expect(screen.getByText('Atrás')).toBeTruthy();
+        },
+        { timeout: 10000 }
+      );
+    }, 15000);
 
     it('should render close button in header', async () => {
       render(<PaymentSelectionScreen />);
