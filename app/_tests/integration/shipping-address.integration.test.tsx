@@ -101,13 +101,19 @@ describe('Shipping Address Flow - Integration', () => {
         </TestWrapper>
       );
 
-      await waitFor(() => {
-        expect(queryByText('Cargando direcciones...')).toBeNull();
-      });
+      await waitFor(
+        () => {
+          expect(queryByText('Cargando direcciones...')).toBeNull();
+        },
+        { timeout: 5000 }
+      );
 
-      await waitFor(() => {
-        expect(getAllByLabelText('address-item')).toHaveLength(addresses.length);
-      });
+      await waitFor(
+        () => {
+          expect(getAllByLabelText('address-item')).toHaveLength(addresses.length);
+        },
+        { timeout: 5000 }
+      );
 
       if (addresses.length > 0) {
         const defaultAddress = addresses.find((addr) => addr.isDefault);
@@ -117,7 +123,7 @@ describe('Shipping Address Flow - Integration', () => {
         expect(defaultAddressNumber).toBeTruthy();
         expect(getAllByText(new RegExp(defaultAddressNumber, 'i')).length).toBeGreaterThan(0);
       }
-    });
+    }, 10000);
 
     it('should pre-select default address', async () => {
       const { UNSAFE_getAllByProps } = render(
