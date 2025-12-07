@@ -15,8 +15,7 @@ import { colors } from '../_styles/colors';
 import { spacing, radius } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
-import AppleSignInButton from '../_components/ui/buttons/AppleSignInButton';
-import AppleSignInHelpText from '../_components/auth/AppleSignInHelp';
+// Apple components removed - using custom button for consistency
 import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
 import { APPLE_AUTH_ERRORS_ES } from '../_types/auth';
@@ -119,9 +118,12 @@ export default function SignupScreen() {
       // Apple Sign-In returns same result for signup/signin
       await loginWithApple();
 
-      // Navigate to profile after successful Apple sign-in
-      // Apple users typically have complete profiles from first sign-in
-      router.replace('/(tabs)/profile');
+      // Return user to where they came from, or home if no history
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)');
+      }
     } catch (error: UnknownError) {
       const errorObj = error && typeof error === 'object' ? (error as any) : {};
       const errorCode = errorObj?.code || errorObj?.name || 'unknown-error';
@@ -156,9 +158,27 @@ export default function SignupScreen() {
 
     try {
       await loginWithGoogle();
-      router.replace('/(tabs)/profile');
+
+      // Return user to where they came from, or home if no history
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)');
+      }
     } catch (error: UnknownError) {
-      setError(getErrorMessage(error) || 'Error al registrarse con Google.');
+      const errorMessage = getErrorMessage(error);
+
+      // Check if user cancelled - don't show error
+      if (
+        errorMessage.includes('cancel') ||
+        errorMessage.includes('Cancel') ||
+        errorMessage.includes('cancelado') ||
+        errorMessage.includes('dismissed')
+      ) {
+        return;
+      }
+
+      setError(errorMessage || 'Error al registrarse con Google.');
     } finally {
       setIsSubmitting(false);
     }
@@ -186,29 +206,6 @@ export default function SignupScreen() {
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.formContainer}>
-            {/* Apple Sign-In (iOS only) */}
-            {Platform.OS === 'ios' && (
-              <>
-                <AppleSignInButton
-                  onPress={handleAppleSignUp}
-                  type="signup"
-                  disabled={isSubmitting || isLoading}
-                  loading={isSubmitting && false} // Don't show loading on Apple button when form is submitting
-                  style={styles.socialButton}
-                />
-                <AppleSignInHelpText
-                  context="signup"
-                  showInline={true}
-                  style={styles.appleHelpText}
-                />
-                <View style={styles.divider}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>o</Text>
-                  <View style={styles.dividerLine} />
-                </View>
-              </>
-            )}
-
             {/* General error message - shown once at top, not under each input */}
             {error && error.includes('Por favor, completa') && (
               <Text style={styles.errorText}>{error}</Text>
@@ -307,6 +304,7 @@ export default function SignupScreen() {
         </ScrollView>
       </View>
       <View style={styles.actionButtonsContainer}>
+        {/* Primary action: Email/Password signup */}
         <TouchableOpacity
           style={[styles.primaryButton, (isSubmitting || isLoading) && styles.disabledButton]}
           onPress={handleSignup}
@@ -319,22 +317,44 @@ export default function SignupScreen() {
             <Text style={styles.primaryButtonText}>Crear Cuenta</Text>
           )}
         </TouchableOpacity>
+
+        {/* Divider */}
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>o</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Social signups grouped together */}
+        {Platform.OS === 'ios' && (
+          <TouchableOpacity
+            style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
+            onPress={handleAppleSignUp}
+            activeOpacity={0.7}
+            disabled={isSubmitting || isLoading}
+          >
+            <Text style={styles.socialButtonText}>Continuar con Apple</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
-          style={[styles.googleButton, (isSubmitting || isLoading) && styles.disabledButton]}
+          style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
           onPress={handleGoogleSignUp}
           activeOpacity={0.7}
           disabled={isSubmitting || isLoading}
         >
-          <Text style={styles.googleButtonText}>Registrarse con Google</Text>
+          <Text style={styles.socialButtonText}>Continuar con Google</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={() => router.push('/auth/login')}
-          activeOpacity={0.7}
-          disabled={isSubmitting || isLoading}
-        >
-          <Text style={styles.secondaryButtonText}>¿Ya tienes cuenta? Inicia Sesión</Text>
-        </TouchableOpacity>
+
+        {/* Secondary link */}
+        <View style={styles.linksContainer}>
+          <TouchableOpacity
+            onPress={() => router.push('/auth/login')}
+            activeOpacity={0.7}
+            disabled={isSubmitting || isLoading}
+          >
+            <Text style={styles.linkText}>¿Ya tienes cuenta? Inicia Sesión</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -437,7 +457,30 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     backgroundColor: colors.background.medium,
   },
-  googleButton: {
+  primaryButtonText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.md,
+    color: colors.background.light,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.sm,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    color: colors.secondary,
+    paddingHorizontal: spacing.md,
+  },
+  socialButton: {
     width: '100%',
     height: 48,
     borderRadius: radius.xxl,
@@ -448,63 +491,22 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     paddingHorizontal: spacing.xl,
   },
-  googleButtonText: {
+  socialButtonText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.md,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.md,
     color: colors.primary,
   },
-  primaryButtonText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
-    color: colors.background.light,
-  },
-  secondaryButton: {
-    width: '100%',
-    height: 48,
-    borderRadius: radius.xxl,
-    justifyContent: 'center',
+  linksContainer: {
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: 'transparent',
-    paddingHorizontal: spacing.xl,
+    gap: spacing.sm,
+    marginTop: spacing.md,
   },
-  secondaryButtonText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
-    color: colors.primary,
-  },
-  // Social sign-in button styles
-  socialButton: {
-    width: '100%',
-    height: 48,
-    borderRadius: radius.xxl,
-    marginBottom: spacing.sm,
-  },
-  appleHelpText: {
-    marginBottom: spacing.lg,
-  },
-  // Divider styles
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: spacing.lg,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.border,
-  },
-  dividerText: {
-    marginHorizontal: spacing.md,
+  linkText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
     color: colors.secondary,
+    textDecorationLine: 'underline',
   },
 });

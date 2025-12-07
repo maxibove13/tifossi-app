@@ -69,11 +69,11 @@ class AuthService {
   }
 
   /**
-   * Ensure service is initialized
+   * Ensure service is initialized - auto-initializes if needed
    */
-  private ensureInitialized(): void {
+  private async ensureInitialized(): Promise<void> {
     if (!this.isInitialized) {
-      throw new Error('Auth service not initialized. Call initialize() first.');
+      await this.initialize();
     }
   }
 
@@ -83,7 +83,7 @@ class AuthService {
    * Maintains compatibility with existing authStore.login() interface
    */
   async login(credentials: { email: string; password: string }): Promise<LoginResult> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       // Authenticate with Firebase
@@ -125,7 +125,7 @@ class AuthService {
     email: string;
     password: string;
   }): Promise<LoginResult> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       // Register with Firebase
@@ -162,7 +162,7 @@ class AuthService {
    * Login with Google OAuth
    */
   async loginWithGoogle(): Promise<LoginResult> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       // Authenticate with Google via Firebase
@@ -195,7 +195,7 @@ class AuthService {
    * Login with Apple Sign-In
    */
   async loginWithApple(): Promise<LoginResult> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       // Authenticate with Apple via Firebase
@@ -228,7 +228,7 @@ class AuthService {
    * Validate token and return user data
    */
   async validateToken(_token: string): Promise<AppUser> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       // Check if we have valid tokens in storage
@@ -257,7 +257,7 @@ class AuthService {
    * Maintains compatibility with existing authStore.logout() interface
    */
   async logout(_token: string | null): Promise<boolean> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       // Sign out from Firebase
@@ -282,7 +282,7 @@ class AuthService {
    * Maintains compatibility with existing authStore.changePassword() interface
    */
   async changePassword(_token: string, credentials: PasswordChangeCredentials): Promise<boolean> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       // Change password in Firebase
@@ -303,7 +303,7 @@ class AuthService {
    * Maintains compatibility with existing authStore.resendVerificationEmail() interface
    */
   async resendVerificationEmail(_token: string): Promise<boolean> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       // Send verification email via Firebase
@@ -321,7 +321,7 @@ class AuthService {
    * Maintains compatibility with existing authStore.verifyEmail() interface
    */
   async verifyEmail(_token: string, _code: string): Promise<boolean> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     // Verify email code with Firebase (mock implementation)
     // For now, we'll just return success
@@ -332,7 +332,7 @@ class AuthService {
    * Send password reset email
    */
   async sendPasswordResetEmail(email: string): Promise<void> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       await firebaseAuth.sendPasswordReset(email);
@@ -345,7 +345,7 @@ class AuthService {
    * Confirm password reset (simplified)
    */
   async confirmPasswordReset(_code: string, _newPassword: string): Promise<void> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       // This would normally confirm the password reset with Firebase
@@ -376,7 +376,9 @@ class AuthService {
    * Get current user
    */
   getCurrentUser(): AppUser | null {
-    this.ensureInitialized();
+    if (!this.isInitialized) {
+      return null;
+    }
     return firebaseAuth.getCurrentAppUser();
   }
 
@@ -384,7 +386,7 @@ class AuthService {
    * Get valid API token
    */
   async getApiToken(): Promise<string | null> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
     return await tokenManager.getApiToken();
   }
 
@@ -392,7 +394,10 @@ class AuthService {
    * Set up auth state change listener
    */
   onAuthStateChanged(callback: (user: AppUser | null) => void): () => void {
-    this.ensureInitialized();
+    if (!this.isInitialized) {
+      // Return no-op unsubscribe function if not initialized
+      return () => {};
+    }
 
     // Clean up any existing listener before setting a new one
     if (this.authStateListener) {

@@ -16,8 +16,7 @@ import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typograph
 import Input from '../_components/ui/form/Input';
 import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
-import AppleSignInButton from '../_components/ui/buttons/AppleSignInButton';
-import AppleSignInHelpText from '../_components/auth/AppleSignInHelp';
+// Apple components removed - using custom button for consistency
 import { APPLE_AUTH_ERRORS_ES } from '../_types/auth';
 import { UnknownError } from '../_types/ui';
 
@@ -71,8 +70,12 @@ export default function LoginScreen() {
       // Attempt login with Firebase-integrated auth service
       await login({ email, password });
 
-      // If successful, navigate to profile
-      router.replace('/(tabs)/profile');
+      // Return user to where they came from, or home if no history
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)');
+      }
     } catch (error: UnknownError) {
       // Handle login error
       setError(getErrorMessage(error) || 'Error al iniciar sesión. Verifica tus credenciales.');
@@ -89,11 +92,26 @@ export default function LoginScreen() {
       // Attempt Google login
       await loginWithGoogle();
 
-      // If successful, navigate to profile
-      router.replace('/(tabs)/profile');
+      // Return user to where they came from, or home if no history
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)');
+      }
     } catch (error: UnknownError) {
-      // Handle Google login error
-      setError(getErrorMessage(error) || 'Error al iniciar sesión con Google.');
+      const errorMessage = getErrorMessage(error);
+
+      // Check if user cancelled - don't show error
+      if (
+        errorMessage.includes('cancel') ||
+        errorMessage.includes('Cancel') ||
+        errorMessage.includes('cancelado') ||
+        errorMessage.includes('dismissed')
+      ) {
+        return;
+      }
+
+      setError(errorMessage || 'Error al iniciar sesión con Google.');
     } finally {
       setIsSubmitting(false);
     }
@@ -108,8 +126,12 @@ export default function LoginScreen() {
       // Attempt Apple login
       await loginWithApple();
 
-      // If successful, navigate to profile
-      router.replace('/(tabs)/profile');
+      // Return user to where they came from, or home if no history
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)');
+      }
     } catch (error: UnknownError) {
       const errorObj = error && typeof error === 'object' ? (error as any) : {};
       const errorCode = errorObj?.code || errorObj?.name || 'unknown-error';
@@ -204,6 +226,7 @@ export default function LoginScreen() {
         </ScrollView>
       </View>
       <View style={styles.actionButtonsContainer}>
+        {/* Primary action: Email/Password login */}
         <TouchableOpacity
           style={[styles.primaryButton, (isSubmitting || isLoading) && styles.disabledButton]}
           onPress={handleLogin}
@@ -217,43 +240,50 @@ export default function LoginScreen() {
           )}
         </TouchableOpacity>
 
+        {/* Divider */}
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>o</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Social logins grouped together */}
         {Platform.OS === 'ios' && (
-          <>
-            <AppleSignInButton
-              onPress={handleAppleLogin}
-              type="signin"
-              disabled={isSubmitting || isLoading}
-              loading={isSubmitting}
-              style={styles.appleButton}
-            />
-            <AppleSignInHelpText context="login" showInline={true} style={styles.appleHelpText} />
-            <View style={styles.spacing} />
-          </>
+          <TouchableOpacity
+            style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
+            onPress={handleAppleLogin}
+            activeOpacity={0.7}
+            disabled={isSubmitting || isLoading}
+          >
+            <Text style={styles.socialButtonText}>Continuar con Apple</Text>
+          </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={[styles.googleButton, (isSubmitting || isLoading) && styles.disabledButton]}
+          style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
           onPress={handleGoogleLogin}
           activeOpacity={0.7}
           disabled={isSubmitting || isLoading}
         >
-          <Text style={styles.googleButtonText}>Continuar con Google</Text>
+          <Text style={styles.socialButtonText}>Continuar con Google</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={() => router.push('/auth/signup')}
-          activeOpacity={0.7}
-          disabled={isSubmitting || isLoading}
-        >
-          <Text style={styles.secondaryButtonText}>¿No tienes cuenta? Regístrate</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={() => router.push('/auth/forgot-password')}
-          activeOpacity={0.7}
-          disabled={isSubmitting || isLoading}
-        >
-          <Text style={styles.secondaryButtonText}>¿Olvidaste tu contraseña?</Text>
-        </TouchableOpacity>
+
+        {/* Secondary links */}
+        <View style={styles.linksContainer}>
+          <TouchableOpacity
+            onPress={() => router.push('/auth/signup')}
+            activeOpacity={0.7}
+            disabled={isSubmitting || isLoading}
+          >
+            <Text style={styles.linkText}>¿No tienes cuenta? Regístrate</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push('/auth/forgot-password')}
+            activeOpacity={0.7}
+            disabled={isSubmitting || isLoading}
+          >
+            <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -327,7 +357,23 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     backgroundColor: colors.background.medium,
   },
-  googleButton: {
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.sm,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    color: colors.secondary,
+    paddingHorizontal: spacing.md,
+  },
+  socialButton: {
     width: '100%',
     height: 48,
     borderRadius: radius.xxl,
@@ -338,41 +384,22 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     paddingHorizontal: spacing.xl,
   },
-  googleButtonText: {
+  socialButtonText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.md,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.md,
     color: colors.primary,
   },
-  secondaryButton: {
-    width: '100%',
-    height: 48,
-    borderRadius: radius.xxl,
-    justifyContent: 'center',
+  linksContainer: {
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: 'transparent',
-    paddingHorizontal: spacing.xl,
+    gap: spacing.sm,
+    marginTop: spacing.md,
   },
-  secondaryButtonText: {
+  linkText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
-    color: colors.primary,
-  },
-  appleButton: {
-    width: '100%',
-    height: 48,
-    borderRadius: 24,
-  },
-  appleHelpText: {
-    marginTop: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  spacing: {
-    height: spacing.md,
+    fontSize: fontSizes.sm,
+    color: colors.secondary,
+    textDecorationLine: 'underline',
   },
 });
