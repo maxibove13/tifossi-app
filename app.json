@@ -27,7 +27,13 @@
       }
     },
     "extra": {
-      "privacyPolicyUrl": "https://tifossi-strapi-backend.onrender.com/privacy.html"
+      "privacyPolicyUrl": "https://tifossi-strapi-backend.onrender.com/privacy.html",
+      "router": {
+        "origin": "https://tifossi.app"
+      },
+      "eas": {
+        "projectId": "c8c7c9d4-6fcd-496f-b840-36f8e2cea4c8"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -63,7 +69,8 @@
         {
           "appleTeamId": "KM7UAMA5MF"
         }
-      ]
+      ],
+      "./plugins/withModularHeaders.js"
     ],
     "experiments": {
       "typedRoutes": true
@@ -89,7 +96,10 @@
               "host": "pay.tifossi.app"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         },
         {
           "action": "VIEW",
@@ -98,9 +108,13 @@
               "scheme": "tifossi"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
-    }
+    },
+    "owner": "maxibove13"
   }
 }

@@ -35,6 +35,9 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# eslint cache
+.eslintcache
+
 app-example
 raw-components/
 
@@ -85,8 +88,7 @@ DerivedData/
 *.ipa
 ios/Pods/
 ios/Podfile.lock
-ios/Podfile.properties.json
-ios/tifossi.xcodeproj/project.pbxproj
+ios/*.xcworkspace/
 
 # Test coverage
 coverage/

@@ -7,22 +7,13 @@ podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties
 ENV['RCT_NEW_ARCH_ENABLED'] = podfile_properties['newArchEnabled'] == 'true' ? '1' : '0'
 ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] = podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
 
-# Force RNReanimated to use static library to avoid JSI linking issues with dynamic frameworks
-pre_install do |installer|
-  installer.pod_targets.each do |pod|
-    if pod.name.eql?('RNReanimated')
-      def pod.build_type
-        Pod::BuildType.static_library
-      end
-    end
-  end
-end
-
 platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
 install! 'cocoapods',
   :deterministic_uuids => false
 
 prepare_react_native_project!
+
+use_modular_headers!
 
 target 'tifossi' do
   use_expo_modules!
@@ -62,15 +53,6 @@ target 'tifossi' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
     )
-
-    # Fix react-native-mmkv missing zlib dependency for dynamic frameworks
-    installer.pods_project.targets.each do |target|
-      if target.name == 'react-native-mmkv'
-        target.frameworks_build_phase.add_file_reference(
-          installer.pods_project.frameworks_group.new_reference('libz.tbd')
-        )
-      end
-    end
 
     # This is necessary for Xcode 14, because it signs resource bundles by default
     # when building for devices.
