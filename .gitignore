@@ -41,11 +41,13 @@ yarn-error.*
 app-example
 raw-components/
 
-# Large binary files
+# Large binary files (except app assets)
 *.mov
 *.mp4
 *.avi
 *.webm
+!assets/videos/*.mov
+!assets/videos/*.mp4
 
 # Editor directories and files
 .idea/
