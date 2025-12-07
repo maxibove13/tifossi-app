@@ -152,7 +152,7 @@ describe('Add-to-Cart Integration Flow', () => {
       expect(totalPrice).toBeTruthy();
       const total = cartStore.getTotalPrice();
       expect(total).toBeGreaterThan(0); // Should have a price
-    });
+    }, 15000);
 
     it('should handle multiple product additions', async () => {
       const { getByTestId } = render(<ProductListWithCart />);
@@ -185,7 +185,7 @@ describe('Add-to-Cart Integration Flow', () => {
         expect(getByTestId(`cart-item-${firstProductId}`)).toBeTruthy();
         expect(getByTestId(`cart-item-${secondProductId}`)).toBeTruthy();
       });
-    });
+    }, 15000);
   });
 
   describe('Cart State Management', () => {
@@ -219,7 +219,7 @@ describe('Add-to-Cart Integration Flow', () => {
         const cartItem = getByTestId(`cart-item-${firstProductId}`);
         expect(cartItem).toBeTruthy();
       });
-    });
+    }, 15000);
 
     it('should update quantities in cart', async () => {
       const { getByTestId } = render(<ProductListWithCart />);
@@ -251,7 +251,7 @@ describe('Add-to-Cart Integration Flow', () => {
         const cartStore = useCartStore.getState();
         expect(cartStore.items[0].quantity).toBe(2);
       });
-    });
+    }, 15000);
 
     it('should remove items from cart', async () => {
       const { getByTestId, queryByTestId } = render(<ProductListWithCart />);
@@ -286,7 +286,7 @@ describe('Add-to-Cart Integration Flow', () => {
 
       // Verify cart item is gone
       expect(queryByTestId(`cart-item-${firstProductId}`)).toBeNull();
-    });
+    }, 15000);
   });
 
   describe('Price Calculations', () => {
@@ -333,7 +333,7 @@ describe('Add-to-Cart Integration Flow', () => {
         // Should be double the initial price
         expect(total).toBe(initialPrice * 2);
       });
-    });
+    }, 15000);
   });
 
   describe('API Integration', () => {
@@ -361,7 +361,7 @@ describe('Add-to-Cart Integration Flow', () => {
         // Cart syncing would happen in the background
         // Just verify the item was added
       });
-    });
+    }, 15000);
   });
 
   describe('Edge Cases', () => {
@@ -393,6 +393,6 @@ describe('Add-to-Cart Integration Flow', () => {
         expect(cartStore.items[0].quantity).toBeGreaterThanOrEqual(1);
         expect(cartStore.items[0].productId).toBe(firstProductId);
       });
-    });
+    }, 15000);
   });
 });

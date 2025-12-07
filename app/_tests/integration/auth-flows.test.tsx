@@ -107,7 +107,12 @@ describe('Authentication Flows - UX Critical', () => {
       const { loginWithGoogle } = useAuthStore.getState();
 
       await act(async () => {
-        await loginWithGoogle();
+        // loginWithGoogle re-throws errors after setting state
+        try {
+          await loginWithGoogle();
+        } catch {
+          // Expected - the store re-throws for callers who want to handle it
+        }
       });
 
       const state = useAuthStore.getState();
@@ -155,7 +160,12 @@ describe('Authentication Flows - UX Critical', () => {
       const { loginWithApple } = useAuthStore.getState();
 
       await act(async () => {
-        await loginWithApple();
+        // loginWithApple re-throws errors after setting state
+        try {
+          await loginWithApple();
+        } catch {
+          // Expected - the store re-throws for callers who want to handle it
+        }
       });
 
       const state = useAuthStore.getState();
