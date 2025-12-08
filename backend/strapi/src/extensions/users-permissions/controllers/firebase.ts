@@ -25,9 +25,20 @@ export default ({ strapi }: { strapi: any }) => ({
       let decodedToken;
       try {
         decodedToken = await firebaseAdmin.verifyIdToken(firebaseToken);
-      } catch (error) {
-        strapi.log.error('[Strapi Firebase] Token verification failed:', error);
-        return ctx.unauthorized('Invalid Firebase token');
+      } catch (error: any) {
+        const errorCode = error?.code || 'unknown';
+        const errorMessage = error?.message || 'Unknown error';
+        strapi.log.error('[Strapi Firebase] Token verification failed:', {
+          code: errorCode,
+          message: errorMessage,
+          tokenLength: firebaseToken?.length,
+          tokenPrefix: firebaseToken?.substring(0, 20),
+        });
+        return ctx.unauthorized({
+          error: 'Invalid Firebase token',
+          code: errorCode,
+          details: errorMessage,
+        });
       }
 
       // Extract user data from Firebase token
