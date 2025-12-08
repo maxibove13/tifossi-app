@@ -403,19 +403,23 @@ jobs:
         run: npm ci
 
       - name: Push EAS Update
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           echo "Pushing OTA update to preview channel..."
           eas update --channel preview \
-            --message "${{ github.event.head_commit.message }}" \
+            --message "$COMMIT_MESSAGE" \
             --non-interactive
 
       - name: Update summary
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           echo "======================================"
           echo "EAS UPDATE SUMMARY"
           echo "======================================"
           echo "Channel: preview"
-          echo "Message: ${{ github.event.head_commit.message }}"
+          echo "Message: $COMMIT_MESSAGE"
           echo ""
           echo "Users with the app installed will receive"
           echo "this update on next app launch."
