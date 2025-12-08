@@ -20,6 +20,7 @@
     },
     "preview": {
       "distribution": "internal",
+      "channel": "preview",
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "staging",
         "EXPO_PUBLIC_API_BASE_URL": "https://tifossi-strapi-backend.onrender.com"
@@ -27,6 +28,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "channel": "production",
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "production",
         "EXPO_PUBLIC_API_BASE_URL": "https://tifossi-strapi-backend.onrender.com"
