@@ -2,7 +2,7 @@
   "kind": "singleType",
   "collectionName": "app_settings",
   "info": {
-    "singularName": "app-settings",
+    "singularName": "app-setting",
     "pluralName": "app-settings",
     "displayName": "App Settings",
     "description": "Global app configuration managed by admins"
