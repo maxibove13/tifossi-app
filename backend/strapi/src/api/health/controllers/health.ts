@@ -85,18 +85,23 @@ export default {
    */
   async firebaseHealthCheck(ctx: any) {
     try {
+      // Parse project ID from service account if available
+      let serviceAccountProjectId: string | null = null;
+      if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+        try {
+          const parsed = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+          serviceAccountProjectId = parsed.project_id || null;
+        } catch {
+          serviceAccountProjectId = 'PARSE_ERROR';
+        }
+      }
+
       const envCheck = {
-        FIREBASE_PROJECT_ID: !!process.env.FIREBASE_PROJECT_ID,
+        FIREBASE_PROJECT_ID_ENV: process.env.FIREBASE_PROJECT_ID || 'NOT SET',
         FIREBASE_SERVICE_ACCOUNT_KEY: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
+        SERVICE_ACCOUNT_PROJECT_ID: serviceAccountProjectId,
         FIREBASE_PRIVATE_KEY: !!process.env.FIREBASE_PRIVATE_KEY,
         FIREBASE_CLIENT_EMAIL: !!process.env.FIREBASE_CLIENT_EMAIL,
-        FIREBASE_PRIVATE_KEY_LENGTH: process.env.FIREBASE_PRIVATE_KEY?.length || 0,
-        FIREBASE_PRIVATE_KEY_HAS_NEWLINES:
-          process.env.FIREBASE_PRIVATE_KEY?.includes('\n') || false,
-        FIREBASE_PRIVATE_KEY_HAS_ESCAPED:
-          process.env.FIREBASE_PRIVATE_KEY?.includes('\\n') || false,
-        FIREBASE_PRIVATE_KEY_STARTS_WITH:
-          process.env.FIREBASE_PRIVATE_KEY?.substring(0, 30) || 'NOT SET',
       };
 
       const health = await firebaseAdmin.healthCheck();
