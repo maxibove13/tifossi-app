@@ -3,6 +3,7 @@
  */
 
 import { buildBasicHealthPayload } from '../../../utils/health-response';
+import { firebaseAdmin } from '../../../lib/auth/firebase-admin-setup';
 
 export default {
   /**
@@ -75,6 +76,44 @@ export default {
         message: 'Service Unavailable',
         timestamp: new Date().toISOString(),
         error: (error as Error).message,
+      };
+    }
+  },
+
+  /**
+   * Firebase health check endpoint - for debugging auth issues
+   */
+  async firebaseHealthCheck(ctx: any) {
+    try {
+      const envCheck = {
+        FIREBASE_PROJECT_ID: !!process.env.FIREBASE_PROJECT_ID,
+        FIREBASE_SERVICE_ACCOUNT_KEY: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
+        FIREBASE_PRIVATE_KEY: !!process.env.FIREBASE_PRIVATE_KEY,
+        FIREBASE_CLIENT_EMAIL: !!process.env.FIREBASE_CLIENT_EMAIL,
+        FIREBASE_PRIVATE_KEY_LENGTH: process.env.FIREBASE_PRIVATE_KEY?.length || 0,
+        FIREBASE_PRIVATE_KEY_HAS_NEWLINES:
+          process.env.FIREBASE_PRIVATE_KEY?.includes('\n') || false,
+        FIREBASE_PRIVATE_KEY_HAS_ESCAPED:
+          process.env.FIREBASE_PRIVATE_KEY?.includes('\\n') || false,
+        FIREBASE_PRIVATE_KEY_STARTS_WITH:
+          process.env.FIREBASE_PRIVATE_KEY?.substring(0, 30) || 'NOT SET',
+      };
+
+      const health = await firebaseAdmin.healthCheck();
+
+      ctx.status = health.status === 'healthy' ? 200 : 503;
+      ctx.body = {
+        firebase: health,
+        envVars: envCheck,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error: any) {
+      ctx.status = 503;
+      ctx.body = {
+        status: 'error',
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        timestamp: new Date().toISOString(),
       };
     }
   },

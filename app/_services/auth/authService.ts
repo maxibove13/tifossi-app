@@ -139,6 +139,9 @@ class AuthService {
         throw new Error(authResult.error || 'Registration failed');
       }
 
+      // Send verification email
+      await firebaseAuth.sendEmailVerification();
+
       // Sync tokens after successful registration
       const tokens = await tokenManager.syncAfterLogin(
         authResult.token || 'mock-token',
@@ -151,7 +154,7 @@ class AuthService {
       return {
         token: primaryToken,
         user: authResult.user,
-        needsEmailVerification: false,
+        needsEmailVerification: true,
       };
     } catch (error: any) {
       throw error;
