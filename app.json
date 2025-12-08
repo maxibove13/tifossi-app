@@ -41,6 +41,8 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
       [
         "expo-router",
         {
@@ -70,7 +72,15 @@
           "appleTeamId": "KM7UAMA5MF"
         }
       ],
-      "./plugins/withModularHeaders.js"
+      "./plugins/withModularHeaders.js",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
