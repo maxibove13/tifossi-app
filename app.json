@@ -14,10 +14,8 @@
       "usesAppleSignIn": true,
       "googleServicesFile": "./GoogleService-Info.plist",
       "associatedDomains": [
-        "applinks:tifossi.app",
         "applinks:auth.tifossi.app",
-        "applinks:pay.tifossi.app",
-        "applinks:appleid.apple.com"
+        "applinks:pay.tifossi.app"
       ],
       "config": {
         "usesNonExemptEncryption": false
@@ -95,10 +93,6 @@
           "data": [
             {
               "scheme": "https",
-              "host": "tifossi.app"
-            },
-            {
-              "scheme": "https",
               "host": "auth.tifossi.app"
             },
             {
@@ -110,21 +104,15 @@
             "BROWSABLE",
             "DEFAULT"
           ]
-        },
-        {
-          "action": "VIEW",
-          "data": [
-            {
-              "scheme": "tifossi"
-            }
-          ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
         }
       ]
     },
-    "owner": "maxibove13"
+    "owner": "maxibove13",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c8c7c9d4-6fcd-496f-b840-36f8e2cea4c8"
+    }
   }
 }
