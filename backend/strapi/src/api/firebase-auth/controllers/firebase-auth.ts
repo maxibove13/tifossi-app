@@ -65,7 +65,6 @@ export default {
         },
       });
 
-      const userService = strapi.plugin('users-permissions').service('user');
       const jwtService = strapi.plugin('users-permissions').service('jwt');
 
       if (user) {
@@ -124,7 +123,8 @@ export default {
         tokenVersion: user.tokenVersion,
       });
 
-      const sanitizedUser = await userService.sanitizeUser(user);
+      // Remove sensitive fields
+      const { password, resetPasswordToken, confirmationToken, ...sanitizedUser } = user;
 
       console.log('[Firebase Auth API] SUCCESS');
       ctx.send({
@@ -161,8 +161,8 @@ export default {
         data: { lastActivityAt: new Date() },
       });
 
-      const userService = strapi.plugin('users-permissions').service('user');
-      const sanitizedUser = await userService.sanitizeUser(user);
+      // Remove sensitive fields
+      const { password, resetPasswordToken, confirmationToken, ...sanitizedUser } = user;
 
       ctx.send({
         user: sanitizedUser,
