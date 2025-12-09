@@ -26,8 +26,8 @@ import SliderIcon from '../../../../assets/icons/slider.svg';
 // Types needed for filter props
 import { ProductColor, ProductSize, Product } from '../../../_types/product';
 
-// Import Product type and fetch function from mock API
-import { mockFetchProductById } from '../../../_services/api/mockApi';
+// Import API manager (respects USE_STRAPI flag)
+import api from '../../../_services/api';
 
 type HeaderVariant = 'store' | 'product' | 'catalog' | 'auth';
 
@@ -68,11 +68,10 @@ function Header({
     if (variant === 'product' && productId) {
       const fetchProduct = async () => {
         try {
-          // Assuming mockFetchProductById returns a Promise<Product | undefined>
-          const fetchedProduct = await mockFetchProductById(productId);
-          setProductForShare(fetchedProduct || null); // Convert undefined to null
+          const fetchedProduct = await api.fetchProductById(productId);
+          setProductForShare(fetchedProduct || null);
         } catch {
-          setProductForShare(null); // Ensure state is null on error
+          setProductForShare(null);
         }
       };
       fetchProduct();

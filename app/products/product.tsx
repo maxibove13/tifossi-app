@@ -61,9 +61,6 @@ export default function ProductScreen() {
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product?.colors && product.colors.length > 0 ? product.colors[0].colorName : undefined
   );
-  const [selectedSize, _setSelectedSize] = useState<string | undefined>(
-    product?.sizes && product.sizes.length > 0 ? product.sizes[0].value : undefined
-  );
   const [selectedQuantity, setSelectedQuantity] = useState(1);
 
   // Cart and favorites global state
@@ -83,15 +80,18 @@ export default function ProductScreen() {
     ? getProductsByStatus(allProducts, ProductStatus.POPULAR)
     : [];
 
-  const handleAddToCart = async (product: Product, quantity: number = selectedQuantity) => {
+  const handleAddToCart = async (
+    product: Product,
+    selection: { quantity: number; size?: string; color?: string }
+  ) => {
     if (!product) return Promise.resolve();
 
     try {
       await addItemToCart({
         productId: product.id,
-        quantity,
-        color: selectedColor,
-        size: selectedSize,
+        quantity: selection.quantity,
+        color: selection.color || selectedColor,
+        size: selection.size,
         price: product.price,
         discountedPrice: product.discountedPrice,
       });
@@ -202,7 +202,7 @@ export default function ProductScreen() {
           relatedProducts={relatedProducts}
           recommendedProducts={recommendedProducts}
           trendingProducts={trendingProducts}
-          onAddToCart={() => handleAddToCart(product, selectedQuantity)}
+          onAddToCart={(selection) => handleAddToCart(product, selection)}
           onViewMore={handleViewMore}
           onSupportAction={handleSupportAction}
           onProductPress={handleProductPress}
