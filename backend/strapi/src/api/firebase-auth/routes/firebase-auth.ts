@@ -15,5 +15,14 @@ export default {
         middlewares: [],
       },
     },
+    {
+      method: 'GET',
+      path: '/auth/validate',
+      handler: 'firebase-auth.validate',
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };

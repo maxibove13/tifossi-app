@@ -138,4 +138,39 @@ export default {
       ctx.internalServerError('Authentication failed');
     }
   },
+
+  /**
+   * Validate Strapi JWT token
+   * GET /api/auth/validate
+   */
+  async validate(ctx: any) {
+    try {
+      const user = ctx.state.user;
+
+      if (!user) {
+        return ctx.unauthorized('Invalid token');
+      }
+
+      if (user.blocked) {
+        return ctx.unauthorized('User account is blocked');
+      }
+
+      // Update last activity
+      await strapi.db.query('plugin::users-permissions.user').update({
+        where: { id: user.id },
+        data: { lastActivityAt: new Date() },
+      });
+
+      const userService = strapi.plugin('users-permissions').service('user');
+      const sanitizedUser = await userService.sanitizeUser(user);
+
+      ctx.send({
+        user: sanitizedUser,
+        valid: true,
+      });
+    } catch (error: any) {
+      strapi.log.error('[Firebase Auth API] Validate error:', error);
+      ctx.unauthorized('Token validation failed');
+    }
+  },
 };
