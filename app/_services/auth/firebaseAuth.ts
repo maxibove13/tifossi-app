@@ -5,9 +5,26 @@
  * Supports email/password, Apple Sign-In, and Google Sign-In authentication.
  */
 
-import auth, {
-  FirebaseAuthTypes,
+import {
+  getAuth,
+  signInWithEmailAndPassword as firebaseSignInWithEmail,
+  createUserWithEmailAndPassword as firebaseCreateUser,
+  signOut as firebaseSignOut,
+  sendPasswordResetEmail as firebaseSendPasswordReset,
+  onAuthStateChanged,
+  applyActionCode,
+  verifyPasswordResetCode as firebaseVerifyPasswordResetCode,
+  confirmPasswordReset as firebaseConfirmPasswordReset,
+  updateProfile,
+  sendEmailVerification as firebaseSendEmailVerification,
+  reauthenticateWithCredential,
+  updatePassword as firebaseUpdatePassword,
   getIdToken as firebaseGetIdToken,
+  signInWithCredential,
+  GoogleAuthProvider,
+  AppleAuthProvider,
+  EmailAuthProvider,
+  type FirebaseAuthTypes,
 } from '@react-native-firebase/auth';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import {
@@ -59,6 +76,9 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   'google-signin-failed': 'Error al iniciar sesión con Google.',
 };
 
+// Get auth instance once (modular API)
+const auth = getAuth();
+
 class FirebaseAuthService {
   private isInitialized = false;
 
@@ -80,12 +100,30 @@ class FirebaseAuthService {
    * Map Firebase user to app user format
    */
   private mapFirebaseUserToAppUser(firebaseUser: FirebaseAuthTypes.User): AppUser {
+    // Determine auth provider from Firebase providerData
+    const providerData = firebaseUser.providerData || [];
+    let provider: 'email' | 'google' | 'apple' = 'email';
+
+    for (const providerInfo of providerData) {
+      if (providerInfo.providerId === 'google.com') {
+        provider = 'google';
+        break;
+      }
+      if (providerInfo.providerId === 'apple.com') {
+        provider = 'apple';
+        break;
+      }
+    }
+
     return {
       id: firebaseUser.uid,
       name: firebaseUser.displayName,
       email: firebaseUser.email,
       profilePicture: firebaseUser.photoURL,
       isEmailVerified: firebaseUser.emailVerified,
+      metadata: {
+        provider,
+      },
     };
   }
 
@@ -105,7 +143,7 @@ class FirebaseAuthService {
    */
   async signInWithEmail(email: string, password: string): Promise<AuthResult> {
     try {
-      const userCredential = await auth().signInWithEmailAndPassword(email, password);
+      const userCredential = await firebaseSignInWithEmail(auth, email, password);
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
       const token = await firebaseGetIdToken(userCredential.user);
 
@@ -131,11 +169,11 @@ class FirebaseAuthService {
     displayName?: string
   ): Promise<AuthResult> {
     try {
-      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      const userCredential = await firebaseCreateUser(auth, email, password);
 
       // Update display name if provided
       if (displayName) {
-        await userCredential.user.updateProfile({ displayName });
+        await updateProfile(userCredential.user, { displayName });
       }
 
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
@@ -204,14 +242,14 @@ class FirebaseAuthService {
       }
 
       // Create Firebase credential from Google ID token
-      const googleCredential = auth.GoogleAuthProvider.credential(userInfo.data.idToken);
+      const googleCredential = GoogleAuthProvider.credential(userInfo.data.idToken);
 
       // Sign in with Firebase using Google credential
-      const userCredential = await auth().signInWithCredential(googleCredential);
+      const userCredential = await signInWithCredential(auth, googleCredential);
 
       // Update display name if provided by Google (only on first sign-in)
       if (userInfo.data.user.name && !userCredential.user.displayName) {
-        await userCredential.user.updateProfile({
+        await updateProfile(userCredential.user, {
           displayName: userInfo.data.user.name,
         });
       }
@@ -285,10 +323,10 @@ class FirebaseAuthService {
         throw new Error('No identity token received from Apple');
       }
 
-      const appleCredential = auth.AppleAuthProvider.credential(identityToken);
+      const appleCredential = AppleAuthProvider.credential(identityToken);
 
       // Sign in with Firebase
-      const userCredential = await auth().signInWithCredential(appleCredential);
+      const userCredential = await signInWithCredential(auth, appleCredential);
 
       // Update display name if provided by Apple (only on first sign-in)
       if (appleAuthRequestResponse.fullName?.givenName) {
@@ -300,7 +338,7 @@ class FirebaseAuthService {
           .join(' ');
 
         if (displayName && !userCredential.user.displayName) {
-          await userCredential.user.updateProfile({ displayName });
+          await updateProfile(userCredential.user, { displayName });
         }
       }
 
@@ -333,7 +371,7 @@ class FirebaseAuthService {
    */
   async signOutUser(): Promise<void> {
     try {
-      await auth().signOut();
+      await firebaseSignOut(auth);
     } catch (error) {
       throw error;
     }
@@ -344,7 +382,7 @@ class FirebaseAuthService {
    */
   async sendPasswordReset(email: string): Promise<{ success: boolean; error?: string }> {
     try {
-      await auth().sendPasswordResetEmail(email);
+      await firebaseSendPasswordReset(auth, email);
       return { success: true };
     } catch (error) {
       return {
@@ -361,20 +399,20 @@ class FirebaseAuthService {
     credentials: PasswordChangeCredentials
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const currentUser = auth().currentUser;
+      const currentUser = auth.currentUser;
       if (!currentUser) {
         throw new Error('No user is currently signed in');
       }
 
       // Re-authenticate user first
-      const credential = auth.EmailAuthProvider.credential(
+      const credential = EmailAuthProvider.credential(
         currentUser.email!,
         credentials.currentPassword
       );
-      await currentUser.reauthenticateWithCredential(credential);
+      await reauthenticateWithCredential(currentUser, credential);
 
       // Update password
-      await currentUser.updatePassword(credentials.newPassword);
+      await firebaseUpdatePassword(currentUser, credentials.newPassword);
 
       return { success: true };
     } catch (error) {
@@ -390,12 +428,12 @@ class FirebaseAuthService {
    */
   async sendEmailVerification(): Promise<{ success: boolean; error?: string }> {
     try {
-      const currentUser = auth().currentUser;
+      const currentUser = auth.currentUser;
       if (!currentUser) {
         throw new Error('No user is currently signed in');
       }
 
-      await currentUser.sendEmailVerification();
+      await firebaseSendEmailVerification(currentUser);
       return { success: true };
     } catch (error) {
       return {
@@ -409,7 +447,7 @@ class FirebaseAuthService {
    * Get current app user
    */
   getCurrentAppUser(): AppUser | null {
-    const firebaseUser = auth().currentUser;
+    const firebaseUser = auth.currentUser;
     return firebaseUser ? this.mapFirebaseUserToAppUser(firebaseUser) : null;
   }
 
@@ -418,7 +456,7 @@ class FirebaseAuthService {
    */
   async getIdToken(forceRefresh?: boolean): Promise<string> {
     try {
-      const currentUser = auth().currentUser;
+      const currentUser = auth.currentUser;
       if (!currentUser) {
         throw new Error('No user is currently signed in');
       }
@@ -433,7 +471,7 @@ class FirebaseAuthService {
    * Initialize auth state listener
    */
   initializeAuthStateListener(callback: (user: AppUser | null) => void): () => void {
-    const unsubscribe = auth().onAuthStateChanged((firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       const appUser = firebaseUser ? this.mapFirebaseUserToAppUser(firebaseUser) : null;
       callback(appUser);
     });
@@ -447,7 +485,7 @@ class FirebaseAuthService {
    */
   async verifyEmailCode(code: string): Promise<void> {
     try {
-      await auth().applyActionCode(code);
+      await applyActionCode(auth, code);
     } catch (error) {
       throw error;
     }
@@ -458,7 +496,7 @@ class FirebaseAuthService {
    */
   async verifyPasswordResetCode(code: string): Promise<string> {
     try {
-      const email = await auth().verifyPasswordResetCode(code);
+      const email = await firebaseVerifyPasswordResetCode(auth, code);
       return email;
     } catch (error) {
       throw error;
@@ -473,7 +511,7 @@ class FirebaseAuthService {
     newPassword: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      await auth().confirmPasswordReset(code, newPassword);
+      await firebaseConfirmPasswordReset(auth, code, newPassword);
       return { success: true };
     } catch (error) {
       return {

@@ -160,20 +160,37 @@ jest.mock('firebase/app', () => ({
   getApp: jest.fn(),
 }));
 
-// Mock React Native Firebase
+// Mock React Native Firebase (modular API)
+const mockAuth = {
+  currentUser: null,
+};
+
 jest.mock('@react-native-firebase/auth', () => ({
   __esModule: true,
-  default: () => ({
-    signInWithEmailAndPassword: jest.fn(),
-    createUserWithEmailAndPassword: jest.fn(),
-    signOut: jest.fn(),
-    onAuthStateChanged: jest.fn(() => () => {}),
-    sendPasswordResetEmail: jest.fn(),
-    updateProfile: jest.fn(),
-    updatePassword: jest.fn(),
-    reauthenticateWithCredential: jest.fn(),
-    currentUser: null,
-  }),
+  getAuth: jest.fn(() => mockAuth),
+  signInWithEmailAndPassword: jest.fn(),
+  createUserWithEmailAndPassword: jest.fn(),
+  signOut: jest.fn(),
+  onAuthStateChanged: jest.fn(() => () => {}),
+  sendPasswordResetEmail: jest.fn(),
+  updateProfile: jest.fn(),
+  updatePassword: jest.fn(),
+  sendEmailVerification: jest.fn(),
+  reauthenticateWithCredential: jest.fn(),
+  getIdToken: jest.fn(),
+  signInWithCredential: jest.fn(),
+  applyActionCode: jest.fn(),
+  verifyPasswordResetCode: jest.fn(),
+  confirmPasswordReset: jest.fn(),
+  GoogleAuthProvider: {
+    credential: jest.fn(),
+  },
+  AppleAuthProvider: {
+    credential: jest.fn(),
+  },
+  EmailAuthProvider: {
+    credential: jest.fn(),
+  },
   FirebaseAuthTypes: {
     User: {},
   },

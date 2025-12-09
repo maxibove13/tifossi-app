@@ -3,7 +3,7 @@ export default {
     {
       method: 'GET',
       path: '/app-settings',
-      handler: 'app-settings.find',
+      handler: 'app-setting.find',
       config: {
         policies: [],
         auth: false, // Public access for reading settings
@@ -12,7 +12,7 @@ export default {
     {
       method: 'PUT',
       path: '/app-settings',
-      handler: 'app-settings.update',
+      handler: 'app-setting.update',
       config: {
         policies: [],
       },

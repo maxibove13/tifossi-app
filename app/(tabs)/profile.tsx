@@ -12,38 +12,22 @@ import {
   Alert,
   Modal,
   Linking,
+  Image,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 
-// Import SVGs as React components
-import MapPinIcon from '../../assets/icons/map-pin.svg';
-import CarAutoIcon from '../../assets/icons/car-auto.svg';
-import CreditCardIcon from '../../assets/icons/credit-card.svg';
-
 // Import authStore and custom components
 import { useAuthStore } from '../_stores/authStore';
+import { useShallow } from 'zustand/react/shallow';
 import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
-import ProfilePictureEditor from '../_components/auth/ProfilePictureEditor';
 import SplashScreen from '../_components/splash/SplashScreen';
 
 const backgroundImage = require('../../assets/images/background_image_profile.png');
-
-interface User {
-  name: string;
-  email: string;
-  profilePicture: string | null;
-}
-
-const user: User = {
-  name: 'Sebastian T. Gonzalez',
-  email: 'tgonzalezsebastian@gmail.com',
-  profilePicture: null,
-};
 
 interface ProfileListItemProps {
   IconComponent: React.FC<any>;
@@ -66,7 +50,6 @@ const ProfileListItem: React.FC<ProfileListItemProps> = ({
   </TouchableOpacity>
 );
 
-// Logged-in Profile Card Content
 const LogoutButton = () => {
   const logout = useAuthStore((state) => state.logout);
   const [showSplashScreen, setShowSplashScreen] = useState(false);
@@ -133,54 +116,37 @@ const LogoutButton = () => {
 };
 
 const LoggedInProfileCard = () => {
-  const { currentUser, updateProfilePicture, isUploadingProfilePicture } = useAuthStore(
-    (state) => ({
-      currentUser: state.user,
-      updateProfilePicture: state.updateProfilePicture,
-      isUploadingProfilePicture: state.isUploadingProfilePicture,
-    })
-  );
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const currentUser = useAuthStore((state) => state.user);
 
-  // Use Firebase auth user data or fallback to mock user
-  const displayName = currentUser?.name || user.name;
-  const displayEmail = currentUser?.email || user.email;
-  // Get profile picture from auth state, local state, or fallback
-  const displayProfilePicture = currentUser?.profilePicture || profileImage || user.profilePicture;
-
-  const handleProfilePictureChange = async (imageUri: string | null) => {
-    if (!imageUri) {
-      setProfileImage(null);
-      return;
-    }
-
-    try {
-      // Update profile picture through Firebase auth service
-      await updateProfilePicture(imageUri);
-      setProfileImage(imageUri);
-    } catch {
-      Alert.alert('Error', 'No se pudo actualizar la imagen de perfil.');
-    }
-  };
+  const displayName = currentUser?.name || 'Usuario';
+  const displayEmail = currentUser?.email || '';
+  const profilePicture = currentUser?.profilePicture;
 
   return (
     <View style={styles.profileCard}>
-      <ProfilePictureEditor
-        currentImage={displayProfilePicture}
-        size={80}
-        onImageChange={handleProfilePictureChange}
-      />
-      {isUploadingProfilePicture && (
-        <Text style={styles.uploadingText}>Actualizando imagen...</Text>
+      {profilePicture ? (
+        <Image source={{ uri: profilePicture }} style={styles.profilePicture} />
+      ) : (
+        <View style={styles.profileIconContainer}>
+          <Feather name="user" size={32} color={colors.secondary} />
+        </View>
       )}
       <Text style={styles.userName}>{displayName}</Text>
-      <Text style={styles.userEmail}>{displayEmail}</Text>
+      {displayEmail ? <Text style={styles.userEmail}>{displayEmail}</Text> : null}
     </View>
   );
 };
 
 export default function ProfileScreen() {
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn); // Ensure isLoggedIn is part of authStore state
+  const { isLoggedIn, user } = useAuthStore(
+    useShallow((state) => ({
+      isLoggedIn: state.isLoggedIn,
+      user: state.user,
+    }))
+  );
+
+  // Only show change password for email/password users (not OAuth)
+  const isEmailUser = !user?.metadata?.provider || user.metadata.provider === 'email';
 
   return (
     <View style={styles.container}>
@@ -194,34 +160,18 @@ export default function ProfileScreen() {
           <LoggedInProfileCard />
         </ImageBackground>
       ) : (
-        <>
-          <ReusableAuthPrompt message="Aún no iniciaste sesión." style={styles.authPromptStyle} />
-        </>
+        <ReusableAuthPrompt message="Aún no iniciaste sesión." style={styles.authPromptStyle} />
       )}
 
-      {/* Render action buttons only if logged in */}
       {isLoggedIn && (
         <View style={styles.actionButtonsContainer}>
-          <ProfileListItem
-            IconComponent={MapPinIcon}
-            text="Direcciones de envío"
-            onPress={() => {}}
-          />
-          <ProfileListItem
-            IconComponent={CarAutoIcon}
-            text="Compras realizadas"
-            onPress={() => {}}
-          />
-          <ProfileListItem
-            IconComponent={CreditCardIcon}
-            text="Métodos de pago"
-            onPress={() => {}}
-          />
-          <ProfileListItem
-            IconComponent={() => <Feather name="lock" size={24} color={colors.primary} />}
-            text="Cambiar Contraseña"
-            onPress={() => router.push('/profile/change-password')}
-          />
+          {isEmailUser && (
+            <ProfileListItem
+              IconComponent={() => <Feather name="lock" size={24} color={colors.primary} />}
+              text="Cambiar Contraseña"
+              onPress={() => router.push('/profile/change-password')}
+            />
+          )}
           <ProfileListItem
             IconComponent={() => <Feather name="shield" size={24} color={colors.primary} />}
             text="Política de Privacidad"
@@ -234,8 +184,6 @@ export default function ProfileScreen() {
               });
             }}
           />
-
-          {/* Logout Button */}
           <LogoutButton />
         </View>
       )}
@@ -249,13 +197,10 @@ type Styles = {
   backgroundImageStyle: ImageStyle;
   backgroundOverlay: ViewStyle;
   profileCard: ViewStyle;
-  profilePictureContainer: ViewStyle;
   profilePicture: ImageStyle;
   profileIconContainer: ViewStyle;
-  editIconContainer: ViewStyle;
   userName: TextStyle;
   userEmail: TextStyle;
-  uploadingText: TextStyle;
   actionButtonsContainer: ViewStyle;
   listItemContainer: ViewStyle;
   listItemText: TextStyle;
@@ -289,10 +234,6 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: 'transparent',
     zIndex: 1,
   },
-  profilePictureContainer: {
-    position: 'relative',
-    marginBottom: spacing.xs,
-  },
   profilePicture: {
     width: 64,
     height: 64,
@@ -306,16 +247,6 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  editIconContainer: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: colors.border,
-    padding: spacing.xs,
-    borderRadius: radius.circle,
-    borderWidth: 1.5,
-    borderColor: colors.background.light,
   },
   userName: {
     fontFamily: fonts.primary,
@@ -332,15 +263,6 @@ const styles = StyleSheet.create<Styles>({
     lineHeight: lineHeights.md,
     color: '#E1E1E1',
     textAlign: 'center',
-  },
-  uploadingText: {
-    fontFamily: fonts.secondary,
-    fontWeight: '400',
-    fontSize: fontSizes.sm,
-    lineHeight: lineHeights.sm,
-    color: colors.secondary,
-    textAlign: 'center',
-    marginTop: spacing.xs,
   },
   actionButtonsContainer: {
     paddingHorizontal: spacing.lg,
