@@ -19,6 +19,7 @@ Key implementation patterns:
 
 - **Current Implementation:** Using local mock data through `mockApi.ts`
 - **API Interface:** Located in `app/_services/api/mockApi.ts`
+- **HTTP Client:** Centralized in `app/_services/api/httpClient.ts`
 - **Key Mock Endpoints:**
   - `fetchProducts`: Returns all products with configurable delay
   - `fetchProductById`: Returns a single product by ID
@@ -27,6 +28,35 @@ Key implementation patterns:
   - `login/register/validateToken`: Auth-related mock methods
 
 **Note:** The application is prepared for future migration to TanStack Query when a real backend becomes available.
+
+### 2.1 HTTP Client Layer
+
+The application uses a centralized HTTP client (`httpClient.ts`) that provides:
+
+- **Automatic auth token injection**: Adds Bearer tokens to protected endpoints
+- **Public endpoint detection**: Skips auth tokens for public endpoints to prevent 401 errors
+- **URL validation**: Prevents common mistakes like double `/api/api/...` paths or absolute URLs
+- **Strapi compatibility**: Custom params serializer for Strapi's array parameter format
+- **Timeout management**: Configurable request timeouts (10 seconds default)
+- **Error handling**: Automatic 401 handling (clears invalid tokens)
+
+**Public Paths Configuration:**
+Public endpoints are defined in `publicPaths.ts` and include:
+- Product catalog (`/products`, `/categories`)
+- Authentication (`/auth/local`)
+- Store locations (`/store-locations`)
+- App settings (`/app-settings`)
+
+**Usage:**
+```typescript
+import { httpClient } from '@/_services/api/httpClient';
+
+// Public endpoint - no auth token sent
+const products = await httpClient.get('/products');
+
+// Protected endpoint - auth token automatically added
+const profile = await httpClient.get('/users/me');
+```
 
 ## 3. Client State Management (Zustand)
 

@@ -468,6 +468,33 @@ Current security measures:
    - Secure password change requiring current password
    - Explicit logout with confirmation
 
+4. **Public Endpoint Security**:
+   The HTTP client includes intelligent public endpoint detection to prevent auth token leakage and 401 errors on public endpoints:
+
+   **Public Endpoints (no auth token sent):**
+   - `/auth/local` - Login endpoint
+   - `/auth/local/register` - Registration endpoint
+   - `/products` - Product catalog (public browsing)
+   - `/categories` - Category listing
+   - `/store-locations` - Store locations
+   - `/app-settings` - App configuration
+
+   **Protected Endpoints (auth token required):**
+   - `/auth/logout` - Requires valid token to logout
+   - `/auth/change-password` - Requires authentication
+   - `/users/me` - User profile
+   - `/orders` - Order management
+   - `/cart/sync` - Cart synchronization
+   - `/favorites/sync` - Favorites synchronization
+
+   This system prevents common issues where expired/invalid tokens would cause 401 errors on public endpoints that should work without authentication.
+
+5. **URL Validation**:
+   The HTTP client validates all URLs before making requests to prevent common mistakes:
+   - Rejects absolute URLs (must use relative paths)
+   - Rejects paths missing leading slash
+   - Rejects paths with `/api/` prefix (prevents double `/api/api/...` paths)
+
 Pending security enhancements:
 
 1. **Token Refresh Mechanism**:
