@@ -82,17 +82,19 @@ export const useCartStore = create<CartState>()(
       },
 
       fetchUserCart: async () => {
+        // Don't fetch from server for guest users
+        if (get().isGuestCart) {
+          return;
+        }
+
         try {
           set({ isLoading: true, error: null });
-          const response = await httpClient.get('/cart');
+          // Use Strapi's built-in /users/me endpoint
+          const response = await httpClient.get('/users/me?populate=cart');
 
-          const items = Array.isArray(response)
-            ? response
-            : Array.isArray(response?.cart)
-              ? response.cart
-              : Array.isArray(response?.data)
-                ? response.data
-                : [];
+          // Extract cart from user response (cart is a JSON field on user)
+          const userData = response?.data || response;
+          const items = Array.isArray(userData?.cart) ? userData.cart : [];
 
           set({ items, isLoading: false, isGuestCart: false });
         } catch {
@@ -105,8 +107,9 @@ export const useCartStore = create<CartState>()(
 
       addItem: async (itemToAdd) => {
         const previousItems = get().items;
+        const isGuest = get().isGuestCart;
 
-        // Optimistic UI update
+        // Local update (persisted via MMKV for both guests and authenticated)
         set((state) => {
           const existingItemIndex = state.items.findIndex(
             (item) =>
@@ -139,10 +142,14 @@ export const useCartStore = create<CartState>()(
           }
         });
 
+        // Skip server sync for guest users
+        if (isGuest) {
+          return;
+        }
+
         try {
           set({ isLoading: true, error: null });
-
-          await httpClient.post('/cart/sync', { items: get().items });
+          await httpClient.put('/users/me', { cart: get().items });
           set({ isLoading: false });
         } catch {
           set({
@@ -155,8 +162,9 @@ export const useCartStore = create<CartState>()(
 
       updateItemQuantity: async (productId, color, size, newQuantity) => {
         const previousItems = get().items;
+        const isGuest = get().isGuestCart;
 
-        // Optimistic UI update
+        // Local update (persisted via MMKV for both guests and authenticated)
         set((state) => {
           if (newQuantity <= 0) {
             // If quantity is zero or less, remove the item
@@ -179,10 +187,14 @@ export const useCartStore = create<CartState>()(
           }
         });
 
+        // Skip server sync for guest users
+        if (isGuest) {
+          return;
+        }
+
         try {
           set({ isLoading: true, error: null });
-
-          await httpClient.post('/cart/sync', { items: get().items });
+          await httpClient.put('/users/me', { cart: get().items });
           set({ isLoading: false });
         } catch {
           set({
@@ -195,17 +207,23 @@ export const useCartStore = create<CartState>()(
 
       removeItem: async (productId, color, size) => {
         const previousItems = get().items;
+        const isGuest = get().isGuestCart;
 
-        // Optimistic UI update
+        // Local update (persisted via MMKV for both guests and authenticated)
         set((state) => ({
           items: state.items.filter(
             (item) => !(item.productId === productId && item.color === color && item.size === size)
           ),
         }));
 
+        // Skip server sync for guest users
+        if (isGuest) {
+          return;
+        }
+
         try {
           set({ isLoading: true, error: null });
-          await httpClient.post('/cart/sync', { items: get().items });
+          await httpClient.put('/users/me', { cart: get().items });
           set({ isLoading: false });
         } catch {
           set({
@@ -218,12 +236,20 @@ export const useCartStore = create<CartState>()(
 
       clearCart: async () => {
         const previousItems = get().items;
-        set({ items: [] }); // Optimistic update
+        const isGuest = get().isGuestCart;
+
+        // Local update (persisted via MMKV for both guests and authenticated)
+        set({ items: [] });
+
+        // Skip server sync for guest users
+        if (isGuest) {
+          return;
+        }
 
         try {
           set({ isLoading: true, error: null });
-          await httpClient.delete('/cart');
-          set({ items: [], isLoading: false });
+          await httpClient.put('/users/me', { cart: [] });
+          set({ isLoading: false });
         } catch {
           set({
             items: previousItems,
@@ -245,9 +271,40 @@ export const useCartStore = create<CartState>()(
 
         try {
           set({ isLoading: true, error: null });
-          const response = await httpClient.post('/cart/migrate', { guestItems });
+
+          // Fetch current server cart to merge with guest items
+          const response = await httpClient.get('/users/me?populate=cart');
+          const userData = response?.data || response;
+          const serverCart: CartItem[] = Array.isArray(userData?.cart) ? userData.cart : [];
+
+          // Merge guest items with server cart (guest items take priority for same product/variant)
+          const mergedItems = [...serverCart];
+          for (const guestItem of guestItems) {
+            const existingIndex = mergedItems.findIndex(
+              (item) =>
+                item.productId === guestItem.productId &&
+                item.color === guestItem.color &&
+                item.size === guestItem.size
+            );
+            if (existingIndex > -1) {
+              // Update quantity (add guest quantity to existing)
+              mergedItems[existingIndex] = {
+                ...mergedItems[existingIndex],
+                quantity: Math.min(
+                  mergedItems[existingIndex].quantity + guestItem.quantity,
+                  MAX_CART_QUANTITY
+                ),
+              };
+            } else {
+              mergedItems.push(guestItem);
+            }
+          }
+
+          // Save merged cart to server
+          await httpClient.put('/users/me', { cart: mergedItems });
+
           set({
-            items: response.mergedItems || [],
+            items: mergedItems,
             isLoading: false,
             isGuestCart: false,
             error: null,

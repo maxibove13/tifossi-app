@@ -313,19 +313,23 @@ export const usePaymentStore = create((set, get) => ({
 
 ### Core Endpoints Implemented:
 
-| Endpoint                    | Method              | Description        | Auth Required |
-| --------------------------- | ------------------- | ------------------ | ------------- |
-| `/api/products`             | GET                 | List all products  | No            |
-| `/api/products/:id`         | GET                 | Get single product | No            |
-| `/api/categories`           | GET                 | List categories    | No            |
-| `/api/cart`                 | GET/POST/PUT        | Manage cart        | Yes           |
-| `/api/orders`               | GET/POST            | Manage orders      | Yes           |
-| `/api/orders/:id`           | GET                 | Get order details  | Yes           |
-| `/api/payments/create`      | POST                | Create payment     | Yes           |
-| `/api/payments/verify`      | POST                | Verify payment     | Yes           |
-| `/api/webhooks/mercadopago` | POST                | Payment webhook    | No (signed)   |
-| `/api/users/profile`        | GET/PUT             | User profile       | Yes           |
-| `/api/users/addresses`      | GET/POST/PUT/DELETE | Manage addresses   | Yes           |
+| Endpoint                    | Method              | Description                            | Auth Required |
+| --------------------------- | ------------------- | -------------------------------------- | ------------- |
+| `/api/products`             | GET                 | List all products                      | No            |
+| `/api/products/:id`         | GET                 | Get single product                     | No            |
+| `/api/categories`           | GET                 | List categories                        | No            |
+| `/api/users/me`             | GET                 | Get user profile with cart/favorites   | Yes           |
+| `/api/users/me`             | PUT                 | Update profile, cart, or favorites     | Yes           |
+| `/api/orders`               | GET/POST            | Manage orders                          | Yes           |
+| `/api/orders/:id`           | GET                 | Get order details                      | Yes           |
+| `/api/payments/create`      | POST                | Create payment                         | Yes           |
+| `/api/payments/verify`      | POST                | Verify payment                         | Yes           |
+| `/api/webhooks/mercadopago` | POST                | Payment webhook                        | No (signed)   |
+| `/api/users/addresses`      | GET/POST/PUT/DELETE | Manage addresses                       | Yes           |
+
+**Cart & Favorites via `/users/me`:**
+- Cart: `PUT /users/me` with `{ cart: CartItem[] }` - cart is a JSON field on user
+- Favorites: `PUT /users/me` with `{ favorites: { set: [productIds] } }` - uses Strapi relation format
 
 ---
 

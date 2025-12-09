@@ -373,10 +373,11 @@ class StrapiApiService {
 
   /**
    * Syncs cart items with the server
+   * Uses Strapi's built-in /users/me endpoint (cart is a JSON field)
    */
   async syncCart(items: CartItem[]): Promise<boolean> {
     try {
-      await httpClient.put('/users/me/cart', { cart: items });
+      await httpClient.put('/users/me', { cart: items });
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'syncCart');
@@ -388,10 +389,13 @@ class StrapiApiService {
 
   /**
    * Syncs favorite product IDs with the server
+   * Uses Strapi's built-in /users/me endpoint with relation format
    */
   async syncFavorites(productIds: string[]): Promise<boolean> {
     try {
-      await httpClient.put('/users/me/favorites', { favorites: productIds });
+      await httpClient.put('/users/me', {
+        favorites: { set: productIds },
+      });
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'syncFavorites');
