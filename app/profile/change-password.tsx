@@ -24,15 +24,9 @@ export default function ChangePasswordScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    changePassword,
-    isChangingPassword,
-    error: authError,
-  } = useAuthStore((state) => ({
-    changePassword: state.changePassword,
-    isChangingPassword: state.isChangingPassword,
-    error: state.error,
-  }));
+  const changePassword = useAuthStore((state) => state.changePassword);
+  const isChangingPassword = useAuthStore((state) => state.isChangingPassword);
+  const authError = useAuthStore((state) => state.error);
 
   const validateForm = (): boolean => {
     setError(null);
