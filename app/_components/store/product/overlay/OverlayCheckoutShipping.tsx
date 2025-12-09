@@ -111,8 +111,8 @@ export default function OverlayCheckoutShipping({
   };
 
   // Handle add to cart action
-  const handleAddToCart = () => {
-    onAddToCart(selectedSize, selectedQuantity);
+  const handleAddToCart = async () => {
+    await onAddToCart(selectedSize, selectedQuantity);
     onClose();
   };
 
