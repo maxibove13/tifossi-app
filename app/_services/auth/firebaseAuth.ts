@@ -5,7 +5,10 @@
  * Supports email/password, Apple Sign-In, and Google Sign-In authentication.
  */
 
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import auth, {
+  FirebaseAuthTypes,
+  getIdToken as firebaseGetIdToken,
+} from '@react-native-firebase/auth';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import {
   GoogleSignin,
@@ -104,7 +107,7 @@ class FirebaseAuthService {
     try {
       const userCredential = await auth().signInWithEmailAndPassword(email, password);
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
-      const token = await userCredential.user.getIdToken();
+      const token = await firebaseGetIdToken(userCredential.user);
 
       return {
         success: true,
@@ -136,7 +139,7 @@ class FirebaseAuthService {
       }
 
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
-      const token = await userCredential.user.getIdToken();
+      const token = await firebaseGetIdToken(userCredential.user);
 
       return {
         success: true,
@@ -214,7 +217,7 @@ class FirebaseAuthService {
       }
 
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
-      const token = await userCredential.user.getIdToken();
+      const token = await firebaseGetIdToken(userCredential.user);
 
       return {
         success: true,
@@ -302,7 +305,7 @@ class FirebaseAuthService {
       }
 
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
-      const token = await userCredential.user.getIdToken();
+      const token = await firebaseGetIdToken(userCredential.user);
 
       return {
         success: true,
@@ -420,7 +423,7 @@ class FirebaseAuthService {
         throw new Error('No user is currently signed in');
       }
 
-      return await currentUser.getIdToken(forceRefresh);
+      return await firebaseGetIdToken(currentUser, forceRefresh);
     } catch (error) {
       throw error;
     }

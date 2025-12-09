@@ -22,9 +22,7 @@ import { GlobalErrorBoundary } from './_components/common/UnifiedErrorBoundary';
 try {
   appInit.initialize();
 } catch (error) {
-  console.error('❌ App initialization failed:', error);
-  // In production, the app will not start if critical config is missing
-  // In development, it will show warnings but continue
+  console.error('App initialization failed:', error);
 }
 
 // Keep the splash screen visible while we fetch resources
