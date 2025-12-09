@@ -6,7 +6,7 @@
  */
 
 import * as SecureStore from 'expo-secure-store';
-import { buildUrl } from '../../_config/endpoints';
+import { buildUrl, endpoints } from '../../_config/endpoints';
 import firebaseAuthExport from '../../_services/auth/firebaseAuth';
 const firebaseAuth = firebaseAuthExport.service;
 
@@ -195,7 +195,7 @@ class TokenManager {
    */
   private async validateWithBackend(strapiToken: string): Promise<boolean> {
     try {
-      const response = await fetch(buildUrl('/api/auth/validate'), {
+      const response = await fetch(buildUrl(endpoints.auth.validateToken), {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${strapiToken}`,

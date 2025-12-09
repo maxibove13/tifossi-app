@@ -5,30 +5,16 @@
  * and other authentication-related actions in the Tifossi app.
  */
 
-import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import firebaseAuthExport from '../../_services/auth/firebaseAuth';
 import { tokenManager } from './tokenManager';
 const firebaseAuth = firebaseAuthExport.service;
 
-// Deep link URL patterns
-const DEEP_LINK_PATTERNS = {
-  // OAuth callback patterns
-  GOOGLE_OAUTH: '/auth/google/callback',
-  FIREBASE_OAUTH: '/auth/firebase/callback',
+const AUTH_TOKEN_KEY = 'tifossi_auth_token';
 
-  // Email verification patterns
-  EMAIL_VERIFY: '/auth/verify-email',
-
-  // Password reset patterns
-  PASSWORD_RESET: '/auth/password-reset',
-
-  // General auth patterns
-  AUTH_ACTION: '/auth/action',
-
-  // Dynamic link patterns (Firebase Dynamic Links)
-  DYNAMIC_LINK: '/link',
-} as const;
+// Lazy import to avoid circular dependency (authStore -> deepLinkRouter -> deepLinking -> authStore)
+const getAuthStore = () => require('../../_stores/authStore').useAuthStore;
 
 // Action types for Firebase auth actions
 const FIREBASE_ACTION_TYPES = {
@@ -49,118 +35,29 @@ interface DeepLinkResult {
 
 class DeepLinkingService {
   private isInitialized = false;
-  private linkingListener: ((url: string) => void) | null = null;
 
   /**
    * Initialize deep linking service
+   *
+   * Note: URL listener registration and initial URL handling are done by
+   * deepLinkRouter, which delegates auth links to handleAuthDeepLink().
+   * This avoids duplicate processing of the same deep link.
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
       return;
     }
 
-    try {
-      // Configure Expo Linking
-      this.configureLinking();
-
-      // Set up URL event listener
-      this.setupUrlListener();
-
-      // Handle initial URL if app was opened via deep link
-      await this.handleInitialUrl();
-
-      this.isInitialized = true;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Configure Expo Linking with URL scheme
-   */
-  private configureLinking(): void {
-    const _linking = {
-      prefixes: [
-        'tifossi://',
-        'https://tifossi.app',
-        'https://auth.tifossi.app',
-        'exp://192.168.1.100:8081', // Development
-        'exp://localhost:8081', // Development
-      ],
-      config: {
-        screens: {
-          '(auth)': {
-            screens: {
-              'verify-email': DEEP_LINK_PATTERNS.EMAIL_VERIFY,
-              'password-reset': DEEP_LINK_PATTERNS.PASSWORD_RESET,
-              'oauth-callback': DEEP_LINK_PATTERNS.GOOGLE_OAUTH,
-              action: DEEP_LINK_PATTERNS.AUTH_ACTION,
-            },
-          },
-          '(tabs)': {
-            screens: {
-              index: '/',
-              profile: '/profile',
-            },
-          },
-        },
-      },
-    };
-  }
-
-  /**
-   * Set up URL event listener for incoming deep links
-   */
-  private setupUrlListener(): void {
-    this.linkingListener = (url: string) => {
-      this.handleIncomingUrl(url);
-    };
-
-    Linking.addEventListener('url', this.linkingListener as any);
-  }
-
-  /**
-   * Handle initial URL when app is opened via deep link
-   */
-  private async handleInitialUrl(): Promise<void> {
-    try {
-      const initialUrl = await Linking.getInitialURL();
-
-      if (initialUrl) {
-        await this.handleIncomingUrl(initialUrl);
-      }
-    } catch {}
-  }
-
-  /**
-   * Handle incoming deep link URL
-   */
-  private async handleIncomingUrl(url: string): Promise<DeepLinkResult> {
-    try {
-      const parsedUrl = Linking.parse(url);
-
-      const { path, queryParams } = parsedUrl;
-
-      // Route to appropriate handler based on path
-      if (path?.includes('/auth/')) {
-        return await this.handleAuthDeepLink(path, queryParams || {});
-      } else if (path?.includes('/link')) {
-        return await this.handleDynamicLink(url, queryParams || {});
-      } else {
-        return await this.handleGeneralDeepLink(path, queryParams || {});
-      }
-    } catch (error: any) {
-      return {
-        handled: false,
-        error: error.message,
-      };
-    }
+    // No listener setup here - deepLinkRouter handles all URL events
+    // and delegates auth-related links to this service's handleAuthDeepLink()
+    this.isInitialized = true;
   }
 
   /**
    * Handle authentication-related deep links
+   * Public so deepLinkRouter can delegate to this
    */
-  private async handleAuthDeepLink(
+  async handleAuthDeepLink(
     path: string,
     queryParams: Record<string, any>
   ): Promise<DeepLinkResult> {
@@ -171,7 +68,11 @@ class DeepLinkingService {
       }
 
       // Handle password reset
-      if (path.includes('password-reset') || queryParams.mode === 'resetPassword') {
+      if (
+        path.includes('password-reset') ||
+        path.includes('reset-password') ||
+        queryParams.mode === 'resetPassword'
+      ) {
         return await this.handlePasswordReset(queryParams);
       }
 
@@ -213,30 +114,84 @@ class DeepLinkingService {
       // Verify email code with Firebase
       await firebaseAuth.verifyEmailCode(oobCode);
 
-      // Refresh tokens to get updated user data
-      await tokenManager.refreshTokens();
+      // Check if user is currently signed in to Firebase
+      const currentUser = firebaseAuth.getCurrentAppUser();
 
-      // Navigate to success screen or profile
-      router.replace('/(tabs)/profile');
+      if (currentUser) {
+        // User is signed in - mint Strapi token and update auth state
+        try {
+          const firebaseToken = await firebaseAuth.getIdToken(true);
+          const tokens = await tokenManager.syncAfterLogin(firebaseToken, currentUser.id);
+
+          if (tokens.strapiToken) {
+            // Persist token for httpClient
+            await SecureStore.setItemAsync(AUTH_TOKEN_KEY, tokens.strapiToken);
+
+            // Update auth store state (lazy import to avoid circular dependency)
+            getAuthStore().setState({
+              user: { ...currentUser, isEmailVerified: true },
+              token: tokens.strapiToken,
+              isLoggedIn: true,
+              status: 'succeeded',
+              error: null,
+            });
+
+            router.replace('/(tabs)/profile');
+
+            return {
+              handled: true,
+              success: true,
+              action: 'email-verified',
+              redirectTo: '/(tabs)/profile',
+            };
+          }
+        } catch {
+          // Token minting failed - sign out and redirect to login
+          await firebaseAuth.signOutUser();
+          router.replace({
+            pathname: '/auth/login' as any,
+            params: { emailVerified: 'true', tokenError: 'true' },
+          });
+
+          return {
+            handled: true,
+            success: true,
+            action: 'email-verified',
+            redirectTo: '/auth/login',
+          };
+        }
+      }
+
+      // User is not signed in - redirect to login with success message
+      router.replace({
+        pathname: '/auth/login' as any,
+        params: { emailVerified: 'true' },
+      });
 
       return {
         handled: true,
         success: true,
         action: 'email-verified',
-        redirectTo: '/(tabs)/profile',
+        redirectTo: '/auth/login',
       };
     } catch (error: any) {
-      // Navigate to error screen with message
+      // Email verification failed - sign out unverified Firebase session to avoid stale state
+      const currentUser = firebaseAuth.getCurrentAppUser();
+      if (currentUser && !currentUser.isEmailVerified) {
+        await firebaseAuth.signOutUser();
+      }
+
+      // Navigate to login with error message (verification-code screen doesn't exist)
       router.push({
-        pathname: '/auth/verification-code' as any,
-        params: { error: error.message },
+        pathname: '/auth/login' as any,
+        params: { verificationError: error.message },
       });
 
       return {
         handled: true,
         success: false,
         error: error.message,
-        redirectTo: '/auth/verification-code',
+        redirectTo: '/auth/login',
       };
     }
   }
@@ -246,19 +201,32 @@ class DeepLinkingService {
    */
   private async handlePasswordReset(queryParams: Record<string, any>): Promise<DeepLinkResult> {
     try {
-      const { oobCode, continueUrl: _continueUrl } = queryParams;
+      const {
+        oobCode,
+        continueUrl: _continueUrl,
+        code,
+        token,
+        email: emailFromParams,
+      } = queryParams;
+      const resetCode = oobCode || code || token;
 
-      if (!oobCode) {
+      if (!resetCode) {
         throw new Error('Missing password reset code');
       }
 
-      // Verify the password reset code
-      const email = await firebaseAuth.verifyPasswordResetCode(oobCode);
+      // Try to verify the password reset code to fetch associated email (best effort)
+      let resolvedEmail = emailFromParams as string | undefined;
+      try {
+        const verifiedEmail = await firebaseAuth.verifyPasswordResetCode(resetCode);
+        resolvedEmail = verifiedEmail || resolvedEmail;
+      } catch {
+        // If verification fails (e.g., token from backend), still allow navigation to reset screen
+      }
 
       // Navigate to password reset screen with code
       router.push({
         pathname: '/auth/reset-password' as any,
-        params: { code: oobCode, email: email } as any,
+        params: { code: resetCode, email: resolvedEmail } as any,
       });
 
       return {
@@ -352,84 +320,6 @@ class DeepLinkingService {
   }
 
   /**
-   * Handle Firebase Dynamic Links
-   */
-  private async handleDynamicLink(
-    url: string,
-    queryParams: Record<string, any>
-  ): Promise<DeepLinkResult> {
-    try {
-      // Extract the actual deep link from the dynamic link
-      const link = queryParams.link || queryParams.url;
-
-      if (link) {
-        return await this.handleIncomingUrl(link);
-      }
-
-      return {
-        handled: false,
-        error: 'No target link found in dynamic link',
-      };
-    } catch (error: any) {
-      return {
-        handled: true,
-        success: false,
-        error: error.message,
-      };
-    }
-  }
-
-  /**
-   * Handle general deep links (non-auth)
-   */
-  private async handleGeneralDeepLink(
-    path: string | null,
-    _queryParams: Record<string, any>
-  ): Promise<DeepLinkResult> {
-    try {
-      if (!path) {
-        // Navigate to home screen
-        router.replace('/' as any);
-        return {
-          handled: true,
-          success: true,
-          redirectTo: '/',
-        };
-      }
-
-      // Handle specific app routes
-      if (path.startsWith('/product/')) {
-        const productId = path.split('/')[2];
-        router.push(`/products/${productId}` as any);
-        return {
-          handled: true,
-          success: true,
-          redirectTo: `/products/${productId}`,
-        };
-      }
-
-      // Default: navigate to the path if it's a valid route
-      router.push(path as any);
-
-      return {
-        handled: true,
-        success: true,
-        redirectTo: path,
-      };
-    } catch (error: any) {
-      // Fall back to home screen
-      router.replace('/' as any);
-
-      return {
-        handled: true,
-        success: false,
-        error: error.message,
-        redirectTo: '/',
-      };
-    }
-  }
-
-  /**
    * Generate deep link URL for email verification
    */
   generateEmailVerificationLink(email: string): string {
@@ -459,12 +349,6 @@ class DeepLinkingService {
    * Clean up resources
    */
   cleanup(): void {
-    if (this.linkingListener) {
-      // In newer versions of Expo/React Native, listeners are cleaned up automatically
-      // or use unsubscribe pattern if available
-      this.linkingListener = null;
-    }
-
     this.isInitialized = false;
   }
 

@@ -64,13 +64,18 @@ describe('authStore', () => {
         return {
           token: 'test-token',
           user: mockUser,
+          needsEmailVerification: false,
         };
       });
 
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.login({ email: 'test@example.com', password: 'password123' });
+        const loginResult = await result.current.login({
+          email: 'test@example.com',
+          password: 'password123',
+        });
+        expect(loginResult.needsEmailVerification).toBe(false);
       });
 
       expect(mockLogin).toHaveBeenCalledWith({
@@ -83,13 +88,49 @@ describe('authStore', () => {
       expect(result.current.error).toBeNull();
     });
 
+    it('should redirect to verification when email not verified', async () => {
+      const mockUser = {
+        id: 'test-uid',
+        email: 'test@example.com',
+        name: 'Test User',
+        profilePicture: null,
+        isEmailVerified: false,
+      };
+
+      mockLogin.mockImplementation(async (_creds) => {
+        return {
+          user: mockUser,
+          needsEmailVerification: true,
+        };
+      });
+
+      const { result } = renderHook(() => useAuthStore());
+
+      await act(async () => {
+        const loginResult = await result.current.login({
+          email: 'test@example.com',
+          password: 'password123',
+        });
+        expect(loginResult.needsEmailVerification).toBe(true);
+      });
+
+      // User should NOT be logged in when verification is needed
+      expect(result.current.isLoggedIn).toBe(false);
+      expect(result.current.user).toEqual(mockUser);
+      expect(result.current.token).toBeNull();
+    });
+
     it('should handle login failure with invalid credentials', async () => {
       mockLogin.mockRejectedValue(new Error('Invalid email or password'));
 
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.login({ email: 'wrong@example.com', password: 'wrongpassword' });
+        try {
+          await result.current.login({ email: 'wrong@example.com', password: 'wrongpassword' });
+        } catch {
+          // Expected - store re-throws errors
+        }
       });
 
       expect(result.current.isLoggedIn).toBe(false);
@@ -124,6 +165,7 @@ describe('authStore', () => {
             profilePicture: null,
             isEmailVerified: true,
           },
+          needsEmailVerification: false,
         });
 
         await loginPromise;
@@ -134,7 +176,7 @@ describe('authStore', () => {
   });
 
   describe('register', () => {
-    it('should register new user successfully', async () => {
+    it('should register new user and require verification', async () => {
       const mockUser = {
         id: 'new-user-uid',
         email: 'newuser@example.com',
@@ -144,18 +186,19 @@ describe('authStore', () => {
       };
 
       mockRegister.mockResolvedValue({
-        token: 'new-token',
         user: mockUser,
+        needsEmailVerification: true,
       });
 
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.register({
+        const registerResult = await result.current.register({
           name: 'New User',
           email: 'newuser@example.com',
           password: 'password123',
         });
+        expect(registerResult.needsEmailVerification).toBe(true);
       });
 
       expect(mockRegister).toHaveBeenCalledWith({
@@ -163,8 +206,10 @@ describe('authStore', () => {
         email: 'newuser@example.com',
         password: 'password123',
       });
-      expect(result.current.isLoggedIn).toBe(true);
+      // New users should NOT be logged in until verified
+      expect(result.current.isLoggedIn).toBe(false);
       expect(result.current.user).toEqual(mockUser);
+      expect(result.current.token).toBeNull();
     });
 
     it('should handle registration failure for existing email', async () => {
@@ -173,11 +218,15 @@ describe('authStore', () => {
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.register({
-          name: 'User',
-          email: 'existing@example.com',
-          password: 'password123',
-        });
+        try {
+          await result.current.register({
+            name: 'User',
+            email: 'existing@example.com',
+            password: 'password123',
+          });
+        } catch {
+          // Expected - store re-throws errors
+        }
       });
 
       expect(result.current.isLoggedIn).toBe(false);
@@ -338,12 +387,14 @@ describe('authStore', () => {
       mockLoginWithGoogle.mockResolvedValue({
         token: 'google-token',
         user: mockUser,
+        needsEmailVerification: false,
       });
 
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.loginWithGoogle();
+        const loginResult = await result.current.loginWithGoogle();
+        expect(loginResult.needsEmailVerification).toBe(false);
       });
 
       expect(mockLoginWithGoogle).toHaveBeenCalled();
@@ -363,12 +414,14 @@ describe('authStore', () => {
       mockLoginWithApple.mockResolvedValue({
         token: 'apple-token',
         user: mockUser,
+        needsEmailVerification: false,
       });
 
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.loginWithApple();
+        const loginResult = await result.current.loginWithApple();
+        expect(loginResult.needsEmailVerification).toBe(false);
       });
 
       expect(mockLoginWithApple).toHaveBeenCalled();
@@ -489,6 +542,7 @@ describe('authStore', () => {
           profilePicture: null,
           isEmailVerified: true,
         },
+        needsEmailVerification: false,
       });
 
       const { result } = renderHook(() => useAuthStore());
@@ -506,7 +560,11 @@ describe('authStore', () => {
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.login({ email: 'test@example.com', password: 'password123' });
+        try {
+          await result.current.login({ email: 'test@example.com', password: 'password123' });
+        } catch {
+          // Expected - store re-throws errors
+        }
       });
 
       expect(result.current.error).toBe('Network error');

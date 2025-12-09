@@ -466,6 +466,24 @@ class FirebaseAuthService {
   }
 
   /**
+   * Confirm password reset with code
+   */
+  async confirmPasswordReset(
+    code: string,
+    newPassword: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      await auth().confirmPasswordReset(code, newPassword);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: this.handleAuthError(error),
+      };
+    }
+  }
+
+  /**
    * Check if service is initialized
    */
   isServiceInitialized(): boolean {

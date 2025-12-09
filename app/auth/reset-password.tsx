@@ -9,68 +9,72 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { colors } from '../_styles/colors';
 import { spacing, radius } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
 import CloseIcon from '../../assets/icons/close.svg';
-import { useAuthStore } from '../_stores/authStore';
+import authService from '../_services/auth/authService';
 
-export default function ForgotPasswordScreen() {
-  const [email, setEmail] = useState('');
+export default function ResetPasswordScreen() {
+  const params = useLocalSearchParams<{ code: string; email: string }>();
+  const { code, email } = params;
+
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const sendPasswordReset = useAuthStore((state) => state.sendPasswordReset);
-
-  const validateEmail = (text: string) => {
-    // Basic email validation regex
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(text);
-  };
-
-  const handlePasswordReset = async () => {
+  const handleResetPassword = async () => {
     setError(null);
-    if (!email.trim()) {
-      setError('Por favor, ingresa tu correo electrónico.');
+
+    if (!password.trim() || !confirmPassword.trim()) {
+      setError('Por favor, completa todos los campos.');
       return;
     }
-    if (!validateEmail(email)) {
-      setError('Por favor, ingresa un correo electrónico válido.');
+
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
+
+    if (!code) {
+      setError('Código de restablecimiento no válido. Solicita un nuevo enlace.');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      await sendPasswordReset(email);
+      await authService.confirmPasswordReset(code, password);
       Alert.alert(
-        'Solicitud Enviada',
-        'Si existe una cuenta con este correo, recibirás instrucciones para restablecer tu contraseña.',
+        'Contraseña Actualizada',
+        'Tu contraseña ha sido actualizada exitosamente. Ya puedes iniciar sesión.',
         [{ text: 'OK', onPress: () => router.replace('/auth/login') }]
       );
     } catch (err: any) {
-      setError(err.message || 'Error al enviar el correo de recuperación.');
+      setError(err.message || 'Error al restablecer la contraseña. Intenta nuevamente.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleClose = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/auth/login'); // Fallback to login screen
-    }
+    router.replace('/auth/login');
   };
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer}>
+    <SafeAreaView style={styles.safeAreaContainer} testID="reset-password-screen">
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.mainContainer}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Recuperar Contraseña</Text>
+          <Text style={styles.headerTitle}>Nueva Contraseña</Text>
           <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
             <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
           </TouchableOpacity>
@@ -78,37 +82,58 @@ export default function ForgotPasswordScreen() {
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.formContainer}>
-            <Text style={styles.infoText}>
-              Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu
-              contraseña.
+            <Text style={styles.infoText} testID="email-display">
+              {email
+                ? `Ingresa tu nueva contraseña para ${email}.`
+                : 'Ingresa tu nueva contraseña.'}
             </Text>
             <Input
-              placeholder="Correo Electrónico"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
+              placeholder="Nueva Contraseña"
+              secureTextEntry
+              value={password}
+              testID="new-password-input"
               onChangeText={(text) => {
-                setEmail(text);
+                setPassword(text);
                 if (error) setError(null);
               }}
-              error={error || undefined}
+              error={
+                error && (error.includes('6 caracteres') || error.includes('contraseña'))
+                  ? error
+                  : undefined
+              }
               containerStyle={styles.inputSpacing}
             />
-            {error && <Text style={styles.errorText}>{error}</Text>}
+            <Input
+              placeholder="Confirmar Contraseña"
+              secureTextEntry
+              value={confirmPassword}
+              testID="confirm-password-input"
+              onChangeText={(text) => {
+                setConfirmPassword(text);
+                if (error) setError(null);
+              }}
+              error={error && error.includes('coinciden') ? error : undefined}
+              containerStyle={styles.inputSpacing}
+            />
+            {error &&
+              !error.includes('6 caracteres') &&
+              !error.includes('coinciden') &&
+              !error.includes('contraseña') && <Text style={styles.errorText}>{error}</Text>}
           </View>
         </ScrollView>
       </View>
       <View style={styles.actionButtonsContainer}>
         <TouchableOpacity
           style={[styles.primaryButton, isSubmitting && styles.disabledButton]}
-          onPress={handlePasswordReset}
+          onPress={handleResetPassword}
           activeOpacity={0.7}
           disabled={isSubmitting}
+          testID="submit-reset"
         >
           {isSubmitting ? (
             <ActivityIndicator size="small" color={colors.background.light} />
           ) : (
-            <Text style={styles.primaryButtonText}>Enviar Instrucciones</Text>
+            <Text style={styles.primaryButtonText}>Guardar Contraseña</Text>
           )}
         </TouchableOpacity>
         <TouchableOpacity
@@ -117,7 +142,7 @@ export default function ForgotPasswordScreen() {
           activeOpacity={0.7}
           disabled={isSubmitting}
         >
-          <Text style={styles.secondaryButtonText}>Volver</Text>
+          <Text style={styles.secondaryButtonText}>Cancelar</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -166,9 +191,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.md,
   },
-  inputSpacing: {
-    // marginBottom: spacing.sm,
-  },
+  inputSpacing: {},
   errorText: {
     color: colors.error,
     fontSize: fontSizes.sm,
