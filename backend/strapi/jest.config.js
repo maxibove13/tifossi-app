@@ -7,6 +7,7 @@ module.exports = {
     '**/tests/smoke.test.js', // Run smoke tests first
     '**/tests/orders.test.js', // Revenue-critical order tests
     '**/tests/mercadopago-webhook.test.js', // Payment webhook tests
+    '**/tests/user-profile.test.js', // /users/me favorites/cart controller
     // Integration tests require full Strapi instance setup
     // Uncomment when ready to run integration tests with proper Strapi mocking
     // '**/tests/health.test.js',

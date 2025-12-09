@@ -113,14 +113,17 @@ describe('Cart Persistence', () => {
 
     httpClient.put.mockImplementation(async (url: string, data?: any) => {
       await new Promise((resolve) => setTimeout(resolve, 10));
-      return { success: true, cart: data?.cart || [], data: { cart: data?.cart || [] } };
+      if (url === '/users/me') {
+        return { success: true, cart: data?.cart || [], data: { cart: data?.cart || [] } };
+      }
+      return { success: true };
     });
 
     httpClient.get.mockImplementation(async (url: string) => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      if (url === '/users/me/cart' || url === '/cart') {
-        return { data: [], cart: [] };
+      if (url.startsWith('/users/me')) {
+        return { data: { cart: [] }, cart: [] };
       }
       return { data: [] };
     });

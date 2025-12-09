@@ -144,7 +144,7 @@ interface MockOrder {
 - `PUT /api/cart/update` - Update cart items
 - `DELETE /api/cart/remove/:id` - Remove cart items
 - `DELETE /api/cart/clear` - Clear entire cart
-- `PUT /users/me/cart` - Sync cart with server
+- `PUT /api/users/me` - Sync cart (send `{ cart: [...] }`)
 
 ### Order Endpoints
 
@@ -160,7 +160,7 @@ interface MockOrder {
 - `GET /api/favorites` - Get user favorites
 - `POST /api/favorites` - Add to favorites
 - `DELETE /api/favorites/:id` - Remove from favorites
-- `PUT /users/me/favorites` - Sync favorites
+- `PUT /api/users/me` - Sync favorites (send `{ favorites: { set: [...] } }`)
 
 ### Address Endpoints
 
