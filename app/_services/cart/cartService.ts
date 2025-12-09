@@ -5,7 +5,6 @@
 
 import httpClient from '../api/httpClient';
 import { handleApiError } from '../api/errorHandler';
-import { endpoints } from '../../_config/endpoints';
 
 export interface CartItem {
   productId: string;
@@ -27,12 +26,7 @@ export interface GuestCartMigrationResult {
 }
 
 class CartService {
-  private baseUrl: string;
   private authToken: string | null = null;
-
-  constructor() {
-    this.baseUrl = endpoints.baseUrl;
-  }
 
   /**
    * Set authentication token
@@ -50,14 +44,12 @@ class CartService {
         throw new Error('Authentication token required');
       }
 
-      const response = await httpClient.get('/users/me/cart', {
-        headers: {
-          Authorization: `Bearer ${this.authToken}`,
-        },
-      });
+      // httpClient handles auth token via interceptors
+      const response = await httpClient.get('/users/me?populate=cart');
 
-      // Handle different response formats
-      const cartData = response.cart || response.data?.cart || [];
+      // Handle different response formats - cart is a JSON field on user
+      const userData = response?.data || response;
+      const cartData = Array.isArray(userData?.cart) ? userData.cart : [];
 
       return cartData;
     } catch (error) {
@@ -76,19 +68,16 @@ class CartService {
         return { success: true, items };
       }
 
-      const response = await httpClient.put(
-        '/users/me/cart',
-        { cart: items },
-        {
-          headers: {
-            Authorization: `Bearer ${this.authToken}`,
-          },
-        }
-      );
+      // httpClient handles auth token via interceptors
+      const response = await httpClient.put('/users/me', { cart: items });
+
+      // Extract cart from user response
+      const userData = response?.data || response;
+      const cartData = Array.isArray(userData?.cart) ? userData.cart : items;
 
       return {
         success: true,
-        items: response.cart || response.data?.cart || items,
+        items: cartData,
       };
     } catch (error) {
       const apiError = handleApiError(error, 'syncCart');

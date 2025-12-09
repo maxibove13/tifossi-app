@@ -300,6 +300,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 - Components subscribed to the changed part of the Zustand store re-render.
 - Initial data (like product details) is sourced from mock data (`app/_data/products.ts`) passed via props or fetched within the component/screen initially.
 
+**Server Synchronization (for authenticated users):**
+- Cart syncs to Strapi via `PUT /users/me` with `{ cart: items }` (cart is a JSON field on user)
+- Favorites sync to Strapi via `PUT /users/me` with `{ favorites: { set: productIds } }` (relation field)
+- Guest users skip server sync - data remains local-only until login
+- On login, guest cart is merged with server cart client-side (guest quantities take priority)
+
 ## 5. Conclusion
 
 This local state management strategy provides a clear separation between global, persistent client state (managed by Zustand and persisted with MMKV) and ephemeral component-level UI state (managed by React hooks). It leverages mock data for initial development and testing, establishing the core state management patterns before integrating backend services.

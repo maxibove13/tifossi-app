@@ -78,7 +78,9 @@ const profile = await httpClient.get('/users/me');
   - Optimistic updates with error rollback
   - Item variant handling (size, color)
   - Quantity management with auto-removal
-  - Server synchronization support
+  - Guest users: Local-only persistence (MMKV), no server sync
+  - Authenticated users: Server sync via `PUT /users/me` with `{ cart: items }`
+  - Cart migration on login: Merges guest cart with server cart client-side
 
 #### Favorites Store (`favoritesStore.ts`)
 
@@ -87,7 +89,8 @@ const profile = await httpClient.get('/users/me');
   - Simple productId tracking
   - Toggle/add/remove operations
   - Optimistic updates with error handling
-  - Server synchronization support
+  - Guest users: Local-only persistence (MMKV), no server sync
+  - Authenticated users: Server sync via `PUT /users/me` with `{ favorites: { set: productIds } }` (Strapi relation format)
 
 #### Auth Store (`authStore.ts`)
 
@@ -112,14 +115,14 @@ const profile = await httpClient.get('/users/me');
 
 ## 5. Current Data Flow
 
-| Feature            | State Management  | Persistence        | Implementation Notes                                                |
-| :----------------- | :---------------- | :----------------- | :------------------------------------------------------------------ |
-| Product Catalogue  | Local Data        | None (static data) | Imported from `app/_data/products.ts`                               |
-| Search / Filtering | Local React State | None               | Client-side filtering via `useSearch` and `useProductFilters` hooks |
-| Shopping Cart      | Zustand           | MMKV               | Optimistic updates with `useCartStore`, sync with mockApi           |
-| Favorites          | Zustand           | MMKV               | Optimistic updates with `useFavoritesStore`, sync with mockApi      |
-| Auth Tokens        | Zustand           | SecureStore        | Managed by `useAuthStore`, sync triggers other stores               |
-| UI Interactions    | Local React State | None               | Component-local state using useState/useReducer                     |
+| Feature            | State Management  | Persistence        | Implementation Notes                                                          |
+| :----------------- | :---------------- | :----------------- | :---------------------------------------------------------------------------- |
+| Product Catalogue  | Local Data        | None (static data) | Imported from `app/_data/products.ts`                                         |
+| Search / Filtering | Local React State | None               | Client-side filtering via `useSearch` and `useProductFilters` hooks           |
+| Shopping Cart      | Zustand           | MMKV               | Guest: local-only. Auth: syncs via `PUT /users/me` (cart is JSON field)       |
+| Favorites          | Zustand           | MMKV               | Guest: local-only. Auth: syncs via `PUT /users/me` (favorites is relation)    |
+| Auth Tokens        | Zustand           | SecureStore        | Managed by `useAuthStore`, login triggers cart/favorites sync                 |
+| UI Interactions    | Local React State | None               | Component-local state using useState/useReducer                               |
 
 ## 6. Current Project Structure
 
