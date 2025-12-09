@@ -8,6 +8,7 @@ import axios, {
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import { endpoints } from '../../_config/endpoints';
+import { isPublicPath, validateHttpClientPath } from './publicPaths';
 
 // Configuration constants
 const REQUEST_TIMEOUT = 10000; // 10 seconds
@@ -52,16 +53,21 @@ class HttpClient {
   }
 
   private setupInterceptors(): void {
-    // Request interceptor for adding auth token
+    // Request interceptor for URL validation and auth token
     this.axiosInstance.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
-        // Add auth token if available
-        try {
-          const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-          }
-        } catch {}
+        // Fail fast on invalid URL formats (prevents /api/api/... and token leakage)
+        validateHttpClientPath(config.url);
+
+        // Add auth token if available (skip for public endpoints)
+        if (!isPublicPath(config.url)) {
+          try {
+            const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+            if (token) {
+              config.headers.Authorization = `Bearer ${token}`;
+            }
+          } catch {}
+        }
 
         // Log request in development
         if (__DEV__) {
