@@ -31,10 +31,14 @@ export interface AuthState {
 
   // Authentication methods
   initializeAuth: () => Promise<void>;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
-  register: (userData: { name: string; email: string; password: string }) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
-  loginWithApple: () => Promise<void>;
+  login: (credentials: { email: string; password: string }) => Promise<LoginResultForUI>;
+  register: (userData: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<LoginResultForUI>;
+  loginWithGoogle: () => Promise<LoginResultForUI>;
+  loginWithApple: () => Promise<LoginResultForUI>;
   logout: () => Promise<void>;
 
   // New methods for additional functionality
@@ -61,6 +65,11 @@ export interface PasswordChangeCredentials {
 export interface VerificationResult {
   success: boolean;
   message: string;
+}
+
+export interface LoginResultForUI {
+  needsEmailVerification: boolean;
+  user?: User;
 }
 
 // Apple Sign-In specific types

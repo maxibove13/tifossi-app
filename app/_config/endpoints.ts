@@ -162,7 +162,7 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
       resendVerification: '/api/auth/resend-verification',
       forgotPassword: '/api/auth/forgot-password',
       resetPassword: '/api/auth/reset-password',
-      validateToken: '/api/auth/validate-token',
+      validateToken: '/api/auth/validate',
     },
 
     user: {
@@ -242,7 +242,7 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
       resendVerification: '/api/auth/resend-verification',
       forgotPassword: '/api/auth/forgot-password',
       resetPassword: '/api/auth/reset-password',
-      validateToken: '/api/auth/validate-token',
+      validateToken: '/api/auth/validate',
     },
 
     user: {
@@ -322,7 +322,7 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
       resendVerification: '/api/auth/resend-verification',
       forgotPassword: '/api/auth/forgot-password',
       resetPassword: '/api/auth/reset-password',
-      validateToken: '/api/auth/validate-token',
+      validateToken: '/api/auth/validate',
     },
 
     user: {

@@ -80,6 +80,7 @@ describe('Authentication Flows - UX Critical', () => {
           profilePicture: null,
         },
         token: 'jwt-token-google',
+        needsEmailVerification: false,
       });
 
       httpClient.post.mockImplementationOnce(async (url: string, data?: any) => {
@@ -131,6 +132,7 @@ describe('Authentication Flows - UX Critical', () => {
           profilePicture: null,
         },
         token: 'jwt-token-apple',
+        needsEmailVerification: false,
       });
 
       httpClient.post.mockImplementationOnce(async (url: string, data?: any) => {
@@ -235,6 +237,7 @@ describe('Authentication Flows - UX Critical', () => {
           profilePicture: null,
         },
         token: 'jwt-email-login',
+        needsEmailVerification: false,
       });
 
       httpClient.post.mockImplementationOnce(async (url: string, data?: any) => {
@@ -261,7 +264,11 @@ describe('Authentication Flows - UX Critical', () => {
       const { login } = useAuthStore.getState();
 
       await act(async () => {
-        await login({ email: 'wrong@email.com', password: 'wrongpassword' });
+        try {
+          await login({ email: 'wrong@email.com', password: 'wrongpassword' });
+        } catch {
+          // Expected - store re-throws errors
+        }
       });
 
       const state = useAuthStore.getState();
@@ -271,7 +278,7 @@ describe('Authentication Flows - UX Critical', () => {
   });
 
   describe('Registration', () => {
-    it('should register new user', async () => {
+    it('should register new user and redirect to verification', async () => {
       mockAuthService.register.mockResolvedValueOnce({
         user: {
           id: 'new-user',
@@ -279,23 +286,26 @@ describe('Authentication Flows - UX Critical', () => {
           name: 'New User',
           profilePicture: null,
         },
-        token: 'jwt-new-user',
+        needsEmailVerification: true,
       });
 
       const { register } = useAuthStore.getState();
 
       await act(async () => {
-        await register({
+        const result = await register({
           email: 'newuser@example.com',
           password: 'SecurePass123!',
           name: 'New User',
         });
+        expect(result.needsEmailVerification).toBe(true);
       });
 
       await waitFor(() => {
         const state = useAuthStore.getState();
-        expect(state.isLoggedIn).toBe(true);
+        // New users should NOT be logged in - they need to verify first
+        expect(state.isLoggedIn).toBe(false);
         expect(state.user?.email).toBe('newuser@example.com');
+        expect(state.token).toBeNull();
       });
     });
 
@@ -305,11 +315,15 @@ describe('Authentication Flows - UX Critical', () => {
       const { register } = useAuthStore.getState();
 
       await act(async () => {
-        await register({
-          email: 'existing@example.com',
-          password: 'password',
-          name: 'User',
-        });
+        try {
+          await register({
+            email: 'existing@example.com',
+            password: 'password',
+            name: 'User',
+          });
+        } catch {
+          // Expected - store re-throws errors
+        }
       });
 
       const state = useAuthStore.getState();
@@ -335,6 +349,7 @@ describe('Authentication Flows - UX Critical', () => {
       mockAuthService.loginWithGoogle.mockResolvedValueOnce({
         user: { id: 'user-123', email: 'user@gmail.com', name: 'User', profilePicture: null },
         token: 'jwt-token',
+        needsEmailVerification: false,
       });
 
       httpClient.post.mockImplementationOnce(async (url: string, data?: any) => {

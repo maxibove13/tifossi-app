@@ -179,6 +179,7 @@ export const linkingConfig = {
           login: '/auth/login',
           signup: '/auth/signup',
           'forgot-password': '/auth/forgot-password',
+          'reset-password': '/auth/reset-password',
           'verify-email': '/auth/verify-email',
           'verification-code': '/auth/verification-code',
           'verify-success': '/auth/verify-success',
@@ -247,9 +248,16 @@ export interface DeepLinkResult {
   error?: string;
 }
 
+// Known Firebase Dynamic Link domains - add your page.link domain here
+const FIREBASE_DYNAMIC_LINK_HOSTS = ['tifossi.page.link', 'page.link'];
+
+// App domains that can appear inside Firebase Dynamic Link payloads
+const APP_LINK_HOSTS = ['tifossi.app', 'auth.tifossi.app'];
+
 class DeepLinkRouter {
   private isInitialized = false;
   private linkingListener: ((event: { url: string }) => void) | null = null;
+  private processingUrls = new Set<string>(); // Guard against infinite recursion
 
   /**
    * Initialize the deep link router
@@ -303,6 +311,12 @@ class DeepLinkRouter {
    * Main deep link handler - routes to appropriate handler
    */
   async handleDeepLink(url: string): Promise<DeepLinkResult> {
+    // Guard against infinite recursion
+    if (this.processingUrls.has(url)) {
+      return { handled: false, error: 'Recursive deep link detected' };
+    }
+
+    this.processingUrls.add(url);
     try {
       // Parse URL using URL constructor instead of Linking.parse
       const urlObj = new URL(url);
@@ -313,6 +327,35 @@ class DeepLinkRouter {
       urlObj.searchParams.forEach((value, key) => {
         queryParams[key] = value;
       });
+
+      // Handle Firebase Dynamic Links - unwrap the inner link parameter
+      // Only unwrap if: host is a known Firebase Dynamic Link domain, OR
+      // the link param points to one of our app domains
+      if (queryParams.link) {
+        const host = urlObj.hostname;
+        const isFirebaseDynamicLinkHost = FIREBASE_DYNAMIC_LINK_HOSTS.some(
+          (h) => host === h || host.endsWith('.' + h)
+        );
+
+        if (isFirebaseDynamicLinkHost) {
+          const innerUrl = decodeURIComponent(queryParams.link);
+          return await this.handleDeepLink(innerUrl);
+        }
+
+        // Also unwrap if the link param points to our app domains (custom domain setup)
+        try {
+          const innerUrl = decodeURIComponent(queryParams.link);
+          const innerHost = new URL(innerUrl).hostname;
+          const isAppLink = APP_LINK_HOSTS.some(
+            (h) => innerHost === h || innerHost.endsWith('.' + h)
+          );
+          if (isAppLink) {
+            return await this.handleDeepLink(innerUrl);
+          }
+        } catch {
+          // Invalid URL in link param, continue with normal routing
+        }
+      }
 
       if (!path) {
         // Navigate to home for empty paths
@@ -332,8 +375,8 @@ class DeepLinkRouter {
         if (path.includes('/auth/apple/')) {
           return await this.handleAppleAuthDeepLink(url, path, queryParams || {});
         }
-        // Delegate to general auth deep linking service
-        return { handled: true, success: true };
+        // Delegate to general auth deep linking service for password reset, email verify, etc.
+        return await authDeepLinking.handleAuthDeepLink(path, queryParams || {});
       } else {
         return await this.handleAppNavigationDeepLink(path, queryParams || {});
       }
@@ -342,6 +385,8 @@ class DeepLinkRouter {
         handled: false,
         error: error.message,
       };
+    } finally {
+      this.processingUrls.delete(url);
     }
   }
 

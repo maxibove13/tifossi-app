@@ -593,46 +593,6 @@ class StrapiApiService {
   }
 
   /**
-   * Resends email verification
-   */
-  async resendVerificationEmail(token: string): Promise<boolean> {
-    try {
-      await httpClient.post(
-        '/auth/send-email-confirmation',
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      return true;
-    } catch (error) {
-      const apiError = handleApiError(error, 'resendVerificationEmail');
-      throw apiError;
-    }
-  }
-
-  /**
-   * Verifies email with confirmation code
-   */
-  async verifyEmail(token: string, code: string): Promise<boolean> {
-    try {
-      await httpClient.get(`/auth/email-confirmation?confirmation=${code}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      return true;
-    } catch (error) {
-      const apiError = handleApiError(error, 'verifyEmail');
-      throw apiError;
-    }
-  }
-
-  /**
    * Syncs user data after login (cart, favorites, etc.)
    */
   async syncUserData(): Promise<boolean> {
@@ -772,8 +732,6 @@ const strapiApiExport = {
   logout: strapiApi.logout.bind(strapiApi),
   changePassword: strapiApi.changePassword.bind(strapiApi),
   updateProfilePicture: strapiApi.updateProfilePicture.bind(strapiApi),
-  resendVerificationEmail: strapiApi.resendVerificationEmail.bind(strapiApi),
-  verifyEmail: strapiApi.verifyEmail.bind(strapiApi),
   syncUserData: strapiApi.syncUserData.bind(strapiApi),
 
   // Additional utility methods

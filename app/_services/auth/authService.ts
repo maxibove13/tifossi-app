@@ -34,9 +34,9 @@ export type { AppUser, PasswordChangeCredentials, AuthResult, RegistrationData }
 
 // Authentication service result interfaces
 export interface LoginResult {
-  token: string;
+  token?: string; // Optional - undefined for unverified users
   user: AppUser;
-  needsEmailVerification?: boolean;
+  needsEmailVerification: boolean; // Required, not optional
 }
 
 export interface ServiceHealthCheck {
@@ -96,17 +96,27 @@ class AuthService {
         throw new Error(authResult.error || 'Authentication failed');
       }
 
-      // Sync tokens after successful login
-      const tokens = await tokenManager.syncAfterLogin(
-        authResult.token || 'mock-token',
-        authResult.user.id
-      );
+      // GATE: Check verification BEFORE token minting
+      if (!authResult.user.isEmailVerified) {
+        return {
+          user: authResult.user,
+          needsEmailVerification: true,
+        };
+      }
 
-      // Use Strapi token as the primary token for backward compatibility
-      const primaryToken = tokens.strapiToken || authResult.token || 'mock-token';
+      // Only mint Strapi token for verified users
+      if (!authResult.token) {
+        throw new Error('No Firebase token received');
+      }
+
+      const tokens = await tokenManager.syncAfterLogin(authResult.token, authResult.user.id);
+
+      if (!tokens.strapiToken) {
+        throw new Error('Token exchange failed');
+      }
 
       return {
-        token: primaryToken,
+        token: tokens.strapiToken,
         user: authResult.user,
         needsEmailVerification: false,
       };
@@ -139,20 +149,17 @@ class AuthService {
         throw new Error(authResult.error || 'Registration failed');
       }
 
-      // Send verification email
-      await firebaseAuth.sendEmailVerification();
+      // Send verification email - must succeed before returning needsEmailVerification
+      const emailResult = await firebaseAuth.sendEmailVerification();
+      if (!emailResult.success) {
+        throw new Error(
+          emailResult.error ||
+            'No se pudo enviar el correo de verificación. Intenta iniciar sesión para reenviarlo.'
+        );
+      }
 
-      // Sync tokens after successful registration
-      const tokens = await tokenManager.syncAfterLogin(
-        authResult.token || 'mock-token',
-        authResult.user.id
-      );
-
-      // Use Strapi token as the primary token for backward compatibility
-      const primaryToken = tokens.strapiToken || authResult.token || 'mock-token';
-
+      // New users ALWAYS need verification - don't mint tokens
       return {
-        token: primaryToken,
         user: authResult.user,
         needsEmailVerification: true,
       };
@@ -175,17 +182,27 @@ class AuthService {
         throw new Error(authResult.error || 'Google authentication failed');
       }
 
-      // Sync tokens after successful login
-      const tokens = await tokenManager.syncAfterLogin(
-        authResult.token || 'mock-token',
-        authResult.user.id
-      );
+      // Google accounts are typically pre-verified, but check anyway
+      if (!authResult.user.isEmailVerified) {
+        return {
+          user: authResult.user,
+          needsEmailVerification: true,
+        };
+      }
 
-      // Use Strapi token as the primary token for backward compatibility
-      const primaryToken = tokens.strapiToken || authResult.token || 'mock-token';
+      // Only mint Strapi token for verified users
+      if (!authResult.token) {
+        throw new Error('No Firebase token received');
+      }
+
+      const tokens = await tokenManager.syncAfterLogin(authResult.token, authResult.user.id);
+
+      if (!tokens.strapiToken) {
+        throw new Error('Token exchange failed');
+      }
 
       return {
-        token: primaryToken,
+        token: tokens.strapiToken,
         user: authResult.user,
         needsEmailVerification: false,
       };
@@ -208,17 +225,27 @@ class AuthService {
         throw new Error(authResult.error || 'Apple Sign-In failed');
       }
 
-      // Sync tokens after successful login
-      const tokens = await tokenManager.syncAfterLogin(
-        authResult.token || 'mock-token',
-        authResult.user.id
-      );
+      // Apple accounts are typically pre-verified, but check anyway
+      if (!authResult.user.isEmailVerified) {
+        return {
+          user: authResult.user,
+          needsEmailVerification: true,
+        };
+      }
 
-      // Use Strapi token as the primary token for backward compatibility
-      const primaryToken = tokens.strapiToken || authResult.token || 'mock-token';
+      // Only mint Strapi token for verified users
+      if (!authResult.token) {
+        throw new Error('No Firebase token received');
+      }
+
+      const tokens = await tokenManager.syncAfterLogin(authResult.token, authResult.user.id);
+
+      if (!tokens.strapiToken) {
+        throw new Error('Token exchange failed');
+      }
 
       return {
-        token: primaryToken,
+        token: tokens.strapiToken,
         user: authResult.user,
         needsEmailVerification: false,
       };
@@ -230,27 +257,79 @@ class AuthService {
   /**
    * Validate token and return user data
    */
-  async validateToken(_token: string): Promise<AppUser> {
+  async validateToken(token: string): Promise<AppUser> {
     await this.ensureInitialized();
 
+    if (!token) {
+      throw new Error('No token provided');
+    }
+
+    // Import SecureStore for clearing tokens on failure
+    const SecureStore = require('expo-secure-store');
+    const AUTH_TOKEN_KEY = 'tifossi_auth_token';
+
+    // Helper to clear ALL token storage on failure
+    const clearAllTokens = async () => {
+      await tokenManager.clearTokens();
+      await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+    };
+
+    let shouldClearTokens = false;
+
     try {
-      // Check if we have valid tokens in storage
-      const validation = await tokenManager.validateTokens();
+      // Validate against Strapi backend using the PASSED token
+      const { buildUrl, endpoints } = require('../../_config/endpoints');
+      const response = await fetch(buildUrl(endpoints.auth.validateToken), {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (!validation.isValid) {
-        throw new Error('Invalid or expired token');
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          shouldClearTokens = true;
+          throw new Error('Invalid or expired token');
+        }
+        throw new Error('Unable to validate token at this time');
       }
 
-      // Get current user from Firebase
-      const currentUser = firebaseAuth.getCurrentAppUser();
-
-      if (!currentUser) {
-        throw new Error('No authenticated user found');
+      const data = await response.json();
+      if (!data.valid || !data.user) {
+        shouldClearTokens = true;
+        throw new Error('Token validation failed');
       }
 
-      return currentUser;
+      // Best-effort sync tokenManager (not critical - httpClient uses SecureStore directly)
+      try {
+        const currentFirebaseUser = firebaseAuth.getCurrentAppUser();
+        if (currentFirebaseUser) {
+          const firebaseToken = await firebaseAuth.getIdToken();
+          if (firebaseToken) {
+            await tokenManager.storeTokens(firebaseToken, token, currentFirebaseUser.id);
+          }
+        }
+      } catch {
+        // Ignore sync errors - API calls use SecureStore, not tokenManager
+      }
+
+      return data.user as AppUser;
     } catch (error: any) {
-      throw new Error(`Token validation failed: ${error.message}`);
+      if (shouldClearTokens) {
+        await clearAllTokens();
+      }
+
+      const message = error?.message || 'Token validation failed';
+      const isNetworkError =
+        typeof message === 'string' &&
+        (message.toLowerCase().includes('network') || message.toLowerCase().includes('fetch'));
+
+      if (isNetworkError && !shouldClearTokens) {
+        throw new Error('Network error while validating token');
+      }
+
+      throw new Error(`Token validation failed: ${message}`);
     }
   }
 
@@ -303,31 +382,34 @@ class AuthService {
   /**
    * Resend verification email
    *
-   * Maintains compatibility with existing authStore.resendVerificationEmail() interface
+   * Uses Firebase's current user session - no API token required.
+   * This allows unverified users to request a new verification email.
    */
-  async resendVerificationEmail(_token: string): Promise<boolean> {
+  async resendVerificationEmail(): Promise<boolean> {
     await this.ensureInitialized();
 
-    try {
-      // Send verification email via Firebase
-      await firebaseAuth.sendEmailVerification();
+    // Send verification email via Firebase (uses current signed-in user)
+    const result = await firebaseAuth.sendEmailVerification();
 
-      return true;
-    } catch (error: any) {
-      throw error;
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to send verification email');
     }
+
+    return true;
   }
 
   /**
-   * Verify email with code
+   * Verify email with action code from deep link
    *
-   * Maintains compatibility with existing authStore.verifyEmail() interface
+   * Uses Firebase action code verification - no API token required.
+   * Called when user clicks verification link in email.
    */
-  async verifyEmail(_token: string, _code: string): Promise<boolean> {
+  async verifyEmail(code: string): Promise<boolean> {
     await this.ensureInitialized();
 
-    // Verify email code with Firebase (mock implementation)
-    // For now, we'll just return success
+    // Apply the Firebase action code to verify the email
+    await firebaseAuth.verifyEmailCode(code);
+
     return true;
   }
 
@@ -337,24 +419,21 @@ class AuthService {
   async sendPasswordResetEmail(email: string): Promise<void> {
     await this.ensureInitialized();
 
-    try {
-      await firebaseAuth.sendPasswordReset(email);
-    } catch (error: any) {
-      throw error;
+    const result = await firebaseAuth.sendPasswordReset(email);
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to send password reset email');
     }
   }
 
   /**
-   * Confirm password reset (simplified)
+   * Confirm password reset
    */
-  async confirmPasswordReset(_code: string, _newPassword: string): Promise<void> {
+  async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
     await this.ensureInitialized();
 
-    try {
-      // This would normally confirm the password reset with Firebase
-      // For now, just log the code as this is not fully implemented
-    } catch (error: any) {
-      throw error;
+    const result = await firebaseAuth.confirmPasswordReset(code, newPassword);
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to reset password');
     }
   }
 
@@ -488,9 +567,8 @@ export const validateToken = (token: string) => authService.validateToken(token)
 export const logout = (token: string | null) => authService.logout(token);
 export const changePassword = (token: string, credentials: PasswordChangeCredentials) =>
   authService.changePassword(token, credentials);
-export const resendVerificationEmail = (token: string) =>
-  authService.resendVerificationEmail(token);
-export const verifyEmail = (token: string, code: string) => authService.verifyEmail(token, code);
+export const resendVerificationEmail = () => authService.resendVerificationEmail();
+export const verifyEmail = (code: string) => authService.verifyEmail(code);
 export const sendPasswordResetEmail = (email: string) => authService.sendPasswordResetEmail(email);
 export const confirmPasswordReset = (code: string, newPassword: string) =>
   authService.confirmPasswordReset(code, newPassword);

@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { colors } from '../_styles/colors';
 import { spacing, radius } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
@@ -30,10 +30,16 @@ function getErrorMessage(error: UnknownError): string {
 }
 
 export default function LoginScreen() {
+  const { emailVerified, verificationError } = useLocalSearchParams<{
+    emailVerified?: string;
+    verificationError?: string;
+  }>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showVerifiedBanner, setShowVerifiedBanner] = useState(emailVerified === 'true');
+  const [showVerificationError, setShowVerificationError] = useState(!!verificationError);
 
   // Apple Sign-In specific state
   const [appleError, setAppleError] = useState<string | null>(null);
@@ -67,10 +73,18 @@ export default function LoginScreen() {
     }
 
     try {
-      // Attempt login with Firebase-integrated auth service
-      await login({ email, password });
+      const result = await login({ email, password });
 
-      // Return user to where they came from, or home if no history
+      if (result.needsEmailVerification) {
+        // Redirect to verification screen
+        router.replace({
+          pathname: '/auth/verification-code',
+          params: { email },
+        });
+        return;
+      }
+
+      // Verified - return user to where they came from
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -89,10 +103,17 @@ export default function LoginScreen() {
     setIsSubmitting(true);
 
     try {
-      // Attempt Google login
-      await loginWithGoogle();
+      const result = await loginWithGoogle();
 
-      // Return user to where they came from, or home if no history
+      if (result.needsEmailVerification) {
+        router.replace({
+          pathname: '/auth/verification-code',
+          params: { email: result.user?.email || '' },
+        });
+        return;
+      }
+
+      // Verified - return user to where they came from
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -123,10 +144,17 @@ export default function LoginScreen() {
     setIsSubmitting(true);
 
     try {
-      // Attempt Apple login
-      await loginWithApple();
+      const result = await loginWithApple();
 
-      // Return user to where they came from, or home if no history
+      if (result.needsEmailVerification) {
+        router.replace({
+          pathname: '/auth/verification-code',
+          params: { email: result.user?.email || '' },
+        });
+        return;
+      }
+
+      // Verified - return user to where they came from
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -177,6 +205,40 @@ export default function LoginScreen() {
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.formContainer}>
+            {/* Email verified success banner */}
+            {showVerifiedBanner && (
+              <View style={styles.successBanner}>
+                <Text style={styles.successBannerText}>
+                  Correo verificado. Ahora puedes iniciar sesión.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowVerifiedBanner(false)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <CloseIcon width={16} height={16} stroke={colors.success} strokeWidth={1.5} />
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Verification error banner */}
+            {showVerificationError && verificationError && (
+              <View style={styles.errorBanner}>
+                <Text style={styles.errorBannerText}>
+                  {verificationError.includes('expired')
+                    ? 'El enlace de verificación ha expirado. Inicia sesión para reenviar.'
+                    : verificationError.includes('invalid')
+                      ? 'El enlace de verificación no es válido. Inicia sesión para reenviar.'
+                      : `Error de verificación: ${verificationError}`}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowVerificationError(false)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <CloseIcon width={16} height={16} stroke={colors.error} strokeWidth={1.5} />
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* General error message - shown once at top */}
             {error && error.includes('Por favor, completa') && (
               <Text style={styles.errorText}>{error}</Text>
@@ -331,6 +393,44 @@ const styles = StyleSheet.create({
     fontFamily: fonts.secondary,
     textAlign: 'center',
     marginBottom: spacing.md,
+  },
+  successBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.success + '15',
+    borderWidth: 1,
+    borderColor: colors.success,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+  },
+  successBannerText: {
+    flex: 1,
+    color: colors.success,
+    fontSize: fontSizes.sm,
+    fontFamily: fonts.secondary,
+    marginRight: spacing.sm,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.error + '15',
+    borderWidth: 1,
+    borderColor: colors.error,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+  },
+  errorBannerText: {
+    flex: 1,
+    color: colors.error,
+    fontSize: fontSizes.sm,
+    fontFamily: fonts.secondary,
+    marginRight: spacing.sm,
   },
   actionButtonsContainer: {
     paddingHorizontal: spacing.lg,

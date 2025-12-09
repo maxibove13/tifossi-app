@@ -92,15 +92,19 @@ export default function SignupScreen() {
     }
 
     try {
-      // Register the user with our auth store
-      await register({ name, email, password });
+      const result = await register({ name, email, password });
 
-      // After successful signup, redirect to verification code screen
-      // passing the email as a parameter
-      router.replace({
-        pathname: '/auth/verification-code',
-        params: { email },
-      });
+      if (result.needsEmailVerification) {
+        // After successful signup, redirect to verification code screen
+        router.replace({
+          pathname: '/auth/verification-code',
+          params: { email },
+        });
+        return;
+      }
+
+      // Verified (rare for new signups) - go to home
+      router.replace('/(tabs)');
     } catch (error: UnknownError) {
       // Handle signup error
       setError(getErrorMessage(error) || 'Error al crear la cuenta o el correo ya está en uso.');
@@ -115,10 +119,17 @@ export default function SignupScreen() {
     setIsSubmitting(true);
 
     try {
-      // Apple Sign-In returns same result for signup/signin
-      await loginWithApple();
+      const result = await loginWithApple();
 
-      // Return user to where they came from, or home if no history
+      if (result.needsEmailVerification) {
+        router.replace({
+          pathname: '/auth/verification-code',
+          params: { email: result.user?.email || '' },
+        });
+        return;
+      }
+
+      // Verified - return user to where they came from
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -157,9 +168,17 @@ export default function SignupScreen() {
     setIsSubmitting(true);
 
     try {
-      await loginWithGoogle();
+      const result = await loginWithGoogle();
 
-      // Return user to where they came from, or home if no history
+      if (result.needsEmailVerification) {
+        router.replace({
+          pathname: '/auth/verification-code',
+          params: { email: result.user?.email || '' },
+        });
+        return;
+      }
+
+      // Verified - return user to where they came from
       if (router.canGoBack()) {
         router.back();
       } else {

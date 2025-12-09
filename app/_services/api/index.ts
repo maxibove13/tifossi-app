@@ -48,8 +48,6 @@ export interface ApiInterface {
     credentials: { currentPassword: string; newPassword: string }
   ): Promise<boolean>;
   updateProfilePicture(token: string, imageUri: string): Promise<{ profilePictureUrl: string }>;
-  resendVerificationEmail(token: string): Promise<boolean>;
-  verifyEmail(token: string, code: string): Promise<boolean>;
   syncUserData(): Promise<boolean>;
 }
 

@@ -213,44 +213,6 @@ export const mockUpdateProfilePicture = async (
   return { profilePictureUrl: imageUri };
 };
 
-export const mockResendVerificationEmail = async (token: string): Promise<boolean> => {
-  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY));
-  safeLog('[Mock API] Resending verification email/code for token:', token);
-
-  // In a real implementation with a specific auth provider:
-  // - With Firebase, this would call sendEmailVerification()
-  // - With Auth0, this might call the Management API to trigger verification
-  // - With a custom backend, this would hit a verification resend endpoint
-
-  // Simulate occasional network failures (5% chance)
-  if (Math.random() < 0.05) {
-    throw new Error('Network error. Please check your connection and try again.');
-  }
-
-  return true;
-};
-
-export const mockVerifyEmail = async (token: string, code: string): Promise<boolean> => {
-  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY));
-  safeLog('[Mock API] Verifying email with code:', code);
-
-  // In a real implementation, this would validate the code against what was sent in the database
-  // For development/mock purposes, accept any 6-digit code
-  // This allows for easy testing while remaining agnostic to the actual auth provider
-  if (!/^\d{6}$/.test(code)) {
-    throw new Error('Invalid verification code format');
-  }
-
-  // For demo purposes, we'll simulate a 90% success rate to mimic real-world scenarios
-  // In production, this would be replaced by actual validation against sent codes
-  const randomSuccess = Math.random() > 0.1;
-  if (!randomSuccess) {
-    throw new Error('Invalid verification code');
-  }
-
-  return true;
-};
-
 // --- User Data Sync --- Simulate merging local/server state after login
 export const mockSyncUserData = async (): Promise<boolean> => {
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY * 1.5));
@@ -316,8 +278,6 @@ const mockApi = {
   syncUserData: mockSyncUserData,
   changePassword: mockChangePassword,
   updateProfilePicture: mockUpdateProfilePicture,
-  resendVerificationEmail: mockResendVerificationEmail,
-  verifyEmail: mockVerifyEmail,
 
   // System APIs
   getEnvironmentInfo: mockGetEnvironmentInfo,
