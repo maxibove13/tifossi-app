@@ -14,20 +14,44 @@ export default ({ strapi }: { strapi: any }) => ({
    * Creates or updates user record based on Firebase user data
    */
   async exchange(ctx: any) {
+    // Entry-level logging - should always appear
+    console.log('[Firebase Exchange] Endpoint hit');
+    strapi.log.info('[Firebase Exchange] Request received', {
+      hasBody: !!ctx.request.body,
+      bodyKeys: Object.keys(ctx.request.body || {}),
+    });
+
     try {
       const { firebaseToken, tokenVersion } = ctx.request.body;
 
+      console.log('[Firebase Exchange] Token info:', {
+        hasToken: !!firebaseToken,
+        tokenLength: firebaseToken?.length || 0,
+        tokenVersion,
+      });
+
       if (!firebaseToken) {
+        console.log('[Firebase Exchange] No token provided');
         return ctx.badRequest('Firebase token is required');
       }
 
       // Verify Firebase ID token
+      console.log('[Firebase Exchange] Starting token verification...');
       let decodedToken;
       try {
         decodedToken = await firebaseAdmin.verifyIdToken(firebaseToken);
+        console.log('[Firebase Exchange] Token verified successfully:', {
+          uid: decodedToken.uid,
+          email: decodedToken.email,
+          emailVerified: decodedToken.email_verified,
+        });
       } catch (error: any) {
         const errorCode = error?.code || 'unknown';
         const errorMessage = error?.message || 'Unknown error';
+        console.log('[Firebase Exchange] TOKEN VERIFICATION FAILED:', {
+          code: errorCode,
+          message: errorMessage,
+        });
         strapi.log.error('[Strapi Firebase] Token verification failed:', {
           code: errorCode,
           message: errorMessage,
@@ -133,12 +157,14 @@ export default ({ strapi }: { strapi: any }) => ({
       const sanitizedUser = await userService.sanitizeUser(user);
 
       // Send success response
+      console.log('[Firebase Exchange] SUCCESS - User authenticated:', sanitizedUser.email);
       ctx.send({
         jwt: strapiJwt,
         user: sanitizedUser,
         message: 'Authentication successful',
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.log('[Firebase Exchange] UNEXPECTED ERROR:', error?.message);
       strapi.log.error('[Strapi Firebase] Token exchange error:', error);
       ctx.internalServerError('Authentication failed');
     }
