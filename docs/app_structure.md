@@ -89,8 +89,13 @@ app/
 │   │   ├── hooks.ts           # Preloading hooks
 │   │   ├── index.ts           # Entry point exports
 │   │   └── types.ts           # Preload type definitions
-│   ├── api/            # API service and mock implementations
-│   │   └── mockApi.ts  # Mock API for development
+│   ├── api/            # API service and implementations
+│   │   ├── httpClient.ts      # HTTP client with auth and validation
+│   │   ├── publicPaths.ts     # Public endpoint detection
+│   │   ├── mockApi.ts         # Mock API for development
+│   │   ├── strapiApi.ts       # Strapi backend integration
+│   │   ├── errorHandler.ts    # API error handling
+│   │   └── queryHooks.ts      # React Query hooks
 │   └── mmkvTest.ts     # MMKV testing/implementation
 ├── _stores/            # Global state stores
 │   ├── cartStore.ts    # Shopping cart state management
@@ -268,10 +273,12 @@ types/
 ### Tests Directory Structure
 
 ```
-__tests__/
-├── setup.ts           # Test setup and configuration
-├── smoke.test.tsx     # Basic smoke tests
-└── components.test.tsx # Component tests
+app/_tests/
+├── setup.ts                      # Test setup and configuration
+├── smoke.test.tsx                # Basic smoke tests
+├── components.test.tsx           # Component tests
+└── services/
+    └── httpClient.test.ts        # HTTP client and public path tests
 ```
 
 ### Styles Directory Structure
