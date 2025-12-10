@@ -10,8 +10,8 @@ export default {
       path: '/user-profile/me',
       handler: 'user-profile.updateMe',
       config: {
-        policies: ['global::is-authenticated'],
-        middlewares: [],
+        // No auth: false means Strapi uses default JWT validation
+        // which populates ctx.state.user automatically
       },
     },
   ],
