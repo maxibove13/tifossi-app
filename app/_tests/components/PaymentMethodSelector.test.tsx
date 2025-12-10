@@ -4,7 +4,6 @@ import { Alert } from 'react-native';
 import PaymentSelectionScreen from '../../checkout/payment-selection';
 import { renderStoreUtils } from '../utils/render-utils';
 import httpClient from '../../_services/api/httpClient';
-import orderService from '../../_services/order/orderService';
 import mercadoPagoService from '../../_services/payment/mercadoPago';
 import type { Address } from '../../_services/address/addressService';
 import type { AxiosRequestConfig } from 'axios';
@@ -84,48 +83,6 @@ const defaultSelectedAddress: Address = {
   country: 'UY',
   isDefault: true,
   type: 'shipping',
-};
-
-const enqueueSuccessfulOrderResponse = (overrides: Partial<Record<string, unknown>> = {}) => {
-  httpClientMock.post.mockImplementationOnce(async (url, data, config) => {
-    if (url === '/orders') {
-      const items = Array.isArray((data as any)?.items) ? (data as any).items : [];
-      return {
-        order: {
-          id: 'order-123',
-          orderNumber: 'ORD-2024-001',
-          status: 'PAYMENT_PENDING',
-          paymentStatus: 'PENDING',
-          items,
-          shippingCost: 150,
-          subtotal: 3000,
-          discount: 0,
-          total: 3150,
-          ...overrides,
-        },
-      };
-    }
-
-    return defaultHttpPost ? defaultHttpPost(url, data, config) : Promise.resolve({ data: {} });
-  });
-};
-
-const enqueueOrderFailure = (error: Error) => {
-  httpClientMock.post.mockImplementationOnce(async (url, data, config) => {
-    if (url === '/orders') {
-      throw error;
-    }
-    return defaultHttpPost ? defaultHttpPost(url, data, config) : Promise.resolve({ data: {} });
-  });
-};
-
-const enqueueEmptyOrderResponse = () => {
-  httpClientMock.post.mockImplementationOnce(async (url, data, config) => {
-    if (url === '/orders') {
-      return { data: null } as any;
-    }
-    return defaultHttpPost ? defaultHttpPost(url, data, config) : Promise.resolve({ data: {} });
-  });
 };
 
 const selectMercadoPagoOption = async () => {
@@ -360,8 +317,7 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
 
   describe('Payment Processing', () => {
     it('should process Mercado Pago payment successfully', async () => {
-      enqueueSuccessfulOrderResponse();
-
+      // Mock createPaymentPreference (the method actually used by the component)
       fetchMock.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -378,7 +334,7 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
 
       render(<PaymentSelectionScreen />);
 
-      const createOrderSpy = jest.spyOn(orderService, 'createOrderWithPayment');
+      const createPreferenceSpy = jest.spyOn(mercadoPagoService, 'createPaymentPreference');
       const initiatePaymentSpy = jest.spyOn(mercadoPagoService, 'initiatePayment');
 
       await selectMercadoPagoOption();
@@ -386,15 +342,16 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       await tapContinue();
 
       await waitFor(() => {
-        expect(createOrderSpy).toHaveBeenCalled();
+        expect(createPreferenceSpy).toHaveBeenCalled();
         expect(initiatePaymentSpy).toHaveBeenCalled();
       });
-      createOrderSpy.mockRestore();
+      createPreferenceSpy.mockRestore();
       initiatePaymentSpy.mockRestore();
     });
 
     it('should handle payment processing errors', async () => {
-      enqueueOrderFailure(new Error('Network error'));
+      // Mock createPaymentPreference to throw an error
+      fetchMock.mockRejectedValueOnce(new Error('Network error'));
 
       render(<PaymentSelectionScreen />);
 
@@ -403,56 +360,27 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       await tapContinue();
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Error', expect.stringContaining('Network error'));
+        expect(mockAlert).toHaveBeenCalledWith('Error de Pago', expect.any(String));
       });
     });
 
     it('should show loading state during payment processing', async () => {
-      let resolveOrder: (() => void) | undefined;
+      let resolvePreference: ((value: Response) => void) | undefined;
 
-      httpClientMock.post.mockImplementationOnce((url, data, config) => {
-        if (url === '/orders') {
-          return new Promise((resolve) => {
-            resolveOrder = () =>
-              resolve({
-                order: {
-                  id: 'order-123',
-                  orderNumber: 'ORD-2024-001',
-                  status: 'PAYMENT_PENDING',
-                  paymentStatus: 'PENDING',
-                  items: [],
-                  shippingCost: 150,
-                  subtotal: 3000,
-                  discount: 0,
-                  total: 3150,
-                },
-              });
-          });
-        }
-
-        return defaultHttpPost ? defaultHttpPost(url, data, config) : Promise.resolve({ data: {} });
+      // Create a delayed fetch mock for createPaymentPreference
+      fetchMock.mockImplementationOnce(() => {
+        return new Promise((resolve) => {
+          resolvePreference = resolve;
+        });
       });
-
-      fetchMock.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          data: {
-            preference: {
-              id: 'PREF-SLOW',
-              initPoint: 'https://mercadopago.com/checkout/slow',
-              externalReference: 'ORD-2024-001',
-            },
-          },
-        }),
-      } as unknown as Response);
 
       render(<PaymentSelectionScreen />);
 
-      const createOrderSpy = jest.spyOn(orderService, 'createOrderWithPayment');
+      const createPreferenceSpy = jest.spyOn(mercadoPagoService, 'createPaymentPreference');
       const initiatePaymentSpy = jest.spyOn(mercadoPagoService, 'initiatePayment');
 
       await selectMercadoPagoOption();
+      await waitForSelectedAddress();
       await tapContinue();
 
       // Should show loading text
@@ -460,27 +388,44 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
         expect(screen.getByText('Procesando...')).toBeTruthy();
       });
 
+      // Resolve the delayed preference
       await act(async () => {
-        resolveOrder?.();
+        resolvePreference?.({
+          ok: true,
+          json: async () => ({
+            success: true,
+            data: {
+              preference: {
+                id: 'PREF-SLOW',
+                initPoint: 'https://mercadopago.com/checkout/slow',
+                externalReference: 'ORD-2024-001',
+              },
+            },
+          }),
+        } as Response);
       });
 
       await waitFor(() => {
-        expect(createOrderSpy).toHaveBeenCalled();
+        expect(createPreferenceSpy).toHaveBeenCalled();
         expect(initiatePaymentSpy).toHaveBeenCalled();
       });
 
-      createOrderSpy.mockRestore();
-      initiatePaymentSpy.mockRestore();
-
-      createOrderSpy.mockRestore();
+      createPreferenceSpy.mockRestore();
       initiatePaymentSpy.mockRestore();
     });
 
-    it('should validate user authentication before payment', async () => {
-      // Set user as null (not authenticated)
+    it('should require address or guest info for delivery checkout', async () => {
+      // Set user as null (not authenticated) and no guest address
       renderStoreUtils.auth.setState({
         user: null,
         token: null,
+      });
+
+      // Ensure no guest address is set
+      renderStoreUtils.payment.setState({
+        guestAddress: null,
+        guestContactInfo: null,
+        selectedStore: null,
       });
 
       render(<PaymentSelectionScreen />);
@@ -488,10 +433,11 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       await selectMercadoPagoOption();
       await tapContinue();
 
+      // Without auth or guest info, delivery checkout requires address
       await waitFor(() => {
         expect(mockAlert).toHaveBeenCalledWith(
           'Error',
-          'Debes estar autenticado para realizar el pago'
+          'Debes proporcionar una dirección de envío'
         );
       });
     });
@@ -561,7 +507,8 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
     });
 
     it('should handle network errors during payment', async () => {
-      enqueueOrderFailure(new Error('network error occurred'));
+      // Mock fetch to throw a network error
+      fetchMock.mockRejectedValueOnce(new Error('network error occurred'));
 
       render(<PaymentSelectionScreen />);
 
@@ -570,29 +517,17 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       await tapContinue();
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Error', expect.stringContaining('network error'));
-      });
-    });
-
-    it('should handle authentication errors during payment', async () => {
-      enqueueOrderFailure(new Error('auth token expired'));
-
-      render(<PaymentSelectionScreen />);
-
-      await selectMercadoPagoOption();
-      await waitForSelectedAddress();
-      await tapContinue();
-
-      await waitFor(() => {
+        // Component converts network errors to user-friendly message
         expect(mockAlert).toHaveBeenCalledWith(
-          'Error',
-          expect.stringContaining('auth token expired')
+          'Error de Pago',
+          'Sin conexión a internet. Verifica tu conexión.'
         );
       });
     });
 
-    it('should handle order creation failure', async () => {
-      enqueueEmptyOrderResponse();
+    it('should handle authentication errors during payment', async () => {
+      // Mock fetch to throw an auth error
+      fetchMock.mockRejectedValueOnce(new Error('auth token expired'));
 
       render(<PaymentSelectionScreen />);
 
@@ -601,12 +536,50 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       await tapContinue();
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Error', 'Failed to create order');
+        // Component converts auth errors to user-friendly message
+        expect(mockAlert).toHaveBeenCalledWith(
+          'Error de Pago',
+          'Debes iniciar sesión para continuar.'
+        );
+      });
+    });
+
+    it('should handle preference creation failure', async () => {
+      // Mock fetch to return a failure response
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: 'Service unavailable' }),
+      } as Response);
+
+      render(<PaymentSelectionScreen />);
+
+      await selectMercadoPagoOption();
+      await waitForSelectedAddress();
+      await tapContinue();
+
+      await waitFor(() => {
+        // Component shows generic error for non-network, non-auth failures
+        expect(mockAlert).toHaveBeenCalledWith('Error de Pago', expect.any(String));
       });
     });
 
     it('should handle payment initiation failure', async () => {
-      enqueueSuccessfulOrderResponse();
+      // Mock successful preference creation via fetch
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: {
+            preference: {
+              id: 'PREF-123',
+              initPoint: 'https://mercadopago.com/checkout/123',
+              externalReference: 'ORD-2024-001',
+            },
+          },
+        }),
+      } as Response);
+
+      // Mock failed payment initiation
       const initiatePaymentSpy = jest
         .spyOn(mercadoPagoService, 'initiatePayment')
         .mockResolvedValue({ success: false, error: 'Payment initiation failed' });

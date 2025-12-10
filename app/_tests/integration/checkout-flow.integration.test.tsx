@@ -142,7 +142,8 @@ type OrderOverrides = {
 
 const queueOrderSuccess = (overrides: Partial<OrderOverrides> = {}): void => {
   httpClientMock.post.mockImplementationOnce(async (url, data, config) => {
-    if (url === '/orders') {
+    // Handle both authenticated (/orders) and guest (/orders/guest) endpoints
+    if (url === '/orders' || url === '/orders/guest') {
       const items = Array.isArray((data as any)?.items) ? (data as any).items : [];
       return {
         order: {
@@ -166,7 +167,8 @@ const queueOrderSuccess = (overrides: Partial<OrderOverrides> = {}): void => {
 
 const queueOrderFailure = (error: Error): void => {
   httpClientMock.post.mockImplementationOnce(async (url, data, config) => {
-    if (url === '/orders') {
+    // Handle both authenticated (/orders) and guest (/orders/guest) endpoints
+    if (url === '/orders' || url === '/orders/guest') {
       throw error;
     }
 
