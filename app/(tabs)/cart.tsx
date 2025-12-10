@@ -9,7 +9,8 @@ import { Product } from '../_types/product';
 import PromotionCard from '../_components/store/product/promotion/PromotionCard';
 import CartProductCard from '../_components/store/product/cart/CartProductCard';
 import Button from '../_components/ui/buttons/Button';
-import Dropdown from '../_components/ui/form/Dropdown';
+// TODO: Re-enable when coupon/gift card features are ready
+// import Dropdown from '../_components/ui/form/Dropdown';
 import ProductData, { getProductById, products } from '../_data/products';
 import { useCartStore } from '../_stores/cartStore';
 import { useProductStore } from '../_stores/productStore';
@@ -177,13 +178,14 @@ export default function CartScreen() {
     }
   };
 
-  const handleCouponPress = () => {
-    // Coupon dropdown pressed
-  };
+  // TODO: Re-enable when coupon/gift card features are ready
+  // const handleCouponPress = () => {
+  //   // Coupon dropdown pressed
+  // };
 
-  const handleGiftCardPress = () => {
-    // Gift card dropdown pressed
-  };
+  // const handleGiftCardPress = () => {
+  //   // Gift card dropdown pressed
+  // };
 
   return (
     <View style={styles.container}>
@@ -245,18 +247,19 @@ export default function CartScreen() {
             {/* Spacer */}
             <View style={styles.sectionSpacer} />
 
+            {/* TODO: Re-enable when coupon/gift card features are ready */}
             {/* Coupon Dropdown */}
-            <View style={styles.dropdownSection}>
+            {/* <View style={styles.dropdownSection}>
               <Dropdown label="¿Tienes algún cupón disponible?" onPress={handleCouponPress} />
-            </View>
+            </View> */}
 
             {/* Spacer */}
-            <View style={styles.sectionSpacer} />
+            {/* <View style={styles.sectionSpacer} /> */}
 
             {/* Gift Card Dropdown */}
-            <View style={styles.dropdownSection}>
+            {/* <View style={styles.dropdownSection}>
               <Dropdown label="¿Tienes alguna tarjeta de regalo?" onPress={handleGiftCardPress} />
-            </View>
+            </View> */}
 
             {/* Final Spacer */}
             <View style={styles.sectionSpacer} />
