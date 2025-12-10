@@ -113,7 +113,7 @@ describe('Cart Persistence', () => {
 
     httpClient.put.mockImplementation(async (url: string, data?: any) => {
       await new Promise((resolve) => setTimeout(resolve, 10));
-      if (url === '/users/me') {
+      if (url === '/user-profile/me') {
         return { success: true, cart: data?.cart || [], data: { cart: data?.cart || [] } };
       }
       return { success: true };
@@ -368,7 +368,7 @@ describe('Cart Persistence', () => {
       // The actual implementation:
       // 1. Fetches user's existing cart via GET /users/me?populate=cart
       // 2. Merges locally
-      // 3. Saves via PUT /users/me
+      // 3. Saves via PUT /user-profile/me
       const httpClient = require('../../_services/api/httpClient').default;
 
       // Mock fetching user's existing cart (response format: { data: { cart: [...] } })
@@ -502,7 +502,7 @@ describe('Cart Persistence', () => {
       // The implementation:
       // 1. Fetches server cart via GET /users/me?populate=cart
       // 2. Merges locally (adds quantities for matching items)
-      // 3. Saves via PUT /users/me
+      // 3. Saves via PUT /user-profile/me
       const httpClient = require('../../_services/api/httpClient').default;
       httpClient.get.mockResolvedValueOnce({
         data: {
@@ -602,10 +602,10 @@ describe('Cart Persistence', () => {
         });
       });
 
-      // The implementation uses PUT /users/me to sync cart
+      // The implementation uses PUT /user-profile/me to sync cart
       await waitFor(() => {
         expect(httpClient.put).toHaveBeenCalledWith(
-          '/users/me',
+          '/user-profile/me',
           expect.objectContaining({
             cart: expect.arrayContaining([
               expect.objectContaining({
@@ -625,7 +625,7 @@ describe('Cart Persistence', () => {
       // Verify PUT called again with updated cart
       await waitFor(() => {
         expect(httpClient.put).toHaveBeenCalledWith(
-          '/users/me',
+          '/user-profile/me',
           expect.objectContaining({
             cart: expect.arrayContaining([
               expect.objectContaining({
@@ -660,7 +660,7 @@ describe('Cart Persistence', () => {
 
       const initialItems = [...result.current.items];
 
-      // Mock PUT failure for next operation (implementation uses PUT /users/me)
+      // Mock PUT failure for next operation (implementation uses PUT /user-profile/me)
       httpClient.put.mockRejectedValueOnce(new Error('Network error'));
 
       // Try to add another item
@@ -717,9 +717,9 @@ describe('Cart Persistence', () => {
       await waitFor(() => {
         // Both items should be in cart
         expect(result.current.items).toHaveLength(2);
-        // Verify PUT was called (implementation uses PUT /users/me)
+        // Verify PUT was called (implementation uses PUT /user-profile/me)
         expect(httpClient.put).toHaveBeenCalledWith(
-          '/users/me',
+          '/user-profile/me',
           expect.objectContaining({
             cart: expect.arrayContaining([
               expect.objectContaining({ productId: 'prod_1' }),
@@ -740,7 +740,7 @@ describe('Cart Persistence', () => {
         useCartStore.getState().setAuthToken('test-auth-token');
       });
 
-      // Mock PUT to fail (implementation uses PUT /users/me)
+      // Mock PUT to fail (implementation uses PUT /user-profile/me)
       httpClient.put.mockRejectedValue(new Error('Network unavailable'));
 
       await act(async () => {
@@ -798,7 +798,7 @@ describe('Cart Persistence', () => {
         });
       });
 
-      // Mock PUT to fail with timeout (implementation uses PUT /users/me)
+      // Mock PUT to fail with timeout (implementation uses PUT /user-profile/me)
       httpClient.put.mockImplementation(
         () => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))
       );
@@ -840,7 +840,7 @@ describe('Cart Persistence', () => {
 
       const previousItems = [...useCartStore.getState().items];
 
-      // Mock PUT to fail (implementation uses PUT /users/me)
+      // Mock PUT to fail (implementation uses PUT /user-profile/me)
       httpClient.put.mockRejectedValueOnce({
         response: { status: 400, data: { error: 'Invalid item' } },
       });

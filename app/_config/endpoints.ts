@@ -166,15 +166,15 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
     },
 
     user: {
-      profile: '/api/users/me',
-      updateProfile: '/api/users/me',
+      profile: '/api/users/me', // GET - built-in Strapi endpoint
+      updateProfile: '/api/user-profile/me', // PUT - custom endpoint (avoids plugin route collision)
       updatePassword: '/api/users/me/password',
       updateAvatar: '/api/users/me/avatar',
       preferences: '/api/users/me/preferences',
     },
 
     cart: {
-      sync: '/api/cart/sync',
+      sync: '/api/user-profile/me', // PUT with { cart: [...] } - custom endpoint
       add: '/api/cart/add',
       remove: '/api/cart/remove',
       update: '/api/cart/update',
@@ -182,7 +182,7 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
     },
 
     favorites: {
-      sync: '/api/favorites/sync',
+      sync: '/api/user-profile/me', // PUT with { favorites: { set: [...] } } - custom endpoint
       add: '/api/favorites/add',
       remove: '/api/favorites/remove',
       list: '/api/favorites',
@@ -246,15 +246,15 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
     },
 
     user: {
-      profile: '/api/users/me',
-      updateProfile: '/api/users/me',
+      profile: '/api/users/me', // GET - built-in Strapi endpoint
+      updateProfile: '/api/user-profile/me', // PUT - custom endpoint (avoids plugin route collision)
       updatePassword: '/api/users/me/password',
       updateAvatar: '/api/users/me/avatar',
       preferences: '/api/users/me/preferences',
     },
 
     cart: {
-      sync: '/api/cart/sync',
+      sync: '/api/user-profile/me', // PUT with { cart: [...] } - custom endpoint
       add: '/api/cart/add',
       remove: '/api/cart/remove',
       update: '/api/cart/update',
@@ -262,7 +262,7 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
     },
 
     favorites: {
-      sync: '/api/favorites/sync',
+      sync: '/api/user-profile/me', // PUT with { favorites: { set: [...] } } - custom endpoint
       add: '/api/favorites/add',
       remove: '/api/favorites/remove',
       list: '/api/favorites',
@@ -326,15 +326,15 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
     },
 
     user: {
-      profile: '/api/users/me',
-      updateProfile: '/api/users/me',
+      profile: '/api/users/me', // GET - built-in Strapi endpoint
+      updateProfile: '/api/user-profile/me', // PUT - custom endpoint (avoids plugin route collision)
       updatePassword: '/api/users/me/password',
       updateAvatar: '/api/users/me/avatar',
       preferences: '/api/users/me/preferences',
     },
 
     cart: {
-      sync: '/api/cart/sync',
+      sync: '/api/user-profile/me', // PUT with { cart: [...] } - custom endpoint
       add: '/api/cart/add',
       remove: '/api/cart/remove',
       update: '/api/cart/update',
@@ -342,7 +342,7 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
     },
 
     favorites: {
-      sync: '/api/favorites/sync',
+      sync: '/api/user-profile/me', // PUT with { favorites: { set: [...] } } - custom endpoint
       add: '/api/favorites/add',
       remove: '/api/favorites/remove',
       list: '/api/favorites',

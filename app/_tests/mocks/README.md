@@ -139,12 +139,8 @@ interface MockOrder {
 
 ### Cart Endpoints
 
-- `POST /api/cart/add` - Add items to cart
-- `GET /api/cart` - Get cart contents
-- `PUT /api/cart/update` - Update cart items
-- `DELETE /api/cart/remove/:id` - Remove cart items
-- `DELETE /api/cart/clear` - Clear entire cart
-- `PUT /api/users/me` - Sync cart (send `{ cart: [...] }`)
+- `GET /api/users/me?populate=cart` - Get cart (via user profile, built-in Strapi endpoint)
+- `PUT /api/user-profile/me` - Sync cart (send `{ cart: [...] }`) - custom endpoint
 
 ### Order Endpoints
 
@@ -157,10 +153,8 @@ interface MockOrder {
 
 ### Favorites Endpoints
 
-- `GET /api/favorites` - Get user favorites
-- `POST /api/favorites` - Add to favorites
-- `DELETE /api/favorites/:id` - Remove from favorites
-- `PUT /api/users/me` - Sync favorites (send `{ favorites: { set: [...] } }`)
+- `GET /api/users/me?populate=favorites` - Get favorites (via user profile, built-in Strapi endpoint)
+- `PUT /api/user-profile/me` - Sync favorites (send `{ favorites: { set: [...] } }`) - custom endpoint
 
 ### Address Endpoints
 

@@ -69,7 +69,7 @@ class CartService {
       }
 
       // httpClient handles auth token via interceptors
-      const response = await httpClient.put('/users/me', { cart: items });
+      const response = await httpClient.put('/user-profile/me', { cart: items });
 
       // Extract cart from user response
       const userData = response?.data || response;
