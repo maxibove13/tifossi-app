@@ -482,10 +482,10 @@ Current security measures:
    **Protected Endpoints (auth token required):**
    - `/auth/logout` - Requires valid token to logout
    - `/auth/change-password` - Requires authentication
-   - `/users/me` - User profile
+   - `/users/me` - User profile (GET only, built-in Strapi endpoint)
+   - `/user-profile/me` - Update profile, cart, favorites (PUT, custom endpoint)
    - `/orders` - Order management
-   - `/cart/sync` - Cart synchronization
-   - `/favorites/sync` - Favorites synchronization
+   - `/payment/*` - Payment operations (supports Firebase tokens via custom policy)
 
    This system prevents common issues where expired/invalid tokens would cause 401 errors on public endpoints that should work without authentication.
 
