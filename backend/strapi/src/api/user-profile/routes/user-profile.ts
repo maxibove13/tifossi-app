@@ -10,8 +10,8 @@ export default {
       path: '/user-profile/me',
       handler: 'user-profile.updateMe',
       config: {
-        // No auth: false means Strapi uses default JWT validation
-        // which populates ctx.state.user automatically
+        auth: false, // Disable Strapi's permission-based auth
+        middlewares: ['global::jwt-auth'], // Use custom JWT middleware instead
       },
     },
   ],
