@@ -79,7 +79,7 @@ describe('CartService', () => {
 
       expect(result.success).toBe(true);
       expect(result.items).toEqual(mockCartItems);
-      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me', {
+      expect(mockHttpClient.put).toHaveBeenCalledWith('/user-profile/me', {
         cart: mockCartItems,
       });
     });
@@ -220,7 +220,7 @@ describe('CartService', () => {
 
       expect(result.success).toBe(true);
       expect(result.items).toEqual([]);
-      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me', {
+      expect(mockHttpClient.put).toHaveBeenCalledWith('/user-profile/me', {
         cart: [],
       });
     });

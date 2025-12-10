@@ -149,7 +149,7 @@ export const useCartStore = create<CartState>()(
 
         try {
           set({ isLoading: true, error: null });
-          await httpClient.put('/users/me', { cart: get().items });
+          await httpClient.put('/user-profile/me', { cart: get().items });
           set({ isLoading: false });
         } catch {
           set({
@@ -194,7 +194,7 @@ export const useCartStore = create<CartState>()(
 
         try {
           set({ isLoading: true, error: null });
-          await httpClient.put('/users/me', { cart: get().items });
+          await httpClient.put('/user-profile/me', { cart: get().items });
           set({ isLoading: false });
         } catch {
           set({
@@ -223,7 +223,7 @@ export const useCartStore = create<CartState>()(
 
         try {
           set({ isLoading: true, error: null });
-          await httpClient.put('/users/me', { cart: get().items });
+          await httpClient.put('/user-profile/me', { cart: get().items });
           set({ isLoading: false });
         } catch {
           set({
@@ -248,7 +248,7 @@ export const useCartStore = create<CartState>()(
 
         try {
           set({ isLoading: true, error: null });
-          await httpClient.put('/users/me', { cart: [] });
+          await httpClient.put('/user-profile/me', { cart: [] });
           set({ isLoading: false });
         } catch {
           set({
@@ -301,7 +301,7 @@ export const useCartStore = create<CartState>()(
           }
 
           // Save merged cart to server
-          await httpClient.put('/users/me', { cart: mergedItems });
+          await httpClient.put('/user-profile/me', { cart: mergedItems });
 
           set({
             items: mergedItems,

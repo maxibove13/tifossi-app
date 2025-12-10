@@ -661,7 +661,7 @@ describe('Cart Edge Cases - Revenue Protection', () => {
       expect(mockHttpClient.put).toHaveBeenCalledTimes(2);
       const [firstCall, secondCall] = mockHttpClient.put.mock.calls;
 
-      expect(firstCall[0]).toBe('/users/me');
+      expect(firstCall[0]).toBe('/user-profile/me');
       expect(firstCall[1]).toEqual({
         cart: [
           expect.objectContaining({
@@ -673,7 +673,7 @@ describe('Cart Edge Cases - Revenue Protection', () => {
         ],
       });
 
-      expect(secondCall[0]).toBe('/users/me');
+      expect(secondCall[0]).toBe('/user-profile/me');
       expect(secondCall[1]).toEqual({
         cart: [
           expect.objectContaining({ productId: 'rollback-1' }),

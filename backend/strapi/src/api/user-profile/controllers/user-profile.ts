@@ -34,7 +34,7 @@ interface UpdateMeBody {
 export default {
   /**
    * Update authenticated user's own data
-   * PUT /api/users/me
+   * PUT /api/user-profile/me
    */
   async updateMe(ctx: Context): Promise<void> {
     const user = ctx.state.user;

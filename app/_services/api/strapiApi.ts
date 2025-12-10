@@ -373,11 +373,11 @@ class StrapiApiService {
 
   /**
    * Syncs cart items with the server
-   * Uses Strapi's built-in /users/me endpoint (cart is a JSON field)
+   * Uses custom /user-profile/me endpoint (cart is a JSON field on user)
    */
   async syncCart(items: CartItem[]): Promise<boolean> {
     try {
-      await httpClient.put('/users/me', { cart: items });
+      await httpClient.put('/user-profile/me', { cart: items });
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'syncCart');
@@ -389,11 +389,11 @@ class StrapiApiService {
 
   /**
    * Syncs favorite product IDs with the server
-   * Uses Strapi's built-in /users/me endpoint with relation format
+   * Uses custom /user-profile/me endpoint with relation format
    */
   async syncFavorites(productIds: string[]): Promise<boolean> {
     try {
-      await httpClient.put('/users/me', {
+      await httpClient.put('/user-profile/me', {
         favorites: { set: productIds },
       });
       return true;
@@ -575,7 +575,7 @@ class StrapiApiService {
       const imageId = uploadResponse[0]?.id;
       if (imageId) {
         await httpClient.put(
-          '/users/me',
+          '/user-profile/me',
           {
             profilePicture: imageId,
           },
