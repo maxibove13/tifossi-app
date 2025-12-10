@@ -176,16 +176,18 @@ Follow docs/MERCADOPAGO_CREDENTIAL_SETUP.md and docs/MERCADOPAGO_TESTING_PLAN.md
               number: order.user.phone?.number || TEST_PAYERS.individual.phone?.number,
             },
           },
-          shipments: {
-            receiver_address: {
-              street_name: order.shippingAddress.addressLine1,
-              street_number: 0,
-              zip_code: order.shippingAddress.postalCode,
-              city_name: order.shippingAddress.city,
-              state_name: order.shippingAddress.state,
-              country_name: order.shippingAddress.country,
-            },
-          },
+          shipments: order.shippingAddress
+            ? {
+                receiver_address: {
+                  street_name: order.shippingAddress.addressLine1,
+                  street_number: 0,
+                  zip_code: order.shippingAddress.postalCode,
+                  city_name: order.shippingAddress.city,
+                  state_name: order.shippingAddress.state,
+                  country_name: order.shippingAddress.country,
+                },
+              }
+            : undefined,
         });
 
         const preference = await mpTestService!.createRealPreference(preferencePayload);

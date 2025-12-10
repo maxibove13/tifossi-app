@@ -19,6 +19,26 @@ interface SelectedStore {
   strapiId?: number; // Optional Strapi store-location document ID
 }
 
+export interface GuestAddress {
+  firstName: string;
+  lastName: string;
+  email: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode?: string;
+  country: string;
+  phoneNumber: string;
+}
+
+export interface GuestContactInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+}
+
 interface PaymentUIState {
   // Current order info for display purposes only
   currentOrderNumber: string | null;
@@ -27,6 +47,12 @@ interface PaymentUIState {
   // Selected store location for pickup orders
   selectedStore: SelectedStore | null;
 
+  // Guest address for delivery (used when not logged in)
+  guestAddress: GuestAddress | null;
+
+  // Guest contact info for pickup (used when not logged in)
+  guestContactInfo: GuestContactInfo | null;
+
   // UI state
   isLoading: boolean;
   error: string | null;
@@ -34,6 +60,8 @@ interface PaymentUIState {
   // Actions
   setCurrentOrder: (orderNumber: string | null, orderId: string | null) => void;
   setSelectedStore: (store: SelectedStore | null) => void;
+  setGuestAddress: (address: GuestAddress | null) => void;
+  setGuestContactInfo: (info: GuestContactInfo | null) => void;
   clearPaymentState: () => void;
   setError: (error: string | null) => void;
   setLoading: (isLoading: boolean) => void;
@@ -44,6 +72,8 @@ export const usePaymentStore = create<PaymentUIState>((set) => ({
   currentOrderNumber: null,
   currentOrderId: null,
   selectedStore: null,
+  guestAddress: null,
+  guestContactInfo: null,
   isLoading: false,
   error: null,
 
@@ -60,11 +90,21 @@ export const usePaymentStore = create<PaymentUIState>((set) => ({
     set({ selectedStore: store });
   },
 
+  setGuestAddress: (address) => {
+    set({ guestAddress: address });
+  },
+
+  setGuestContactInfo: (info) => {
+    set({ guestContactInfo: info });
+  },
+
   clearPaymentState: () => {
     set({
       currentOrderNumber: null,
       currentOrderId: null,
       selectedStore: null,
+      guestAddress: null,
+      guestContactInfo: null,
       isLoading: false,
       error: null,
     });

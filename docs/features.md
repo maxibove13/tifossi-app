@@ -56,6 +56,14 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Order Review**: Final confirmation before purchase (planned)
 - **Success Confirmation**: Order placed confirmation (planned)
 
+### Guest Checkout
+
+- **Guest Checkout Support**: Complete purchases without creating an account
+- **Shipping Method Selection**: Choose delivery or pickup before providing contact info
+- **Guest Contact Information**: Provide name, email, and phone for order processing
+- **Guest Address Entry**: For delivery orders, provide shipping address without login
+- **Guest Pickup Flow**: For pickup orders, provide contact info only
+
 ### Store Locations
 
 - **Store Finder**: Browse physical store locations
@@ -80,6 +88,7 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Social Authentication**: Google and Apple login (planned)
 - **Order History**: Past purchases and status (planned)
 - **Saved Addresses**: Management of shipping addresses (planned)
+- **Guest Checkout**: Purchase without account creation (delivery or pickup)
 
 ## Technical Implementation
 

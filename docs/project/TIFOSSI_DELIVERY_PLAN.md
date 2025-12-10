@@ -75,6 +75,41 @@
 
 **Impact**: App Store rejection risk reduced from 95% to <5%, project readiness increased from 95% to 98%
 
+### Milestone 4: Guest Checkout Implementation (2025-12-10)
+
+**Achievement**: Implemented complete guest checkout flow for both delivery and pickup orders
+
+**Implementation Details**:
+
+**Frontend:**
+1. Guest contact information screen (`guest-contact-info.tsx`)
+2. Shipping method selection overlay (`OverlayShippingSelection.tsx`)
+3. Guest address collection in `new-address.tsx` (guest mode support)
+4. Guest state management in `paymentStore.ts` (GuestAddress, GuestContactInfo)
+5. Cart flow updated with shipping method selection before checkout
+
+**Backend:**
+1. Guest order endpoint (`/api/orders/guest`)
+2. Guest payment preference endpoint (`/api/payment/guest/create-preference`)
+3. Guest order controller with validation
+4. Guest order payload sanitization (`sanitizeGuestOrderPayload`)
+
+**Service Layer:**
+1. Order service guest user detection and handling
+2. MercadoPago service guest payment preference creation
+3. Shipping address now optional for pickup orders
+4. Test updates for optional shipping addresses
+
+**Quality Metrics**:
+- All existing tests passing
+- Guest user ID pattern: `guest-{timestamp}`
+- Public endpoints properly configured
+- Backward compatible with authenticated flow
+
+**Impact**: Reduces friction for first-time purchasers
+
+---
+
 ### Milestone 3: iOS Production Configuration Complete (2025-10-22)
 
 **Achievement**: Completed all iOS production configuration and adopted iOS-first release strategy

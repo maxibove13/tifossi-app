@@ -30,6 +30,14 @@ const paymentRoutes: RoutesModule = {
       },
     },
     {
+      method: 'POST',
+      path: '/payment/guest/create-preference',
+      handler: 'payment.createGuestPreference',
+      config: {
+        auth: false,
+      },
+    },
+    {
       method: 'GET',
       path: '/payment/verify/:paymentId',
       handler: 'payment.verifyPayment',

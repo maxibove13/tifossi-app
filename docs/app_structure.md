@@ -64,7 +64,8 @@ app/
 │   ├── shipping-pickup.tsx   # Pickup shipping option
 │   ├── shipping-pickup-zone.tsx # Pickup zone selection
 │   ├── store-selection.tsx   # Store selection screen
-│   └── new-address.tsx # New address entry form
+│   ├── new-address.tsx # New address entry form (supports guest mode)
+│   └── guest-contact-info.tsx # Guest contact information form
 ├── locations/          # Store location screens
 │   └── [cityId]/       # Dynamic city routes
 │       ├── index.tsx   # Store zone selection screen
@@ -101,6 +102,7 @@ app/
 │   ├── cartStore.ts    # Shopping cart state management
 │   ├── favoritesStore.ts # Favorites state management
 │   ├── authStore.ts    # Authentication state management
+│   ├── paymentStore.ts # Payment state including guest checkout data
 │   └── localStorageAdapter.ts # Storage adapter for state persistence
 ├── _types/             # TypeScript type definitions
 │   ├── README.md       # Type system documentation

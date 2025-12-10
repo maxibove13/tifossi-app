@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   StyleSheet,
   View,
@@ -33,37 +34,39 @@ export default function ShippingAddressScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch addresses on component mount
-  useEffect(() => {
-    const fetchAddresses = async () => {
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-        addressService.setAuthToken(token);
-        const userAddresses = await addressService.fetchUserAddresses();
-        setAddresses(userAddresses);
-
-        // Select default address or first address (using index)
-        const defaultIndex = userAddresses.findIndex((addr) => addr.isDefault);
-        if (defaultIndex >= 0) {
-          setSelectedAddress(defaultIndex);
-        } else if (userAddresses.length > 0) {
-          setSelectedAddress(0);
+  // Fetch addresses whenever screen comes into focus (including returning from new-address)
+  useFocusEffect(
+    useCallback(() => {
+      const fetchAddresses = async () => {
+        if (!token) {
+          setIsLoading(false);
+          return;
         }
-      } catch {
-        setError('Failed to load addresses. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
-    fetchAddresses();
-  }, [token]);
+        try {
+          setIsLoading(true);
+          setError(null);
+          addressService.setAuthToken(token);
+          const userAddresses = await addressService.fetchUserAddresses();
+          setAddresses(userAddresses);
+
+          // Select default address or first address (using index)
+          const defaultIndex = userAddresses.findIndex((addr) => addr.isDefault);
+          if (defaultIndex >= 0) {
+            setSelectedAddress(defaultIndex);
+          } else if (userAddresses.length > 0) {
+            setSelectedAddress(0);
+          }
+        } catch {
+          setError('Failed to load addresses. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchAddresses();
+    }, [token])
+  );
 
   const handleAddressSelect = (index: number) => {
     setSelectedAddress(index);
