@@ -11,11 +11,14 @@ import {
   Image,
   Animated,
   Easing,
+  ActivityIndicator,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
 import CloseIcon from '../../assets/icons/close.svg';
 import Input from '../_components/ui/form/Input';
 import Svg, { Path } from 'react-native-svg';
+import addressService from '../_services/address/addressService';
+import { useAuthStore } from '../_stores/authStore';
 
 // Import style tokens
 import { colors } from '../_styles/colors';
@@ -40,12 +43,14 @@ const ChevronDownIcon = ({ width = 20, height = 20, stroke = '#424242', strokeWi
 
 // Define form data interface
 interface AddressFormData {
-  name: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   street: string;
   number: string;
   city: string;
   department: string;
+  postalCode: string;
   countryCode: CountryCode;
   countryName: string;
   additionalInfo: string;
@@ -53,12 +58,14 @@ interface AddressFormData {
 
 // Define validation errors interface
 interface ValidationErrors {
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   phone?: string;
   street?: string;
   number?: string;
   city?: string;
   department?: string;
+  postalCode?: string;
 }
 
 // South American countries as specified in the Figma design
@@ -169,16 +176,20 @@ const CountryDropdown = ({
 };
 
 function NewAddressScreen() {
+  const { token } = useAuthStore();
+
   // Form state
   const [formData, setFormData] = useState<AddressFormData>({
-    name: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     street: '',
     number: '',
     city: '',
     department: '',
-    countryCode: 'UY', // Default country code for Uruguay
-    countryName: 'Uruguay', // Default value as shown in Figma
+    postalCode: '',
+    countryCode: 'UY',
+    countryName: 'Uruguay',
     additionalInfo: '',
   });
 
@@ -187,6 +198,10 @@ function NewAddressScreen() {
 
   // Track if form was submitted to show validation errors
   const [submitted, setSubmitted] = useState(false);
+
+  // Loading and API error states
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Update form fields
   const handleChange = (field: keyof AddressFormData, value: string) => {
@@ -218,8 +233,12 @@ function NewAddressScreen() {
     const newErrors: ValidationErrors = {};
 
     // Check required fields
-    if (!formData.name.trim()) {
-      newErrors.name = 'El nombre es obligatorio';
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'El nombre es obligatorio';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'El apellido es obligatorio';
     }
 
     if (!formData.phone.trim()) {
@@ -242,6 +261,15 @@ function NewAddressScreen() {
       newErrors.department = 'El departamento es obligatorio';
     }
 
+    // Postal code required for Uruguay
+    if (formData.countryCode === 'UY') {
+      if (!formData.postalCode.trim()) {
+        newErrors.postalCode = 'El código postal es obligatorio';
+      } else if (!/^\d{5}$/.test(formData.postalCode.trim())) {
+        newErrors.postalCode = 'El código postal debe tener 5 dígitos';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -257,17 +285,42 @@ function NewAddressScreen() {
   };
 
   // Handle save button
-  const handleSave = () => {
+  const handleSave = async () => {
     setSubmitted(true);
+    setApiError(null);
 
     // Validate form before saving
     if (!validateForm()) {
-      return; // Don't proceed if validation fails
+      return;
     }
 
-    // In a real app, you would save the address data
-    // For now, just go back to the address selection screen
-    router.back();
+    if (!token) {
+      setApiError('Debes iniciar sesión para guardar direcciones');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      addressService.setAuthToken(token);
+      await addressService.createAddress({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        addressLine1: `${formData.street} ${formData.number}`.trim(),
+        addressLine2: formData.additionalInfo || undefined,
+        city: formData.city,
+        state: formData.department,
+        postalCode: formData.postalCode || undefined,
+        country: formData.countryCode,
+        phoneNumber: formData.phone,
+        isDefault: false,
+        type: 'shipping',
+      });
+      router.back();
+    } catch {
+      setApiError('Error al guardar la dirección. Intenta de nuevo.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -290,6 +343,13 @@ function NewAddressScreen() {
         {/* Form Content */}
         <ScrollView style={styles.scrollView}>
           <View style={styles.content}>
+            {/* API Error */}
+            {apiError && (
+              <View style={styles.errorBanner}>
+                <Text style={styles.errorBannerText}>{apiError}</Text>
+              </View>
+            )}
+
             {/* Personal Information Section */}
             <View style={styles.formSection}>
               <View style={styles.sectionHeader}>
@@ -297,9 +357,15 @@ function NewAddressScreen() {
               </View>
               <Input
                 placeholder="Nombre"
-                value={formData.name}
-                onChangeText={(value) => handleChange('name', value)}
-                error={submitted ? errors.name : undefined}
+                value={formData.firstName}
+                onChangeText={(value) => handleChange('firstName', value)}
+                error={submitted ? errors.firstName : undefined}
+              />
+              <Input
+                placeholder="Apellido"
+                value={formData.lastName}
+                onChangeText={(value) => handleChange('lastName', value)}
+                error={submitted ? errors.lastName : undefined}
               />
               <Input
                 placeholder="No. Celular"
@@ -346,6 +412,14 @@ function NewAddressScreen() {
                 onChangeText={(value) => handleChange('department', value)}
                 error={submitted ? errors.department : undefined}
               />
+              <Input
+                placeholder="Código postal"
+                value={formData.postalCode}
+                onChangeText={(value) => handleChange('postalCode', value)}
+                keyboardType="number-pad"
+                maxLength={5}
+                error={submitted ? errors.postalCode : undefined}
+              />
               {/* Country Dropdown */}
               <CountryDropdown
                 value={
@@ -375,11 +449,25 @@ function NewAddressScreen() {
 
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.primaryButton} onPress={handleSave} activeOpacity={0.7}>
-          <Text style={styles.primaryButtonText}>Guardar</Text>
+        <TouchableOpacity
+          style={[styles.primaryButton, isLoading && styles.disabledButton]}
+          onPress={handleSave}
+          activeOpacity={0.7}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#FBFBFB" />
+          ) : (
+            <Text style={styles.primaryButtonText}>Guardar</Text>
+          )}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.secondaryButton} onPress={handleBack} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={handleBack}
+          activeOpacity={0.7}
+          disabled={isLoading}
+        >
           <Text style={styles.secondaryButtonText}>Atrás</Text>
         </TouchableOpacity>
       </View>
@@ -478,6 +566,8 @@ type Styles = {
   title: TextStyle;
   closeButton: ViewStyle;
   content: ViewStyle;
+  errorBanner: ViewStyle;
+  errorBannerText: TextStyle;
   formSection: ViewStyle;
   sectionHeader: ViewStyle;
   sectionTitle: TextStyle;
@@ -486,6 +576,7 @@ type Styles = {
   numberContainer: ViewStyle;
   actionButtons: ViewStyle;
   primaryButton: ViewStyle;
+  disabledButton: ViewStyle;
   primaryButtonText: TextStyle;
   secondaryButton: ViewStyle;
   secondaryButtonText: TextStyle;
@@ -528,6 +619,22 @@ const styles = StyleSheet.create<Styles>({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
   },
+  errorBanner: {
+    backgroundColor: '#FFEBEE',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+  },
+  errorBannerText: {
+    fontFamily: 'Inter',
+    fontSize: 14,
+    fontWeight: fontWeights.medium,
+    lineHeight: 20,
+    color: '#C62828',
+    textAlign: 'center',
+  },
   formSection: {
     gap: spacing.lg,
   },
@@ -564,6 +671,9 @@ const styles = StyleSheet.create<Styles>({
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
     backgroundColor: colors.background.dark,
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   primaryButtonText: {
     fontFamily: 'Inter',

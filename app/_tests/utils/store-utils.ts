@@ -21,17 +21,11 @@ import { usePaymentStore } from '../../_stores/paymentStore';
 // Import types for type safety
 import type { User } from '../../_types/auth';
 import type { CartItem } from '../../_stores/cartStore';
-import type { UserAddress, UserPreferences } from '../../_stores/userStore';
+import type { UserPreferences } from '../../_stores/userStore';
 import type { Product } from '../../_types/product';
 
 // Import test data factories
-import {
-  userFactory,
-  cartItemFactory,
-  productFactory,
-  addressFactory,
-  preferencesFactory,
-} from './test-data';
+import { userFactory, cartItemFactory, productFactory, preferencesFactory } from './test-data';
 
 /**
  * Type definitions for store states
@@ -274,7 +268,6 @@ export const userStoreUtils = {
       useUserStore.setState({
         profile: null,
         preferences: preferencesFactory.create(),
-        addresses: [],
         isLoading: false,
         error: null,
         actionStatus: {
@@ -302,23 +295,6 @@ export const userStoreUtils = {
     });
 
     return userProfile;
-  },
-
-  /**
-   * Sets up user addresses
-   */
-  setupAddresses: (addresses?: UserAddress[]): UserAddress[] => {
-    const userAddresses = addresses || addressFactory.createMany(2);
-
-    act(() => {
-      useUserStore.setState({
-        addresses: userAddresses,
-        isLoading: false,
-        error: null,
-      });
-    });
-
-    return userAddresses;
   },
 
   /**
@@ -576,15 +552,12 @@ export const resetAllStores = (): void => {
 export const setupAuthenticatedUserWithCart = (options?: {
   user?: User;
   cartItems?: CartItem[];
-  addresses?: UserAddress[];
 }): {
   user: User;
   cartItems: CartItem[];
-  addresses: UserAddress[];
 } => {
   const user = authStoreUtils.setupLoggedInUser(options?.user);
   const cartItems = cartStoreUtils.setupWithItems(options?.cartItems);
-  const addresses = userStoreUtils.setupAddresses(options?.addresses);
 
   // Setup authenticated cart
   cartStoreUtils.setupAuthenticatedCart(cartItems);
@@ -592,7 +565,7 @@ export const setupAuthenticatedUserWithCart = (options?: {
   // Setup user profile
   userStoreUtils.setupProfile(user);
 
-  return { user, cartItems, addresses };
+  return { user, cartItems };
 };
 
 /**

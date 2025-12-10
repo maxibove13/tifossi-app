@@ -484,6 +484,7 @@ Current security measures:
    - `/auth/change-password` - Requires authentication
    - `/users/me` - User profile (GET only, built-in Strapi endpoint)
    - `/user-profile/me` - Update profile, cart, favorites (PUT, custom endpoint)
+   - `/user-profile/me/addresses` - Address management (GET/POST/PUT/DELETE)
    - `/orders` - Order management
    - `/payment/*` - Payment operations (supports Firebase tokens via custom policy)
 

@@ -303,44 +303,44 @@ jest.mock('../_services/api/httpClient', () => {
 
   const defaultAddressStore = [
     {
-      id: 'addr-default-1',
+      id: 0,
       firstName: 'Juan',
       lastName: 'Pérez',
-      street: 'Avenida 18 de Julio',
-      number: '1234',
-      apartment: 'Apto. 4A',
+      addressLine1: 'Avenida 18 de Julio 1234',
+      addressLine2: '4A',
       city: 'Centro',
       state: 'Montevideo',
-      country: 'Uruguay',
-      zipCode: '11100',
-      phone: '+598 099 123 456',
+      country: 'UY',
+      postalCode: '11100',
+      phoneNumber: '+598 099 123 456',
       isDefault: true,
+      type: 'shipping',
     },
     {
-      id: 'addr-default-2',
+      id: 1,
       firstName: 'Ana',
       lastName: 'Gómez',
-      street: 'Rambla República de México',
-      number: '5678',
+      addressLine1: 'Rambla República de México 5678',
       city: 'Pocitos',
       state: 'Montevideo',
-      country: 'Uruguay',
-      zipCode: '11300',
-      phone: '+598 098 765 432',
+      country: 'UY',
+      postalCode: '11300',
+      phoneNumber: '+598 098 765 432',
       isDefault: false,
+      type: 'shipping',
     },
     {
-      id: 'addr-default-3',
+      id: 2,
       firstName: 'Pedro',
       lastName: 'López',
-      street: 'Avenida Italia',
-      number: '3456',
+      addressLine1: 'Avenida Italia 3456',
       city: 'Parque Batlle',
       state: 'Montevideo',
-      country: 'Uruguay',
-      zipCode: '11600',
-      phone: '+598 097 111 222',
+      country: 'UY',
+      postalCode: '11600',
+      phoneNumber: '+598 097 111 222',
       isDefault: false,
+      type: 'shipping',
     },
   ];
 
@@ -350,7 +350,7 @@ jest.mock('../_services/api/httpClient', () => {
   let shouldError = false;
   let errorForEndpoint: string | null = null;
 
-  const matchesAddressEndpoint = (url: string) => url.startsWith('/users/me/addresses');
+  const matchesAddressEndpoint = (url: string) => url.startsWith('/user-profile/me/addresses');
   const resetAddressStore = () => {
     addressStore = deepClone(defaultAddressStore);
     addressScenario = 'default';
@@ -363,14 +363,14 @@ jest.mock('../_services/api/httpClient', () => {
     return deepClone(addressStore);
   };
 
-  const findAddressById = (addressId: string) => {
-    return addressStore.find((address) => address.id === addressId);
+  const findAddressByIndex = (index: number) => {
+    return addressStore[index];
   };
 
-  const mutateDefaultAddress = (addressId: string) => {
-    addressStore = addressStore.map((address) => ({
+  const mutateDefaultAddress = (index: number) => {
+    addressStore = addressStore.map((address, idx) => ({
       ...address,
-      isDefault: address.id === addressId,
+      isDefault: idx === index,
     }));
   };
 
@@ -421,23 +421,23 @@ jest.mock('../_services/api/httpClient', () => {
       };
     }
 
-    if (url === '/users/me/addresses') {
+    if (url === '/user-profile/me/addresses') {
       return {
-        addresses: listAddresses(),
+        data: listAddresses(),
       };
     }
 
-    if (url.startsWith('/users/me/addresses/')) {
+    if (url.startsWith('/user-profile/me/addresses/')) {
       const parts = url.split('/');
-      const addressId = parts[4];
-      const address = findAddressById(addressId);
+      const addressIndex = parseInt(parts[4], 10);
+      const address = findAddressByIndex(addressIndex);
 
       if (!address) {
         throw new Error('Address not found');
       }
 
       return {
-        address: deepClone(address),
+        data: deepClone(address),
       };
     }
 
@@ -453,20 +453,21 @@ jest.mock('../_services/api/httpClient', () => {
         throw new Error('Mock HTTP error');
       }
 
-      if (url === '/users/me/addresses') {
+      if (url === '/user-profile/me/addresses') {
+        const newIndex = addressStore.length;
         const newAddress = {
           ...data,
-          id: data?.id || `addr-mock-${Date.now()}`,
+          id: newIndex,
         };
 
         addressStore = [...addressStore, newAddress];
 
         if (newAddress.isDefault) {
-          mutateDefaultAddress(newAddress.id!);
+          mutateDefaultAddress(newIndex);
         }
 
         return {
-          address: deepClone(newAddress),
+          data: deepClone(newAddress),
         };
       }
 
@@ -507,20 +508,20 @@ jest.mock('../_services/api/httpClient', () => {
       throw new Error('Mock HTTP error');
     }
 
-    if (url.endsWith('/set-default')) {
+    if (url.endsWith('/default')) {
       const parts = url.split('/');
-      const addressId = parts[4];
-      mutateDefaultAddress(addressId);
+      const addressIndex = parseInt(parts[4], 10);
+      mutateDefaultAddress(addressIndex);
 
       return {
-        addresses: listAddresses(),
+        data: listAddresses(),
       };
     }
 
     if (matchesAddressEndpoint(url)) {
       const parts = url.split('/');
-      const addressId = parts[4];
-      const existing = findAddressById(addressId);
+      const addressIndex = parseInt(parts[4], 10);
+      const existing = findAddressByIndex(addressIndex);
 
       if (!existing) {
         throw new Error('Address not found');
@@ -531,14 +532,14 @@ jest.mock('../_services/api/httpClient', () => {
         ...data,
       };
 
-      addressStore = addressStore.map((address) => (address.id === addressId ? updated : address));
+      addressStore = addressStore.map((address, idx) => (idx === addressIndex ? updated : address));
 
       if (updated.isDefault) {
-        mutateDefaultAddress(updated.id!);
+        mutateDefaultAddress(addressIndex);
       }
 
       return {
-        address: deepClone(updated),
+        data: deepClone(updated),
       };
     }
 
@@ -554,12 +555,15 @@ jest.mock('../_services/api/httpClient', () => {
 
     if (matchesAddressEndpoint(url)) {
       const parts = url.split('/');
-      const addressId = parts[4];
+      const addressIndex = parseInt(parts[4], 10);
 
-      addressStore = addressStore.filter((address) => address.id !== addressId);
+      addressStore = addressStore.filter((_, idx) => idx !== addressIndex);
+
+      // Re-index the addresses after deletion
+      addressStore = addressStore.map((addr, idx) => ({ ...addr, id: idx }));
 
       if (!addressStore.some((address) => address.isDefault) && addressStore.length > 0) {
-        mutateDefaultAddress(addressStore[0].id!);
+        mutateDefaultAddress(0);
       }
 
       return { success: true };

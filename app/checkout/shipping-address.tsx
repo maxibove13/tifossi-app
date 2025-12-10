@@ -28,7 +28,7 @@ export default function ShippingAddressScreen() {
   const _params = useLocalSearchParams();
   const { token } = useAuthStore();
 
-  const [selectedAddress, setSelectedAddress] = useState<string>('');
+  const [selectedAddress, setSelectedAddress] = useState<number | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,12 +48,12 @@ export default function ShippingAddressScreen() {
         const userAddresses = await addressService.fetchUserAddresses();
         setAddresses(userAddresses);
 
-        // Select default address or first address
-        const defaultAddress = userAddresses.find((addr) => addr.isDefault);
-        if (defaultAddress) {
-          setSelectedAddress(defaultAddress.id!);
+        // Select default address or first address (using index)
+        const defaultIndex = userAddresses.findIndex((addr) => addr.isDefault);
+        if (defaultIndex >= 0) {
+          setSelectedAddress(defaultIndex);
         } else if (userAddresses.length > 0) {
-          setSelectedAddress(userAddresses[0].id!);
+          setSelectedAddress(0);
         }
       } catch {
         setError('Failed to load addresses. Please try again.');
@@ -65,21 +65,20 @@ export default function ShippingAddressScreen() {
     fetchAddresses();
   }, [token]);
 
-  const handleAddressSelect = (addressId: string) => {
-    setSelectedAddress(addressId);
+  const handleAddressSelect = (index: number) => {
+    setSelectedAddress(index);
   };
 
   const handleBack = () => {
-    // Navigate back to the previous screen
     router.back();
   };
 
   const handleNext = () => {
-    if (selectedAddress) {
-      // Pass selected address to payment selection screen
+    if (selectedAddress !== null) {
+      // Pass selected address index to payment selection screen
       router.push({
         pathname: '/checkout/payment-selection',
-        params: { selectedAddressId: selectedAddress },
+        params: { selectedAddressId: String(selectedAddress) },
       });
     }
   };
@@ -158,14 +157,14 @@ export default function ShippingAddressScreen() {
                 <Text style={styles.sectionTitle}>Mis direcciones</Text>
 
                 <View style={styles.addressList}>
-                  {addresses.map((address) => (
+                  {addresses.map((address, index) => (
                     <TouchableOpacity
-                      key={address.id}
-                      testID={`address-item-${address.id}`}
+                      key={index}
+                      testID={`address-item-${index}`}
                       accessibilityRole="button"
                       accessibilityLabel="address-item"
                       style={styles.addressItem}
-                      onPress={() => handleAddressSelect(address.id!)}
+                      onPress={() => handleAddressSelect(index)}
                       activeOpacity={0.7}
                     >
                       <View style={styles.addressInfo}>
@@ -174,7 +173,7 @@ export default function ShippingAddressScreen() {
                         </Text>
                         {address.isDefault && <Text style={styles.defaultBadge}>Por defecto</Text>}
                       </View>
-                      <RadioButton selected={selectedAddress === address.id} />
+                      <RadioButton selected={selectedAddress === index} />
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -231,11 +230,11 @@ export default function ShippingAddressScreen() {
           accessibilityLabel="address-next-button"
           style={[
             styles.primaryButton,
-            !selectedAddress && addresses.length > 0 && styles.disabledButton,
+            selectedAddress === null && addresses.length > 0 && styles.disabledButton,
           ]}
           onPress={handleNext}
           activeOpacity={0.7}
-          disabled={!selectedAddress && addresses.length > 0}
+          disabled={selectedAddress === null && addresses.length > 0}
         >
           <Text style={styles.primaryButtonText}>Siguiente</Text>
         </TouchableOpacity>

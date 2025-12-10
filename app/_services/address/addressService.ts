@@ -1,227 +1,124 @@
 /**
  * Address Management Service
  * Handles user addresses with Strapi backend CRUD operations
+ *
+ * Address schema matches Strapi repeatable component:
+ * - id: number (array index, assigned by backend)
+ * - firstName, lastName: string
+ * - addressLine1: street + number combined
+ * - addressLine2: additional info
+ * - city, state, country (2-char code)
+ * - phoneNumber, postalCode: optional
+ * - isDefault: boolean
+ * - type: 'shipping' | 'billing' | 'both'
  */
 
 import httpClient from '../api/httpClient';
 import { handleApiError } from '../api/errorHandler';
-import { endpoints } from '../../_config/endpoints';
 
 export interface Address {
-  id?: string;
+  id?: number; // Array index, set by backend
   firstName: string;
   lastName: string;
   company?: string;
-  street: string;
-  number: string;
-  apartment?: string;
+  addressLine1: string; // street + number combined
+  addressLine2?: string; // additional info
   city: string;
-  state?: string;
-  country: string;
-  zipCode?: string;
-  phone?: string;
-  isDefault?: boolean;
-  addressType?: 'home' | 'work' | 'other';
-  notes?: string;
+  state: string; // department
+  postalCode?: string;
+  country: string; // 2-char code (UY, AR, etc)
+  phoneNumber?: string;
+  isDefault: boolean;
+  type: 'shipping' | 'billing' | 'both';
 }
 
-export interface AddressResponse {
-  success: boolean;
-  address?: Address;
-  addresses?: Address[];
-  error?: string;
-}
-
-export interface AddressValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
+export type CreateAddressData = Omit<Address, 'id'>;
 
 class AddressService {
-  private baseUrl: string;
   private authToken: string | null = null;
 
-  constructor() {
-    this.baseUrl = endpoints.baseUrl;
-  }
-
-  /**
-   * Set authentication token
-   */
   setAuthToken(token: string | null) {
     this.authToken = token;
   }
 
-  /**
-   * Fetch all user addresses
-   */
+  private getHeaders() {
+    if (!this.authToken) {
+      throw new Error('Authentication token required');
+    }
+    return { Authorization: `Bearer ${this.authToken}` };
+  }
+
   async fetchUserAddresses(): Promise<Address[]> {
     try {
-      if (!this.authToken) {
-        throw new Error('Authentication token required');
-      }
-
-      const response = await httpClient.get('/users/me/addresses', {
-        headers: {
-          Authorization: `Bearer ${this.authToken}`,
-        },
+      const response = await httpClient.get('/user-profile/me/addresses', {
+        headers: this.getHeaders(),
       });
-
-      // Handle different response formats
-      const addresses = response.addresses || response.data?.addresses || response.data || [];
-
-      return addresses;
+      // Handle various response formats
+      const data = response.data;
+      if (Array.isArray(data)) return data;
+      if (data?.addresses && Array.isArray(data.addresses)) return data.addresses;
+      return [];
     } catch (error) {
       const apiError = handleApiError(error, 'fetchUserAddresses');
       throw new Error(apiError.message);
     }
   }
 
-  /**
-   * Create a new address
-   */
-  async createAddress(addressData: Omit<Address, 'id'>): Promise<AddressResponse> {
+  async createAddress(addressData: CreateAddressData): Promise<Address> {
+    // Validate before sending to API
+    const validation = this.validateAddress(addressData);
+    if (!validation.isValid) {
+      throw new Error(validation.errors.join(', '));
+    }
+
     try {
-      if (!this.authToken) {
-        throw new Error('Authentication token required');
-      }
-
-      // Validate address data
-      const validation = this.validateAddress(addressData);
-      if (!validation.isValid) {
-        return {
-          success: false,
-          error: validation.errors.join(', '),
-        };
-      }
-
-      const response = await httpClient.post('/users/me/addresses', addressData, {
-        headers: {
-          Authorization: `Bearer ${this.authToken}`,
-        },
+      const response = await httpClient.post('/user-profile/me/addresses', addressData, {
+        headers: this.getHeaders(),
       });
-
-      const address = response.address || response.data?.address || response.data;
-
-      return {
-        success: true,
-        address,
-      };
+      return response.data?.address || response.data || response;
     } catch (error) {
       const apiError = handleApiError(error, 'createAddress');
-
-      return {
-        success: false,
-        error: apiError.message,
-      };
+      throw new Error(apiError.message);
     }
   }
 
-  /**
-   * Update an existing address
-   */
-  async updateAddress(addressId: string, addressData: Partial<Address>): Promise<AddressResponse> {
+  async updateAddress(index: number, addressData: Partial<Address>): Promise<Address> {
     try {
-      if (!this.authToken) {
-        throw new Error('Authentication token required');
-      }
-
-      // Validate address data if it's a complete update
-      if (this.isCompleteAddress(addressData)) {
-        const validation = this.validateAddress(addressData as Address);
-        if (!validation.isValid) {
-          return {
-            success: false,
-            error: validation.errors.join(', '),
-          };
-        }
-      }
-
-      const response = await httpClient.put(`/users/me/addresses/${addressId}`, addressData, {
-        headers: {
-          Authorization: `Bearer ${this.authToken}`,
-        },
+      const response = await httpClient.put(`/user-profile/me/addresses/${index}`, addressData, {
+        headers: this.getHeaders(),
       });
-
-      const address = response.address || response.data?.address || response.data;
-
-      return {
-        success: true,
-        address,
-      };
+      return response.data?.address || response.data || response;
     } catch (error) {
       const apiError = handleApiError(error, 'updateAddress');
-
-      return {
-        success: false,
-        error: apiError.message,
-      };
+      throw new Error(apiError.message);
     }
   }
 
-  /**
-   * Delete an address
-   */
-  async deleteAddress(addressId: string): Promise<AddressResponse> {
+  async deleteAddress(index: number): Promise<void> {
     try {
-      if (!this.authToken) {
-        throw new Error('Authentication token required');
-      }
-
-      await httpClient.delete(`/users/me/addresses/${addressId}`, {
-        headers: {
-          Authorization: `Bearer ${this.authToken}`,
-        },
+      await httpClient.delete(`/user-profile/me/addresses/${index}`, {
+        headers: this.getHeaders(),
       });
-
-      return { success: true };
     } catch (error) {
       const apiError = handleApiError(error, 'deleteAddress');
-
-      return {
-        success: false,
-        error: apiError.message,
-      };
+      throw new Error(apiError.message);
     }
   }
 
-  /**
-   * Set an address as default
-   */
-  async setDefaultAddress(addressId: string): Promise<AddressResponse> {
+  async setDefaultAddress(index: number): Promise<Address[]> {
     try {
-      if (!this.authToken) {
-        throw new Error('Authentication token required');
-      }
-
       const response = await httpClient.put(
-        `/users/me/addresses/${addressId}/set-default`,
+        `/user-profile/me/addresses/${index}/default`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${this.authToken}`,
-          },
-        }
+        { headers: this.getHeaders() }
       );
-
-      const addresses = response.addresses || response.data?.addresses || [];
-
-      return {
-        success: true,
-        addresses,
-      };
+      return response.data || response || [];
     } catch (error) {
       const apiError = handleApiError(error, 'setDefaultAddress');
-      return {
-        success: false,
-        error: apiError.message,
-      };
+      throw new Error(apiError.message);
     }
   }
 
-  /**
-   * Get user's default address
-   */
   async getDefaultAddress(): Promise<Address | null> {
     try {
       const addresses = await this.fetchUserAddresses();
@@ -232,107 +129,30 @@ class AddressService {
   }
 
   /**
-   * Validate address data
-   */
-  validateAddress(address: Partial<Address>): AddressValidationResult {
-    const errors: string[] = [];
-
-    // Required fields
-    if (!address.firstName?.trim()) {
-      errors.push('First name is required');
-    }
-
-    if (!address.lastName?.trim()) {
-      errors.push('Last name is required');
-    }
-
-    if (!address.street?.trim()) {
-      errors.push('Street address is required');
-    }
-
-    if (!address.number?.trim()) {
-      errors.push('Street number is required');
-    }
-
-    if (!address.city?.trim()) {
-      errors.push('City is required');
-    }
-
-    if (!address.country?.trim()) {
-      errors.push('Country is required');
-    }
-
-    // Length validations
-    if (address.firstName && address.firstName.length > 50) {
-      errors.push('First name must be 50 characters or less');
-    }
-
-    if (address.lastName && address.lastName.length > 50) {
-      errors.push('Last name must be 50 characters or less');
-    }
-
-    if (address.street && address.street.length > 100) {
-      errors.push('Street address must be 100 characters or less');
-    }
-
-    if (address.number && address.number.length > 10) {
-      errors.push('Street number must be 10 characters or less');
-    }
-
-    if (address.apartment && address.apartment.length > 20) {
-      errors.push('Apartment/Unit must be 20 characters or less');
-    }
-
-    if (address.city && address.city.length > 50) {
-      errors.push('City must be 50 characters or less');
-    }
-
-    if (address.zipCode && address.zipCode.length > 20) {
-      errors.push('ZIP/Postal code must be 20 characters or less');
-    }
-
-    // Phone validation (basic)
-    if (address.phone && address.phone.length > 20) {
-      errors.push('Phone number must be 20 characters or less');
-    }
-
-    // Phone format validation (optional - adjust based on your requirements)
-    if (address.phone && !/^[\d\s\-\+\(\)]+$/.test(address.phone)) {
-      errors.push('Phone number contains invalid characters');
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
-  }
-
-  /**
-   * Format address for display
+   * Format address for single-line display
    */
   formatAddressDisplay(address: Address): string {
     const parts = [
-      address.street,
-      address.number,
-      address.apartment,
+      address.addressLine1,
+      address.addressLine2,
       address.city,
       address.state,
       address.country,
-      address.zipCode,
+      address.postalCode,
     ].filter(Boolean);
-
     return parts.join(', ');
   }
 
   /**
-   * Format address for shipping label
+   * Format address for shipping label (multi-line)
    */
   formatAddressShipping(address: Address): string {
     return [
       `${address.firstName} ${address.lastName}`,
       address.company,
-      `${address.street} ${address.number}${address.apartment ? ', ' + address.apartment : ''}`,
-      `${address.city}${address.state ? ', ' + address.state : ''} ${address.zipCode || ''}`,
+      address.addressLine1,
+      address.addressLine2,
+      `${address.city}, ${address.state} ${address.postalCode || ''}`.trim(),
       address.country,
     ]
       .filter(Boolean)
@@ -340,71 +160,76 @@ class AddressService {
   }
 
   /**
-   * Check if address data contains all required fields
-   * Note: This checks if fields are present, not if they're valid
+   * Validate address data before submission
    */
-  private isCompleteAddress(address: Partial<Address>): boolean {
-    const requiredFields = ['firstName', 'lastName', 'street', 'number', 'city', 'country'];
-    return requiredFields.every((field) => field in address);
-  }
+  validateAddress(address: Partial<Address>): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
 
-  /**
-   * Search addresses by text
-   */
-  searchAddresses(addresses: Address[], searchText: string): Address[] {
-    if (!searchText.trim()) {
-      return addresses;
+    // Required fields
+    if (!address.firstName?.trim()) errors.push('First name is required');
+    if (!address.lastName?.trim()) errors.push('Last name is required');
+    if (!address.addressLine1?.trim()) errors.push('Address line 1 is required');
+    if (!address.city?.trim()) errors.push('City is required');
+    if (!address.state?.trim()) errors.push('State is required');
+    if (!address.country?.trim()) errors.push('Country is required');
+
+    // Length validations
+    if (address.firstName && address.firstName.length > 50) {
+      errors.push('First name must be 50 characters or less');
+    }
+    if (address.lastName && address.lastName.length > 50) {
+      errors.push('Last name must be 50 characters or less');
+    }
+    if (address.addressLine1 && address.addressLine1.length > 100) {
+      errors.push('Address line 1 must be 100 characters or less');
+    }
+    if (address.addressLine2 && address.addressLine2.length > 100) {
+      errors.push('Address line 2 must be 100 characters or less');
+    }
+    if (address.city && address.city.length > 50) {
+      errors.push('City must be 50 characters or less');
+    }
+    if (address.state && address.state.length > 50) {
+      errors.push('State must be 50 characters or less');
+    }
+    if (address.postalCode && address.postalCode.length > 20) {
+      errors.push('Postal code must be 20 characters or less');
     }
 
-    const search = searchText.toLowerCase();
-    return addresses.filter(
-      (address) =>
-        address.firstName.toLowerCase().includes(search) ||
-        address.lastName.toLowerCase().includes(search) ||
-        address.street.toLowerCase().includes(search) ||
-        address.city.toLowerCase().includes(search) ||
-        address.country.toLowerCase().includes(search) ||
-        (address.company && address.company.toLowerCase().includes(search)) ||
-        (address.notes && address.notes.toLowerCase().includes(search))
-    );
-  }
-
-  /**
-   * Get address by ID
-   */
-  async getAddressById(addressId: string): Promise<Address | null> {
-    try {
-      if (!this.authToken) {
-        throw new Error('Authentication token required');
+    // Phone validation (if provided)
+    if (address.phoneNumber) {
+      const phoneRegex = /^[+\d\s()-]+$/;
+      if (!phoneRegex.test(address.phoneNumber)) {
+        errors.push('Phone number contains invalid characters');
       }
-
-      const response = await httpClient.get(`/users/me/addresses/${addressId}`, {
-        headers: {
-          Authorization: `Bearer ${this.authToken}`,
-        },
-      });
-
-      const address = response.address || response.data?.address || response.data;
-      return address || null;
-    } catch (error) {
-      const apiError = handleApiError(error, 'getAddressById');
-      throw new Error(apiError.message);
     }
+
+    return { isValid: errors.length === 0, errors };
   }
 
   /**
-   * Duplicate an existing address
+   * Search addresses by query string
    */
-  duplicateAddress(address: Address): Omit<Address, 'id'> {
-    const { id: _id, isDefault: _isDefault, ...addressData } = address;
-    return {
-      ...addressData,
-      firstName: address.firstName + ' (Copy)',
-      isDefault: false, // New duplicate should not be default
-    };
+  searchAddresses(addresses: Address[], query: string): Address[] {
+    if (!query.trim()) return addresses;
+
+    const lowerQuery = query.toLowerCase();
+    return addresses.filter((address) => {
+      const searchableFields = [
+        address.firstName,
+        address.lastName,
+        address.company,
+        address.addressLine1,
+        address.addressLine2,
+        address.city,
+        address.state,
+        address.country,
+      ].filter(Boolean);
+
+      return searchableFields.some((field) => field?.toLowerCase().includes(lowerQuery));
+    });
   }
 }
 
-// Export singleton instance
 export const addressService = new AddressService();
 export default addressService;

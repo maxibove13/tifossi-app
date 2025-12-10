@@ -111,11 +111,11 @@ describe('Test Utilities Example Usage', () => {
 
     it('should setup complete test scenarios', () => {
       // Setup authenticated user with cart
-      const { cartItems, addresses } = setupAuthenticatedUserWithCart();
+      const { cartItems } = setupAuthenticatedUserWithCart();
 
       expect(storeUtils.auth.getState()).toBeLoggedIn();
       expect(storeUtils.cart.getState()).toHaveCartItems(cartItems.length);
-      expect(storeUtils.user.getState().addresses).toEqual(addresses);
+      // Note: addresses are now managed via addressService, not userStore
 
       // Setup guest user
       const { cartItems: guestCartItems } = setupGuestUser();

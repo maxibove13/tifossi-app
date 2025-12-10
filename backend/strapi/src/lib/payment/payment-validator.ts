@@ -24,12 +24,11 @@ interface OrderItem {
 interface ShippingData {
   method: 'delivery' | 'pickup';
   address?: {
-    street: string;
-    number: string;
-    apartment?: string;
+    addressLine1: string;
+    addressLine2?: string;
     city: string;
     state: string;
-    zipCode: string;
+    postalCode: string;
     country: string;
   };
   pickupLocation?: string;
@@ -424,7 +423,7 @@ export class PaymentValidator {
     address: NonNullable<ShippingData['address']>,
     errors: ValidationError[]
   ): void {
-    const requiredFields = ['street', 'number', 'city', 'state', 'zipCode', 'country'];
+    const requiredFields = ['addressLine1', 'city', 'state', 'postalCode', 'country'];
 
     requiredFields.forEach((field) => {
       if (!address[field as keyof typeof address]) {
@@ -445,12 +444,12 @@ export class PaymentValidator {
       });
     }
 
-    // Validate zip code format for Uruguay (5 digits)
-    if (address.zipCode && !/^\d{5}$/.test(address.zipCode)) {
+    // Validate postal code format for Uruguay (5 digits)
+    if (address.postalCode && !/^\d{5}$/.test(address.postalCode)) {
       errors.push({
-        field: 'shipping.address.zipCode',
-        message: 'Uruguay zip code must be 5 digits',
-        code: 'INVALID_ZIP_CODE',
+        field: 'shipping.address.postalCode',
+        message: 'Uruguay postal code must be 5 digits',
+        code: 'INVALID_POSTAL_CODE',
       });
     }
   }

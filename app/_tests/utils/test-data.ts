@@ -13,7 +13,8 @@
 import { Product, ProductSize, ProductCardData } from '../../_types/product';
 import { User } from '../../_types/auth';
 import { CartItem } from '../../_stores/cartStore';
-import { UserAddress, UserPreferences } from '../../_stores/userStore';
+import { UserPreferences } from '../../_stores/userStore';
+import { Address } from '../../_services/address/addressService';
 import { Category } from '../../_types/category';
 import { ProductStatus } from '../../_types/product-status';
 
@@ -430,9 +431,9 @@ export const categoryFactory = {
  */
 export const addressFactory = {
   /**
-   * Creates a user address
+   * Creates a user address matching the Strapi schema
    */
-  create: (overrides: DeepPartial<UserAddress> = {}): UserAddress => {
+  create: (overrides: DeepPartial<Address> = {}): Address => {
     const streets = [
       '18 de Julio 1234',
       'Av. Rivera 567',
@@ -443,19 +444,22 @@ export const addressFactory = {
     ];
 
     const cities = ['Montevideo', 'Canelones', 'Maldonado', 'Salto', 'Paysandú'];
-    const names = ['María García', 'José Rodríguez', 'Ana González', 'Luis Fernández'];
+    const firstNames = ['María', 'José', 'Ana', 'Luis'];
+    const lastNames = ['García', 'Rodríguez', 'González', 'Fernández'];
 
-    const baseAddress: UserAddress = {
-      id: generateId('addr'),
-      type: randomChoice(['shipping', 'billing'] as const),
-      name: randomChoice(names),
-      street: randomChoice(streets),
+    const baseAddress: Address = {
+      id: randomInt(0, 100), // Numeric ID (array index)
+      firstName: randomChoice(firstNames),
+      lastName: randomChoice(lastNames),
+      addressLine1: randomChoice(streets),
+      addressLine2: Math.random() < 0.3 ? 'Apto 4B' : undefined,
       city: randomChoice(cities),
       state: 'Montevideo',
-      country: 'Uruguay',
+      country: 'UY',
       postalCode: `${randomInt(10000, 99999)}`,
-      phone: `+598 9${randomInt(1000000, 9999999)}`,
+      phoneNumber: `+598 9${randomInt(1000000, 9999999)}`,
       isDefault: Math.random() < 0.3, // 30% chance of being default
+      type: randomChoice(['shipping', 'billing', 'both'] as const),
     };
 
     return { ...baseAddress, ...overrides };
@@ -464,7 +468,7 @@ export const addressFactory = {
   /**
    * Creates multiple addresses
    */
-  createMany: (count: number, overrides: DeepPartial<UserAddress> = {}): UserAddress[] => {
+  createMany: (count: number, overrides: DeepPartial<Address> = {}): Address[] => {
     return Array.from({ length: count }, () => addressFactory.create(overrides));
   },
 };

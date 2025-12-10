@@ -40,12 +40,12 @@ interface OrderUser {
 }
 
 interface ShippingAddress {
-  street: string;
-  number: string;
+  addressLine1: string; // street + number combined
+  addressLine2?: string; // apartment, additional info
   city: string;
   state?: string;
   country?: string;
-  zipCode?: string;
+  postalCode?: string;
 }
 
 interface OrderData {
@@ -223,11 +223,11 @@ export class MercadoPagoService {
             }
           : undefined,
         address: {
-          street_name: this.sanitizeText(orderData.shippingAddress.street),
-          street_number: parseInt(orderData.shippingAddress.number) || 0,
+          street_name: this.sanitizeText(orderData.shippingAddress.addressLine1),
+          street_number: this.extractStreetNumber(orderData.shippingAddress.addressLine1),
           city: this.sanitizeText(orderData.shippingAddress.city),
           federal_unit: orderData.shippingAddress.state || 'Montevideo',
-          zip_code: orderData.shippingAddress.zipCode || '11000',
+          zip_code: orderData.shippingAddress.postalCode || '11000',
         },
       },
 
@@ -244,11 +244,11 @@ export class MercadoPagoService {
         cost: orderData.shippingCost,
         mode: orderData.shippingMethod === 'delivery' ? 'not_specified' : 'not_specified',
         receiver_address: {
-          street_name: this.sanitizeText(orderData.shippingAddress.street),
-          street_number: parseInt(orderData.shippingAddress.number) || 0,
+          street_name: this.sanitizeText(orderData.shippingAddress.addressLine1),
+          street_number: this.extractStreetNumber(orderData.shippingAddress.addressLine1),
           city_name: this.sanitizeText(orderData.shippingAddress.city),
           state_name: orderData.shippingAddress.state || 'Montevideo',
-          zip_code: orderData.shippingAddress.zipCode || '11000',
+          zip_code: orderData.shippingAddress.postalCode || '11000',
           country_name: 'Uruguay',
         },
       },
@@ -499,6 +499,16 @@ export class MercadoPagoService {
       .replace(/['"]/g, '') // Remove quotes
       .trim()
       .substring(0, 255); // Limit length
+  }
+
+  /**
+   * Extract street number from addressLine1 (e.g., "Av. Brasil 1234" -> 1234)
+   */
+  private extractStreetNumber(addressLine: string): number {
+    if (!addressLine) return 1;
+    const match = addressLine.match(/\d+/);
+    const num = match ? parseInt(match[0], 10) : 1;
+    return isNaN(num) || num <= 0 ? 1 : num;
   }
 
   /**
