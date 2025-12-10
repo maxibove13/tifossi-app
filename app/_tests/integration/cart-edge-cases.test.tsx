@@ -76,7 +76,7 @@ describe('Cart Edge Cases - Revenue Protection', () => {
     jest.clearAllMocks();
 
     // Setup default successful responses
-    mockHttpClient.post.mockResolvedValue({ success: true });
+    mockHttpClient.put.mockResolvedValue({ success: true });
     mockHttpClient.get.mockResolvedValue({ data: [] });
   });
 
@@ -656,6 +656,29 @@ describe('Cart Edge Cases - Revenue Protection', () => {
       await waitFor(() => {
         expect(result.current.items).toEqual(initialState);
         expect(result.current.error).toBeTruthy();
+      });
+
+      expect(mockHttpClient.put).toHaveBeenCalledTimes(2);
+      const [firstCall, secondCall] = mockHttpClient.put.mock.calls;
+
+      expect(firstCall[0]).toBe('/users/me');
+      expect(firstCall[1]).toEqual({
+        cart: [
+          expect.objectContaining({
+            productId: 'rollback-1',
+            quantity: 1,
+            size: 'M',
+            price: 100,
+          }),
+        ],
+      });
+
+      expect(secondCall[0]).toBe('/users/me');
+      expect(secondCall[1]).toEqual({
+        cart: [
+          expect.objectContaining({ productId: 'rollback-1' }),
+          expect.objectContaining({ productId: 'rollback-2' }),
+        ],
       });
     });
 

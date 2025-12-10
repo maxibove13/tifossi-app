@@ -2,11 +2,9 @@
 
 ## Contexto
 
-En el documento "Resumen de Funcionalidades de la App Tifossi" se estableció explícitamente como **excluido**:
+Esta propuesta cubre el trabajo necesario para habilitar la aplicación Tifossi en Android, incluyendo configuración del codebase, testing en emulador, corrección de bugs y publicación en Google Play Store.
 
-> "Pruebas en dispositivos físicos Android"
-
-La presente propuesta cubre el trabajo necesario para habilitar la aplicación en Android, incluyendo configuración del codebase, testing en emulador y corrección de bugs identificados durante el proceso.
+El objetivo es lograr una experiencia Android equivalente a la versión iOS, asegurando que la UI sea responsive en dispositivos de gama alta (equivalentes a iPhone 16). No se crearán diseños nuevos, pero se garantizará que los existentes funcionen correctamente.
 
 ---
 
@@ -16,8 +14,8 @@ La presente propuesta cubre el trabajo necesario para habilitar la aplicación e
 
 - Registro de app Android en Firebase Console
 - Configuración de `google-services.json` con credenciales reales
-- Ajuste de código específico de plataforma (botón Google Sign-In para Android)
-- Configuración de reglas ProGuard para Firebase y Google Services
+- Ajustes de UI específicos de plataforma (safe areas, elevations, shadows)
+- Configuración de reglas ProGuard para Firebase, Google Services y Expo
 - Configuración de `assetlinks.json` para deep linking en Android
 
 ### Testing en Emulador
@@ -25,16 +23,19 @@ La presente propuesta cubre el trabajo necesario para habilitar la aplicación e
 - Setup de entorno Android (emulador configurado y build exitoso)
 - Testing sistemático de flujos críticos:
   - Autenticación (registro, login, Google Sign-In)
-  - Navegación y UI
+  - Navegación y UI responsive
   - Carrito y flujo de compra
-  - Pagos (entorno sandbox)
+  - Pagos (entorno sandbox MercadoPago)
   - Deep linking
-- Documentación de bugs encontrados con clasificación de severidad
+- Corrección de bugs encontrados durante el testing
+- Documentación de issues con clasificación de severidad
 
-### Corrección de Bugs
+### Publicación en Google Play
 
-- Corrección de bugs descubiertos durante el testing (hasta 6 horas incluidas)
-- Bugs que excedan este tiempo serán reportados y presupuestados por separado
+- Generación de build de producción con EAS Build
+- Configuración de Google Play App Signing
+- Subida del AAB a Google Play Console
+- Gestión del proceso de revisión inicial
 
 ---
 
@@ -42,10 +43,7 @@ La presente propuesta cubre el trabajo necesario para habilitar la aplicación e
 
 - Cuenta de Google Play Developer (responsabilidad del cliente, costo $25 USD)
 - Creación de listing en Google Play Store (capturas, descripciones, metadatos)
-- Subida y gestión de revisión en Google Play
-- Generación de keystore de producción para firma
 - Testing en dispositivos físicos Android
-- Bugs o issues reportados post-entrega
 
 ---
 
@@ -57,6 +55,7 @@ La presente propuesta cubre el trabajo necesario para habilitar la aplicación e
 | Configuración Firebase | App Android registrada y autenticación operativa |
 | Código actualizado | Repositorio con ajustes de plataforma Android |
 | Reporte de testing | Documento con bugs encontrados, severidad y estado de resolución |
+| App publicada | Aplicación subida a Google Play Store |
 
 ---
 
@@ -67,7 +66,8 @@ La entrega se considera completa cuando:
 1. La aplicación compila sin errores para Android
 2. Los flujos de autenticación funcionan en emulador
 3. El flujo de compra completo funciona en entorno sandbox
-4. Se entrega documentación de cualquier bug pendiente (si excede las 6h de buffer)
+4. La aplicación está subida a Google Play Store
+5. Se entrega documentación de cualquier bug pendiente
 
 ---
 
@@ -76,14 +76,14 @@ La entrega se considera completa cuando:
 | Tarea | Horas |
 |-------|-------|
 | Configuración Firebase Android | 1h |
-| Ajustes de código (Google Sign-In, platform checks) | 2h |
+| Ajustes de código y UI (platform checks, safe areas) | 5h |
 | Reglas ProGuard | 2h |
-| Deep linking (assetlinks.json) | 1h |
-| Setup emulador + build exitoso | 2h |
-| Testing sistemático de flujos | 4h |
-| Documentación de bugs | 2h |
-| Buffer para corrección de bugs | 6h |
-| **Total** | **20h** |
+| Deep linking (assetlinks.json) | 2h |
+| Setup emulador + build exitoso | 3h |
+| Testing sistemático de flujos | 10h |
+| Publicación en Google Play | 3h |
+| Contingencia | 4h |
+| **Total** | **30h** |
 
 ---
 
@@ -91,31 +91,14 @@ La entrega se considera completa cuando:
 
 | Concepto | Valor |
 |----------|-------|
-| Horas estimadas | 20 horas |
+| Horas estimadas | 30 horas |
 | Tarifa por hora | $20 USD |
-| **Total** | **$400 USD** |
-
----
-
-## Condiciones
-
-- **Forma de pago**: 50% al inicio, 50% contra entrega
-- **Plazo estimado**: 2 semanas desde el inicio
-- **Validez de la propuesta**: 30 días
+| **Total** | **$600 USD** |
 
 ---
 
 ## Notas Importantes
 
 1. Esta propuesta asume que la versión iOS está estable y funcional
-2. El cliente debe proporcionar acceso a Firebase Console si aún no está otorgado
-3. Bugs críticos que excedan el buffer de 6 horas serán comunicados inmediatamente con estimación adicional
-4. La publicación en Google Play Store no está incluida y puede cotizarse por separado
-
----
-
-## Firma
-
-**Proveedor**: _________________________ **Fecha**: _____________
-
-**Cliente**: _________________________ **Fecha**: _____________
+2. El cliente debe proporcionar acceso a Firebase Console y Google Play Console
+3. El cliente es responsable de crear el listing de la app (capturas, descripciones, categoría)

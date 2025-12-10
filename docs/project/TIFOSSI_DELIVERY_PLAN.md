@@ -672,11 +672,15 @@ Based on audit report, these 5 critical fixes were required for MVP. **ALL COMPL
 - [ ] Remove placeholder content
 - [ ] Test payment integration with sandbox
 
-**Android Phase 2 (Post-iOS Launch)**:
+**Android Phase 2 (Post-iOS Launch)** - Est. 30h / $600 USD:
 - [ ] Register Android app in Firebase Console
 - [ ] Download and configure google-services.json
-- [ ] Register Google Play Console account
-- [ ] Configure Android build in EAS
+- [ ] Configure platform-specific UI adjustments (safe areas, elevations, shadows)
+- [ ] Setup emulator and achieve successful build
+- [ ] Systematic testing of critical flows (auth, navigation, cart, payments, deep linking)
+- [ ] Bug fixes discovered during testing
+- [ ] Generate production build with EAS Build
+- [ ] Publish to Google Play Store (client provides Play Console access)
 
 ### App Store Blockers (2025-10-18 Audit) - ALL RESOLVED ✅
 
