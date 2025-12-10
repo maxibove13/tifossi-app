@@ -3,7 +3,7 @@
  */
 
 interface RouteConfig {
-  policies?: string[];
+  auth?: boolean;
   middlewares?: string[];
 }
 
@@ -25,8 +25,8 @@ const paymentRoutes: RoutesModule = {
       path: '/payment/create-preference',
       handler: 'payment.createPreference',
       config: {
-        policies: ['global::is-authenticated'],
-        middlewares: [],
+        auth: false,
+        middlewares: ['global::jwt-auth'],
       },
     },
     {
@@ -34,8 +34,8 @@ const paymentRoutes: RoutesModule = {
       path: '/payment/verify/:paymentId',
       handler: 'payment.verifyPayment',
       config: {
-        policies: ['global::is-authenticated'],
-        middlewares: [],
+        auth: false,
+        middlewares: ['global::jwt-auth'],
       },
     },
     {
@@ -43,8 +43,8 @@ const paymentRoutes: RoutesModule = {
       path: '/payment/orders',
       handler: 'payment.getOrders',
       config: {
-        policies: ['global::is-authenticated'],
-        middlewares: [],
+        auth: false,
+        middlewares: ['global::jwt-auth'],
       },
     },
     {
@@ -52,8 +52,8 @@ const paymentRoutes: RoutesModule = {
       path: '/payment/orders/:orderId',
       handler: 'payment.getOrder',
       config: {
-        policies: ['global::is-authenticated'],
-        middlewares: [],
+        auth: false,
+        middlewares: ['global::jwt-auth'],
       },
     },
     {
@@ -61,8 +61,8 @@ const paymentRoutes: RoutesModule = {
       path: '/payment/refund',
       handler: 'payment.requestRefund',
       config: {
-        policies: ['global::is-authenticated'],
-        middlewares: [],
+        auth: false,
+        middlewares: ['global::jwt-auth'],
       },
     },
   ],
