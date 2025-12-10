@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   },
   backgroundOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(12, 12, 12, 0.72)',
+    backgroundColor: 'rgba(12, 12, 12, 0.7)',
   },
   authCard: {
     justifyContent: 'space-between',
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   loginButton: {
-    backgroundColor: 'rgba(251, 251, 251, 0.25)',
+    backgroundColor: colors.background.light,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     borderRadius: radius.xxl,
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: fontSizes.md,
     lineHeight: lineHeights.md,
-    color: colors.background.light,
+    color: colors.primary,
     textAlign: 'center',
   },
   registerButton: {

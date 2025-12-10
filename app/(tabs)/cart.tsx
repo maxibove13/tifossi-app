@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.secondary,
     fontSize: fontSizes.xs,
     lineHeight: lineHeights.xs,
-    color: colors.secondary,
+    color: colors.background.light,
     textAlign: 'center',
     marginBottom: spacing.sm,
   },
