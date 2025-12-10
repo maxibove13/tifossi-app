@@ -318,8 +318,8 @@ export const usePaymentStore = create((set, get) => ({
 | `/api/products`             | GET                 | List all products                      | No            |
 | `/api/products/:id`         | GET                 | Get single product                     | No            |
 | `/api/categories`           | GET                 | List categories                        | No            |
-| `/api/users/me`             | GET                 | Get user profile with cart/favorites   | Yes           |
-| `/api/users/me`             | PUT                 | Update profile, cart, or favorites     | Yes           |
+| `/api/users/me`             | GET                 | Get user profile with cart/favorites   | Yes (Strapi JWT) |
+| `/api/user-profile/me`      | PUT                 | Update profile, cart, or favorites     | Yes (Strapi JWT) |
 | `/api/orders`               | GET/POST            | Manage orders                          | Yes           |
 | `/api/orders/:id`           | GET                 | Get order details                      | Yes           |
 | `/api/payments/create`      | POST                | Create payment                         | Yes           |
@@ -327,9 +327,18 @@ export const usePaymentStore = create((set, get) => ({
 | `/api/webhooks/mercadopago` | POST                | Payment webhook                        | No (signed)   |
 | `/api/users/addresses`      | GET/POST/PUT/DELETE | Manage addresses                       | Yes           |
 
-**Cart & Favorites via `/users/me`:**
-- Cart: `PUT /users/me` with `{ cart: CartItem[] }` - cart is a JSON field on user
-- Favorites: `PUT /users/me` with `{ favorites: { set: [productIds] } }` - uses Strapi relation format
+**Cart & Favorites via `/user-profile/me`:**
+- Cart: `PUT /user-profile/me` with `{ cart: CartItem[] }` - cart is a JSON field on user
+- Favorites: `PUT /user-profile/me` with `{ favorites: { set: [productIds] } }` - uses Strapi relation format
+
+**Why `/user-profile/me` instead of `/users/me`?**
+Strapi's built-in `users-permissions` plugin owns the `/api/users/me` route and only allows GET.
+We created a custom `/api/user-profile/me` endpoint for PUT operations to avoid route collision.
+
+**Authentication Architecture:**
+- **GET /users/me**: Uses Strapi's built-in JWT validation (no custom policy needed)
+- **PUT /user-profile/me**: Uses Strapi's default JWT validation (no custom policy needed)
+- **Payment routes**: Use `global::is-authenticated` policy because they also accept Firebase tokens via custom `firebaseAuth` middleware
 
 ---
 
