@@ -11,7 +11,7 @@ export default {
       handler: 'user-profile.updateMe',
       config: {
         prefix: '',
-        policies: ['plugin::users-permissions.isAuthenticated'],
+        policies: ['global::is-authenticated'],
         middlewares: [],
       },
     },
