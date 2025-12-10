@@ -11,6 +11,7 @@
 
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
 
 import type { Address } from '../../_services/address/addressService';
 
@@ -48,8 +49,10 @@ jest.mock('../../../assets/icons/plus_circle.svg', () => 'PlusCircle');
 // httpClient is already mocked in setup.ts to return proper Strapi-formatted responses
 
 describe('Shipping Address Flow - Integration', () => {
-  // Simple wrapper for tests - no need for full navigation setup
-  const TestWrapper = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+  // Wrapper with NavigationContainer for useFocusEffect support
+  const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+    <NavigationContainer>{children}</NavigationContainer>
+  );
 
   beforeEach(() => {
     // Reset mocks
