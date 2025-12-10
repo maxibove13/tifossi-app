@@ -28,9 +28,8 @@ import { useCartStore } from '../_stores/cartStore';
 import { usePaymentStore } from '../_stores/paymentStore';
 import { useAuthStore } from '../_stores/authStore';
 import { PaymentDeepLinks } from '../_utils/payment/deepLinkHandler';
-import orderService from '../_services/order/orderService';
 import addressService, { Address } from '../_services/address/addressService';
-import mercadoPagoService from '../_services/payment/mercadoPago';
+import mercadoPagoService, { OrderData } from '../_services/payment/mercadoPago';
 
 interface PaymentMethod {
   id: string;
@@ -54,6 +53,8 @@ export default function PaymentSelectionScreen() {
   const clearPaymentState = usePaymentStore((state) => state.clearPaymentState);
   const setLoading = usePaymentStore((state) => state.setLoading);
   const selectedStore = usePaymentStore((state) => state.selectedStore);
+  const guestAddress = usePaymentStore((state) => state.guestAddress);
+  const guestContactInfo = usePaymentStore((state) => state.guestContactInfo);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -165,78 +166,150 @@ export default function PaymentSelectionScreen() {
 
   const handleMercadoPagoPayment = async () => {
     try {
-      if (!user) {
-        Alert.alert('Error', 'Debes estar autenticado para realizar el pago');
-        return;
-      }
-
       if (!cartItems || cartItems.length === 0) {
         Alert.alert('Error', 'Tu carrito está vacío');
         return;
       }
 
-      if (!selectedAddress) {
-        Alert.alert('Error', 'Debes seleccionar una dirección de envío');
+      // Determine shipping method based on whether a store was selected
+      const shippingMethod = selectedStore ? ('pickup' as const) : ('delivery' as const);
+
+      // Only require address for delivery, not for store pickup
+      if (shippingMethod === 'delivery' && !selectedAddress && !guestAddress) {
+        Alert.alert('Error', 'Debes proporcionar una dirección de envío');
         return;
       }
 
       setIsProcessingPayment(true);
       setLoading(true);
 
-      // Set auth tokens for services
-      orderService.setAuthToken(token);
+      // Set auth token for MercadoPago service (empty string for guests)
       mercadoPagoService.setAuthToken(token || '');
 
-      // Prepare user data for MercadoPago
-      const userData = {
-        id: user.id,
-        firstName: user.firstName || user.name?.split(' ')[0] || 'Usuario',
-        lastName: user.lastName || user.name?.split(' ').slice(1).join(' ') || '',
-        email: user.email || '',
-        phone: user.phone
-          ? {
-              areaCode: '598',
-              number: user.phone,
-            }
-          : undefined,
-      };
+      // Prepare user data for MercadoPago (handle logged-in, guest delivery, and guest pickup)
+      let userData;
+      if (user) {
+        // Logged-in user
+        userData = {
+          id: user.id,
+          firstName: user.firstName || user.name?.split(' ')[0] || 'Usuario',
+          lastName: user.lastName || user.name?.split(' ').slice(1).join(' ') || '',
+          email: user.email || '',
+          phone: user.phone
+            ? {
+                areaCode: '598',
+                number: user.phone,
+              }
+            : undefined,
+        };
+      } else if (guestAddress) {
+        // Guest delivery - use data from guestAddress
+        userData = {
+          id: `guest-${Date.now()}`,
+          firstName: guestAddress.firstName,
+          lastName: guestAddress.lastName,
+          email: guestAddress.email,
+          phone: guestAddress.phoneNumber
+            ? {
+                areaCode: '598',
+                number: guestAddress.phoneNumber,
+              }
+            : undefined,
+        };
+      } else if (guestContactInfo) {
+        // Guest pickup - use data from guestContactInfo
+        userData = {
+          id: `guest-${Date.now()}`,
+          firstName: guestContactInfo.firstName,
+          lastName: guestContactInfo.lastName,
+          email: guestContactInfo.email,
+          phone: guestContactInfo.phoneNumber
+            ? {
+                areaCode: '598',
+                number: guestContactInfo.phoneNumber,
+              }
+            : undefined,
+        };
+      } else {
+        Alert.alert('Error', 'Faltan datos de contacto');
+        return;
+      }
 
-      // Determine shipping method based on whether a store was selected
-      const shippingMethod = selectedStore ? ('pickup' as const) : ('delivery' as const);
+      // Calculate totals from cart items
+      const subtotal = cartItems.reduce((sum, item) => {
+        const price = item.discountedPrice ?? item.price ?? 0;
+        return sum + price * item.quantity;
+      }, 0);
+      const shippingCost = shippingMethod === 'pickup' ? 0 : subtotal >= 100 ? 0 : 10;
+      const total = subtotal + shippingCost;
 
-      // Prepare order request
-      const orderRequest = {
-        items: cartItems,
-        shippingAddress: selectedAddress,
+      // Build shipping address for delivery orders only
+      const shippingAddressData =
+        shippingMethod === 'delivery'
+          ? selectedAddress
+            ? {
+                firstName: selectedAddress.firstName,
+                lastName: selectedAddress.lastName,
+                addressLine1: selectedAddress.addressLine1,
+                addressLine2: selectedAddress.addressLine2,
+                city: selectedAddress.city,
+                state: selectedAddress.state,
+                country: selectedAddress.country,
+                postalCode: selectedAddress.postalCode,
+                phoneNumber: selectedAddress.phoneNumber,
+              }
+            : guestAddress
+              ? {
+                  firstName: guestAddress.firstName,
+                  lastName: guestAddress.lastName,
+                  addressLine1: guestAddress.addressLine1,
+                  addressLine2: guestAddress.addressLine2,
+                  city: guestAddress.city,
+                  state: guestAddress.state,
+                  country: guestAddress.country,
+                  postalCode: guestAddress.postalCode,
+                  phoneNumber: guestAddress.phoneNumber,
+                }
+              : null
+          : null;
+
+      // Build order data - backend creates order + preference in one call
+      // Note: productName/description are placeholders - backend fetches fresh product data
+      const orderData: OrderData = {
+        orderNumber: mercadoPagoService.generateOrderNumber(),
+        items: cartItems.map((item) => ({
+          productId: item.productId,
+          productName: `Product ${item.productId}`, // Backend overwrites with actual name
+          quantity: item.quantity,
+          price: item.discountedPrice ?? item.price ?? 0,
+          size: item.size,
+          color: item.color,
+        })),
+        user: userData,
+        shippingAddress: shippingAddressData,
         shippingMethod,
+        shippingCost,
+        subtotal,
+        discount: 0,
+        total,
+        // Pass store location and notes via extended data (backend extracts these)
         storeLocationCode: selectedStore?.id,
         notes: 'Pedido realizado desde la app móvil',
-      };
+      } as OrderData & { storeLocationCode?: string; notes?: string };
 
-      // Create order with payment
-      const result = await orderService.createOrderWithPayment(orderRequest, userData);
+      // Create payment preference (backend creates order + preference in one call)
+      const preference = await mercadoPagoService.createPaymentPreference(orderData);
 
-      if (result.success && result.paymentUrl) {
-        // Store order info for display in payment result screen
-        setCurrentOrder(result.order?.orderNumber || null, result.order?.id || null);
+      // Store order info for display in payment result screen
+      setCurrentOrder(preference.externalReference, null);
 
-        // Open MercadoPago payment page
-        const preference = {
-          id: result.order?.id || '',
-          initPoint: result.paymentUrl,
-          externalReference: result.order?.orderNumber || '',
-        };
+      // Open MercadoPago payment page
+      const paymentResult = await mercadoPagoService.initiatePayment(preference);
 
-        const paymentResult = await mercadoPagoService.initiatePayment(preference);
-
-        if (paymentResult.success) {
-          // WebView will handle the rest through deep links
-        } else {
-          Alert.alert('Error', paymentResult.error || 'No se pudo iniciar el pago');
-        }
-      } else {
-        Alert.alert('Error', result.error || 'No se pudo crear el pedido');
+      if (!paymentResult.success) {
+        Alert.alert('Error', paymentResult.error || 'No se pudo iniciar el pago');
       }
+      // WebView will handle the rest through deep links
     } catch (error) {
       // Determine appropriate error message based on error type
       let errorMessage = 'Ocurrió un error al procesar el pago.';

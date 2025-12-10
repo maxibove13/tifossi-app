@@ -30,6 +30,7 @@ See [TIFOSSI_DELIVERY_PLAN.md](./docs/project/TIFOSSI_DELIVERY_PLAN.md) for comp
 - **User Authentication**: Firebase-powered login/signup with biometric support
 - **Product Catalog**: Browse products by category with search and filters
 - **Shopping Cart**: Add, manage, and sync cart across devices
+- **Guest Checkout**: Complete purchases without account creation
 - **Favorites**: Save and manage favorite products with persistence
 - **Secure Payments**: MercadoPago integration with deep linking
 - **Offline Support**: Continue shopping with offline queue and sync

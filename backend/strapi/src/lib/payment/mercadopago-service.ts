@@ -52,7 +52,7 @@ interface OrderData {
   orderNumber: string;
   items: OrderItem[];
   user: OrderUser;
-  shippingAddress: ShippingAddress;
+  shippingAddress: ShippingAddress | null;
   shippingMethod: 'delivery' | 'pickup';
   shippingCost: number;
   subtotal: number;
@@ -222,13 +222,15 @@ export class MercadoPagoService {
               number: orderData.user.identification.number,
             }
           : undefined,
-        address: {
-          street_name: this.sanitizeText(orderData.shippingAddress.addressLine1),
-          street_number: this.extractStreetNumber(orderData.shippingAddress.addressLine1),
-          city: this.sanitizeText(orderData.shippingAddress.city),
-          federal_unit: orderData.shippingAddress.state || 'Montevideo',
-          zip_code: orderData.shippingAddress.postalCode || '11000',
-        },
+        address: orderData.shippingAddress
+          ? {
+              street_name: this.sanitizeText(orderData.shippingAddress.addressLine1),
+              street_number: this.extractStreetNumber(orderData.shippingAddress.addressLine1),
+              city: this.sanitizeText(orderData.shippingAddress.city),
+              federal_unit: orderData.shippingAddress.state || 'Montevideo',
+              zip_code: orderData.shippingAddress.postalCode || '11000',
+            }
+          : undefined,
       },
 
       external_reference: orderData.orderNumber,
@@ -240,18 +242,20 @@ export class MercadoPagoService {
         default_installments: 1,
       },
 
-      shipments: {
-        cost: orderData.shippingCost,
-        mode: orderData.shippingMethod === 'delivery' ? 'not_specified' : 'not_specified',
-        receiver_address: {
-          street_name: this.sanitizeText(orderData.shippingAddress.addressLine1),
-          street_number: this.extractStreetNumber(orderData.shippingAddress.addressLine1),
-          city_name: this.sanitizeText(orderData.shippingAddress.city),
-          state_name: orderData.shippingAddress.state || 'Montevideo',
-          zip_code: orderData.shippingAddress.postalCode || '11000',
-          country_name: 'Uruguay',
-        },
-      },
+      shipments: orderData.shippingAddress
+        ? {
+            cost: orderData.shippingCost,
+            mode: 'not_specified' as const,
+            receiver_address: {
+              street_name: this.sanitizeText(orderData.shippingAddress.addressLine1),
+              street_number: this.extractStreetNumber(orderData.shippingAddress.addressLine1),
+              city_name: this.sanitizeText(orderData.shippingAddress.city),
+              state_name: orderData.shippingAddress.state || 'Montevideo',
+              zip_code: orderData.shippingAddress.postalCode || '11000',
+              country_name: 'Uruguay',
+            },
+          }
+        : { cost: orderData.shippingCost, mode: 'not_specified' as const },
 
       back_urls: {
         success: `${process.env.APP_SCHEME || 'tifossi'}://payment/success`,

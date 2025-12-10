@@ -6,7 +6,11 @@
 import MercadoPagoService from '../../../lib/payment/mercadopago-service';
 import OrderStateManager from '../../../lib/payment/order-state-manager';
 import { OrderStatus } from '../../../lib/payment/types/orders';
-import { sanitizeOrderPayload, buildClientOrder } from '../../../utils/order-sanitizer';
+import {
+  sanitizeOrderPayload,
+  sanitizeGuestOrderPayload,
+  buildClientOrder,
+} from '../../../utils/order-sanitizer';
 
 export default {
   /**
@@ -45,6 +49,7 @@ export default {
           items: sanitizedOrder.itemsForPersistence,
           shippingAddress: sanitizedOrder.shippingAddressComponent,
           shippingMethod: sanitizedOrder.shippingMethod as 'delivery' | 'pickup',
+          storeLocation: sanitizedOrder.storeLocationId || null,
           shippingCost: sanitizedOrder.shippingCost,
           subtotal: sanitizedOrder.subtotal,
           discount: sanitizedOrder.discount,
@@ -61,6 +66,7 @@ export default {
         populate: {
           items: { populate: { product: true } },
           user: true,
+          storeLocation: true,
         },
       });
 
@@ -115,6 +121,122 @@ export default {
     } catch (error) {
       strapi.log.error('Error creating payment preference:', error);
       ctx.internalServerError('Failed to create payment preference');
+    }
+  },
+
+  /**
+   * Create payment preference for a guest order (no authentication required)
+   * POST /api/payment/guest/create-preference
+   */
+  async createGuestPreference(ctx: any) {
+    try {
+      const rawOrder =
+        ctx.request.body?.orderData || ctx.request.body?.data || ctx.request.body || {};
+      const deviceFingerprint = ctx.request.body?.deviceFingerprint;
+
+      // Validate required guest fields
+      if (!rawOrder.guestEmail) {
+        return ctx.badRequest('Guest email is required');
+      }
+
+      const guestInfo = {
+        email: rawOrder.guestEmail,
+        name: rawOrder.guestName,
+        phone: rawOrder.guestPhone,
+      };
+
+      const sanitizedOrder = await sanitizeGuestOrderPayload({
+        strapi,
+        rawOrder,
+        guestInfo,
+        requestMeta: {
+          userAgent: ctx.request.headers['user-agent'],
+          ip: ctx.request.ip,
+        },
+      });
+
+      const mpService = new MercadoPagoService();
+
+      const orderEntity = await strapi.documents('api::order.order').create({
+        data: {
+          orderNumber: sanitizedOrder.orderNumber,
+          orderDate: new Date(),
+          guestEmail: guestInfo.email,
+          guestName: guestInfo.name || null,
+          guestPhone: guestInfo.phone || null,
+          items: sanitizedOrder.itemsForPersistence,
+          shippingAddress: sanitizedOrder.shippingAddressComponent,
+          shippingMethod: sanitizedOrder.shippingMethod as 'delivery' | 'pickup',
+          storeLocation: sanitizedOrder.storeLocationId || null,
+          shippingCost: sanitizedOrder.shippingCost,
+          subtotal: sanitizedOrder.subtotal,
+          discount: sanitizedOrder.discount,
+          total: sanitizedOrder.total,
+          paymentMethod: 'mercadopago',
+          paymentStatus: 'pending',
+          status: 'pending',
+          notes: rawOrder.notes || undefined,
+          metadata: {
+            ...sanitizedOrder.metadata,
+            paymentProvider: 'mercadopago',
+            isGuestOrder: true,
+          },
+        } as any,
+        populate: {
+          items: { populate: { product: true } },
+          storeLocation: true,
+        },
+      });
+
+      const preference = await mpService.createPreference(
+        {
+          orderNumber: orderEntity.orderNumber as string,
+          items: sanitizedOrder.mercadoPagoPayload.items.map((item) => ({
+            productId: String(item.productId),
+            productName: item.productName,
+            description: item.description || undefined,
+            quantity: item.quantity,
+            price: item.price,
+            size: item.size,
+            color: item.color,
+          })),
+          user: sanitizedOrder.mercadoPagoPayload.user,
+          shippingAddress: sanitizedOrder.mercadoPagoPayload.address,
+          shippingMethod: sanitizedOrder.shippingMethod as 'pickup' | 'delivery',
+          shippingCost: sanitizedOrder.shippingCost,
+          subtotal: sanitizedOrder.subtotal,
+          discount: sanitizedOrder.discount,
+          total: sanitizedOrder.total,
+        },
+        deviceFingerprint
+      );
+
+      const updatedOrder = await strapi.documents('api::order.order').update({
+        documentId: orderEntity.documentId,
+        data: {
+          mpPreferenceId: preference.id,
+        } as any,
+        populate: {
+          items: { populate: { product: true } },
+        },
+      });
+
+      const clientOrder = buildClientOrder(updatedOrder as any, sanitizedOrder.clientSummary);
+
+      ctx.body = {
+        success: true,
+        data: {
+          order: clientOrder,
+          preference: {
+            id: preference.id,
+            initPoint: preference.init_point,
+            externalReference: preference.external_reference,
+          },
+        },
+      };
+    } catch (error) {
+      strapi.log.error('Error creating guest payment preference:', error);
+      ctx.internalServerError('Failed to create guest payment preference');
     }
   },
 

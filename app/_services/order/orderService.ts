@@ -64,7 +64,7 @@ export type PaymentStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 
 
 export interface CreateOrderRequest {
   items: CartItem[];
-  shippingAddress: Address;
+  shippingAddress?: Address | null; // Optional for pickup orders
   shippingMethod: 'delivery' | 'pickup';
   storeLocationCode?: string;
   notes?: string;
@@ -108,6 +108,13 @@ class OrderService {
   }
 
   /**
+   * Check if user data represents a guest user
+   */
+  private isGuestUser(userData: UserData): boolean {
+    return typeof userData.id === 'string' && userData.id.startsWith('guest-');
+  }
+
+  /**
    * Create a new order
    */
   async createOrder(
@@ -115,7 +122,10 @@ class OrderService {
     userData: UserData
   ): Promise<CreateOrderResponse> {
     try {
-      if (!this.authToken) {
+      const isGuest = this.isGuestUser(userData);
+
+      // Only require auth for non-guest orders
+      if (!isGuest && !this.authToken) {
         throw new Error('Authentication token required');
       }
 
@@ -134,7 +144,36 @@ class OrderService {
       // Generate order number
       const orderNumber = this.generateOrderNumber();
 
-      // Create order data for the backend
+      if (isGuest) {
+        // Create guest order data
+        const guestOrderData = {
+          orderNumber,
+          items: orderRequest.items,
+          guestEmail: userData.email,
+          guestName: `${userData.firstName} ${userData.lastName}`.trim(),
+          guestPhone: userData.phone?.number,
+          shippingAddress: orderRequest.shippingAddress,
+          shippingMethod: orderRequest.shippingMethod,
+          storeLocationCode: orderRequest.storeLocationCode,
+          shippingCost: totals.shippingCost,
+          subtotal: totals.subtotal,
+          discount: totals.discount,
+          total: totals.total,
+          status: 'CREATED' as OrderStatus,
+          paymentStatus: 'PENDING' as PaymentStatus,
+          notes: orderRequest.notes,
+        };
+
+        const response = await httpClient.post('/orders/guest', guestOrderData);
+        const order = response.order || response.data?.order || response.data;
+
+        return {
+          success: true,
+          order,
+        };
+      }
+
+      // Create order data for authenticated users
       const orderData = {
         orderNumber,
         items: orderRequest.items,
@@ -209,7 +248,16 @@ class OrderService {
           color: item.color,
         })),
         user: userData,
-        shippingAddress: orderRequest.shippingAddress,
+        shippingAddress: orderRequest.shippingAddress
+          ? {
+              addressLine1: orderRequest.shippingAddress.addressLine1,
+              addressLine2: orderRequest.shippingAddress.addressLine2,
+              city: orderRequest.shippingAddress.city,
+              state: orderRequest.shippingAddress.state,
+              country: orderRequest.shippingAddress.country,
+              postalCode: orderRequest.shippingAddress.postalCode,
+            }
+          : null,
         shippingMethod: orderRequest.shippingMethod,
         shippingCost: orderResult.order.shippingCost,
         subtotal: orderResult.order.subtotal,
@@ -425,8 +473,9 @@ class OrderService {
       errors.push('Order must contain at least one item');
     }
 
-    if (!orderRequest.shippingAddress) {
-      errors.push('Shipping address is required');
+    // Shipping address required only for delivery, not pickup
+    if (orderRequest.shippingMethod === 'delivery' && !orderRequest.shippingAddress) {
+      errors.push('Shipping address is required for delivery orders');
     }
 
     if (!orderRequest.shippingMethod) {

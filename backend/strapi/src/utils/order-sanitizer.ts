@@ -152,7 +152,7 @@ interface OrderMetadata {
 
 interface ClientSummary {
   items: ItemForClient[];
-  shippingAddress: ClientShippingAddress;
+  shippingAddress: ClientShippingAddress | null; // null for pickup orders
   shippingMethod: string;
   subtotal: number;
   discount: number;
@@ -170,7 +170,7 @@ interface MercadoPagoPayload {
     size?: string;
     color?: string;
   }[];
-  address: MercadoPagoAddress;
+  address: MercadoPagoAddress | null; // null for pickup orders
   user: MercadoPagoUser;
 }
 
@@ -184,7 +184,7 @@ interface SanitizedOrderResult {
   total: number;
   metadata: OrderMetadata;
   itemsForPersistence: ItemForPersistence[];
-  shippingAddressComponent: ShippingComponent;
+  shippingAddressComponent: ShippingComponent | null; // null for pickup orders
   clientSummary: ClientSummary;
   mercadoPagoPayload: MercadoPagoPayload;
 }
@@ -233,6 +233,19 @@ interface SanitizeOrderPayloadParams {
   requestMeta?: RequestMeta;
 }
 
+interface GuestInfo {
+  email: string;
+  name?: string;
+  phone?: string;
+}
+
+interface SanitizeGuestOrderPayloadParams {
+  strapi: any;
+  rawOrder: RawOrder;
+  guestInfo: GuestInfo;
+  requestMeta?: RequestMeta;
+}
+
 // Utility functions
 const ensureArray = <T>(arr: T | T[]): T[] => (Array.isArray(arr) ? arr : []);
 
@@ -269,9 +282,13 @@ export const calculateShippingCost = (shippingMethod: string, subtotal: number):
 export const buildShippingComponent = (
   address: RawAddress,
   shippingMethod: string
-): ShippingComponent => {
+): ShippingComponent | null => {
+  // For pickup orders, shipping address is optional
   if (!address) {
-    throw new Error('Shipping address is required');
+    if (shippingMethod === 'pickup') {
+      return null;
+    }
+    throw new Error('Shipping address is required for delivery orders');
   }
 
   const requiredFields: (keyof RawAddress)[] = [
@@ -303,26 +320,36 @@ export const buildShippingComponent = (
   };
 };
 
-export const buildClientShippingAddress = (address: RawAddress): ClientShippingAddress => ({
-  firstName: address.firstName,
-  lastName: address.lastName,
-  company: address.company || null,
-  addressLine1: address.addressLine1,
-  addressLine2: address.addressLine2 || null,
-  city: address.city,
-  state: address.state || null,
-  country: address.country,
-  postalCode: address.postalCode || null,
-  phoneNumber: address.phoneNumber || null,
-});
+export const buildClientShippingAddress = (address: RawAddress): ClientShippingAddress | null => {
+  if (!address) {
+    return null;
+  }
+  return {
+    firstName: address.firstName,
+    lastName: address.lastName,
+    company: address.company || null,
+    addressLine1: address.addressLine1,
+    addressLine2: address.addressLine2 || null,
+    city: address.city,
+    state: address.state || null,
+    country: address.country,
+    postalCode: address.postalCode || null,
+    phoneNumber: address.phoneNumber || null,
+  };
+};
 
-export const buildMercadoPagoAddress = (address: RawAddress): MercadoPagoAddress => ({
-  addressLine1: address.addressLine1,
-  city: address.city,
-  state: address.state || undefined,
-  country: address.country,
-  postalCode: address.postalCode || undefined,
-});
+export const buildMercadoPagoAddress = (address: RawAddress): MercadoPagoAddress | null => {
+  if (!address) {
+    return null;
+  }
+  return {
+    addressLine1: address.addressLine1,
+    city: address.city,
+    state: address.state || undefined,
+    country: address.country,
+    postalCode: address.postalCode || undefined,
+  };
+};
 
 export const buildMercadoPagoUser = (user: AuthUser): MercadoPagoUser => {
   const phoneNumber = user.phoneNumber || user.phone;
@@ -336,6 +363,25 @@ export const buildMercadoPagoUser = (user: AuthUser): MercadoPagoUser => {
       ? {
           areaCode: '598',
           number: phoneNumber,
+        }
+      : undefined,
+  };
+};
+
+export const buildMercadoPagoGuestUser = (guestInfo: GuestInfo): MercadoPagoUser => {
+  const nameParts = guestInfo.name?.split(' ') || ['Guest'];
+  const firstName = nameParts[0] || 'Guest';
+  const lastName = nameParts.slice(1).join(' ') || '';
+
+  return {
+    id: `guest-${Date.now()}`,
+    firstName,
+    lastName,
+    email: guestInfo.email,
+    phone: guestInfo.phone
+      ? {
+          areaCode: '598',
+          number: guestInfo.phone,
         }
       : undefined,
   };
@@ -381,6 +427,12 @@ export const sanitizeOrderPayload = async ({
           storeLocationId = parsedStoreId;
         }
       }
+    }
+
+    // Fail loudly if pickup selected but no valid store found
+    if (!storeLocationId) {
+      const providedCode = rawOrder.storeLocationCode || rawOrder.storeLocationId || 'none';
+      throw new Error(`Invalid pickup store location: ${providedCode}`);
     }
   }
 
@@ -525,6 +577,196 @@ export const sanitizeOrderPayload = async ({
   };
 };
 
+export const sanitizeGuestOrderPayload = async ({
+  strapi,
+  rawOrder,
+  guestInfo,
+  requestMeta = {},
+}: SanitizeGuestOrderPayloadParams): Promise<SanitizedOrderResult> => {
+  if (!rawOrder || typeof rawOrder !== 'object') {
+    throw new Error('Invalid order payload');
+  }
+
+  const shippingMethod = rawOrder.shippingMethod || 'delivery';
+  if (!['delivery', 'pickup'].includes(shippingMethod)) {
+    throw new Error('Invalid shipping method');
+  }
+
+  // Validate storeLocation for pickup orders
+  let storeLocationId: number | null = null;
+  if (shippingMethod === 'pickup') {
+    // Try lookup by code first (preferred), then by numeric ID
+    if (rawOrder.storeLocationCode) {
+      const storeLocations = await strapi.documents('api::store-location.store-location').findMany({
+        filters: { code: rawOrder.storeLocationCode, isActive: true, hasPickupService: true },
+        limit: 1,
+      });
+
+      if (storeLocations.length > 0) {
+        storeLocationId = storeLocations[0].id;
+      }
+    } else if (rawOrder.storeLocationId) {
+      const parsedStoreId = Number(rawOrder.storeLocationId);
+      if (Number.isInteger(parsedStoreId) && parsedStoreId > 0) {
+        const storeLocation = await strapi.documents('api::store-location.store-location').findOne({
+          documentId: String(parsedStoreId),
+          filters: { isActive: true, hasPickupService: true },
+        });
+
+        if (storeLocation) {
+          storeLocationId = parsedStoreId;
+        }
+      }
+    }
+
+    // Fail loudly if pickup selected but no valid store found
+    if (!storeLocationId) {
+      const providedCode = rawOrder.storeLocationCode || rawOrder.storeLocationId || 'none';
+      throw new Error(`Invalid pickup store location: ${providedCode}`);
+    }
+  }
+
+  const rawItems = ensureArray(rawOrder.items);
+  if (!rawItems.length) {
+    throw new Error('Order must contain at least one item');
+  }
+
+  const productIds = [...new Set(rawItems.map((item) => Number(item.productId))).values()].filter(
+    (id) => Number.isInteger(id) && id > 0
+  );
+
+  if (!productIds.length) {
+    throw new Error('Each item must include a valid productId');
+  }
+
+  const products: ProductEntity[] = await strapi.documents('api::product.product').findMany({
+    filters: { id: { $in: productIds } },
+    fields: ['id', 'title', 'price', 'discountedPrice', 'slug', 'longDescription'],
+    populate: { frontImage: true },
+  });
+
+  const productMap = new Map(products.map((product) => [product.id, product]));
+
+  const itemsForPersistence: ItemForPersistence[] = [];
+  const itemsForClient: ItemForClient[] = [];
+
+  for (const [index, item] of rawItems.entries()) {
+    const productId = Number(item.productId);
+    const quantity = Number(item.quantity);
+
+    if (!Number.isInteger(productId) || productId <= 0) {
+      throw new Error(`Item ${index + 1}: Invalid productId`);
+    }
+
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      throw new Error(`Item ${index + 1}: Quantity must be a positive integer`);
+    }
+
+    const product = productMap.get(productId);
+    if (!product) {
+      throw new Error(`Item ${index + 1}: Product not found`);
+    }
+
+    const basePrice = toNumber(product.discountedPrice) || toNumber(product.price);
+    if (basePrice === null) {
+      throw new Error(`Item ${index + 1}: Product price is not available`);
+    }
+
+    const lineTotal = Number((basePrice * quantity).toFixed(2));
+
+    itemsForPersistence.push({
+      product: productId,
+      productSnapshot: {
+        id: product.id,
+        title: product.title,
+        slug: product.slug,
+        price: toNumber(product.price),
+        discountedPrice: toNumber(product.discountedPrice),
+        description: product.longDescription,
+        image: product.frontImage?.url || null,
+      },
+      quantity,
+      unitPrice: basePrice,
+      totalPrice: lineTotal,
+      selectedColor: item.color || null,
+      selectedSize: item.size || null,
+      customizations: item.customizations || null,
+      notes: item.notes || null,
+    });
+
+    itemsForClient.push({
+      productId: product.id,
+      productName: product.title,
+      description: product.longDescription || null,
+      quantity,
+      price: basePrice,
+      discountedPrice: toNumber(product.discountedPrice) || undefined,
+      totalPrice: lineTotal,
+      size: item.size || null,
+      color: item.color || null,
+      imageUrl: product.frontImage?.url || null,
+    });
+  }
+
+  const subtotal = Number(
+    itemsForClient.reduce((sum, item) => sum + item.totalPrice, 0).toFixed(2)
+  );
+
+  const requestedDiscount = toNumber(rawOrder.discount) || 0;
+  const discount = Math.max(0, Math.min(requestedDiscount, subtotal));
+
+  const shippingCost = Number(calculateShippingCost(shippingMethod, subtotal).toFixed(2));
+
+  const total = Number((subtotal - discount + shippingCost).toFixed(2));
+  if (total <= 0) {
+    throw new Error('Calculated order total must be greater than zero');
+  }
+
+  const shippingAddressComponent = buildShippingComponent(rawOrder.shippingAddress, shippingMethod);
+
+  const metadata: OrderMetadata = {
+    createdVia: 'mobile_app',
+    userAgent: requestMeta.userAgent || 'unknown',
+    ipAddress: requestMeta.ip || 'unknown',
+    correlationId: randomUUID(),
+  };
+
+  return {
+    orderNumber: generateOrderNumber(),
+    shippingMethod,
+    storeLocationId,
+    subtotal,
+    discount,
+    shippingCost,
+    total,
+    metadata,
+    itemsForPersistence,
+    shippingAddressComponent,
+    clientSummary: {
+      items: itemsForClient,
+      shippingAddress: buildClientShippingAddress(rawOrder.shippingAddress),
+      shippingMethod,
+      subtotal,
+      discount,
+      shippingCost,
+      total,
+    },
+    mercadoPagoPayload: {
+      items: itemsForClient.map((item) => ({
+        productId: item.productId,
+        productName: item.productName,
+        description: item.description,
+        quantity: item.quantity,
+        price: item.price,
+        size: item.size || undefined,
+        color: item.color || undefined,
+      })),
+      address: buildMercadoPagoAddress(rawOrder.shippingAddress),
+      user: buildMercadoPagoGuestUser(guestInfo),
+    },
+  };
+};
+
 export const buildClientOrder = (
   orderEntity: OrderEntity | null,
   clientSummary: ClientSummary
@@ -558,6 +800,7 @@ export const buildClientOrder = (
 
 export default {
   sanitizeOrderPayload,
+  sanitizeGuestOrderPayload,
   buildClientOrder,
   generateOrderNumber,
   calculateShippingCost,
@@ -565,4 +808,5 @@ export default {
   buildClientShippingAddress,
   buildMercadoPagoAddress,
   buildMercadoPagoUser,
+  buildMercadoPagoGuestUser,
 };

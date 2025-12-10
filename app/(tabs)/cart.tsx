@@ -16,6 +16,7 @@ import { useCartStore } from '../_stores/cartStore';
 import { useProductStore } from '../_stores/productStore';
 import { hasStatus, ProductStatus } from '../_types/product-status';
 import OverlayProductEdit from '../_components/store/product/overlay/OverlayProductEdit';
+import OverlayShippingSelection from '../_components/store/product/overlay/OverlayShippingSelection';
 import { useAuthStore } from '../_stores/authStore';
 import ProductSections from '../_components/store/product/sections/ProductSections';
 import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
@@ -75,6 +76,9 @@ export default function CartScreen() {
   // State for edit overlay
   const [isEditOverlayVisible, setIsEditOverlayVisible] = useState(false);
   const [editingItem, setEditingItem] = useState<CartDisplayItem | null>(null);
+
+  // State for shipping method overlay
+  const [showShippingOverlay, setShowShippingOverlay] = useState(false);
 
   // Convert cart items to CartDisplayItem format with full product details
   const cartItems = useMemo(() => {
@@ -171,10 +175,26 @@ export default function CartScreen() {
   };
 
   const handleBuyNow = () => {
-    if (isLoggedIn) {
-      router.push('/checkout/shipping-address');
+    setShowShippingOverlay(true);
+  };
+
+  const handleShippingMethodSelect = (method: 'delivery' | 'pickup' | '') => {
+    if (!method) return;
+    setShowShippingOverlay(false);
+    if (method === 'delivery') {
+      if (isLoggedIn) {
+        router.push('/checkout/shipping-address');
+      } else {
+        router.push('/checkout/new-address?guest=true');
+      }
     } else {
-      router.push('/checkout/store-selection');
+      // Pickup flow
+      if (isLoggedIn) {
+        router.push('/checkout/shipping-pickup');
+      } else {
+        // Guest pickup needs contact info first
+        router.push('/checkout/guest-contact-info?returnTo=shipping-pickup');
+      }
     }
   };
 
@@ -323,6 +343,13 @@ export default function CartScreen() {
           product={editingItem}
         />
       )}
+
+      {/* Shipping Method Selection Overlay */}
+      <OverlayShippingSelection
+        isVisible={showShippingOverlay}
+        onClose={() => setShowShippingOverlay(false)}
+        onSelectShipping={handleShippingMethodSelect}
+      />
     </View>
   );
 }

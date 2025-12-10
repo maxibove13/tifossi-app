@@ -12,7 +12,7 @@ export interface OrderData {
   orderNumber: string;
   items: OrderItem[];
   user: UserData;
-  shippingAddress: ShippingAddress;
+  shippingAddress?: ShippingAddress | null; // Optional for pickup orders
   shippingMethod: 'delivery' | 'pickup';
   shippingCost: number;
   subtotal: number;
@@ -102,17 +102,68 @@ class MercadoPagoService {
   }
 
   /**
+   * Check if user data represents a guest user
+   */
+  private isGuestUser(userData: UserData): boolean {
+    return typeof userData.id === 'string' && userData.id.startsWith('guest-');
+  }
+
+  /**
    * Create payment preference for an order
    */
   async createPaymentPreference(orderData: OrderData): Promise<PaymentPreference> {
     try {
-      if (!this.authToken) {
+      const isGuest = this.isGuestUser(orderData.user);
+
+      // Only require auth for non-guest orders
+      if (!isGuest && !this.authToken) {
         throw new Error('Authentication required');
       }
 
       // Get device fingerprint for fraud prevention
       const deviceFingerprint = await deviceFingerprintService.getDeviceFingerprint();
 
+      if (isGuest) {
+        // Use guest endpoint for unauthenticated users
+        const guestOrderData = {
+          ...orderData,
+          guestEmail: orderData.user.email,
+          guestName: `${orderData.user.firstName} ${orderData.user.lastName}`.trim(),
+          guestPhone: orderData.user.phone?.number,
+        };
+
+        const response = await fetch(`${this.baseUrl}/api/payment/guest/create-preference`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            orderData: guestOrderData,
+            deviceFingerprint,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || `HTTP ${response.status}: Failed to create payment preference`
+          );
+        }
+
+        const result = await response.json();
+
+        if (!result.success || !result.data) {
+          throw new Error('Invalid response format');
+        }
+
+        return {
+          id: result.data.preference.id,
+          initPoint: result.data.preference.initPoint,
+          externalReference: result.data.preference.externalReference,
+        };
+      }
+
+      // Use authenticated endpoint for logged-in users
       const response = await fetch(`${this.baseUrl}/api/payment/create-preference`, {
         method: 'POST',
         headers: {
@@ -488,7 +539,8 @@ class MercadoPagoService {
       errors.push('El email del usuario es requerido');
     }
 
-    if (!orderData.shippingAddress?.addressLine1) {
+    // Only require address for delivery, not for store pickup
+    if (orderData.shippingMethod === 'delivery' && !orderData.shippingAddress?.addressLine1) {
       errors.push('La dirección de envío es requerida');
     }
 

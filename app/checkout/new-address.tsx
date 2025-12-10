@@ -13,12 +13,13 @@ import {
   Easing,
   ActivityIndicator,
 } from 'react-native';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import CloseIcon from '../../assets/icons/close.svg';
 import Input from '../_components/ui/form/Input';
 import Svg, { Path } from 'react-native-svg';
 import addressService from '../_services/address/addressService';
 import { useAuthStore } from '../_stores/authStore';
+import { usePaymentStore } from '../_stores/paymentStore';
 
 // Import style tokens
 import { colors } from '../_styles/colors';
@@ -45,6 +46,7 @@ const ChevronDownIcon = ({ width = 20, height = 20, stroke = '#424242', strokeWi
 interface AddressFormData {
   firstName: string;
   lastName: string;
+  email: string;
   phone: string;
   street: string;
   number: string;
@@ -60,6 +62,7 @@ interface AddressFormData {
 interface ValidationErrors {
   firstName?: string;
   lastName?: string;
+  email?: string;
   phone?: string;
   street?: string;
   number?: string;
@@ -176,12 +179,17 @@ const CountryDropdown = ({
 };
 
 function NewAddressScreen() {
+  const { guest } = useLocalSearchParams<{ guest?: string }>();
+  const isGuestMode = guest === 'true';
+
   const { token } = useAuthStore();
+  const setGuestAddress = usePaymentStore((state) => state.setGuestAddress);
 
   // Form state
   const [formData, setFormData] = useState<AddressFormData>({
     firstName: '',
     lastName: '',
+    email: '',
     phone: '',
     street: '',
     number: '',
@@ -241,6 +249,15 @@ function NewAddressScreen() {
       newErrors.lastName = 'El apellido es obligatorio';
     }
 
+    // Email required for guest mode (needed for MercadoPago)
+    if (isGuestMode) {
+      if (!formData.email.trim()) {
+        newErrors.email = 'El email es obligatorio';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+        newErrors.email = 'El email no es válido';
+      }
+    }
+
     if (!formData.phone.trim()) {
       newErrors.phone = 'El número de celular es obligatorio';
     }
@@ -294,6 +311,25 @@ function NewAddressScreen() {
       return;
     }
 
+    // Guest mode: store address locally and continue to payment
+    if (isGuestMode) {
+      setGuestAddress({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        addressLine1: `${formData.street} ${formData.number}`.trim(),
+        addressLine2: formData.additionalInfo || undefined,
+        city: formData.city,
+        state: formData.department,
+        postalCode: formData.postalCode || undefined,
+        country: formData.countryCode,
+        phoneNumber: formData.phone,
+      });
+      router.push('/checkout/payment-selection?guest=true');
+      return;
+    }
+
+    // Logged-in mode: save to backend
     if (!token) {
       setApiError('Debes iniciar sesión para guardar direcciones');
       return;
@@ -374,6 +410,16 @@ function NewAddressScreen() {
                 keyboardType="phone-pad"
                 error={submitted ? errors.phone : undefined}
               />
+              {isGuestMode && (
+                <Input
+                  placeholder="Email"
+                  value={formData.email}
+                  onChangeText={(value) => handleChange('email', value)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  error={submitted ? errors.email : undefined}
+                />
+              )}
             </View>
 
             {/* Address Section */}
