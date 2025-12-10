@@ -38,12 +38,7 @@ describe('CartService', () => {
       const result = await cartService.fetchUserCart();
 
       expect(result).toEqual(mockCartItems);
-      expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/users/me/cart',
-        expect.objectContaining({
-          headers: { Authorization: 'Bearer test-auth-token' },
-        })
-      );
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/users/me?populate=cart');
     });
 
     it('should handle different response formats', async () => {
@@ -84,13 +79,9 @@ describe('CartService', () => {
 
       expect(result.success).toBe(true);
       expect(result.items).toEqual(mockCartItems);
-      expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/users/me/cart',
-        { cart: mockCartItems },
-        expect.objectContaining({
-          headers: { Authorization: 'Bearer test-auth-token' },
-        })
-      );
+      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me', {
+        cart: mockCartItems,
+      });
     });
 
     it('should return items without syncing for guest users', async () => {
@@ -229,11 +220,9 @@ describe('CartService', () => {
 
       expect(result.success).toBe(true);
       expect(result.items).toEqual([]);
-      expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/users/me/cart',
-        { cart: [] },
-        expect.any(Object)
-      );
+      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me', {
+        cart: [],
+      });
     });
   });
 

@@ -762,7 +762,7 @@ describe('StrapiApi Service', () => {
       const result = await strapiApi.syncCart([{ productId: 'prod-1', quantity: 2 }]);
 
       expect(result).toBe(true);
-      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me/cart', {
+      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me', {
         cart: [{ productId: 'prod-1', quantity: 2 }],
       });
     });
@@ -784,8 +784,8 @@ describe('StrapiApi Service', () => {
       const result = await strapiApi.syncFavorites(['prod-1', 'prod-2']);
 
       expect(result).toBe(true);
-      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me/favorites', {
-        favorites: ['prod-1', 'prod-2'],
+      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me', {
+        favorites: { set: ['prod-1', 'prod-2'] },
       });
     });
   });

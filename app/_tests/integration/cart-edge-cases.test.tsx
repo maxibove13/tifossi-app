@@ -623,6 +623,8 @@ describe('Cart Edge Cases - Revenue Protection', () => {
 
   describe('Error Recovery', () => {
     it('should rollback optimistic updates on API failure', async () => {
+      // Enable server sync for this test (not guest mode)
+      useCartStore.setState({ isGuestCart: false });
       const { result } = renderHook(() => useCartStore());
 
       // Add initial item successfully
@@ -638,7 +640,7 @@ describe('Cart Edge Cases - Revenue Protection', () => {
       const initialState = result.current.items;
 
       // Mock API failure for next operation
-      mockHttpClient.post.mockRejectedValueOnce(new Error('Network error'));
+      mockHttpClient.put.mockRejectedValueOnce(new Error('Network error'));
 
       // Try to add another item (should fail and rollback)
       await act(async () => {
@@ -661,7 +663,7 @@ describe('Cart Edge Cases - Revenue Protection', () => {
       const { result } = renderHook(() => useCartStore());
 
       // Mock slow network
-      mockHttpClient.post.mockImplementation(
+      mockHttpClient.put.mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 100))
       );
 
