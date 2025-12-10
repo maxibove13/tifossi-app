@@ -56,8 +56,10 @@ describe('favoritesStore', () => {
 
       expect(result.current.productIds).toContain('product-1');
       expect(result.current.items).toContain('product-1');
-      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me/favorites', {
-        favorites: ['product-1'],
+      // The implementation uses apiManager.syncFavorites which calls:
+      // httpClient.put('/users/me', { favorites: { set: productIds } })
+      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me', {
+        favorites: { set: ['product-1'] },
       });
     });
 
@@ -97,8 +99,10 @@ describe('favoritesStore', () => {
       });
 
       expect(result.current.productIds).toEqual(['product-2']);
-      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me/favorites', {
-        favorites: ['product-2'],
+      // The implementation uses apiManager.syncFavorites which calls:
+      // httpClient.put('/users/me', { favorites: { set: productIds } })
+      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me', {
+        favorites: { set: ['product-2'] },
       });
     });
 
@@ -162,8 +166,10 @@ describe('favoritesStore', () => {
         await result.current.syncWithServer();
       });
 
-      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me/favorites', {
-        favorites: ['product-1', 'product-2'],
+      // The implementation uses apiManager.syncFavorites which calls:
+      // httpClient.put('/users/me', { favorites: { set: productIds } })
+      expect(mockHttpClient.put).toHaveBeenCalledWith('/users/me', {
+        favorites: { set: ['product-1', 'product-2'] },
       });
       expect(result.current.error).toBeNull();
     });

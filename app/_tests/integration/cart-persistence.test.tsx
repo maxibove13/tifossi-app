@@ -365,74 +365,36 @@ describe('Cart Persistence', () => {
       });
 
       // Mock the specific calls for migration flow
-      // First, mock fetching user's existing cart
+      // The actual implementation:
+      // 1. Fetches user's existing cart via GET /users/me?populate=cart
+      // 2. Merges locally
+      // 3. Saves via PUT /users/me
       const httpClient = require('../../_services/api/httpClient').default;
+
+      // Mock fetching user's existing cart (response format: { data: { cart: [...] } })
       httpClient.get.mockResolvedValueOnce({
-        data: [
-          {
-            productId: 'prod_1',
-            quantity: 1,
-            color: 'Negro',
-            size: 'M',
-            price: 2500,
-          },
-          {
-            productId: 'prod_3',
-            quantity: 3,
-            color: 'Rojo',
-            size: 'S',
-            price: 2000,
-          },
-        ],
-        cart: [
-          {
-            productId: 'prod_1',
-            quantity: 1,
-            color: 'Negro',
-            size: 'M',
-            price: 2500,
-          },
-          {
-            productId: 'prod_3',
-            quantity: 3,
-            color: 'Rojo',
-            size: 'S',
-            price: 2000,
-          },
-        ],
+        data: {
+          cart: [
+            {
+              productId: 'prod_1',
+              quantity: 1,
+              color: 'Negro',
+              size: 'M',
+              price: 2500,
+            },
+            {
+              productId: 'prod_3',
+              quantity: 3,
+              color: 'Rojo',
+              size: 'S',
+              price: 2000,
+            },
+          ],
+        },
       });
 
-      // Mock the migration response - this should combine guest and user items
-      httpClient.post.mockImplementationOnce(async (url: string, data?: any) => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
-        if (url === '/cart/migrate') {
-          // Simulate merging logic
-          const guestItems = data?.guestItems || [];
-          const userItems = [
-            { productId: 'prod_1', quantity: 1, color: 'Negro', size: 'M', price: 2500 },
-            { productId: 'prod_3', quantity: 3, color: 'Rojo', size: 'S', price: 2000 },
-          ];
-
-          // Merge items - combine quantities for matching products
-          const merged = [...guestItems];
-          userItems.forEach((userItem) => {
-            const existingIndex = merged.findIndex(
-              (item) =>
-                item.productId === userItem.productId &&
-                item.color === userItem.color &&
-                item.size === userItem.size
-            );
-            if (existingIndex >= 0) {
-              merged[existingIndex].quantity += userItem.quantity;
-            } else {
-              merged.push(userItem);
-            }
-          });
-
-          return { success: true, mergedItems: merged };
-        }
-        return { success: true };
-      });
+      // Mock the PUT to save merged cart
+      httpClient.put.mockResolvedValueOnce({ success: true });
 
       // Simulate login and migration
       await act(async () => {
@@ -459,17 +421,20 @@ describe('Cart Persistence', () => {
       expect(result.current.isGuestCart).toBe(true);
 
       // Mock user cart from server
+      // The implementation expects { data: { cart: [...] } } format
       const httpClient = require('../../_services/api/httpClient').default;
       httpClient.get.mockResolvedValueOnce({
-        data: [
-          {
-            productId: 'prod_1',
-            quantity: 2,
-            color: 'Negro',
-            size: 'M',
-            price: 2500,
-          },
-        ],
+        data: {
+          cart: [
+            {
+              productId: 'prod_1',
+              quantity: 2,
+              color: 'Negro',
+              size: 'M',
+              price: 2500,
+            },
+          ],
+        },
       });
 
       // Simulate login
@@ -501,9 +466,9 @@ describe('Cart Persistence', () => {
 
       const guestItems = [...result.current.items];
 
-      // Mock migration failure
+      // Mock migration failure - the implementation calls GET /users/me first
       const httpClient = require('../../_services/api/httpClient').default;
-      httpClient.post.mockRejectedValueOnce(new Error('Server error'));
+      httpClient.get.mockRejectedValueOnce(new Error('Server error'));
 
       // Attempt migration
       await act(async () => {
@@ -533,32 +498,28 @@ describe('Cart Persistence', () => {
         });
       });
 
-      // Mock user has same item
+      // Mock user has same item on server
+      // The implementation:
+      // 1. Fetches server cart via GET /users/me?populate=cart
+      // 2. Merges locally (adds quantities for matching items)
+      // 3. Saves via PUT /users/me
       const httpClient = require('../../_services/api/httpClient').default;
       httpClient.get.mockResolvedValueOnce({
-        data: [
-          {
-            productId: 'prod_1',
-            quantity: 3,
-            color: 'Negro',
-            size: 'M',
-            price: 2500,
-          },
-        ],
+        data: {
+          cart: [
+            {
+              productId: 'prod_1',
+              quantity: 3,
+              color: 'Negro',
+              size: 'M',
+              price: 2500,
+            },
+          ],
+        },
       });
 
-      // Mock merged result
-      httpClient.post.mockResolvedValueOnce({
-        mergedItems: [
-          {
-            productId: 'prod_1',
-            quantity: 8, // Combined quantities
-            color: 'Negro',
-            size: 'M',
-            price: 2500,
-          },
-        ],
-      });
+      // Mock PUT for saving merged cart
+      httpClient.put.mockResolvedValueOnce({ success: true });
 
       await act(async () => {
         result.current.setAuthToken('test-auth-token');
@@ -567,6 +528,7 @@ describe('Cart Persistence', () => {
 
       await waitFor(() => {
         expect(result.current.items).toHaveLength(1);
+        // Local merge: guest(5) + server(3) = 8
         expect(result.current.items[0].quantity).toBe(8);
       });
     });
@@ -602,9 +564,9 @@ describe('Cart Persistence', () => {
         },
       ];
 
+      // Response format: { data: { cart: [...] } }
       httpClient.get.mockResolvedValueOnce({
-        data: serverCart,
-        cart: serverCart,
+        data: { cart: serverCart },
       });
 
       await act(async () => {
@@ -640,12 +602,12 @@ describe('Cart Persistence', () => {
         });
       });
 
-      // Verify sync API was called
+      // The implementation uses PUT /users/me to sync cart
       await waitFor(() => {
-        expect(httpClient.post).toHaveBeenCalledWith(
-          '/cart/sync',
+        expect(httpClient.put).toHaveBeenCalledWith(
+          '/users/me',
           expect.objectContaining({
-            items: expect.arrayContaining([
+            cart: expect.arrayContaining([
               expect.objectContaining({
                 productId: 'prod_1',
                 quantity: 1,
@@ -660,12 +622,12 @@ describe('Cart Persistence', () => {
         await result.current.updateItemQuantity('prod_1', 'Negro', 'M', 3);
       });
 
-      // Verify sync called again
+      // Verify PUT called again with updated cart
       await waitFor(() => {
-        expect(httpClient.post).toHaveBeenCalledWith(
-          '/cart/sync',
+        expect(httpClient.put).toHaveBeenCalledWith(
+          '/users/me',
           expect.objectContaining({
-            items: expect.arrayContaining([
+            cart: expect.arrayContaining([
               expect.objectContaining({
                 productId: 'prod_1',
                 quantity: 3,
@@ -678,13 +640,14 @@ describe('Cart Persistence', () => {
 
     it('should handle optimistic updates and rollback on error', async () => {
       const { result } = renderHook(() => useCartStore());
+      const httpClient = require('../../_services/api/httpClient').default;
 
       // Set auth token
       act(() => {
         result.current.setAuthToken('test-auth-token');
       });
 
-      // Add initial item
+      // Add initial item (should succeed)
       await act(async () => {
         await result.current.addItem({
           productId: 'prod_1',
@@ -696,9 +659,9 @@ describe('Cart Persistence', () => {
       });
 
       const initialItems = [...result.current.items];
-      const httpClient = require('../../_services/api/httpClient').default;
-      // Mock sync failure for next operation
-      httpClient.post.mockRejectedValueOnce(new Error('Network error'));
+
+      // Mock PUT failure for next operation (implementation uses PUT /users/me)
+      httpClient.put.mockRejectedValueOnce(new Error('Network error'));
 
       // Try to add another item
       await act(async () => {
@@ -754,11 +717,11 @@ describe('Cart Persistence', () => {
       await waitFor(() => {
         // Both items should be in cart
         expect(result.current.items).toHaveLength(2);
-        // Verify final sync has both items
-        expect(httpClient.post).toHaveBeenLastCalledWith(
-          '/cart/sync',
+        // Verify PUT was called (implementation uses PUT /users/me)
+        expect(httpClient.put).toHaveBeenCalledWith(
+          '/users/me',
           expect.objectContaining({
-            items: expect.arrayContaining([
+            cart: expect.arrayContaining([
               expect.objectContaining({ productId: 'prod_1' }),
               expect.objectContaining({ productId: 'prod_2' }),
             ]),
@@ -769,10 +732,16 @@ describe('Cart Persistence', () => {
   });
 
   describe('Offline/Online Behavior', () => {
-    it('should queue operations while offline', async () => {
+    it('should handle offline operations for authenticated users', async () => {
       const httpClient = require('../../_services/api/httpClient').default;
 
-      httpClient.post.mockRejectedValue(new Error('Network unavailable'));
+      // Set auth token for authenticated user behavior
+      act(() => {
+        useCartStore.getState().setAuthToken('test-auth-token');
+      });
+
+      // Mock PUT to fail (implementation uses PUT /users/me)
+      httpClient.put.mockRejectedValue(new Error('Network unavailable'));
 
       await act(async () => {
         await useCartStore.getState().addItem({
@@ -786,11 +755,13 @@ describe('Cart Persistence', () => {
 
       await waitFor(() => {
         const state = useCartStore.getState();
+        // Should rollback due to network error
         expect(state.items).toHaveLength(0);
         expect(state.error).toContain('Failed to update cart');
       });
 
-      httpClient.post.mockResolvedValueOnce({ success: true });
+      // Restore PUT mock to succeed
+      httpClient.put.mockResolvedValue({ success: true });
 
       await act(async () => {
         await useCartStore.getState().addItem({
@@ -827,7 +798,8 @@ describe('Cart Persistence', () => {
         });
       });
 
-      httpClient.post.mockImplementation(
+      // Mock PUT to fail with timeout (implementation uses PUT /users/me)
+      httpClient.put.mockImplementation(
         () => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))
       );
 
@@ -868,7 +840,8 @@ describe('Cart Persistence', () => {
 
       const previousItems = [...useCartStore.getState().items];
 
-      httpClient.post.mockRejectedValueOnce({
+      // Mock PUT to fail (implementation uses PUT /users/me)
+      httpClient.put.mockRejectedValueOnce({
         response: { status: 400, data: { error: 'Invalid item' } },
       });
 
