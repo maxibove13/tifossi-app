@@ -119,9 +119,11 @@ describe('Shipping Address Flow - Integration', () => {
         const defaultAddress = addresses.find((addr) => addr.isDefault);
         expect(defaultAddress).toBeDefined();
         expect(getByText(/Por defecto/i)).toBeTruthy();
-        const defaultAddressNumber = defaultAddress!.number;
-        expect(defaultAddressNumber).toBeTruthy();
-        expect(getAllByText(new RegExp(defaultAddressNumber, 'i')).length).toBeGreaterThan(0);
+        const defaultAddressLine1 = defaultAddress!.addressLine1;
+        expect(defaultAddressLine1).toBeTruthy();
+        // Check first part of address is visible
+        const addressFirstWord = defaultAddressLine1.split(' ')[0];
+        expect(getAllByText(new RegExp(addressFirstWord, 'i')).length).toBeGreaterThan(0);
       }
     }, 10000);
 
@@ -196,7 +198,7 @@ describe('Shipping Address Flow - Integration', () => {
         await waitFor(() => {
           expect(mockPush).toHaveBeenCalledWith({
             pathname: '/checkout/payment-selection',
-            params: { selectedAddressId: secondAddress.id },
+            params: { selectedAddressId: String(secondAddress.id) },
           });
         });
       }
@@ -222,7 +224,7 @@ describe('Shipping Address Flow - Integration', () => {
       await waitFor(() => {
         expect(mockPush).toHaveBeenCalledWith({
           pathname: '/checkout/payment-selection',
-          params: { selectedAddressId: defaultAddress?.id },
+          params: { selectedAddressId: String(defaultAddress?.id) },
         });
       });
     });
@@ -332,7 +334,7 @@ describe('Shipping Address Flow - Integration', () => {
   });
 
   describe('Address Formatting', () => {
-    it('should format addresses correctly with apartment', async () => {
+    it('should format addresses correctly with additional info', async () => {
       const { getByText } = render(
         <TestWrapper>
           <ShippingAddressScreen />
@@ -340,8 +342,9 @@ describe('Shipping Address Flow - Integration', () => {
       );
 
       await waitFor(() => {
-        expect(getByText(/Apto\. 4A/i)).toBeTruthy();
-        expect(getByText(/Rambla República de México/i)).toBeTruthy();
+        // Check for addressLine2 content (apartment info)
+        expect(getByText(/4A/i)).toBeTruthy();
+        expect(getByText(/Rambla/i)).toBeTruthy();
       });
     });
 

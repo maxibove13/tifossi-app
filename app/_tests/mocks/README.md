@@ -158,11 +158,11 @@ interface MockOrder {
 
 ### Address Endpoints
 
-- `GET /users/me/addresses` - Get user addresses
-- `POST /users/me/addresses` - Create new address
-- `PUT /users/me/addresses/:id` - Update address
-- `DELETE /users/me/addresses/:id` - Delete address
-- `PUT /users/me/addresses/:id/set-default` - Set default address
+- `GET /user-profile/me/addresses` - Get user addresses
+- `POST /user-profile/me/addresses` - Create new address
+- `PUT /user-profile/me/addresses/:index` - Update address by index
+- `DELETE /user-profile/me/addresses/:index` - Delete address by index
+- `PUT /user-profile/me/addresses/:index/default` - Set default address
 
 ### Utility Endpoints
 

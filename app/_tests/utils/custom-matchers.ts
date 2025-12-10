@@ -13,7 +13,7 @@
 import { Product, ProductCardData } from '../../_types/product';
 import { User } from '../../_types/auth';
 import { CartItem } from '../../_stores/cartStore';
-import { UserAddress } from '../../_stores/userStore';
+import { Address } from '../../_services/address/addressService';
 
 // Extend Jest matchers interface
 declare global {
@@ -429,15 +429,24 @@ const toBeValidAddress = function (received: any) {
   if (typeof received !== 'object' || received === null) {
     errors.push('not an object');
   } else {
-    const requiredFields = ['name', 'street', 'city', 'state', 'country', 'postalCode', 'type'];
+    // Required fields for new Address interface
+    const requiredFields = [
+      'firstName',
+      'lastName',
+      'addressLine1',
+      'city',
+      'state',
+      'country',
+      'type',
+    ];
     requiredFields.forEach((field) => {
       if (!received[field] || typeof received[field] !== 'string') {
         errors.push(`missing or invalid ${field}`);
       }
     });
 
-    if (!['shipping', 'billing'].includes(received.type)) {
-      errors.push('type must be "shipping" or "billing"');
+    if (!['shipping', 'billing', 'both'].includes(received.type)) {
+      errors.push('type must be "shipping", "billing", or "both"');
     }
 
     if (typeof received.isDefault !== 'boolean') {
@@ -460,7 +469,7 @@ const toBeValidAddress = function (received: any) {
   }
 };
 
-const toBeDefaultAddress = function (received: UserAddress) {
+const toBeDefaultAddress = function (received: Address) {
   const pass = received.isDefault === true;
 
   if (pass) {
@@ -476,8 +485,8 @@ const toBeDefaultAddress = function (received: UserAddress) {
   }
 };
 
-const toBeUruguayanAddress = function (received: UserAddress) {
-  const pass = received.country === 'Uruguay';
+const toBeUruguayanAddress = function (received: Address) {
+  const pass = received.country === 'UY';
 
   if (pass) {
     return {
@@ -487,7 +496,7 @@ const toBeUruguayanAddress = function (received: UserAddress) {
   } else {
     return {
       message: () =>
-        `expected address to be Uruguayan (country: "Uruguay"), but got "${received.country}"`,
+        `expected address to be Uruguayan (country: "UY"), but got "${received.country}"`,
       pass: false,
     };
   }

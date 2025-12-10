@@ -220,22 +220,22 @@ describe('Complete Purchase Flow - Revenue Critical', () => {
       // For this test, we simulate the checkout process
 
       // Step 4: Create shipping address (guest user)
-      const addressResponse = await addressService.createAddress({
+      const shippingAddress = await addressService.createAddress({
         firstName: 'Guest',
         lastName: 'User',
-        street: 'Test Street',
-        number: '123',
-        apartment: '4B',
+        addressLine1: 'Test Street 123',
+        addressLine2: '4B',
         city: 'Montevideo',
         state: 'Montevideo',
-        zipCode: '11000',
-        country: 'Uruguay',
-        phone: '+598 99 123 456',
+        postalCode: '11000',
+        country: 'UY',
+        phoneNumber: '+598 99 123 456',
+        isDefault: false,
+        type: 'shipping',
       });
 
-      expect(addressResponse.success).toBe(true);
-      const shippingAddress = addressResponse.address!;
-      expect(shippingAddress.id).toBeDefined();
+      expect(shippingAddress).toBeDefined();
+      expect(shippingAddress.addressLine1).toBeDefined();
 
       // Step 5: Select delivery method
       const deliveryMethod = 'delivery'; // or 'pickup'
@@ -312,16 +312,16 @@ describe('Complete Purchase Flow - Revenue Critical', () => {
       setupAuthenticatedUser();
 
       // Add item to cart
-      const addressResponse = await addressService.createAddress({
+      const shippingAddress = await addressService.createAddress({
         firstName: 'Guest',
         lastName: 'User',
-        street: 'Test Street',
-        number: '123',
+        addressLine1: 'Test Street 123',
         city: 'Montevideo',
-        country: 'Uruguay',
+        state: 'Montevideo',
+        country: 'UY',
+        isDefault: false,
+        type: 'shipping',
       });
-
-      const shippingAddress = addressResponse.address!;
 
       // Simulate out of stock error during order creation
       enqueueOrderFailure(new Error('Product out of stock'));

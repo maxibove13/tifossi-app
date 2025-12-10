@@ -25,7 +25,7 @@ jest.mock('expo-router', () => ({
   router: mockRouter,
   useRouter: () => mockRouter,
   useLocalSearchParams: () => ({
-    selectedAddressId: 'addr-default-1',
+    selectedAddressId: '0', // Index of the address in the array
   }),
   useGlobalSearchParams: () => ({}),
   Stack: {
@@ -75,14 +75,15 @@ const originalFetch: typeof fetch | undefined = globalThis.fetch;
 let fetchMock: jest.Mock;
 
 const defaultSelectedAddress: Address = {
-  id: 'addr-default-1',
+  id: 0,
   firstName: 'Juan',
   lastName: 'Pérez',
-  street: 'Avenida 18 de Julio',
-  number: '1234',
+  addressLine1: 'Avenida 18 de Julio 1234',
   city: 'Montevideo',
-  country: 'Uruguay',
+  state: 'Montevideo',
+  country: 'UY',
   isDefault: true,
+  type: 'shipping',
 };
 
 const enqueueSuccessfulOrderResponse = (overrides: Partial<Record<string, unknown>> = {}) => {
@@ -151,7 +152,7 @@ const waitForSelectedAddress = async () => {
   });
   await waitFor(() => {
     expect(httpClientMock.get).toHaveBeenCalledWith(
-      '/users/me/addresses/addr-default-1',
+      '/user-profile/me/addresses',
       expect.objectContaining({
         headers: expect.objectContaining({ Authorization: expect.stringContaining('Bearer') }),
       })
@@ -172,12 +173,13 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
 
     if (defaultHttpGet) {
       httpClientMock.get.mockImplementation((url: string, config?: AxiosRequestConfig) => {
-        if (url === '/users/me/addresses') {
-          return Promise.resolve({ addresses: [defaultSelectedAddress] });
+        if (url === '/user-profile/me/addresses') {
+          // Return array format - addressService handles both array and { addresses: [] } formats
+          return Promise.resolve({ data: [defaultSelectedAddress] });
         }
 
-        if (url.startsWith('/users/me/addresses/')) {
-          return Promise.resolve({ address: defaultSelectedAddress });
+        if (url.startsWith('/user-profile/me/addresses/')) {
+          return Promise.resolve({ data: defaultSelectedAddress });
         }
 
         return defaultHttpGet(url, config);
@@ -544,7 +546,7 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
   describe('Error Handling', () => {
     it('should handle address loading failure gracefully', async () => {
       httpClientMock.get.mockImplementationOnce((url: string, config?: AxiosRequestConfig) => {
-        if (url.startsWith('/users/me/addresses/')) {
+        if (url.startsWith('/user-profile/me/addresses')) {
           return Promise.reject(new Error('Address not found'));
         }
 
@@ -578,6 +580,7 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       render(<PaymentSelectionScreen />);
 
       await selectMercadoPagoOption();
+      await waitForSelectedAddress();
       await tapContinue();
 
       await waitFor(() => {
@@ -594,6 +597,7 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       render(<PaymentSelectionScreen />);
 
       await selectMercadoPagoOption();
+      await waitForSelectedAddress();
       await tapContinue();
 
       await waitFor(() => {

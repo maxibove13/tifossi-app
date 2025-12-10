@@ -137,12 +137,11 @@ Follow docs/MERCADOPAGO_CREDENTIAL_SETUP.md and docs/MERCADOPAGO_TESTING_PLAN.md
         },
       },
       shippingAddress: {
-        street: TEST_ADDRESSES.montevideo.street_name,
-        number: TEST_ADDRESSES.montevideo.street_number.toString(),
+        addressLine1: `${TEST_ADDRESSES.montevideo.street_name} ${TEST_ADDRESSES.montevideo.street_number}`,
         city: TEST_ADDRESSES.montevideo.city,
         state: TEST_ADDRESSES.montevideo.state,
         country: TEST_ADDRESSES.montevideo.country,
-        zipCode: TEST_ADDRESSES.montevideo.zip_code,
+        postalCode: TEST_ADDRESSES.montevideo.zip_code,
       },
       shippingMethod: 'delivery' as const,
       shippingCost: 200,
@@ -179,9 +178,9 @@ Follow docs/MERCADOPAGO_CREDENTIAL_SETUP.md and docs/MERCADOPAGO_TESTING_PLAN.md
           },
           shipments: {
             receiver_address: {
-              street_name: order.shippingAddress.street,
-              street_number: Number(order.shippingAddress.number),
-              zip_code: order.shippingAddress.zipCode,
+              street_name: order.shippingAddress.addressLine1,
+              street_number: 0,
+              zip_code: order.shippingAddress.postalCode,
               city_name: order.shippingAddress.city,
               state_name: order.shippingAddress.state,
               country_name: order.shippingAddress.country,

@@ -68,7 +68,6 @@ const resetAllStores = (): void => {
   });
 
   useUserStore.setState({
-    addresses: [],
     profile: null,
     preferences: {
       notifications: {
@@ -272,17 +271,18 @@ describe('Checkout Flow Variations - Revenue Critical', () => {
       });
     });
 
-    const addressResponse = await addressService.createAddress({
+    const shippingAddress = await addressService.createAddress({
       firstName: 'Guest',
       lastName: 'User',
-      street: 'Test Street',
-      number: '123',
+      addressLine1: 'Test Street 123',
       city: 'Montevideo',
-      country: 'Uruguay',
+      state: 'Montevideo',
+      country: 'UY',
+      isDefault: false,
+      type: 'shipping',
     });
 
-    expect(addressResponse.success).toBe(true);
-    const shippingAddress = addressResponse.address as Address;
+    expect(shippingAddress).toBeDefined();
 
     queueOrderSuccess();
     fetchMock.mockResolvedValueOnce({
@@ -341,7 +341,6 @@ describe('Checkout Flow Variations - Revenue Critical', () => {
     const pickupStore = storesData[0];
     // Store selection would be handled by checkout flow, not userStore
     useUserStore.setState({
-      addresses: [],
       profile: null,
       preferences: useUserStore.getState().preferences,
       isLoading: false,
@@ -363,10 +362,12 @@ describe('Checkout Flow Variations - Revenue Critical', () => {
     const pickupAddress: Address = {
       firstName: pickupStore.name,
       lastName: 'Pickup',
-      street: pickupStore.address, // Address is a string
-      number: '',
+      addressLine1: pickupStore.address,
       city: 'Montevideo',
-      country: 'Uruguay',
+      state: 'Montevideo',
+      country: 'UY',
+      isDefault: false,
+      type: 'shipping',
     };
 
     const orderResult = await orderService.createOrderWithPayment(
@@ -405,10 +406,12 @@ describe('Checkout Flow Variations - Revenue Critical', () => {
         shippingAddress: {
           firstName: 'Test',
           lastName: 'User',
-          street: '18 de Julio',
-          number: '1234',
+          addressLine1: '18 de Julio 1234',
           city: 'Montevideo',
-          country: 'Uruguay',
+          state: 'Montevideo',
+          country: 'UY',
+          isDefault: false,
+          type: 'shipping',
         },
         shippingMethod: 'delivery',
       },

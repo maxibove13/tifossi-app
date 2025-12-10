@@ -8,14 +8,13 @@ interface RawAddress {
   firstName: string;
   lastName: string;
   company?: string;
-  street: string;
-  number: string;
-  apartment?: string;
+  addressLine1: string;
+  addressLine2?: string;
   city: string;
   state?: string;
   country: string;
-  zipCode?: string;
-  phone?: string;
+  postalCode?: string;
+  phoneNumber?: string;
   isDefault?: boolean;
 }
 
@@ -116,23 +115,21 @@ interface ClientShippingAddress {
   firstName: string;
   lastName: string;
   company: string | null;
-  street: string;
-  number: string;
-  apartment: string | null;
+  addressLine1: string;
+  addressLine2: string | null;
   city: string;
   state: string | null;
   country: string;
-  zipCode: string | null;
-  phone: string | null;
+  postalCode: string | null;
+  phoneNumber: string | null;
 }
 
 interface MercadoPagoAddress {
-  street: string;
-  number: string;
+  addressLine1: string;
   city: string;
   state?: string;
   country: string;
-  zipCode?: string;
+  postalCode?: string;
 }
 
 interface MercadoPagoUser {
@@ -280,8 +277,7 @@ export const buildShippingComponent = (
   const requiredFields: (keyof RawAddress)[] = [
     'firstName',
     'lastName',
-    'street',
-    'number',
+    'addressLine1',
     'city',
     'country',
   ];
@@ -291,19 +287,17 @@ export const buildShippingComponent = (
     throw new Error(`Missing required address fields: ${missing.join(', ')}`);
   }
 
-  const line1 = `${address.street} ${address.number}`.trim();
-
   return {
     firstName: address.firstName,
     lastName: address.lastName,
     company: address.company || null,
-    addressLine1: line1,
-    addressLine2: address.apartment || null,
+    addressLine1: address.addressLine1,
+    addressLine2: address.addressLine2 || null,
     city: address.city,
     state: address.state || null,
-    postalCode: address.zipCode || null,
+    postalCode: address.postalCode || null,
     country: address.country,
-    phoneNumber: address.phone || null,
+    phoneNumber: address.phoneNumber || null,
     isDefault: Boolean(address.isDefault),
     type: shippingMethod === 'pickup' ? 'both' : 'shipping',
   };
@@ -313,23 +307,21 @@ export const buildClientShippingAddress = (address: RawAddress): ClientShippingA
   firstName: address.firstName,
   lastName: address.lastName,
   company: address.company || null,
-  street: address.street,
-  number: address.number,
-  apartment: address.apartment || null,
+  addressLine1: address.addressLine1,
+  addressLine2: address.addressLine2 || null,
   city: address.city,
   state: address.state || null,
   country: address.country,
-  zipCode: address.zipCode || null,
-  phone: address.phone || null,
+  postalCode: address.postalCode || null,
+  phoneNumber: address.phoneNumber || null,
 });
 
 export const buildMercadoPagoAddress = (address: RawAddress): MercadoPagoAddress => ({
-  street: address.street,
-  number: address.number,
+  addressLine1: address.addressLine1,
   city: address.city,
   state: address.state || undefined,
   country: address.country,
-  zipCode: address.zipCode || undefined,
+  postalCode: address.postalCode || undefined,
 });
 
 export const buildMercadoPagoUser = (user: AuthUser): MercadoPagoUser => {

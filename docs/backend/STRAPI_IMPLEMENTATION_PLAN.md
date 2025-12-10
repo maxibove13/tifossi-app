@@ -313,23 +313,48 @@ export const usePaymentStore = create((set, get) => ({
 
 ### Core Endpoints Implemented:
 
-| Endpoint                    | Method              | Description                            | Auth Required |
-| --------------------------- | ------------------- | -------------------------------------- | ------------- |
-| `/api/products`             | GET                 | List all products                      | No            |
-| `/api/products/:id`         | GET                 | Get single product                     | No            |
-| `/api/categories`           | GET                 | List categories                        | No            |
-| `/api/users/me`             | GET                 | Get user profile with cart/favorites   | Yes (Strapi JWT) |
-| `/api/user-profile/me`      | PUT                 | Update profile, cart, or favorites     | Yes (Strapi JWT) |
-| `/api/orders`               | GET/POST            | Manage orders                          | Yes           |
-| `/api/orders/:id`           | GET                 | Get order details                      | Yes           |
-| `/api/payments/create`      | POST                | Create payment                         | Yes           |
-| `/api/payments/verify`      | POST                | Verify payment                         | Yes           |
-| `/api/webhooks/mercadopago` | POST                | Payment webhook                        | No (signed)   |
-| `/api/users/addresses`      | GET/POST/PUT/DELETE | Manage addresses                       | Yes           |
+| Endpoint                              | Method | Description                            | Auth Required    |
+| ------------------------------------- | ------ | -------------------------------------- | ---------------- |
+| `/api/products`                       | GET    | List all products                      | No               |
+| `/api/products/:id`                   | GET    | Get single product                     | No               |
+| `/api/categories`                     | GET    | List categories                        | No               |
+| `/api/users/me`                       | GET    | Get user profile with cart/favorites   | Yes (Strapi JWT) |
+| `/api/user-profile/me`                | PUT    | Update profile, cart, or favorites     | Yes (Strapi JWT) |
+| `/api/user-profile/me/addresses`      | GET    | List user addresses                    | Yes (Strapi JWT) |
+| `/api/user-profile/me/addresses`      | POST   | Create new address                     | Yes (Strapi JWT) |
+| `/api/user-profile/me/addresses/:idx` | PUT    | Update address by index                | Yes (Strapi JWT) |
+| `/api/user-profile/me/addresses/:idx` | DELETE | Delete address by index                | Yes (Strapi JWT) |
+| `/api/user-profile/me/addresses/:idx/default` | PUT | Set address as default          | Yes (Strapi JWT) |
+| `/api/orders`                         | GET/POST | Manage orders                        | Yes              |
+| `/api/orders/:id`                     | GET    | Get order details                      | Yes              |
+| `/api/payments/create`                | POST   | Create payment                         | Yes              |
+| `/api/payments/verify`                | POST   | Verify payment                         | Yes              |
+| `/api/webhooks/mercadopago`           | POST   | Payment webhook                        | No (signed)      |
 
 **Cart & Favorites via `/user-profile/me`:**
 - Cart: `PUT /user-profile/me` with `{ cart: CartItem[] }` - cart is a JSON field on user
 - Favorites: `PUT /user-profile/me` with `{ favorites: { set: [productIds] } }` - uses Strapi relation format
+
+**Address Management via `/user-profile/me/addresses`:**
+Addresses are stored as a repeatable component on the user profile. Each address has an index (0-based) used for updates/deletes.
+
+Address schema:
+```typescript
+interface Address {
+  id?: number;          // Array index, set by backend
+  firstName: string;
+  lastName: string;
+  addressLine1: string; // street + number combined
+  addressLine2?: string; // additional info (apt, floor, etc.)
+  city: string;
+  state: string;        // department/province
+  postalCode?: string;
+  country: string;      // 2-char code (UY, AR, etc.)
+  phoneNumber?: string;
+  isDefault: boolean;
+  type: 'shipping' | 'billing' | 'both';
+}
+```
 
 **Why `/user-profile/me` instead of `/users/me`?**
 Strapi's built-in `users-permissions` plugin owns the `/api/users/me` route and only allows GET.

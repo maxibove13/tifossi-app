@@ -70,14 +70,12 @@ export interface OrderUser {
 // Shipping address interface
 export interface ShippingAddress {
   name?: string;
-  street: string;
-  number: string;
-  apartment?: string;
+  addressLine1: string; // street + number combined
+  addressLine2?: string; // apartment, additional info
   city: string;
   state?: string;
   country?: string;
-  zipCode?: string;
-  additionalInfo?: string;
+  postalCode?: string;
   coordinates?: {
     lat: number;
     lng: number;

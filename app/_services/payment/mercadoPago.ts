@@ -46,12 +46,12 @@ export interface UserData {
 }
 
 export interface ShippingAddress {
-  street: string;
-  number: string;
+  addressLine1: string;
+  addressLine2?: string;
   city: string;
   state?: string;
   country: string;
-  zipCode?: string;
+  postalCode?: string;
 }
 
 export interface PaymentPreference {
@@ -488,7 +488,7 @@ class MercadoPagoService {
       errors.push('El email del usuario es requerido');
     }
 
-    if (!orderData.shippingAddress?.street) {
+    if (!orderData.shippingAddress?.addressLine1) {
       errors.push('La dirección de envío es requerida');
     }
 

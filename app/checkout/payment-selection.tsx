@@ -59,16 +59,20 @@ export default function PaymentSelectionScreen() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
-  // Fetch selected address
+  // Fetch selected address by index
   useEffect(() => {
     const fetchSelectedAddress = async () => {
       if (selectedAddressId && token) {
         try {
           addressService.setAuthToken(token);
-          const address = await addressService.getAddressById(selectedAddressId as string);
-          setSelectedAddress(address);
+          const addresses = await addressService.fetchUserAddresses();
+          const index = parseInt(selectedAddressId as string, 10);
+          if (!isNaN(index) && index >= 0 && index < addresses.length) {
+            setSelectedAddress(addresses[index]);
+          } else {
+            Alert.alert('Error', 'No pudimos cargar la dirección de envío.');
+          }
         } catch {
-          // Error is handled by Alert, no need for console logging in production
           Alert.alert('Error', 'No pudimos cargar la dirección de envío.');
         }
       }

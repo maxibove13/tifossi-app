@@ -12,7 +12,8 @@ interface CartItem {
 }
 
 interface ShippingAddress {
-  street: string;
+  addressLine1: string;
+  addressLine2?: string;
   city: string;
   country: string;
   postalCode?: string;
@@ -151,7 +152,7 @@ export class PaymentService {
     // Validate shipping address
     if (cartData.shippingAddress) {
       const address = cartData.shippingAddress;
-      if (!address.street || !address.city || !address.country) {
+      if (!address.addressLine1 || !address.city || !address.country) {
         errors.push('Complete shipping address is required');
       }
     }

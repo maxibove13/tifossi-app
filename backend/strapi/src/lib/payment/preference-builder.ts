@@ -20,7 +20,7 @@ interface PickupLocation {
   id: string;
   name?: string;
   address?: string;
-  zipCode?: string;
+  postalCode?: string;
   city?: string;
   department?: string;
 }
@@ -231,11 +231,11 @@ export class PreferenceBuilder {
    */
   private buildPayerAddress(shippingAddress: ShippingAddress) {
     return {
-      street_name: this.sanitizeString(shippingAddress.street, 100),
-      street_number: this.extractStreetNumber(shippingAddress.number),
+      street_name: this.sanitizeString(shippingAddress.addressLine1, 100),
+      street_number: this.extractStreetNumberFromAddress(shippingAddress.addressLine1),
       city: shippingAddress.city,
       federal_unit: shippingAddress.state || 'Montevideo',
-      zip_code: this.sanitizeString(shippingAddress.zipCode || '11000', 10),
+      zip_code: this.sanitizeString(shippingAddress.postalCode || '11000', 10),
     };
   }
 
@@ -362,7 +362,7 @@ export class PreferenceBuilder {
       return {
         street_name: pickup?.address || 'Tienda Tifossi',
         street_number: 1,
-        zip_code: pickup?.zipCode || '11000',
+        zip_code: pickup?.postalCode || '11000',
         city_name: pickup?.city || 'Montevideo',
         state_name: pickup?.department || 'Montevideo',
         country_name: 'Uruguay',
@@ -370,9 +370,9 @@ export class PreferenceBuilder {
     } else {
       const address = orderData.shippingAddress;
       return {
-        street_name: address.street,
-        street_number: this.extractStreetNumber(address.number),
-        zip_code: address.zipCode || '11000',
+        street_name: address.addressLine1,
+        street_number: this.extractStreetNumberFromAddress(address.addressLine1),
+        zip_code: address.postalCode || '11000',
         city_name: address.city,
         state_name: address.state || 'Montevideo',
         country_name: address.country || 'Uruguay',
@@ -444,7 +444,7 @@ export class PreferenceBuilder {
     if (orderData.shippingMethod === ShippingMethod.DELIVERY) {
       if (
         !orderData.shippingAddress ||
-        !orderData.shippingAddress.street ||
+        !orderData.shippingAddress.addressLine1 ||
         !orderData.shippingAddress.city
       ) {
         throw new Error('Shipping address is required for delivery orders');
@@ -483,12 +483,13 @@ export class PreferenceBuilder {
   }
 
   /**
-   * Extract street number from address
+   * Extract street number from address line (e.g., "Av. Brasil 1234" -> 1234)
    */
-  private extractStreetNumber(numberStr: string | number | undefined): number {
-    if (!numberStr) return 1;
+  private extractStreetNumberFromAddress(addressLine: string | undefined): number {
+    if (!addressLine) return 1;
 
-    const num = parseInt(String(numberStr).replace(/\D/g, ''));
+    const match = addressLine.match(/\d+/);
+    const num = match ? parseInt(match[0], 10) : 1;
     return isNaN(num) || num <= 0 ? 1 : num;
   }
 
