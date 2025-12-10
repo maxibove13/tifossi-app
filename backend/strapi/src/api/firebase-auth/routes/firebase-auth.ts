@@ -11,8 +11,6 @@ export default {
       handler: 'firebase-auth.exchange',
       config: {
         auth: false,
-        policies: [],
-        middlewares: [],
       },
     },
     {
@@ -20,8 +18,8 @@ export default {
       path: '/auth/validate',
       handler: 'firebase-auth.validate',
       config: {
-        policies: [],
-        middlewares: [],
+        auth: false,
+        middlewares: ['global::jwt-auth'],
       },
     },
   ],
