@@ -115,6 +115,12 @@ jobs:
         env:
           NODE_ENV: test
 
+      # API contract tests skipped in CI - run manually after backend deploy
+      # - name: Run API contract tests
+      #   run: npm run test:contracts:prod
+      #   env:
+      #     STRAPI_URL: https://tifossi-strapi-backend.onrender.com
+
       - name: Validate MercadoPago sandbox credentials
         run: |
           set -euo pipefail
