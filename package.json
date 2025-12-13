@@ -15,7 +15,7 @@
     "test": "jest --selectProjects=default",
     "test:watch": "jest --selectProjects=default --watchAll",
     "test:coverage": "jest --selectProjects=default --coverage --watchAll=false",
-    "test:app": "jest --selectProjects=default --ci --coverage --watchAll=false --watchman=false --testPathIgnorePatterns=\"mercadopago|payment-flow|webhook|e2e|backend\"",
+    "test:app": "jest --selectProjects=default --ci --coverage --watchAll=false --watchman=false --testPathIgnorePatterns=\"mercadopago|payment-flow|webhook|e2e|backend|contract\"",
     "test:backend": "cd backend/strapi && npm test",
     "test:ci": "npm run test:app && npm run test:backend",
     "test:no-payment": "jest --testPathIgnorePatterns=\"mercadopago|payment-flow|webhook\"",
