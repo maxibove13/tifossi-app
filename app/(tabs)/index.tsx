@@ -103,7 +103,10 @@ function HomeScreen() {
         setIsLoading(true);
 
         // Wait for products to be available before proceeding
-        if (productsLoading) {
+        // Don't proceed if:
+        // 1. Products are still loading from API
+        // 2. Products array is empty AND there's no error (store might still be initializing/hydrating)
+        if (productsLoading || (!allProducts?.length && !productsError)) {
           return;
         }
 
@@ -213,7 +216,7 @@ function HomeScreen() {
     };
 
     loadData();
-  }, [allProducts, productsLoading]); // Re-run when products data changes
+  }, [allProducts, productsLoading, productsError]); // Re-run when products data or error state changes
 
   // Show loading state while fetching products or while processing data
   if (isLoading || productsLoading) {
