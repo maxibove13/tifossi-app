@@ -255,7 +255,7 @@ export class MercadoPagoService {
               country_name: 'Uruguay',
             },
           }
-        : { cost: orderData.shippingCost, mode: 'not_specified' as const },
+        : undefined,
 
       back_urls: {
         success: `${process.env.APP_SCHEME || 'tifossi'}://payment/success`,
