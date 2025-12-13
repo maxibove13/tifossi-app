@@ -322,10 +322,13 @@ async function initializeExternalServices(strapi: any) {
     } catch (error: any) {
       strapi.log.error('❌ MercadoPago configuration is invalid:', error.message);
       strapi.log.error('Please check your environment variables:');
-      strapi.log.error('- MP_TEST_ACCESS_TOKEN (test mode)');
-      strapi.log.error('- MP_TEST_PUBLIC_KEY (test mode)');
-      strapi.log.error('- MP_ACCESS_TOKEN (production mode)');
-      strapi.log.error('- MP_PUBLIC_KEY (production mode)');
+      strapi.log.error(
+        '- MP_MODE: "production" for real payments, omit or set to "test" for sandbox'
+      );
+      strapi.log.error('- MP_TEST_ACCESS_TOKEN (used when MP_MODE != production)');
+      strapi.log.error('- MP_TEST_PUBLIC_KEY (used when MP_MODE != production)');
+      strapi.log.error('- MP_ACCESS_TOKEN (used when MP_MODE = production)');
+      strapi.log.error('- MP_PUBLIC_KEY (used when MP_MODE = production)');
       strapi.log.error('- MP_WEBHOOK_SECRET (required for both modes)');
 
       // Fail startup to prevent running with broken configuration
