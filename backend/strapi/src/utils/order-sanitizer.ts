@@ -215,7 +215,7 @@ interface ClientOrder {
   total: number;
   shippingMethod: string;
   items: ItemForClient[];
-  shippingAddress: ClientShippingAddress;
+  shippingAddress: ClientShippingAddress | null;
   user: {
     id?: number;
     email?: string;
