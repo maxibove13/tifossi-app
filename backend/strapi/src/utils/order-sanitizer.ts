@@ -53,6 +53,7 @@ interface RequestMeta {
 
 interface ProductEntity {
   id: number;
+  documentId: string;
   title: string;
   price: number | string;
   discountedPrice?: number | string | null;
@@ -443,31 +444,80 @@ export const sanitizeOrderPayload = async ({
     throw new Error('Order must contain at least one item');
   }
 
-  const productIds = [...new Set(rawItems.map((item) => Number(item.productId))).values()].filter(
-    (id) => Number.isInteger(id) && id > 0
-  );
+  // Separate numeric IDs from documentIds (Strapi 5 uses documentId for Document Service)
+  const numericIds: number[] = [];
+  const documentIds: string[] = [];
+  const seenProductIds = new Set<string>();
 
-  if (!productIds.length) {
+  for (const item of rawItems) {
+    const rawId = item.productId;
+    if (rawId == null || rawId === '') continue;
+
+    const strId = String(rawId);
+    if (seenProductIds.has(strId)) continue;
+    seenProductIds.add(strId);
+
+    const numId = Number(rawId);
+    if (Number.isInteger(numId) && numId > 0) {
+      numericIds.push(numId);
+    } else if (typeof rawId === 'string' && rawId.length > 0) {
+      documentIds.push(rawId);
+    }
+  }
+
+  if (numericIds.length === 0 && documentIds.length === 0) {
     throw new Error('Each item must include a valid productId');
   }
 
-  const products: ProductEntity[] = await strapi.documents('api::product.product').findMany({
-    filters: { id: { $in: productIds } },
-    fields: ['id', 'title', 'price', 'discountedPrice', 'slug', 'longDescription'],
-    populate: { frontImage: true },
-    status: 'published',
-  });
+  // Query products by both numeric ID and documentId using Query Engine
+  const [numericResults, docIdResults] = await Promise.all([
+    numericIds.length > 0
+      ? strapi.db.query('api::product.product').findMany({
+          where: { id: { $in: numericIds }, publishedAt: { $ne: null } },
+          select: [
+            'id',
+            'documentId',
+            'title',
+            'price',
+            'discountedPrice',
+            'slug',
+            'longDescription',
+          ],
+          populate: { frontImage: true },
+        })
+      : [],
+    documentIds.length > 0
+      ? strapi.db.query('api::product.product').findMany({
+          where: { documentId: { $in: documentIds }, publishedAt: { $ne: null } },
+          select: [
+            'id',
+            'documentId',
+            'title',
+            'price',
+            'discountedPrice',
+            'slug',
+            'longDescription',
+          ],
+          populate: { frontImage: true },
+        })
+      : [],
+  ]);
 
-  const productMap = new Map(products.map((product) => [product.id, product]));
+  // Build map keyed by both numeric ID (as string) and documentId for fast lookup
+  const productMap = new Map<string, ProductEntity>();
+  for (const product of [...numericResults, ...docIdResults] as ProductEntity[]) {
+    productMap.set(String(product.id), product);
+    productMap.set(product.documentId, product);
+  }
 
   const itemsForPersistence: ItemForPersistence[] = [];
   const itemsForClient: ItemForClient[] = [];
 
   for (const [index, item] of rawItems.entries()) {
-    const productId = Number(item.productId);
+    const rawProductId = String(item.productId);
     const quantity = Number(item.quantity);
 
-    if (!Number.isInteger(productId) || productId <= 0) {
+    if (!rawProductId || rawProductId === 'undefined' || rawProductId === 'null') {
       throw new Error(`Item ${index + 1}: Invalid productId`);
     }
 
@@ -475,7 +525,7 @@ export const sanitizeOrderPayload = async ({
       throw new Error(`Item ${index + 1}: Quantity must be a positive integer`);
     }
 
-    const product = productMap.get(productId);
+    const product = productMap.get(rawProductId);
     if (!product) {
       throw new Error(`Item ${index + 1}: Product not found`);
     }
@@ -488,7 +538,7 @@ export const sanitizeOrderPayload = async ({
     const lineTotal = Number((basePrice * quantity).toFixed(2));
 
     itemsForPersistence.push({
-      product: productId,
+      product: product.id,
       productSnapshot: {
         id: product.id,
         title: product.title,
@@ -636,31 +686,80 @@ export const sanitizeGuestOrderPayload = async ({
     throw new Error('Order must contain at least one item');
   }
 
-  const productIds = [...new Set(rawItems.map((item) => Number(item.productId))).values()].filter(
-    (id) => Number.isInteger(id) && id > 0
-  );
+  // Separate numeric IDs from documentIds (Strapi 5 uses documentId for Document Service)
+  const numericIds: number[] = [];
+  const documentIds: string[] = [];
+  const seenProductIds = new Set<string>();
 
-  if (!productIds.length) {
+  for (const item of rawItems) {
+    const rawId = item.productId;
+    if (rawId == null || rawId === '') continue;
+
+    const strId = String(rawId);
+    if (seenProductIds.has(strId)) continue;
+    seenProductIds.add(strId);
+
+    const numId = Number(rawId);
+    if (Number.isInteger(numId) && numId > 0) {
+      numericIds.push(numId);
+    } else if (typeof rawId === 'string' && rawId.length > 0) {
+      documentIds.push(rawId);
+    }
+  }
+
+  if (numericIds.length === 0 && documentIds.length === 0) {
     throw new Error('Each item must include a valid productId');
   }
 
-  const products: ProductEntity[] = await strapi.documents('api::product.product').findMany({
-    filters: { id: { $in: productIds } },
-    fields: ['id', 'title', 'price', 'discountedPrice', 'slug', 'longDescription'],
-    populate: { frontImage: true },
-    status: 'published',
-  });
+  // Query products by both numeric ID and documentId using Query Engine
+  const [numericResults, docIdResults] = await Promise.all([
+    numericIds.length > 0
+      ? strapi.db.query('api::product.product').findMany({
+          where: { id: { $in: numericIds }, publishedAt: { $ne: null } },
+          select: [
+            'id',
+            'documentId',
+            'title',
+            'price',
+            'discountedPrice',
+            'slug',
+            'longDescription',
+          ],
+          populate: { frontImage: true },
+        })
+      : [],
+    documentIds.length > 0
+      ? strapi.db.query('api::product.product').findMany({
+          where: { documentId: { $in: documentIds }, publishedAt: { $ne: null } },
+          select: [
+            'id',
+            'documentId',
+            'title',
+            'price',
+            'discountedPrice',
+            'slug',
+            'longDescription',
+          ],
+          populate: { frontImage: true },
+        })
+      : [],
+  ]);
 
-  const productMap = new Map(products.map((product) => [product.id, product]));
+  // Build map keyed by both numeric ID (as string) and documentId for fast lookup
+  const productMap = new Map<string, ProductEntity>();
+  for (const product of [...numericResults, ...docIdResults] as ProductEntity[]) {
+    productMap.set(String(product.id), product);
+    productMap.set(product.documentId, product);
+  }
 
   const itemsForPersistence: ItemForPersistence[] = [];
   const itemsForClient: ItemForClient[] = [];
 
   for (const [index, item] of rawItems.entries()) {
-    const productId = Number(item.productId);
+    const rawProductId = String(item.productId);
     const quantity = Number(item.quantity);
 
-    if (!Number.isInteger(productId) || productId <= 0) {
+    if (!rawProductId || rawProductId === 'undefined' || rawProductId === 'null') {
       throw new Error(`Item ${index + 1}: Invalid productId`);
     }
 
@@ -668,7 +767,7 @@ export const sanitizeGuestOrderPayload = async ({
       throw new Error(`Item ${index + 1}: Quantity must be a positive integer`);
     }
 
-    const product = productMap.get(productId);
+    const product = productMap.get(rawProductId);
     if (!product) {
       throw new Error(`Item ${index + 1}: Product not found`);
     }
@@ -681,7 +780,7 @@ export const sanitizeGuestOrderPayload = async ({
     const lineTotal = Number((basePrice * quantity).toFixed(2));
 
     itemsForPersistence.push({
-      product: productId,
+      product: product.id,
       productSnapshot: {
         id: product.id,
         title: product.title,
