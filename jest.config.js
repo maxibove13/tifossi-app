@@ -1,5 +1,6 @@
 // Shared config for both projects
 const sharedConfig = {
+  setupFiles: ['<rootDir>/app/_tests/setup-globals.ts'],
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|react-native-svg|react-native-reanimated|@gorhom/bottom-sheet|@tanstack/react-query|zustand|fuse.js|expo-apple-authentication)',
   ],
