@@ -9,6 +9,9 @@
  *   STRAPI_URL=https://tifossi-strapi-backend.onrender.com npm test -- checkout-api-contract
  */
 
+// Longer timeout for real API calls
+jest.setTimeout(30000);
+
 const STRAPI_URL = process.env.STRAPI_URL || 'https://tifossi-strapi-backend.onrender.com';
 
 // Types matching what the app sends
@@ -59,11 +62,11 @@ interface OrderPayload {
   notes?: string;
 }
 
-// Fetch valid product IDs from the API
-async function getValidProductIds(): Promise<number[]> {
+// Fetch valid product documentIds from the API (Strapi 5 uses documentId as primary identifier)
+async function getValidProductIds(): Promise<string[]> {
   const res = await fetch(`${STRAPI_URL}/api/products?pagination[limit]=5`);
   const data = await res.json();
-  return data.data?.map((p: any) => p.id) || [];
+  return data.data?.map((p: any) => p.documentId) || [];
 }
 
 // Fetch valid store location codes
@@ -74,7 +77,7 @@ async function getValidStoreLocationCodes(): Promise<string[]> {
 }
 
 describe('Checkout API Contract Tests', () => {
-  let validProductIds: number[] = [];
+  let validProductIds: string[] = [];
   let validStoreCodes: string[] = [];
 
   beforeAll(async () => {
@@ -98,7 +101,7 @@ describe('Checkout API Contract Tests', () => {
         guestEmail: 'test@example.com',
         items: [
           {
-            productId: validProductIds[0], // Use real product ID (number)
+            productId: validProductIds[0], // Use real product documentId
             productName: 'Test Product',
             quantity: 1,
             price: 100,
@@ -185,9 +188,9 @@ describe('Checkout API Contract Tests', () => {
 
       const data = await res.json();
 
-      // Should fail because productId is not a valid number - returns 400 with validation error
+      // Should fail because productId doesn't match any real product - returns 400
       expect(res.status).toBe(400);
-      expect(data.error?.message).toMatch(/productId|valid/i);
+      expect(data.error?.message).toMatch(/not found|invalid/i);
     });
   });
 
