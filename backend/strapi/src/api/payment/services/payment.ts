@@ -136,6 +136,7 @@ export class PaymentService {
           try {
             const product = await this.strapi.documents('api::product.product').findOne({
               documentId: item.productId,
+              status: 'published',
             });
             if (!product) {
               errors.push(`Item ${i + 1}: Product not found`);

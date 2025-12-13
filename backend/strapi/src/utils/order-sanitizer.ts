@@ -410,6 +410,7 @@ export const sanitizeOrderPayload = async ({
       const storeLocations = await strapi.documents('api::store-location.store-location').findMany({
         filters: { code: rawOrder.storeLocationCode, isActive: true, hasPickupService: true },
         limit: 1,
+        status: 'published',
       });
 
       if (storeLocations.length > 0) {
@@ -421,6 +422,7 @@ export const sanitizeOrderPayload = async ({
         const storeLocation = await strapi.documents('api::store-location.store-location').findOne({
           documentId: String(parsedStoreId),
           filters: { isActive: true, hasPickupService: true },
+          status: 'published',
         });
 
         if (storeLocation) {
@@ -453,6 +455,7 @@ export const sanitizeOrderPayload = async ({
     filters: { id: { $in: productIds } },
     fields: ['id', 'title', 'price', 'discountedPrice', 'slug', 'longDescription'],
     populate: { frontImage: true },
+    status: 'published',
   });
 
   const productMap = new Map(products.map((product) => [product.id, product]));
@@ -600,6 +603,7 @@ export const sanitizeGuestOrderPayload = async ({
       const storeLocations = await strapi.documents('api::store-location.store-location').findMany({
         filters: { code: rawOrder.storeLocationCode, isActive: true, hasPickupService: true },
         limit: 1,
+        status: 'published',
       });
 
       if (storeLocations.length > 0) {
@@ -611,6 +615,7 @@ export const sanitizeGuestOrderPayload = async ({
         const storeLocation = await strapi.documents('api::store-location.store-location').findOne({
           documentId: String(parsedStoreId),
           filters: { isActive: true, hasPickupService: true },
+          status: 'published',
         });
 
         if (storeLocation) {
@@ -643,6 +648,7 @@ export const sanitizeGuestOrderPayload = async ({
     filters: { id: { $in: productIds } },
     fields: ['id', 'title', 'price', 'discountedPrice', 'slug', 'longDescription'],
     populate: { frontImage: true },
+    status: 'published',
   });
 
   const productMap = new Map(products.map((product) => [product.id, product]));
