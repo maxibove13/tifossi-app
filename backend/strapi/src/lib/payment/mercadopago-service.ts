@@ -69,10 +69,11 @@ export class MercadoPagoService {
   private readonly API_TIMEOUT_MS = 30000; // 30 seconds
 
   constructor() {
-    // Determine environment
-    this.isProduction = process.env.NODE_ENV === 'production';
+    // Determine MercadoPago mode (independent of NODE_ENV)
+    // MP_MODE=production uses real credentials, anything else uses test credentials
+    this.isProduction = process.env.MP_MODE === 'production';
 
-    // Load credentials based on environment
+    // Load credentials based on MP_MODE
     this.accessToken = this.isProduction
       ? process.env.MP_ACCESS_TOKEN!
       : process.env.MP_TEST_ACCESS_TOKEN!;
