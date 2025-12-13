@@ -96,6 +96,7 @@ export const useProductStore = create<ProductState>()(
                 'videoSource',
                 'colors.mainImage',
                 'colors.additionalImages',
+                'shortDescription',
               ],
             },
           });
@@ -164,6 +165,7 @@ export const useProductStore = create<ProductState>()(
                 'videoSource',
                 'colors.mainImage',
                 'colors.additionalImages',
+                'shortDescription',
               ],
             },
           });
