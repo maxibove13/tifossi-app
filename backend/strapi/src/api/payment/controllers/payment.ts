@@ -120,6 +120,40 @@ export default {
       };
     } catch (error) {
       strapi.log.error('Error creating payment preference:', error);
+
+      const message = error instanceof Error ? error.message : 'Unknown error';
+
+      // Validation errors from sanitizeOrderPayload (order-sanitizer.ts)
+      const validationPatterns = [
+        'Invalid order payload',
+        'Invalid shipping method',
+        'Invalid pickup store location',
+        'Order must contain at least one item',
+        'Each item must include a valid productId',
+        'Invalid productId',
+        'Quantity must be a positive integer',
+        'Product not found',
+        'Product price is not available',
+        'Calculated order total must be greater than zero',
+        'Shipping address is required',
+        'Missing required address fields',
+      ];
+
+      if (validationPatterns.some((pattern) => message.includes(pattern))) {
+        return ctx.badRequest(message);
+      }
+
+      // MercadoPago configuration errors
+      if (message.includes('MercadoPago') && message.includes('required')) {
+        strapi.log.error('MercadoPago configuration error - check environment variables');
+        return ctx.internalServerError('Payment service configuration error');
+      }
+
+      // MercadoPago API errors
+      if (message.includes('MercadoPago API error')) {
+        return ctx.badGateway(message);
+      }
+
       ctx.internalServerError('Failed to create payment preference');
     }
   },
@@ -236,6 +270,42 @@ export default {
       };
     } catch (error) {
       strapi.log.error('Error creating guest payment preference:', error);
+
+      const message = error instanceof Error ? error.message : 'Unknown error';
+
+      // Validation errors from sanitizeGuestOrderPayload (order-sanitizer.ts)
+      // These are user-fixable errors - return 400
+      const validationPatterns = [
+        'Invalid order payload',
+        'Invalid shipping method',
+        'Invalid pickup store location',
+        'Order must contain at least one item',
+        'Each item must include a valid productId',
+        'Invalid productId',
+        'Quantity must be a positive integer',
+        'Product not found',
+        'Product price is not available',
+        'Calculated order total must be greater than zero',
+        'Shipping address is required',
+        'Missing required address fields',
+      ];
+
+      if (validationPatterns.some((pattern) => message.includes(pattern))) {
+        return ctx.badRequest(message);
+      }
+
+      // MercadoPago configuration errors (missing credentials)
+      if (message.includes('MercadoPago') && message.includes('required')) {
+        strapi.log.error('MercadoPago configuration error - check environment variables');
+        return ctx.internalServerError('Payment service configuration error');
+      }
+
+      // MercadoPago API errors (upstream failure)
+      if (message.includes('MercadoPago API error')) {
+        return ctx.badGateway(message);
+      }
+
+      // Generic fallback for unexpected errors
       ctx.internalServerError('Failed to create guest payment preference');
     }
   },
