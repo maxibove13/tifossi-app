@@ -40,7 +40,7 @@
     "shippingAddress": {
       "type": "component",
       "component": "shared.address",
-      "required": true
+      "required": false
     },
     "shippingMethod": {
       "type": "enumeration",
