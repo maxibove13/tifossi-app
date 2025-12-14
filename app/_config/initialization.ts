@@ -27,22 +27,15 @@ interface RequiredConfig {
 
 /**
  * Check if all required environment variables are present
+ * Note: Firebase is configured via GoogleService-Info.plist (iOS) / google-services.json (Android)
+ * so we don't check for Firebase env vars here
  */
 const checkRequiredEnvVars = (): RequiredConfig => {
   const config: RequiredConfig = {
     apiUrl: !!(process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_BACKEND_URL),
-    firebase: !!(
-      process.env.EXPO_PUBLIC_FIREBASE_API_KEY &&
-      process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN &&
-      process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID
-    ),
+    firebase: true, // Firebase configured via native config files, not env vars
     environment: !!currentEnvironment,
   };
-
-  // In development, Firebase is optional for local testing
-  if (currentEnvironment === 'development') {
-    config.firebase = true; // Don't require Firebase in dev
-  }
 
   return config;
 };
