@@ -323,6 +323,24 @@ PUT    /api/orders/:id            # Update order status
 
 **Order Creation**: Include `storeLocationId` field when shipping method is 'pickup'.
 
+#### Payment
+
+```
+POST   /api/payment/create-preference        # Create MercadoPago preference (authenticated)
+POST   /api/payment/guest/create-preference  # Create preference for guest checkout (rate limited)
+GET    /api/payment/verify/:paymentId        # Verify payment status
+GET    /api/payment/orders                   # Get user's payment orders
+GET    /api/payment/orders/:orderId          # Get specific order details
+POST   /api/payment/refund                   # Request refund
+```
+
+**Guest Checkout**: The `/api/payment/guest/create-preference` endpoint is rate limited to 5 requests per minute per IP address to prevent abuse. Returns 429 Too Many Requests when exceeded.
+
+**Rate Limit Headers**:
+- `X-RateLimit-Limit`: Maximum requests allowed (5)
+- `X-RateLimit-Remaining`: Remaining requests in current window
+- `X-RateLimit-Reset`: Unix timestamp when the window resets
+
 #### Health Checks
 
 ```
@@ -581,7 +599,7 @@ If you encounter database connection errors:
 
 ## 🔒 Security Features
 
-- **Rate Limiting**: Handled at infrastructure level (Render, Cloudfront)
+- **Rate Limiting**: Guest checkout endpoint limited to 5 requests/minute per IP (see Payment API section)
 - **CORS**: Strict CORS configuration for mobile apps
 - **Security Headers**: Helmet.js for security headers
 - **Input Validation**: Joi validation for all inputs

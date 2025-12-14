@@ -20,6 +20,7 @@ export default function ProductDetailScreen() {
 
   // Use TanStack Query to fetch product data
   const { data: product, isLoading: isLoadingProduct, error: productError } = useProduct(productId);
+
   // Also fetch all products for related/recommended products
   const { data: allProducts } = useProducts();
   // Fetch app settings for support phone number
