@@ -12,6 +12,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useAuthStore } from '../../../../_stores/authStore';
 import CloseIcon from '../../../../../assets/icons/close.svg';
 import ChevronRight from '../../../../../assets/icons/chevron_right.svg';
 import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.svg';
@@ -51,6 +52,8 @@ export default function OverlayCheckoutShipping({
   initialSize = '',
   product,
 }: OverlayCheckoutShippingProps) {
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(height));
@@ -112,18 +115,42 @@ export default function OverlayCheckoutShipping({
 
   // Handle add to cart action
   const handleAddToCart = async () => {
-    await onAddToCart(selectedSize, selectedQuantity);
-    onClose();
+    try {
+      await onAddToCart(selectedSize, selectedQuantity);
+      onClose();
+    } catch {
+      // Error is handled by the cart store (shows alert to user)
+    }
   };
 
-  const handleSelectShipping = (method: 'delivery' | 'pickup' | '') => {
+  const handleSelectShipping = async (method: 'delivery' | 'pickup' | '') => {
+    if (!method) return;
+
+    try {
+      // Add item to cart before proceeding to checkout
+      await onAddToCart(selectedSize, selectedQuantity);
+    } catch {
+      // Error is handled by the cart store (shows alert to user)
+      return;
+    }
+
     setIsShippingOverlayVisible(false);
     onClose();
 
     if (method === 'delivery') {
-      router.navigate('/checkout/shipping-address');
-    } else if (method === 'pickup') {
-      router.navigate('/checkout/shipping-pickup');
+      if (isLoggedIn) {
+        router.navigate('/checkout/shipping-address');
+      } else {
+        router.navigate('/checkout/new-address?guest=true');
+      }
+    } else {
+      // Pickup flow
+      if (isLoggedIn) {
+        router.navigate('/checkout/shipping-pickup');
+      } else {
+        // Guest pickup needs contact info first
+        router.navigate('/checkout/guest-contact-info?returnTo=shipping-pickup');
+      }
     }
   };
 

@@ -125,7 +125,7 @@ const SheetHandle = memo(({ onPress }: { onPress: () => void }) => {
   return (
     <View style={styles.handleRoot}>
       <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={0.7} onPress={onPress} />
-      <Animated.View style={[styles.chevron, animatedStyle]}>
+      <Animated.View style={[styles.chevron, animatedStyle]} pointerEvents="none">
         <Ionicons name="chevron-up" size={24} color={colors.border} />
       </Animated.View>
     </View>
@@ -170,6 +170,13 @@ const SwipeableEdge = ({
   selectedColor,
   onViewCart,
 }: SwipeableEdgeProps) => {
+  // DEBUG LOG
+  console.warn('SwipeableEdge received:', {
+    productName: product.name,
+    sizesLength: product.sizes?.length,
+    sizes: product.sizes,
+  });
+
   const bottomSheetRef = useRef<BottomSheet>(null);
   const { width: deviceWidth } = Dimensions.get('window');
   const { bottom: bottomSafeArea } = useSafeAreaInsets();

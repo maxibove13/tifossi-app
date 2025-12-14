@@ -35,6 +35,7 @@ const paymentRoutes: RoutesModule = {
       handler: 'payment.createGuestPreference',
       config: {
         auth: false,
+        middlewares: ['global::guest-rate-limit'],
       },
     },
     {

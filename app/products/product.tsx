@@ -57,9 +57,14 @@ export default function ProductScreen() {
     );
   };
 
-  // State for selected color and quantity
+  // State for selected color, size and quantity
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product?.colors && product.colors.length > 0 ? product.colors[0].colorName : undefined
+  );
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(
+    product?.sizes && product.sizes.length > 0
+      ? (product.sizes.find((size) => size.available)?.value ?? product.sizes[0].value)
+      : undefined
   );
   const [selectedQuantity, setSelectedQuantity] = useState(1);
 
@@ -170,6 +175,13 @@ export default function ProductScreen() {
   // Use longDescription directly, no fallback to description
   const longDescription = product.longDescription;
 
+  // DEBUG LOG
+  console.warn('product.tsx passing to SwipeableEdge:', {
+    productTitle: product.title,
+    sizesLength: product.sizes?.length,
+    sizes: product.sizes,
+  });
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -198,6 +210,10 @@ export default function ProductScreen() {
             returnPolicy: product.returnPolicy,
             dimensions: product.dimensions,
             isFavorite: isFavorite,
+            colors: product.colors,
+            sizes: product.sizes,
+            inStock: product.inStock,
+            stockCount: product.stockCount,
           }}
           relatedProducts={relatedProducts}
           recommendedProducts={recommendedProducts}
@@ -206,10 +222,14 @@ export default function ProductScreen() {
           onViewMore={handleViewMore}
           onSupportAction={handleSupportAction}
           onProductPress={handleProductPress}
-          onToggleFavorite={handleToggleFavorite} // Pass favorite toggle handler
+          onToggleFavorite={handleToggleFavorite}
           onExpandedChange={(_expanded) => {}}
           quantity={selectedQuantity}
           onQuantityChange={setSelectedQuantity}
+          selectedSize={selectedSize}
+          onSizeChange={setSelectedSize}
+          selectedColor={selectedColor}
+          onViewCart={() => router.push('/cart')}
         />
       </View>
     </View>

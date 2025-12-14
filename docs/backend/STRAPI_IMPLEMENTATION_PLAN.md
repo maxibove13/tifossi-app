@@ -407,7 +407,7 @@ module.exports = () => ({
 
 - ⏳ Query optimization for complex filters
 - ⏳ Implement pagination for large datasets
-- ⏳ Add request rate limiting
+- ✅ Request rate limiting (guest checkout: 5 req/min per IP)
 - ⏳ Optimize image delivery with responsive sizes
 
 ---
