@@ -1,7 +1,7 @@
 {
   "name": "tifossi",
   "main": "./index.js",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": {
     "start": "expo start",
     "start:clear": "expo start --clear",
@@ -38,6 +38,7 @@
     "format:check": "prettier --check .",
     "check-all": "npm run lint && npm run typecheck",
     "check-all:full": "npm run lint && npm run typecheck && npm run test:ci",
+    "release": "node -e \"const v=require('./app.json').expo.version; console.log('Tagging v'+v); require('child_process').execSync('git tag v'+v+' && git push --tags', {stdio:'inherit'})\"",
     "test:quick": "jest --onlyChanged --passWithNoTests --watchAll=false --watchman=false --testPathIgnorePatterns=\"mercadopago|payment-flow|webhook|e2e|backend\"",
     "clean": "npx expo start --clear && npm run e2e:clean",
     "prepare": "husky"
