@@ -13,18 +13,17 @@ import { useCartStore } from './_stores/cartStore';
 // Initialize app configuration (fail fast on missing config)
 import appInit from './_config/initialization';
 
-// Initialize store synchronizer
-import './_stores/storeSynchronizer';
+// Store synchronizer - imported but NOT auto-initialized at module level
+// to prevent crashes from native module access before React is ready
+import { storeSynchronizer } from './_stores/storeSynchronizer';
 
 // Simple Error Handling
 import { GlobalErrorBoundary } from './_components/common/UnifiedErrorBoundary';
 
-// Initialize app configuration before anything else
-try {
-  appInit.initialize();
-} catch (error) {
-  console.error('App initialization failed:', error);
-}
+// IMPORTANT: Do NOT call appInit.initialize() at module level!
+// Module-level code runs during bundle evaluation, before the React Native
+// bridge is fully ready. This causes crashes in production builds.
+// All initialization is done in useEffect after component mounts.
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -82,6 +81,15 @@ export default function Layout() {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
   useEffect(() => {
     if (fontsLoaded) {
+      // Initialize app configuration (endpoints, network monitoring)
+      // This must happen AFTER component mount to ensure native bridge is ready
+      try {
+        appInit.initialize();
+      } catch (error) {
+        console.error('App initialization failed:', error);
+        // Don't crash the app, continue with defaults
+      }
+
       // Hide the native splash screen once fonts are loaded
       SplashScreen.hideAsync();
       // Our custom SplashScreen will handle the rest of the loading
@@ -89,11 +97,15 @@ export default function Layout() {
     }
   }, [fontsLoaded]);
 
-  // Initialize auth when app is ready
+  // Initialize auth and store synchronizer when app is ready
   useEffect(() => {
     if (appReady) {
-      // Initialize authentication
+      // Initialize authentication (this accesses Firebase native modules)
       initializeAuth();
+
+      // Initialize store synchronizer AFTER auth to set up cross-store subscriptions
+      // Must happen after mount to ensure native modules are ready
+      storeSynchronizer.initialize();
     }
   }, [appReady, initializeAuth]);
 

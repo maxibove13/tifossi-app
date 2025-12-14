@@ -546,12 +546,11 @@ export const useAuthStore = create<ExtendedAuthState>()(
         const { isInitialized, user } = state;
         return { isInitialized, user } as any;
       },
-      onRehydrateStorage: () => (state: Partial<ExtendedAuthState> | undefined) => {
-        // Automatically initialize auth if not already done
-        if (state && !state.isInitialized && state.initializeAuth) {
-          state.initializeAuth();
-        }
-      },
+      // IMPORTANT: Do NOT call initializeAuth() in onRehydrateStorage!
+      // This callback runs synchronously during store creation (module load time),
+      // before React Native's bridge is fully ready. Calling Firebase methods here
+      // causes production crashes. Auth initialization is handled by _layout.tsx
+      // after the component mounts.
     }
   )
 );
