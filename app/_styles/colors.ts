@@ -22,6 +22,8 @@ export const colors = {
     light: '#FFFFFF',
     dark: '#0C0C0C',
     medium: '#F5F5F5',
+    offWhite: '#FBFBFB',
+    offWhite25: 'rgba(251, 251, 251, 0.25)',
   },
 };
 

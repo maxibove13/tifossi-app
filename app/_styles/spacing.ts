@@ -14,6 +14,7 @@ export const radius = {
   md: 8,
   lg: 16,
   xl: 20,
+  button: 22,
   xxl: 24,
   circle: 100,
 };

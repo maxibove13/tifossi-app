@@ -250,16 +250,25 @@ Components that support swipe gestures for interactive product displays.
 
 Modal overlay components for the checkout process.
 
-1. **OverlayCheckoutShipping** (`/_components/store/product/overlay/OverlayCheckoutShipping.tsx`): Shipping information overlay
-2. **OverlayCheckoutQuantity** (`/_components/store/product/overlay/OverlayCheckoutQuantity.tsx`): Product quantity selection overlay
-3. **OverlayDeleteConfirmation** (`/_components/store/product/overlay/OverlayDeleteConfirmation.tsx`): Delete confirmation overlay
-4. **OverlayProductEdit** (`/_components/store/product/overlay/OverlayProductEdit.tsx`): Product editing overlay
-5. **OverlayProductEditSize** (`/_components/store/product/overlay/OverlayProductEditSize.tsx`): Size selection overlay
-6. **OverlayProductFilters** (`/_components/store/product/overlay/OverlayProductFilters.tsx`): Product filters overlay
-7. **OverlayProductRemoving** (`/_components/store/product/overlay/OverlayProductRemoving.tsx`): Cart item removal with undo
-8. **OverlayProductSearch** (`/_components/store/product/overlay/OverlayProductSearch.tsx`): Search overlay triggered from the header, using `useSearch` hook for client-side product searching
-9. **OverlayShippingAddress** (`/_components/store/product/overlay/OverlayShippingAddress.tsx`): Shipping address overlay
-10. **OverlayShippingSelection** (`/_components/store/product/overlay/OverlayShippingSelection.tsx`): Shipping method selection overlay
+1. **OverlayAddingToCart** (`/_components/store/product/overlay/OverlayAddingToCart.tsx`): Loading overlay shown while adding item to cart
+   - Displays animated progress bar
+   - Shows "Agregando al carrito..." message
+   - Allows user to cancel the operation
+2. **OverlayProductAdding** (`/_components/store/product/overlay/OverlayProductAdding.tsx`): Success confirmation after adding to cart
+   - Shows "Item añadido al carrito" message
+   - Provides "Comprar ahora" button to proceed to checkout
+   - Provides "Volver a Tienda" button to continue shopping
+   - Integrates with OverlayShippingSelection for checkout flow
+3. **OverlayCheckoutShipping** (`/_components/store/product/overlay/OverlayCheckoutShipping.tsx`): Shipping information overlay
+4. **OverlayCheckoutQuantity** (`/_components/store/product/overlay/OverlayCheckoutQuantity.tsx`): Product quantity selection overlay
+5. **OverlayDeleteConfirmation** (`/_components/store/product/overlay/OverlayDeleteConfirmation.tsx`): Delete confirmation overlay
+6. **OverlayProductEdit** (`/_components/store/product/overlay/OverlayProductEdit.tsx`): Product editing overlay
+7. **OverlayProductEditSize** (`/_components/store/product/overlay/OverlayProductEditSize.tsx`): Size selection overlay
+8. **OverlayProductFilters** (`/_components/store/product/overlay/OverlayProductFilters.tsx`): Product filters overlay
+9. **OverlayProductRemoving** (`/_components/store/product/overlay/OverlayProductRemoving.tsx`): Cart item removal with undo
+10. **OverlayProductSearch** (`/_components/store/product/overlay/OverlayProductSearch.tsx`): Search overlay triggered from the header, using `useSearch` hook for client-side product searching
+11. **OverlayShippingAddress** (`/_components/store/product/overlay/OverlayShippingAddress.tsx`): Shipping address overlay
+12. **OverlayShippingSelection** (`/_components/store/product/overlay/OverlayShippingSelection.tsx`): Shipping method selection overlay
 
 #### Layout Components (`/_components/store/layout/`)
 

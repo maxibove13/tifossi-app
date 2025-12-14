@@ -128,7 +128,7 @@ describe('AddressService', () => {
         expect(error.message).toContain('Last name is required');
         expect(error.message).toContain('Address line 1 is required');
         expect(error.message).toContain('City is required');
-        expect(error.message).toContain('State is required');
+        // Note: state is optional per schema
         expect(error.message).toContain('Country is required');
       }
     });
@@ -246,7 +246,6 @@ describe('AddressService', () => {
         lastName: '',
         addressLine1: '',
         city: '',
-        state: '',
         country: '',
         isDefault: false,
         type: 'shipping',
@@ -257,18 +256,19 @@ describe('AddressService', () => {
       expect(result.errors).toContain('Last name is required');
       expect(result.errors).toContain('Address line 1 is required');
       expect(result.errors).toContain('City is required');
-      expect(result.errors).toContain('State is required');
+      // Note: state is optional per schema
       expect(result.errors).toContain('Country is required');
     });
 
     it('should validate field lengths', () => {
+      // Lengths match Strapi schema in backend/strapi/src/components/shared/address.json
       const result = addressService.validateAddress({
         firstName: 'A'.repeat(51),
         lastName: 'B'.repeat(51),
-        addressLine1: 'C'.repeat(101),
-        addressLine2: 'D'.repeat(101),
-        city: 'E'.repeat(51),
-        state: 'F'.repeat(51),
+        addressLine1: 'C'.repeat(256),
+        addressLine2: 'D'.repeat(256),
+        city: 'E'.repeat(101),
+        state: 'F'.repeat(101),
         country: 'UY',
         postalCode: 'G'.repeat(21),
         isDefault: false,
@@ -278,10 +278,10 @@ describe('AddressService', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('First name must be 50 characters or less');
       expect(result.errors).toContain('Last name must be 50 characters or less');
-      expect(result.errors).toContain('Address line 1 must be 100 characters or less');
-      expect(result.errors).toContain('Address line 2 must be 100 characters or less');
-      expect(result.errors).toContain('City must be 50 characters or less');
-      expect(result.errors).toContain('State must be 50 characters or less');
+      expect(result.errors).toContain('Address line 1 must be 255 characters or less');
+      expect(result.errors).toContain('Address line 2 must be 255 characters or less');
+      expect(result.errors).toContain('City must be 100 characters or less');
+      expect(result.errors).toContain('State must be 100 characters or less');
       expect(result.errors).toContain('Postal code must be 20 characters or less');
     });
 

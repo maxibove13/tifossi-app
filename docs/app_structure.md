@@ -209,6 +209,8 @@ _components/
 │   │   │   └── views/      # Gallery views
 │   │   │       └── ProductViewGallery.tsx # Gallery view
 │   │   ├── overlay/        # Overlay components
+│   │   │   ├── OverlayAddingToCart.tsx     # Loading state while adding to cart
+│   │   │   ├── OverlayProductAdding.tsx    # Success confirmation after add to cart
 │   │   │   ├── OverlayCheckoutQuantity.tsx # Quantity selection
 │   │   │   ├── OverlayCheckoutShipping.tsx # Shipping selection
 │   │   │   ├── OverlayDeleteConfirmation.tsx # Delete confirmation

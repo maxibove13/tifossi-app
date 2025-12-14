@@ -310,14 +310,9 @@ export default function CartScreen() {
             <Text style={styles.checkoutTotalValue}>${getTotalPrice().toFixed(2)}</Text>
           </View>
 
-          {/* Optional Auth Prompt Text for guest users - Replaced with ReusableAuthPrompt */}
+          {/* Auth prompt for guest users */}
           {!isLoggedIn && (
-            <ReusableAuthPrompt
-              message="¿Quieres guardar tu carrito y agilizar tu próxima compra?"
-              messageStyle={styles.guestPromptMessageText}
-              loginButtonTextStyle={styles.guestPromptLinkText}
-              signupButtonTextStyle={styles.guestPromptLinkText}
-            />
+            <ReusableAuthPrompt message="¿Quieres guardar tu carrito y agilizar tu próxima compra?" />
           )}
 
           <Button
@@ -486,41 +481,5 @@ const styles = StyleSheet.create({
   buyButton: {
     width: '100%',
     borderRadius: radius.xxl,
-  },
-  // Styles for guest prompt - some of these might be reusable or adaptable for ReusableAuthPrompt props
-  guestPromptContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  guestPromptText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.xs,
-    lineHeight: lineHeights.xs,
-    color: colors.secondary,
-    textAlign: 'center',
-  },
-  linkText: {
-    color: colors.primary,
-    textDecorationLine: 'underline',
-  },
-  // New styles for ReusableAuthPrompt customization if needed
-  guestPromptMessageText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.xs,
-    lineHeight: lineHeights.xs,
-    color: colors.background.light,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  guestPromptLinkText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.xs,
-    lineHeight: lineHeights.xs,
-    color: colors.primary,
-    textDecorationLine: 'underline',
   },
 });
