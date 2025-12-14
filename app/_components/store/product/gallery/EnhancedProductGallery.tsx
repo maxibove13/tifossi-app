@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ImageSourcePropType,
   ScrollView,
-  Text,
 } from 'react-native';
 import { colors } from '../../../../_styles/colors';
 import { Product } from '../../../../_types/product';
@@ -43,12 +42,8 @@ function EnhancedProductGallery({
     setActiveColor(selectedColor || (activeColors.length > 0 ? activeColors[0].colorName : ''));
   }, [product.id, selectedColor, activeColors]);
 
-  const colorSliderRef = useRef<ScrollView>(null);
-
   // Get the color object for the selected color
   const selectedColorObject = activeColors.find((c) => c.colorName === activeColor);
-
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // If no matching color object is found, use the first available color from this product
   useEffect(() => {
@@ -79,17 +74,9 @@ function EnhancedProductGallery({
     return images;
   }, [product.frontImage, selectedColorObject]);
 
-  useEffect(() => {
-    setActiveImageIndex(0);
-  }, [productImages.length]);
-
   const handleColorChange = (color: string) => {
     setActiveColor(color);
-    setActiveImageIndex(0);
-
-    if (onColorChange) {
-      onColorChange(color);
-    }
+    onColorChange?.(color);
   };
 
   return (
@@ -97,7 +84,6 @@ function EnhancedProductGallery({
       {activeColors.length > 1 && (
         <View style={styles.colorSliderContainer}>
           <ScrollView
-            ref={colorSliderRef}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.colorSliderContent}
@@ -118,13 +104,16 @@ function EnhancedProductGallery({
                 <Image
                   source={
                     colorObj.images?.main
-                      ? (colorObj.images.main as ImageSourcePropType)
-                      : (product.frontImage as ImageSourcePropType)
+                      ? typeof colorObj.images.main === 'string'
+                        ? { uri: colorObj.images.main }
+                        : colorObj.images.main
+                      : typeof product.frontImage === 'string'
+                        ? { uri: product.frontImage }
+                        : product.frontImage
                   }
                   style={styles.colorThumbnail}
                   resizeMode="cover"
                 />
-                <Text style={styles.colorLabel}>{colorObj.colorName}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -134,25 +123,8 @@ function EnhancedProductGallery({
       <ProductViewGallery
         key={`product-gallery-${product.id}-${activeColor}`}
         images={productImages}
-        onImagePress={(_index) => {
-          /* Image pressed */
-        }}
-        activeIndex={activeImageIndex}
-        onActiveIndexChange={setActiveImageIndex}
         testID="product-gallery"
       />
-
-      {productImages.length > 1 && (
-        <View style={styles.galleryIndicators}>
-          {productImages.map((_, index) => (
-            <View
-              key={`indicator-${index}`}
-              testID={`gallery-indicator-${index}`}
-              style={[styles.indicatorDot, { opacity: activeImageIndex === index ? 0.9 : 0.3 }]}
-            />
-          ))}
-        </View>
-      )}
     </View>
   );
 }
@@ -166,53 +138,30 @@ const styles = StyleSheet.create({
   // Color slider styles
   colorSliderContainer: {
     backgroundColor: colors.background.light,
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
   },
   colorSliderContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.sm,
   },
   colorOption: {
     width: COLOR_OPTION_SIZE,
-    borderRadius: 8,
+    borderRadius: 2,
     borderWidth: 2,
     borderColor: 'transparent',
     overflow: 'hidden',
     backgroundColor: colors.background.light,
-    alignItems: 'center',
   },
   selectedColorOption: {
     borderColor: colors.primary || '#0C0C0C',
   },
   colorThumbnail: {
     width: '100%',
-    height: COLOR_OPTION_SIZE - 28,
+    height: COLOR_OPTION_SIZE,
   },
-  colorLabel: {
-    marginTop: spacing.xs,
-    fontSize: 12,
-    color: colors.primary,
-    textAlign: 'center',
-  },
-
-  galleryIndicators: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-  },
-  indicatorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.primary,
-  },
-
-  // Product images section handled by ProductViewGallery component
 });
 
 // Add explicit default export

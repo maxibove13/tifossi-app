@@ -131,7 +131,6 @@ ExploreProductCard.displayName = 'ExploreProductCard';
 
 // Enhanced TiffosiExploreScreen with strategic preloading
 export default function TiffosiExploreScreen() {
-  const tabBarHeight = useBottomTabBarHeight(); // Get height for ScrollView padding
   const [preloaded, setPreloaded] = useState(false);
 
   // Fetch products using TanStack Query
@@ -216,11 +215,7 @@ export default function TiffosiExploreScreen() {
     <View style={styles.container}>
       {/* We don't block rendering with a loading indicator, 
           instead we let the VideoBackground components handle their fallbacks */}
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={{ paddingBottom: tabBarHeight }} // Add padding to avoid overlap
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {exploreProducts.map((product) => (
           <ExploreProductCard key={product.id} product={product} />
         ))}
