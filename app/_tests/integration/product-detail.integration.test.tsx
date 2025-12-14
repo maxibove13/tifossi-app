@@ -438,9 +438,11 @@ describe('Product Detail Flow - Integration', () => {
       // Complete the add-to-cart flow including overlay interaction
       await completeAddToCartFlow(getByTestId, getAllByText);
 
-      // Should show some confirmation - "Producto agregado al carrito"
+      // Should show confirmation with new UX (buy now / return to store options)
       await waitFor(() => {
-        expect(getByText('Producto agregado al carrito')).toBeTruthy();
+        expect(getByText('Item añadido al carrito.')).toBeTruthy();
+        expect(getByText('Comprar ahora')).toBeTruthy();
+        expect(getByText('Volver a Tienda')).toBeTruthy();
       });
     });
   });
@@ -651,8 +653,11 @@ describe('Product Detail Flow - Integration', () => {
         });
       });
 
+      // New UX shows confirmation with buy now / return to store options
       await waitFor(() => {
-        expect(getAllByText('Ver carrito').length).toBeGreaterThan(0);
+        expect(getByText('Item añadido al carrito.')).toBeTruthy();
+        expect(getByText('Comprar ahora')).toBeTruthy();
+        expect(getByText('Volver a Tienda')).toBeTruthy();
       });
     });
   });

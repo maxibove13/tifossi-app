@@ -27,6 +27,7 @@ import ProductInfoHeader from './ProductInfoHeader';
 import ProductDetails from './ProductDetails';
 import ProductSections from '../sections/ProductSections';
 import OverlayCheckoutShipping from '../overlay/OverlayCheckoutShipping';
+import OverlayAddingToCart from '../overlay/OverlayAddingToCart';
 import OverlayProductAdding from '../overlay/OverlayProductAdding';
 // TODO: Re-enable when support options are implemented
 // import SupportOption from './SupportOption';
@@ -85,7 +86,6 @@ export interface SwipeableEdgeProps {
   selectedSize?: string;
   onSizeChange?: (size: string) => void;
   selectedColor?: string;
-  onViewCart?: () => void;
 }
 function triggerHaptic() {
   if (Platform.OS !== 'web') {
@@ -169,7 +169,6 @@ const SwipeableEdge = ({
   selectedSize: selectedSizeProp,
   onSizeChange,
   selectedColor,
-  onViewCart,
 }: SwipeableEdgeProps) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const { width: deviceWidth } = Dimensions.get('window');
@@ -181,7 +180,8 @@ const SwipeableEdge = ({
     return product.sizes?.find((size) => size.available)?.value || '';
   }, [product.sizes]);
   const [selectedSize, setSelectedSize] = useState<string>(selectedSizeProp || firstAvailableSize);
-  const [showAddingOverlay, setShowAddingOverlay] = useState(false);
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
+  const [showConfirmationOverlay, setShowConfirmationOverlay] = useState(false);
   const [showCheckoutOverlay, setShowCheckoutOverlay] = useState(false);
   // More reliable test environment detection for Jest
   const isTestEnv = typeof jest !== 'undefined';
@@ -375,7 +375,7 @@ const SwipeableEdge = ({
         setQuantity(qty);
         onSizeChange?.(size);
         onQuantityChange?.(qty);
-        setShowAddingOverlay(true);
+        setShowLoadingOverlay(true);
       } catch (error) {
         console.error('Failed to add product to cart', error);
       }
@@ -387,6 +387,15 @@ const SwipeableEdge = ({
     (type: 'chat' | 'faq' | 'call') => onSupportAction?.(type),
     [onSupportAction]
   );
+
+  const handleLoadingComplete = useCallback(() => {
+    setShowLoadingOverlay(false);
+    setShowConfirmationOverlay(true);
+  }, []);
+
+  const handleCancelLoading = useCallback(() => {
+    setShowLoadingOverlay(false);
+  }, []);
 
   const handleViewMorePress = useCallback(
     (title: string) => {
@@ -452,13 +461,15 @@ const SwipeableEdge = ({
           }
         />
 
+        <OverlayAddingToCart
+          isVisible={showLoadingOverlay}
+          onCancel={handleCancelLoading}
+          onComplete={handleLoadingComplete}
+        />
+
         <OverlayProductAdding
-          isVisible={showAddingOverlay}
-          onComplete={() => setShowAddingOverlay(false)}
-          onViewCart={() => {
-            setShowAddingOverlay(false);
-            onViewCart?.();
-          }}
+          isVisible={showConfirmationOverlay}
+          onClose={() => setShowConfirmationOverlay(false)}
         />
       </View>
     );
@@ -572,13 +583,15 @@ const SwipeableEdge = ({
         }
       />
 
+      <OverlayAddingToCart
+        isVisible={showLoadingOverlay}
+        onCancel={handleCancelLoading}
+        onComplete={handleLoadingComplete}
+      />
+
       <OverlayProductAdding
-        isVisible={showAddingOverlay}
-        onComplete={() => setShowAddingOverlay(false)}
-        onViewCart={() => {
-          setShowAddingOverlay(false);
-          onViewCart?.();
-        }}
+        isVisible={showConfirmationOverlay}
+        onClose={() => setShowConfirmationOverlay(false)}
       />
     </>
   );

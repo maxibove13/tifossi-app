@@ -107,10 +107,6 @@ export default function ProductDetailScreen() {
     router.push(`/products/${productId}` as any);
   };
 
-  const handleViewCart = () => {
-    router.push('/cart');
-  };
-
   useEffect(() => {
     if (product?.colors?.length) {
       setSelectedColor((current) => current ?? product.colors[0].colorName);
@@ -232,7 +228,6 @@ export default function ProductDetailScreen() {
           selectedSize={selectedSize}
           onSizeChange={setSelectedSize}
           selectedColor={selectedColor}
-          onViewCart={handleViewCart}
         />
       </View>
     </View>

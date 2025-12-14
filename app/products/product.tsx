@@ -223,7 +223,6 @@ export default function ProductScreen() {
           selectedSize={selectedSize}
           onSizeChange={setSelectedSize}
           selectedColor={selectedColor}
-          onViewCart={() => router.push('/cart')}
         />
       </View>
     </View>

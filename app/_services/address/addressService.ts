@@ -24,7 +24,7 @@ export interface Address {
   addressLine1: string; // street + number combined
   addressLine2?: string; // additional info
   city: string;
-  state: string; // department
+  state?: string; // department (optional)
   postalCode?: string;
   country: string; // 2-char code (UY, AR, etc)
   phoneNumber?: string;
@@ -161,39 +161,42 @@ class AddressService {
 
   /**
    * Validate address data before submission
+   * Length limits match Strapi schema in backend/strapi/src/components/shared/address.json
    */
   validateAddress(address: Partial<Address>): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    // Required fields
+    // Required fields (state is optional per schema)
     if (!address.firstName?.trim()) errors.push('First name is required');
     if (!address.lastName?.trim()) errors.push('Last name is required');
     if (!address.addressLine1?.trim()) errors.push('Address line 1 is required');
     if (!address.city?.trim()) errors.push('City is required');
-    if (!address.state?.trim()) errors.push('State is required');
     if (!address.country?.trim()) errors.push('Country is required');
 
-    // Length validations
+    // Length validations (matching schema maxLength values)
     if (address.firstName && address.firstName.length > 50) {
       errors.push('First name must be 50 characters or less');
     }
     if (address.lastName && address.lastName.length > 50) {
       errors.push('Last name must be 50 characters or less');
     }
-    if (address.addressLine1 && address.addressLine1.length > 100) {
-      errors.push('Address line 1 must be 100 characters or less');
+    if (address.addressLine1 && address.addressLine1.length > 255) {
+      errors.push('Address line 1 must be 255 characters or less');
     }
-    if (address.addressLine2 && address.addressLine2.length > 100) {
-      errors.push('Address line 2 must be 100 characters or less');
+    if (address.addressLine2 && address.addressLine2.length > 255) {
+      errors.push('Address line 2 must be 255 characters or less');
     }
-    if (address.city && address.city.length > 50) {
-      errors.push('City must be 50 characters or less');
+    if (address.city && address.city.length > 100) {
+      errors.push('City must be 100 characters or less');
     }
-    if (address.state && address.state.length > 50) {
-      errors.push('State must be 50 characters or less');
+    if (address.state && address.state.length > 100) {
+      errors.push('State must be 100 characters or less');
     }
     if (address.postalCode && address.postalCode.length > 20) {
       errors.push('Postal code must be 20 characters or less');
+    }
+    if (address.phoneNumber && address.phoneNumber.length > 20) {
+      errors.push('Phone number must be 20 characters or less');
     }
 
     // Phone validation (if provided)

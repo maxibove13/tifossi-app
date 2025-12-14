@@ -5,233 +5,192 @@ import {
   Text,
   TouchableOpacity,
   Modal,
+  ImageBackground,
   ViewStyle,
   TextStyle,
-  Animated as RNAnimated,
+  Animated,
 } from 'react-native';
-import Animated, {
-  useSharedValue,
-  withTiming,
-  useAnimatedStyle,
-  Easing,
-  runOnJS,
-} from 'react-native-reanimated';
-import { colors } from '../../../../_styles/colors';
-import { spacing, radius } from '../../../../_styles/spacing';
-import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../_styles/typography';
+import { router } from 'expo-router';
+import { useAuthStore } from '../../../../_stores/authStore';
+import OverlayShippingSelection from './OverlayShippingSelection';
+import CartIcon from '../../../../../assets/icons/cart_white.svg';
+import { spacing } from '../../../../_styles/spacing';
+import { fonts, fontSizes, fontWeights } from '../../../../_styles/typography';
 
 interface OverlayProductAddingProps {
   isVisible: boolean;
-  onComplete: () => void;
-  onViewCart: () => void;
-  duration?: number;
+  onClose: () => void;
 }
 
-const DEFAULT_DURATION = 1500;
-
-function OverlayProductAdding({
-  isVisible,
-  onComplete,
-  onViewCart,
-  duration = DEFAULT_DURATION,
-}: OverlayProductAddingProps) {
-  const [fadeAnim] = useState(new RNAnimated.Value(0));
-  const [slideAnim] = useState(new RNAnimated.Value(300));
-  const [isAdded, setIsAdded] = useState(false);
-  const progress = useSharedValue(0);
+function OverlayProductAdding({ isVisible, onClose }: OverlayProductAddingProps) {
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [isShippingOverlayVisible, setIsShippingOverlayVisible] = useState(false);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   useEffect(() => {
     if (isVisible) {
-      setIsAdded(false);
-
-      RNAnimated.parallel([
-        RNAnimated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        RNAnimated.timing(slideAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      progress.value = 0;
-      progress.value = withTiming(
-        1,
-        {
-          duration: duration,
-          easing: Easing.linear,
-        },
-        (finished) => {
-          if (finished) {
-            runOnJS(setIsAdded)(true);
-          }
-        }
-      );
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
     } else {
       fadeAnim.setValue(0);
-      slideAnim.setValue(300);
-      progress.value = 0;
-      setIsAdded(false);
     }
-  }, [isVisible, fadeAnim, slideAnim, progress, duration]);
+  }, [isVisible, fadeAnim]);
 
-  const progressBarAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      width: `${progress.value * 100}%`,
-    };
-  });
-
-  const handleViewCart = () => {
-    onComplete();
-    onViewCart();
+  const handleBuyNow = () => {
+    setIsShippingOverlayVisible(true);
   };
 
-  const handleDismiss = () => {
-    onComplete();
+  const handleSelectShipping = (method: 'delivery' | 'pickup' | '') => {
+    if (!method) return;
+    setIsShippingOverlayVisible(false);
+    onClose();
+
+    if (method === 'delivery') {
+      if (isLoggedIn) {
+        router.navigate('/checkout/shipping-address');
+      } else {
+        router.navigate('/checkout/new-address?guest=true');
+      }
+    } else {
+      if (isLoggedIn) {
+        router.navigate('/checkout/shipping-pickup');
+      } else {
+        router.navigate('/checkout/guest-contact-info?returnTo=shipping-pickup');
+      }
+    }
+  };
+
+  const handleBackToStore = () => {
+    onClose();
   };
 
   return (
-    <Modal transparent visible={isVisible} onRequestClose={handleDismiss} animationType="none">
-      <View style={styles.modalContainer}>
-        <RNAnimated.View style={[styles.overlay, { opacity: fadeAnim }]}>
-          <TouchableOpacity style={StyleSheet.absoluteFill} onPress={handleDismiss} />
-        </RNAnimated.View>
-
-        <RNAnimated.View
-          style={[
-            styles.container,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <View style={styles.contentFrame}>
-            <Text style={styles.statusText}>
-              {isAdded ? 'Producto agregado al carrito' : 'Agregando al carrito...'}
-            </Text>
-            {!isAdded && (
-              <View style={styles.progressBarContainer}>
-                <View style={styles.progressBarBackground} />
-                <Animated.View style={[styles.progressBarFill, progressBarAnimatedStyle]} />
+    <>
+      <Modal
+        transparent
+        visible={isVisible && !isShippingOverlayVisible}
+        onRequestClose={onClose}
+        animationType="none"
+      >
+        <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+          <ImageBackground
+            source={require('../../../../../assets/images/added-to-cart-bg.png')}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+          >
+            <View style={styles.overlay}>
+              <View style={styles.messageArea}>
+                <CartIcon width={64} height={64} />
+                <Text style={styles.messageText}>Item añadido al carrito.</Text>
               </View>
-            )}
-          </View>
 
-          <View style={styles.buttonFrame}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleViewCart}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.actionButtonText}>Ver carrito</Text>
-            </TouchableOpacity>
-          </View>
-        </RNAnimated.View>
-      </View>
-    </Modal>
+              <View style={styles.buttonsArea}>
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleBuyNow}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.buttonText}>Comprar ahora</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.secondaryButton}
+                  onPress={handleBackToStore}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.buttonText}>Volver a Tienda</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ImageBackground>
+        </Animated.View>
+      </Modal>
+
+      <OverlayShippingSelection
+        isVisible={isShippingOverlayVisible}
+        onClose={() => setIsShippingOverlayVisible(false)}
+        onSelectShipping={handleSelectShipping}
+      />
+    </>
   );
 }
 
 type Styles = {
-  modalContainer: ViewStyle;
-  overlay: ViewStyle;
   container: ViewStyle;
-  contentFrame: ViewStyle;
-  statusText: TextStyle;
-  progressBarContainer: ViewStyle;
-  progressBarBackground: ViewStyle;
-  progressBarFill: ViewStyle;
-  buttonFrame: ViewStyle;
-  actionButton: ViewStyle;
-  actionButtonText: TextStyle;
+  backgroundImage: ViewStyle;
+  overlay: ViewStyle;
+  messageArea: ViewStyle;
+  messageText: TextStyle;
+  buttonsArea: ViewStyle;
+  primaryButton: ViewStyle;
+  secondaryButton: ViewStyle;
+  buttonText: TextStyle;
 };
 
 const styles = StyleSheet.create<Styles>({
-  modalContainer: {
+  container: {
     flex: 1,
-    justifyContent: 'flex-end',
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    flex: 1,
+    backgroundColor: 'rgba(12, 12, 12, 0.72)',
+    justifyContent: 'flex-end',
+    paddingTop: 44,
+    paddingBottom: 44,
+    paddingHorizontal: spacing.lg,
+    gap: 192,
   },
-  container: {
-    backgroundColor: '#FAFAFA',
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    paddingTop: spacing.xxl,
+  messageArea: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.lg,
     paddingHorizontal: spacing.xxl,
-    paddingBottom: spacing.xxl + 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -8 },
-    shadowOpacity: 0.04,
-    shadowRadius: 16,
-    elevation: 10,
-    gap: spacing.xxl,
-    width: '100%',
   },
-  contentFrame: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    gap: spacing.md,
-  },
-  statusText: {
+  messageText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.sm,
     fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.sm,
-    color: colors.primary,
+    fontSize: fontSizes.lg,
+    lineHeight: 28,
+    color: '#FBFBFB',
     textAlign: 'center',
-    alignSelf: 'stretch',
   },
-  progressBarContainer: {
-    width: '80%',
-    height: 4,
-    position: 'relative',
-    marginVertical: spacing.sm,
-    alignSelf: 'center',
-  },
-  progressBarBackground: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: colors.border,
-    borderRadius: 32,
-  },
-  progressBarFill: {
-    position: 'absolute',
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 32,
-  },
-  buttonFrame: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'stretch',
+  buttonsArea: {
     gap: spacing.sm,
+    width: '100%',
   },
-  actionButton: {
-    justifyContent: 'center',
+  primaryButton: {
+    backgroundColor: 'rgba(251, 251, 251, 0.25)',
+    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 22,
+    justifyContent: 'center',
   },
-  actionButtonText: {
+  secondaryButton: {
+    backgroundColor: 'rgba(12, 12, 12, 0.5)',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 251, 251, 0.25)',
+    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.sm,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.sm,
-    color: '#424242',
+    fontSize: fontSizes.md,
+    lineHeight: 24,
+    color: '#FBFBFB',
   },
 });
 
