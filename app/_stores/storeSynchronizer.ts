@@ -89,8 +89,10 @@ class StoreSynchronizer implements StoreSyncActions {
 // Create singleton instance
 export const storeSynchronizer = new StoreSynchronizer();
 
-// Auto-initialize when module is loaded
-storeSynchronizer.initialize();
+// IMPORTANT: Do NOT call storeSynchronizer.initialize() at module level!
+// Module-level initialization runs before React Native's bridge is fully ready,
+// which can cause crashes when native modules are accessed during store rehydration.
+// Instead, call storeSynchronizer.initialize() from _layout.tsx after component mounts.
 
 const utilityExport = {
   name: 'StoreSynchronizer',
