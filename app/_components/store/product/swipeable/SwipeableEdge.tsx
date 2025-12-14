@@ -27,6 +27,7 @@ import ProductInfoHeader from './ProductInfoHeader';
 import ProductDetails from './ProductDetails';
 import ProductSections from '../sections/ProductSections';
 import OverlayCheckoutShipping from '../overlay/OverlayCheckoutShipping';
+import OverlayProductAdding from '../overlay/OverlayProductAdding';
 // TODO: Re-enable when support options are implemented
 // import SupportOption from './SupportOption';
 
@@ -180,7 +181,7 @@ const SwipeableEdge = ({
     return product.sizes?.find((size) => size.available)?.value || '';
   }, [product.sizes]);
   const [selectedSize, setSelectedSize] = useState<string>(selectedSizeProp || firstAvailableSize);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showAddingOverlay, setShowAddingOverlay] = useState(false);
   const [showCheckoutOverlay, setShowCheckoutOverlay] = useState(false);
   // More reliable test environment detection for Jest
   const isTestEnv = typeof jest !== 'undefined';
@@ -258,19 +259,6 @@ const SwipeableEdge = ({
     return (
       <View style={styles.stockBanner}>
         <Text style={styles.stockBannerText}>Sin stock</Text>
-      </View>
-    );
-  };
-
-  const renderConfirmationBanner = () => {
-    if (!showConfirmation) return null;
-
-    return (
-      <View style={styles.confirmationContainer}>
-        <Text style={styles.confirmationText}>Producto agregado al carrito</Text>
-        <TouchableOpacity onPress={onViewCart} activeOpacity={0.7}>
-          <Text style={styles.confirmationLink}>Ver carrito</Text>
-        </TouchableOpacity>
       </View>
     );
   };
@@ -357,22 +345,6 @@ const SwipeableEdge = ({
     }
   }, [selectedSizeProp]);
 
-  useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-
-    if (showConfirmation) {
-      timeout = setTimeout(() => {
-        setShowConfirmation(false);
-      }, 3000);
-    }
-
-    return () => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    };
-  }, [showConfirmation]);
-
   const handleHeaderLayoutMeasure = useCallback(
     (event: LayoutChangeEvent) => {
       const { height } = event.nativeEvent.layout;
@@ -403,7 +375,7 @@ const SwipeableEdge = ({
         setQuantity(qty);
         onSizeChange?.(size);
         onQuantityChange?.(qty);
-        setShowConfirmation(true);
+        setShowAddingOverlay(true);
       } catch (error) {
         console.error('Failed to add product to cart', error);
       }
@@ -438,7 +410,6 @@ const SwipeableEdge = ({
             addToCartLabel={isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
             disabled={isOutOfStock}
           />
-          {renderConfirmationBanner()}
         </View>
         <ScrollView contentContainerStyle={styles.testScrollContent}>
           <View style={[styles.paddedHorizontal, styles.testSelectorsBlock]}>
@@ -479,6 +450,15 @@ const SwipeableEdge = ({
               sizes: product.sizes,
             } as any
           }
+        />
+
+        <OverlayProductAdding
+          isVisible={showAddingOverlay}
+          onComplete={() => setShowAddingOverlay(false)}
+          onViewCart={() => {
+            setShowAddingOverlay(false);
+            onViewCart?.();
+          }}
         />
       </View>
     );
@@ -540,7 +520,6 @@ const SwipeableEdge = ({
               disabled={isOutOfStock}
               // Removed containerStyle from here
             />
-            {renderConfirmationBanner()}
           </BottomSheetView>
 
           {/* Scrollable details */}
@@ -592,6 +571,15 @@ const SwipeableEdge = ({
           } as any
         }
       />
+
+      <OverlayProductAdding
+        isVisible={showAddingOverlay}
+        onComplete={() => setShowAddingOverlay(false)}
+        onViewCart={() => {
+          setShowAddingOverlay(false);
+          onViewCart?.();
+        }}
+      />
     </>
   );
 };
@@ -638,31 +626,6 @@ const styles = StyleSheet.create({
   },
   testSectionsBlock: {
     gap: spacing.xl,
-  },
-  confirmationContainer: {
-    marginTop: spacing.sm,
-    backgroundColor: colors.background.light,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  confirmationText: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: typography.body.fontSize,
-    color: colors.primary.text,
-    flex: 1,
-  },
-  confirmationLink: {
-    fontFamily: typography.body.fontFamily,
-    fontWeight: '600',
-    fontSize: typography.body.fontSize,
-    color: colors.primary.text,
   },
   stockBanner: {
     backgroundColor: colors.background.overlay,

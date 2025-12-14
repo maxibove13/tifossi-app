@@ -44,14 +44,8 @@ Building a production-ready e-commerce backend using Strapi CMS v4 with PostgreS
 
 ```
 infrastructure/
-├── docker/
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   ├── docker-compose.dev.yml
-│   └── docker-compose.prod.yml
 ├── deployment/
-│   ├── render-deploy.sh (600+ lines)
-│   └── health-check.sh
+│   └── render-deploy.sh (600+ lines)
 └── templates/
     ├── .env.development.template (165+ vars)
     ├── .env.staging.template (230+ vars)
