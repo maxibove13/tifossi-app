@@ -15,7 +15,7 @@ type HighlightedCardProps = {
 };
 
 export default function HighlightedCard({ product, onPress }: HighlightedCardProps) {
-  const { statuses, shortDescription, frontImage, title } = product;
+  const { statuses, shortDescription, frontImage, title, price, discountedPrice } = product;
 
   // Determine label text and color based on product statuses
   let labelText: string | null = null;
@@ -30,8 +30,8 @@ export default function HighlightedCard({ product, onPress }: HighlightedCardPro
   } else if (hasStatus(statuses, ProductStatus.OPPORTUNITY)) {
     labelText = 'Oportunidad';
     labelColor = colors.tag.opportunity;
-  } else if (hasStatus(statuses, ProductStatus.SALE)) {
-    labelText = 'Sale';
+  } else if (discountedPrice !== undefined && discountedPrice < price) {
+    labelText = 'Descuento';
     labelColor = colors.tag.opportunity;
   }
   // Add more conditions for other statuses if necessary

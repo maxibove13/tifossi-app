@@ -4,6 +4,7 @@
 
 export const CATEGORY_IDS = {
   ALL: 'todo',
+  DISCOUNTED: 'discounted', // Special category for products with discountedPrice
   ACCESSORIES: 'accesorios',
   SWEATSHIRTS: 'buzos',
   BAGS: 'bolsos',

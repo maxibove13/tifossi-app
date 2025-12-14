@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { MMKV } from 'react-native-mmkv';
 import httpClient from '../_services/api/httpClient';
+import strapiApi from '../_services/api/strapiApi';
 
 export interface CartItem {
   productId: string;
@@ -64,6 +65,9 @@ interface CartState {
 
   // Test utility methods
   setItems: (items: CartItem[]) => void;
+
+  // Validation
+  validateCartItems: () => Promise<CartItem[]>;
 }
 
 export const useCartStore = create<CartState>()(
@@ -367,6 +371,34 @@ export const useCartStore = create<CartState>()(
       // Test utility methods
       setItems: (items: CartItem[]) => {
         set({ items });
+      },
+
+      // Validation - removes cart items for products that no longer exist
+      validateCartItems: async () => {
+        const { items } = get();
+        if (items.length === 0) return [];
+
+        // Get unique product IDs
+        const productIds = [...new Set(items.map((i) => i.productId))];
+
+        // Check which products still exist
+        const existingIds = await strapiApi.checkProductsExist(productIds);
+
+        // Filter out stale items
+        const validItems = items.filter((i) => existingIds.has(i.productId));
+        const removedItems = items.filter((i) => !existingIds.has(i.productId));
+
+        if (removedItems.length > 0) {
+          set({ items: validItems });
+
+          if (__DEV__) {
+            console.log(
+              `Cart validation: removed ${removedItems.length} items for deleted products`
+            );
+          }
+        }
+
+        return removedItems;
       },
     }),
     {

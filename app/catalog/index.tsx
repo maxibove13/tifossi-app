@@ -188,10 +188,18 @@ export default function CatalogScreen() {
       const selectedCategory = CategoryData.mainCategories.find((cat) => cat.id === categoryId);
 
       if (selectedCategory?.isLabel) {
-        // Filter by status for label categories
-        filteredProducts = products.filter((product) =>
-          hasStatus(product.statuses, categoryId as any)
-        );
+        // Special case for 'discounted' - filter by discountedPrice
+        if (categoryId === CATEGORY_IDS.DISCOUNTED) {
+          filteredProducts = products.filter(
+            (product) =>
+              product.discountedPrice !== undefined && product.discountedPrice < product.price
+          );
+        } else {
+          // Filter by status for other label categories
+          filteredProducts = products.filter((product) =>
+            hasStatus(product.statuses, categoryId as any)
+          );
+        }
       } else {
         // Regular category filtering
         filteredProducts = products.filter((product) => product.categoryId === categoryId);

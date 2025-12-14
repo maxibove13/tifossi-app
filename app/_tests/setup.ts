@@ -3,6 +3,9 @@
  * Following TESTING_PRINCIPLES.md: Mock only at system boundaries
  */
 
+// Set default test timeout for jsdom tests
+jest.setTimeout(5000);
+
 // Load test environment variables
 import { config } from 'dotenv';
 import { resolve } from 'path';

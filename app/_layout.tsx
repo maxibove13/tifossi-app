@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import SplashScreenComponent from './_components/splash/SplashScreen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './_stores/authStore';
+import { useCartStore } from './_stores/cartStore';
 // Removed complex caching and routing dependencies
 
 // Initialize app configuration (fail fast on missing config)
@@ -95,6 +96,13 @@ export default function Layout() {
       initializeAuth();
     }
   }, [appReady, initializeAuth]);
+
+  // Validate cart items on startup (removes products that no longer exist)
+  useEffect(() => {
+    if (appReady) {
+      useCartStore.getState().validateCartItems();
+    }
+  }, [appReady]);
 
   // Handle completion of the preloading process
   const handlePreloadComplete = () => {

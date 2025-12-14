@@ -14,6 +14,11 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 /
 ├── app/                # Main application code (Expo Router)
 ├── assets/             # Static assets (images, fonts, icons)
+├── backend/            # Backend services
+│   └── strapi/         # Strapi CMS (deployed on Render.com)
+│       ├── seed/       # Seed data (products, categories, etc.)
+│       ├── scripts/    # Sync scripts (see SEED_TO_RENDER.md)
+│       └── SEED_TO_RENDER.md  # Backend sync documentation
 ├── docs/               # Documentation files
 ├── hooks/              # Custom React hooks
 │   ├── useProducts.ts  # Product data fetching hooks
@@ -521,6 +526,7 @@ interface CardDimensions {
 - Product Sharing (via Native Share Sheet)
 - Authentication System (Complete with mock API integration)
 - Profile Management (Password change, profile picture)
+- Cart Validation (removes stale products on app startup)
 
 🟡 **Partially Implemented**
 
@@ -543,5 +549,6 @@ interface CardDimensions {
 - See [local_state_management.md](./local_state_management.md) for client-side state implementation details
 - See [state_management_client_side.md](./state_management_client_side.md) for the full client-side state implementation plan
 - See [state_management_implementation.md](./state_management_implementation.md) for implementation status of state management
+- See [../backend/strapi/SEED_TO_RENDER.md](../backend/strapi/SEED_TO_RENDER.md) for Strapi backend sync documentation
 
 ## Notes

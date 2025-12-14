@@ -11,7 +11,6 @@ const LABEL_PLURALIZATION: Record<ProductLabel, string> = {
   [ProductLabel.OPPORTUNITY]: 'es', // Oportunidades
   [ProductLabel.POPULAR]: 'es', // Populares
   [ProductLabel.RECOMMENDED]: 's', // Recomendados
-  [ProductLabel.SALE]: 's', // Descuentos
   [ProductLabel.APP_EXCLUSIVE]: 's', // Exclusivos in-app
   [ProductLabel.HIGHLIGHTED]: 's', // Destacados Home
 };
@@ -71,9 +70,24 @@ export const allCategory: Category = {
 };
 
 /**
- * Combined categories with "Todo" at the beginning, then label categories, then product categories
+ * Special "Descuentos" category - filters by discountedPrice, not by status
  */
-export const mainCategories: Category[] = [allCategory, ...labelCategories, ...productCategories];
+export const discountedCategory: Category = {
+  id: CATEGORY_IDS.DISCOUNTED,
+  name: 'Descuentos',
+  slug: 'discounted',
+  isLabel: true, // Treated as label category for UI purposes
+};
+
+/**
+ * Combined categories with "Todo" at the beginning, then discounted, then label categories, then product categories
+ */
+export const mainCategories: Category[] = [
+  allCategory,
+  discountedCategory,
+  ...labelCategories,
+  ...productCategories,
+];
 
 const CategoryData = {
   mainCategories,

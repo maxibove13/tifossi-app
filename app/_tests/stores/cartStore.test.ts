@@ -25,19 +25,24 @@ jest.mock('react-native-mmkv', () => ({
   })),
 }));
 
-// Mock httpClient at the network boundary
-const mockHttpClient = {
-  post: jest.fn(),
-  get: jest.fn(),
-  delete: jest.fn(),
-  put: jest.fn(),
-};
+// Mock httpClient at the network boundary - use auto-mock then customize
+jest.mock('../../_services/api/httpClient', () => {
+  const mockFns = {
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+  };
+  return {
+    __esModule: true,
+    default: mockFns,
+    httpClient: mockFns,
+  };
+});
 
-jest.mock('../../_services/api/httpClient', () => ({
-  __esModule: true,
-  default: mockHttpClient,
-  httpClient: mockHttpClient,
-}));
+// Import the mocked module to get references
+import httpClient from '../../_services/api/httpClient';
+const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
 describe('cartStore', () => {
   beforeEach(() => {
@@ -59,6 +64,7 @@ describe('cartStore', () => {
     // Default successful response
     mockHttpClient.post.mockResolvedValue({ success: true });
     mockHttpClient.delete.mockResolvedValue({ success: true });
+    mockHttpClient.get.mockResolvedValue({ data: [] });
   });
 
   describe('addItem', () => {
@@ -589,6 +595,156 @@ describe('cartStore', () => {
         expect(result.current.items).toHaveLength(0);
         expect(result.current.getTotalItems()).toBe(0);
       });
+    });
+  });
+
+  describe('validateCartItems', () => {
+    it('should remove items for deleted products', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      // Add items to cart
+      await act(async () => {
+        await result.current.addItem({
+          productId: 'valid-product-1',
+          quantity: 2,
+          color: 'red',
+          size: 'M',
+          price: 100,
+        });
+        await result.current.addItem({
+          productId: 'deleted-product',
+          quantity: 1,
+          color: 'blue',
+          size: 'L',
+          price: 50,
+        });
+        await result.current.addItem({
+          productId: 'valid-product-2',
+          quantity: 3,
+          color: 'green',
+          size: 'S',
+          price: 75,
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(3);
+      });
+
+      // Mock API response: only valid products exist
+      mockHttpClient.get.mockResolvedValue({
+        data: [{ documentId: 'valid-product-1' }, { documentId: 'valid-product-2' }],
+      });
+
+      // Validate cart
+      let removedItems: any[];
+      await act(async () => {
+        removedItems = await result.current.validateCartItems();
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2);
+        expect(result.current.items.map((i) => i.productId)).toEqual([
+          'valid-product-1',
+          'valid-product-2',
+        ]);
+      });
+
+      expect(removedItems!).toHaveLength(1);
+      expect(removedItems![0].productId).toBe('deleted-product');
+    });
+
+    it('should not modify cart if all products exist', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      await act(async () => {
+        await result.current.addItem({
+          productId: 'product-1',
+          quantity: 2,
+          price: 100,
+        });
+        await result.current.addItem({
+          productId: 'product-2',
+          quantity: 1,
+          price: 50,
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2);
+      });
+
+      // Mock API response: all products exist
+      mockHttpClient.get.mockResolvedValue({
+        data: [{ documentId: 'product-1' }, { documentId: 'product-2' }],
+      });
+
+      let removedItems: any[];
+      await act(async () => {
+        removedItems = await result.current.validateCartItems();
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2);
+      });
+
+      expect(removedItems!).toHaveLength(0);
+    });
+
+    it('should return empty array for empty cart', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      let removedItems: any[];
+      await act(async () => {
+        removedItems = await result.current.validateCartItems();
+      });
+
+      expect(removedItems!).toHaveLength(0);
+      // httpClient.get should NOT be called when cart is empty
+      expect(mockHttpClient.get).not.toHaveBeenCalled();
+    });
+
+    it('should deduplicate product IDs when checking', async () => {
+      const { result } = renderHook(() => useCartStore());
+
+      // Add multiple items with same productId (different variants)
+      await act(async () => {
+        await result.current.addItem({
+          productId: 'product-1',
+          quantity: 1,
+          color: 'red',
+          size: 'M',
+          price: 100,
+        });
+        await result.current.addItem({
+          productId: 'product-1',
+          quantity: 2,
+          color: 'blue',
+          size: 'L',
+          price: 100,
+        });
+      });
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2);
+      });
+
+      mockHttpClient.get.mockResolvedValue({
+        data: [{ documentId: 'product-1' }],
+      });
+
+      await act(async () => {
+        await result.current.validateCartItems();
+      });
+
+      // httpClient.get should be called with URL containing only one product ID filter
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        expect.stringContaining('filters[documentId][$in][0]=product-1')
+      );
+      // Should NOT have a second filter index
+      expect(mockHttpClient.get).not.toHaveBeenCalledWith(
+        expect.stringContaining('filters[documentId][$in][1]')
+      );
     });
   });
 });
