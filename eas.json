@@ -38,8 +38,8 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "YOUR_APPLE_ID",
-        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
+        "appleId": "maximilianobove@gmail.com",
+        "ascAppId": "6755054701",
         "appleTeamId": "KM7UAMA5MF"
       },
       "android": {
