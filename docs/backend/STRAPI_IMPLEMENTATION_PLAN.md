@@ -194,9 +194,9 @@ module.exports = {
         email: order.user.email,
       },
       back_urls: {
-        success: `${process.env.APP_URL}/payment/success`,
-        failure: `${process.env.APP_URL}/payment/failure`,
-        pending: `${process.env.APP_URL}/payment/pending`,
+        success: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentSuccess=true`,
+        failure: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentFailure=true`,
+        pending: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentPending=true`,
       },
       auto_return: 'approved',
       notification_url: `${process.env.API_URL}/webhooks/mercadopago`,

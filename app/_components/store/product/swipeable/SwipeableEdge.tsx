@@ -170,13 +170,6 @@ const SwipeableEdge = ({
   selectedColor,
   onViewCart,
 }: SwipeableEdgeProps) => {
-  // DEBUG LOG
-  console.warn('SwipeableEdge received:', {
-    productName: product.name,
-    sizesLength: product.sizes?.length,
-    sizes: product.sizes,
-  });
-
   const bottomSheetRef = useRef<BottomSheet>(null);
   const { width: deviceWidth } = Dimensions.get('window');
   const { bottom: bottomSafeArea } = useSafeAreaInsets();
@@ -251,8 +244,6 @@ const SwipeableEdge = ({
     return false;
   }, [product.inStock, product.stockCount, totalColorStock]);
 
-  const availableSizes = useMemo(() => product.sizes || [], [product.sizes]);
-
   const handleSelectSize = useCallback(
     (sizeValue: string) => {
       setSelectedSize(sizeValue);
@@ -267,52 +258,6 @@ const SwipeableEdge = ({
     return (
       <View style={styles.stockBanner}>
         <Text style={styles.stockBannerText}>Sin stock</Text>
-      </View>
-    );
-  };
-
-  const renderSizeSelector = () => {
-    if (!availableSizes.length) return null;
-
-    return (
-      <View style={styles.selectorBlock}>
-        <Text style={styles.selectorTitle}>Talles disponibles</Text>
-        <View style={styles.sizeChipsContainer}>
-          {availableSizes.map((size) => {
-            const isDisabled = !size.available || (size.stock !== undefined && size.stock === 0);
-            const isSelected = selectedSize === size.value;
-            return (
-              <TouchableOpacity
-                key={size.value}
-                style={[
-                  styles.sizeChip,
-                  isSelected && styles.sizeChipSelected,
-                  isDisabled && styles.sizeChipDisabled,
-                ]}
-                onPress={() => {
-                  if (!isDisabled) {
-                    handleSelectSize(size.value);
-                  }
-                }}
-                activeOpacity={0.7}
-                disabled={isDisabled}
-                accessibilityRole="button"
-                accessibilityState={{ selected: isSelected, disabled: isDisabled }}
-                testID={`size-option-${size.value}`}
-              >
-                <Text
-                  style={[
-                    styles.sizeChipLabel,
-                    isSelected && styles.sizeChipLabelSelected,
-                    isDisabled && styles.sizeChipLabelDisabled,
-                  ]}
-                >
-                  {size.value}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
       </View>
     );
   };
@@ -498,7 +443,6 @@ const SwipeableEdge = ({
         <ScrollView contentContainerStyle={styles.testScrollContent}>
           <View style={[styles.paddedHorizontal, styles.testSelectorsBlock]}>
             {renderStockStatus()}
-            {renderSizeSelector()}
             <ProductDetails
               isCustomizable={product.isCustomizable}
               shortDescription={product.shortDescription}
@@ -607,7 +551,6 @@ const SwipeableEdge = ({
           >
             <BottomSheetView style={styles.paddedHorizontal}>
               {renderStockStatus()}
-              {renderSizeSelector()}
               <ProductDetails
                 isCustomizable={product.isCustomizable}
                 shortDescription={product.shortDescription}
@@ -695,50 +638,6 @@ const styles = StyleSheet.create({
   },
   testSectionsBlock: {
     gap: spacing.xl,
-  },
-  selectorBlock: {
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  selectorTitle: {
-    fontFamily: typography.body.fontFamily,
-    fontWeight: '600',
-    fontSize: typography.body.fontSize,
-    color: colors.primary.text,
-  },
-  sizeChipsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  sizeChip: {
-    minWidth: 48,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-  },
-  sizeChipSelected: {
-    borderColor: colors.primary.background,
-    backgroundColor: colors.primary.background,
-  },
-  sizeChipDisabled: {
-    borderColor: colors.border,
-    opacity: 0.4,
-  },
-  sizeChipLabel: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: typography.body.fontSize,
-    color: colors.accent.mediumGray,
-  },
-  sizeChipLabelSelected: {
-    color: colors.primary.text,
-    fontWeight: '600',
-  },
-  sizeChipLabelDisabled: {
-    color: colors.secondary.textDisabled,
   },
   confirmationContainer: {
     marginTop: spacing.sm,

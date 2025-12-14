@@ -32,10 +32,10 @@ export default function PaymentResultScreen() {
   const [verificationComplete, setVerificationComplete] = useState(false);
   const [, setPaymentStatus] = useState<string | null>(null);
 
-  // Extract payment result from params
+  // Extract payment result from params (handle both camelCase and MercadoPago's snake_case)
   const paymentSuccess = params.paymentSuccess === 'true';
   const paymentPending = params.paymentPending === 'true';
-  const paymentId = params.paymentId as string;
+  const paymentId = (params.paymentId || params.payment_id) as string;
   const error = params.error as string;
 
   // Verify payment status

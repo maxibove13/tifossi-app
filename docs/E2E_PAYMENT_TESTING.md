@@ -72,13 +72,13 @@ More reliable than WebView automation:
 xcrun simctl list devices | grep Booted
 
 # Success callback
-xcrun simctl openurl booted "tifossi://payment/success?payment_id=123456789&external_reference=TIF-20241201-123456"
+xcrun simctl openurl booted "tifossi://checkout/payment-result?paymentSuccess=true&payment_id=123456789&external_reference=TIF-20241201-123456"
 
 # Failure callback
-xcrun simctl openurl booted "tifossi://payment/failure?payment_id=123456789&external_reference=TIF-20241201-123456"
+xcrun simctl openurl booted "tifossi://checkout/payment-result?paymentFailure=true&payment_id=123456789&external_reference=TIF-20241201-123456"
 
 # Pending callback
-xcrun simctl openurl booted "tifossi://payment/pending?payment_id=123456789&external_reference=TIF-20241201-123456"
+xcrun simctl openurl booted "tifossi://checkout/payment-result?paymentPending=true&payment_id=123456789&external_reference=TIF-20241201-123456"
 ```
 
 After each, run `ui_describe_all` to verify:

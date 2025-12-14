@@ -241,14 +241,15 @@ export class PreferenceBuilder {
 
   /**
    * Build back URLs for payment callbacks
+   * Routes directly to /checkout/payment-result which exists in expo-router file structure
    */
   private buildBackUrls(orderData: ExtendedOrderData) {
-    const baseParams = `?order_id=${orderData.id}&external_reference=${orderData.orderNumber}`;
+    const baseParams = `order_id=${orderData.id}&external_reference=${orderData.orderNumber}`;
 
     return {
-      success: `${this.appScheme}://payment/success${baseParams}`,
-      failure: `${this.appScheme}://payment/failure${baseParams}`,
-      pending: `${this.appScheme}://payment/pending${baseParams}`,
+      success: `${this.appScheme}://checkout/payment-result?paymentSuccess=true&${baseParams}`,
+      failure: `${this.appScheme}://checkout/payment-result?paymentFailure=true&${baseParams}`,
+      pending: `${this.appScheme}://checkout/payment-result?paymentPending=true&${baseParams}`,
     };
   }
 

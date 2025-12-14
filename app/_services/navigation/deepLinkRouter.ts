@@ -13,16 +13,10 @@
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { deepLinking as authDeepLinking } from '../../_utils/auth/deepLinking';
-import { deepLinkHandler as paymentDeepLinkHandler } from '../../_utils/payment/deepLinkHandler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Deep link route patterns
 export const DEEP_LINK_ROUTES = {
-  // Payment routes
-  PAYMENT_SUCCESS: '/payment/success',
-  PAYMENT_FAILURE: '/payment/failure',
-  PAYMENT_PENDING: '/payment/pending',
-
   // Product routes
   PRODUCT: '/product',
   PRODUCT_DETAIL: '/product/[id]',
@@ -222,7 +216,7 @@ export const linkingConfig = {
       // Checkout
       checkout: {
         screens: {
-          'payment-result': '/payment/result',
+          'payment-result': '/checkout/payment-result',
           'payment-selection': '/checkout/payment',
           'shipping-address': '/checkout/shipping',
           'store-selection': '/checkout/store',
@@ -364,9 +358,8 @@ class DeepLinkRouter {
       }
 
       // Route to appropriate handler based on path
-      if (path.includes('/payment/')) {
-        return await this.handlePaymentDeepLink(url, path, queryParams || {});
-      } else if (path.includes('/product/')) {
+      // Note: Payment deep links now route directly to /checkout/payment-result via expo-router
+      if (path.includes('/product/')) {
         return await this.handleProductDeepLink(path, queryParams || {});
       } else if (path.includes('/category/')) {
         return await this.handleCategoryDeepLink(path, queryParams || {});
@@ -387,79 +380,6 @@ class DeepLinkRouter {
       };
     } finally {
       this.processingUrls.delete(url);
-    }
-  }
-
-  /**
-   * Handle payment deep links (MercadoPago callbacks)
-   */
-  private async handlePaymentDeepLink(
-    url: string,
-    path: string,
-    queryParams: Record<string, any>
-  ): Promise<DeepLinkResult> {
-    try {
-      // Use the payment deep link handler for processing
-      const paymentResult = paymentDeepLinkHandler.processPaymentCallback(url, queryParams);
-
-      // Handle both sync and async payment handler responses
-      const result = await Promise.resolve(paymentResult);
-
-      if (!result || !result.success) {
-        const errorMessage =
-          (result && 'error' in result && typeof result.error === 'string' && result.error) ||
-          'Failed to process payment callback';
-        throw new Error(errorMessage);
-      }
-
-      // Extract payment status from path
-      // Expected format: /payment/{status} where status is success|failure|pending
-      const pathParts = path.split('/');
-      const status = pathParts[pathParts.length - 1];
-
-      if (!['success', 'failure', 'pending'].includes(status)) {
-        throw new Error(`Invalid payment status: ${status}`);
-      }
-
-      // Navigate to payment result screen with appropriate params
-      const params = {
-        [`payment${status.charAt(0).toUpperCase() + status.slice(1)}`]: 'true',
-        orderId: queryParams.external_reference || queryParams.orderId,
-        paymentId: queryParams.payment_id || queryParams.paymentId,
-        collectionId: queryParams.collection_id || queryParams.collectionId,
-        merchantOrderId: queryParams.merchant_order_id || queryParams.merchantOrderId,
-        ...(status === 'failure' && { error: queryParams.error || 'Payment was rejected' }),
-      };
-
-      // Filter out undefined values
-      const filteredParams = Object.fromEntries(
-        Object.entries(params).filter(([_, value]) => value !== undefined)
-      );
-
-      router.replace({
-        pathname: '/checkout/payment-result' as any,
-        params: filteredParams,
-      });
-
-      return {
-        handled: true,
-        success: true,
-        route: '/checkout/payment-result',
-        params: filteredParams,
-      };
-    } catch (error: any) {
-      // Navigate to cart with error
-      router.replace({
-        pathname: '/(tabs)/cart',
-        params: { paymentError: 'true', error: error.message },
-      });
-
-      return {
-        handled: true,
-        success: false,
-        error: error.message,
-        route: '/(tabs)/cart',
-      };
     }
   }
 
