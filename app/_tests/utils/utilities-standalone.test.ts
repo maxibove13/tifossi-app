@@ -29,7 +29,7 @@ describe('Test Utilities Standalone', () => {
       const saleProduct = productFactory.createOnSale();
 
       expect(saleProduct).toBeValidProduct();
-      expect(saleProduct).toHaveProductStatus('sale');
+      expect(saleProduct).toHaveProductStatus('opportunity');
       expect(saleProduct.discountedPrice).toBeDefined();
       expect(saleProduct.discountedPrice!).toBeLessThan(saleProduct.price);
     });
@@ -137,11 +137,11 @@ describe('Test Utilities Standalone', () => {
 
     it('should validate product status', () => {
       const newProduct = productFactory.create({ statuses: [ProductStatus.NEW] });
-      const saleProduct = productFactory.create({ statuses: [ProductStatus.SALE] });
+      const opportunityProduct = productFactory.create({ statuses: [ProductStatus.OPPORTUNITY] });
 
       expect(newProduct).toHaveProductStatus('new');
-      expect(saleProduct).toHaveProductStatus('sale');
-      expect(newProduct).not.toHaveProductStatus('sale');
+      expect(opportunityProduct).toHaveProductStatus('opportunity');
+      expect(newProduct).not.toHaveProductStatus('opportunity');
     });
 
     it('should validate cart operations', () => {

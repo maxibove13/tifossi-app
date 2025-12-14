@@ -6,13 +6,23 @@
  * schema mismatches early.
  *
  * Usage:
- *   STRAPI_URL=https://tifossi-strapi-backend.onrender.com npm test -- checkout-api-contract
+ *   # CI/CD mode (skips MercadoPago calls):
+ *   npm run test:contracts
+ *
+ *   # Local mode (includes MercadoPago integration - requires test credentials on backend):
+ *   npm run test:contracts:full
  */
 
 // Longer timeout for real API calls
 jest.setTimeout(30000);
 
 const STRAPI_URL = process.env.STRAPI_URL || 'https://tifossi-strapi-backend.onrender.com';
+
+// Skip MercadoPago tests in CI/CD (they require test credentials on the backend)
+const SKIP_MP_TESTS = process.env.SKIP_MP_TESTS === 'true';
+
+// Helper to conditionally skip MP tests
+const describeMP = SKIP_MP_TESTS ? describe.skip : describe;
 
 // Types matching what the app sends
 interface CartItem {
@@ -89,7 +99,8 @@ describe('Checkout API Contract Tests', () => {
     console.log('Valid store codes:', validStoreCodes);
   });
 
-  describe('Guest Delivery Checkout', () => {
+  // These tests call MercadoPago API - skip in CI/CD
+  describeMP('Guest Delivery Checkout', () => {
     it('should accept valid guest delivery payload', async () => {
       if (validProductIds.length === 0) {
         console.warn('No products in database, skipping test');
@@ -194,7 +205,8 @@ describe('Checkout API Contract Tests', () => {
     });
   });
 
-  describe('Guest Pickup Checkout', () => {
+  // These tests call MercadoPago API - skip in CI/CD
+  describeMP('Guest Pickup Checkout', () => {
     it('should accept valid guest pickup payload', async () => {
       if (validProductIds.length === 0 || validStoreCodes.length === 0) {
         console.warn('No products or stores in database, skipping test');

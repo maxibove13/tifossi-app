@@ -132,6 +132,9 @@ class MercadoPagoService {
           guestPhone: orderData.user.phone?.number,
         };
 
+        // Debug: Log checkout payload
+        console.log('[Checkout] Items being sent:', JSON.stringify(guestOrderData.items, null, 2));
+
         const response = await fetch(`${this.baseUrl}/api/payment/guest/create-preference`, {
           method: 'POST',
           headers: {

@@ -30,7 +30,7 @@ describe('Test Data Factories', () => {
       const saleProduct = productFactory.createOnSale();
 
       expect(saleProduct).toBeValidProduct();
-      expect(saleProduct).toHaveProductStatus('sale');
+      expect(saleProduct).toHaveProductStatus('opportunity');
       expect(saleProduct.discountedPrice).toBeDefined();
       expect(saleProduct.discountedPrice!).toBeLessThan(saleProduct.price);
     });

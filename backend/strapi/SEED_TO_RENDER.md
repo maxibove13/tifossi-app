@@ -1,87 +1,113 @@
-# Populate Render Database with Seed Data
+# Sync Seed Data to Render Strapi
 
 ## Quick Start
 
 ```bash
+# Source the .env file and run with images
 cd backend/strapi
-STRAPI_API_TOKEN=your_token_here npm run seed:render
+source .env && export STRAPI_API_TOKEN && node scripts/import-seed-to-render.js --clean --images
 ```
 
-## Step-by-Step Instructions
-
-### 1. Create an API Token in Strapi Admin
-
-1. Go to your Render Strapi admin: https://tifossi-strapi-backend.onrender.com/admin
-2. Log in with your admin credentials
-3. Navigate to: **Settings** → **API Tokens** → **Create new API Token**
-4. Configure the token:
-   - **Name**: `Seed Import Token`
-   - **Token type**: `Full access` or `Custom` with these permissions:
-     - Products: `create`, `find`
-     - Categories: `create`, `find`
-     - Product Models: `create`, `find`
-     - Product Statuses: `create`, `find`
-     - Store Locations: `create`, `find`
-   - **Token duration**: Can be temporary (just for the import)
-5. Click **Save** and **copy the token** (you won't see it again!)
-
-### 2. Run the Import Script
+## Command Options
 
 ```bash
-cd backend/strapi
-STRAPI_API_TOKEN=your_copied_token npm run seed:render
+node scripts/import-seed-to-render.js [options]
+
+Options:
+  --clean, -c        Delete ALL existing products before importing
+  --images, -i       Upload product images to Cloudinary via Strapi
+  --skip-existing, -s  Skip products that already exist (don't overwrite)
+  --help, -h         Show help
 ```
 
-The script will:
-1. ✓ Import product statuses (NEW, SALE, FEATURED, etc.)
-2. ✓ Import categories (Medias, Mochilas, etc.)
-3. ✓ Import product models (Fast, Classic, Sport, etc.)
-4. ✓ Import store locations (Montevideo Centro, Punta del Este, etc.)
-5. ✓ Import products from `seed/products.json`
+### Common Usage Patterns
 
-### 3. Verify Import
+```bash
+# Fresh sync (delete everything, re-upload images)
+source .env && export STRAPI_API_TOKEN && node scripts/import-seed-to-render.js -c -i
 
-After the import completes:
+# Add new products only (keep existing, no images)
+source .env && export STRAPI_API_TOKEN && node scripts/import-seed-to-render.js -s
 
-1. Check in Strapi Admin: https://tifossi-strapi-backend.onrender.com/admin
-2. Go to **Content Manager** → **Products**
-3. You should see all the imported products
+# Re-sync products without images (faster)
+source .env && export STRAPI_API_TOKEN && node scripts/import-seed-to-render.js -c
+```
 
-### 4. Test in Mobile App
+## Environment Setup
 
-Reload your mobile app - products should now appear in the Tienda screen!
+The script needs `STRAPI_API_TOKEN` from `backend/strapi/.env`:
+
+```
+STRAPI_API_TOKEN=your_token_here
+```
+
+**Important**: Use `source .env && export STRAPI_API_TOKEN` to pass the variable to Node.js.
+
+### Getting an API Token
+
+1. Go to: https://tifossi-strapi-backend.onrender.com/admin
+2. Navigate: **Settings** → **API Tokens** → **Create new API Token**
+3. Set **Token type**: `Full access`
+4. Copy the token to `.env`
+
+## What Gets Synced
+
+| File | Content |
+|------|---------|
+| `seed/product-statuses.json` | highlighted, opportunity, recommended, new |
+| `seed/categories.json` | medias, mochilas, remeras, etc. |
+| `seed/product-models.json` | fast, classic, sport, etc. |
+| `seed/store-locations.json` | pickup locations |
+| `seed/products.json` | full product catalog |
+
+Images are mapped in `scripts/import-seed-to-render.js` via `PRODUCT_IMAGE_MAP`.
 
 ## Troubleshooting
 
-### "STRAPI_API_TOKEN environment variable is required"
-- Make sure you created the API token and copied it correctly
-- The token should be a long string starting with letters/numbers
+### Cloudinary Rate Limiting
 
-### "API request failed: 401"
-- Your token is invalid or expired
+Render's free tier has Cloudinary rate limits. If uploads fail with HTML errors:
+
+1. Wait 5-10 minutes between upload batches
+2. The script has 3s delays between uploads (10s after errors) to avoid rate limits
+3. Use `-s` flag to resume without re-uploading existing products
+
+### 404 on API calls
+
+Wrong URL. The correct Strapi URL is:
+```
+https://tifossi-strapi-backend.onrender.com
+```
+
+Not `tifossi-strapi.onrender.com` (common mistake).
+
+### 401 Unauthorized
+
+- Token expired or invalid
 - Create a new token in Strapi admin
-- Make sure the token has the correct permissions
 
-### "API request failed: 403"
-- Your token doesn't have the required permissions
-- Recreate the token with "Full access" or add the required permissions
+### Products not showing in app
 
-### Products already exist
-- The script checks for duplicates and skips them
-- To re-import, delete the existing data in Strapi admin first
+1. Check Strapi admin → Content Manager → Products
+2. Verify products have `publishedAt` set (script does this automatically)
+3. Check `frontImage` is linked (visible in product detail)
 
-## What Gets Imported
+## Adding New Products
 
-From the `seed/` directory:
-- **product-statuses.json**: 8 status types (NEW, SALE, FEATURED, etc.)
-- **categories.json**: Product categories
-- **product-models.json**: Product model variants
-- **store-locations.json**: Physical store locations
-- **products.json**: Complete product catalog with colors, sizes, prices
+1. Add product to `seed/products.json`
+2. Add image to `assets/images/products/`
+3. Add mapping in `scripts/import-seed-to-render.js` → `PRODUCT_IMAGE_MAP`
+4. Run sync with `--images` flag
 
-## Notes
+## Image Mapping
 
-- The script is idempotent - running it multiple times won't create duplicates
-- Products are published immediately (publishedAt is set to current time)
-- Images need to be uploaded separately to Cloudinary/Strapi media library
-- You can safely delete the API token after import is complete
+Product images are defined in `PRODUCT_IMAGE_MAP` inside the import script:
+
+```javascript
+const PRODUCT_IMAGE_MAP = {
+  'product-slug': 'image-filename.png',
+  // ...
+};
+```
+
+Color-specific gallery images use `COLOR_IMAGE_MAP`.

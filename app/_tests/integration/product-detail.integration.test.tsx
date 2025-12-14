@@ -229,15 +229,16 @@ describe('Product Detail Flow - Integration', () => {
     });
 
     it('should display available colors', async () => {
-      const { getByText } = render(
+      const { getByTestId } = render(
         <TestWrapper>
           <ProductDetailScreen />
         </TestWrapper>
       );
 
       await waitFor(() => {
-        expect(getByText('Blanco')).toBeTruthy();
-        expect(getByText('Azul')).toBeTruthy();
+        // Colors are rendered as image thumbnails with testIDs, not text labels
+        expect(getByTestId('color-option-blanco')).toBeTruthy();
+        expect(getByTestId('color-option-azul')).toBeTruthy();
       });
     });
 
@@ -592,7 +593,7 @@ describe('Product Detail Flow - Integration', () => {
         expect(getAllByTestId('product-gallery').length).toBeGreaterThan(0);
       });
 
-      // Simulate swipe gesture
+      // Simulate swipe gesture on gallery
       const [gallery] = getAllByTestId('product-gallery');
       fireEvent.scroll(gallery, {
         nativeEvent: {
@@ -600,8 +601,9 @@ describe('Product Detail Flow - Integration', () => {
         },
       });
 
-      // Check that second indicator exists (styling checks are brittle)
-      expect(getByTestId('gallery-indicator-1')).toBeTruthy();
+      // Check that multiple images exist (gallery is vertical stack, no indicators)
+      expect(getByTestId('gallery-image-0')).toBeTruthy();
+      expect(getByTestId('gallery-image-1')).toBeTruthy();
     });
   });
 
@@ -617,7 +619,8 @@ describe('Product Detail Flow - Integration', () => {
         expect(getAllByText('Camiseta Nacional 2025').length).toBeGreaterThan(0);
       });
 
-      const colorOption = getAllByText('Azul')[0];
+      // Colors are rendered as image thumbnails with testIDs, not text labels
+      const colorOption = getByTestId('color-option-azul');
       fireEvent.press(colorOption);
 
       const sizeOptionNode = getByTestId('size-option-L');
