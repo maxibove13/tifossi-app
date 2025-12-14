@@ -3,36 +3,51 @@
  *
  * This service provides Firebase authentication using React Native Firebase.
  * Supports email/password, Apple Sign-In, and Google Sign-In authentication.
+ *
+ * IMPORTANT: Uses dynamic imports to prevent native module crashes during early initialization.
+ * Firebase modules are loaded lazily when first accessed, not at module load time.
  */
 
-import {
-  getAuth,
-  signInWithEmailAndPassword as firebaseSignInWithEmail,
-  createUserWithEmailAndPassword as firebaseCreateUser,
-  signOut as firebaseSignOut,
-  sendPasswordResetEmail as firebaseSendPasswordReset,
-  onAuthStateChanged,
-  applyActionCode,
-  verifyPasswordResetCode as firebaseVerifyPasswordResetCode,
-  confirmPasswordReset as firebaseConfirmPasswordReset,
-  updateProfile,
-  sendEmailVerification as firebaseSendEmailVerification,
-  reauthenticateWithCredential,
-  updatePassword as firebaseUpdatePassword,
-  getIdToken as firebaseGetIdToken,
-  signInWithCredential,
-  GoogleAuthProvider,
-  AppleAuthProvider,
-  EmailAuthProvider,
-  type FirebaseAuthTypes,
-} from '@react-native-firebase/auth';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import {
-  GoogleSignin,
-  statusCodes as GoogleSigninStatusCodes,
-} from '@react-native-google-signin/google-signin';
 import { Platform } from 'react-native';
+
+// Types are imported normally (no native code execution)
+import type { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import type { User as AppUser } from '../../_types/auth';
+
+// Lazy-loaded module references
+let _firebaseAuthModule: typeof import('@react-native-firebase/auth') | null = null;
+let _appleAuthModule: typeof import('expo-apple-authentication') | null = null;
+let _googleSigninModule: typeof import('@react-native-google-signin/google-signin') | null = null;
+
+/**
+ * Lazy load Firebase Auth module to prevent early native initialization crashes
+ */
+const getFirebaseAuthModule = (): typeof import('@react-native-firebase/auth') => {
+  if (!_firebaseAuthModule) {
+    _firebaseAuthModule = require('@react-native-firebase/auth');
+  }
+  return _firebaseAuthModule!;
+};
+
+/**
+ * Lazy load Apple Authentication module
+ */
+const getAppleAuthModule = (): typeof import('expo-apple-authentication') => {
+  if (!_appleAuthModule) {
+    _appleAuthModule = require('expo-apple-authentication');
+  }
+  return _appleAuthModule!;
+};
+
+/**
+ * Lazy load Google Sign-In module
+ */
+const getGoogleSigninModule = (): typeof import('@react-native-google-signin/google-signin') => {
+  if (!_googleSigninModule) {
+    _googleSigninModule = require('@react-native-google-signin/google-signin');
+  }
+  return _googleSigninModule!;
+};
 
 interface AuthResult {
   success: boolean;
@@ -77,10 +92,11 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
 };
 
 // Lazy-initialize auth to prevent crashes if Firebase isn't ready
-let _authInstance: ReturnType<typeof getAuth> | null = null;
-const getAuthSafe = (): ReturnType<typeof getAuth> => {
+let _authInstance: ReturnType<typeof import('@react-native-firebase/auth').getAuth> | null = null;
+const getAuthSafe = () => {
   if (!_authInstance) {
     try {
+      const { getAuth } = getFirebaseAuthModule();
       _authInstance = getAuth();
     } catch (error) {
       console.error('Failed to initialize Firebase Auth:', error);
@@ -154,9 +170,10 @@ class FirebaseAuthService {
    */
   async signInWithEmail(email: string, password: string): Promise<AuthResult> {
     try {
-      const userCredential = await firebaseSignInWithEmail(getAuthSafe(), email, password);
+      const { signInWithEmailAndPassword, getIdToken } = getFirebaseAuthModule();
+      const userCredential = await signInWithEmailAndPassword(getAuthSafe(), email, password);
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
-      const token = await firebaseGetIdToken(userCredential.user);
+      const token = await getIdToken(userCredential.user);
 
       return {
         success: true,
@@ -180,7 +197,8 @@ class FirebaseAuthService {
     displayName?: string
   ): Promise<AuthResult> {
     try {
-      const userCredential = await firebaseCreateUser(getAuthSafe(), email, password);
+      const { createUserWithEmailAndPassword, updateProfile, getIdToken } = getFirebaseAuthModule();
+      const userCredential = await createUserWithEmailAndPassword(getAuthSafe(), email, password);
 
       // Update display name if provided
       if (displayName) {
@@ -188,7 +206,7 @@ class FirebaseAuthService {
       }
 
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
-      const token = await firebaseGetIdToken(userCredential.user);
+      const token = await getIdToken(userCredential.user);
 
       return {
         success: true,
@@ -225,6 +243,10 @@ class FirebaseAuthService {
    */
   async signInWithGoogle(): Promise<AuthResult> {
     try {
+      const { GoogleSignin } = getGoogleSigninModule();
+      const { signInWithCredential, GoogleAuthProvider, updateProfile, getIdToken } =
+        getFirebaseAuthModule();
+
       // Configure Google Sign-In
       GoogleSignin.configure({
         webClientId: 'REDACTED_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
@@ -266,7 +288,7 @@ class FirebaseAuthService {
       }
 
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
-      const token = await firebaseGetIdToken(userCredential.user);
+      const token = await getIdToken(userCredential.user);
 
       return {
         success: true,
@@ -274,6 +296,8 @@ class FirebaseAuthService {
         token,
       };
     } catch (error: any) {
+      const { statusCodes: GoogleSigninStatusCodes } = getGoogleSigninModule();
+
       // Handle Google Sign-In cancellation
       if (error.code === GoogleSigninStatusCodes.SIGN_IN_CANCELLED) {
         return {
@@ -310,6 +334,10 @@ class FirebaseAuthService {
    */
   async signInWithApple(): Promise<AuthResult> {
     try {
+      const AppleAuthentication = getAppleAuthModule();
+      const { signInWithCredential, AppleAuthProvider, updateProfile, getIdToken } =
+        getFirebaseAuthModule();
+
       // Check if Apple auth is available
       const isAppleAvailable = await AppleAuthentication.isAvailableAsync();
       if (!isAppleAvailable) {
@@ -354,7 +382,7 @@ class FirebaseAuthService {
       }
 
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
-      const token = await firebaseGetIdToken(userCredential.user);
+      const token = await getIdToken(userCredential.user);
 
       return {
         success: true,
@@ -382,7 +410,8 @@ class FirebaseAuthService {
    */
   async signOutUser(): Promise<void> {
     try {
-      await firebaseSignOut(getAuthSafe());
+      const { signOut } = getFirebaseAuthModule();
+      await signOut(getAuthSafe());
     } catch (error) {
       throw error;
     }
@@ -393,7 +422,8 @@ class FirebaseAuthService {
    */
   async sendPasswordReset(email: string): Promise<{ success: boolean; error?: string }> {
     try {
-      await firebaseSendPasswordReset(getAuthSafe(), email);
+      const { sendPasswordResetEmail } = getFirebaseAuthModule();
+      await sendPasswordResetEmail(getAuthSafe(), email);
       return { success: true };
     } catch (error) {
       return {
@@ -410,6 +440,8 @@ class FirebaseAuthService {
     credentials: PasswordChangeCredentials
   ): Promise<{ success: boolean; error?: string }> {
     try {
+      const { EmailAuthProvider, reauthenticateWithCredential, updatePassword } =
+        getFirebaseAuthModule();
       const currentUser = getAuthSafe().currentUser;
       if (!currentUser) {
         throw new Error('No user is currently signed in');
@@ -423,7 +455,7 @@ class FirebaseAuthService {
       await reauthenticateWithCredential(currentUser, credential);
 
       // Update password
-      await firebaseUpdatePassword(currentUser, credentials.newPassword);
+      await updatePassword(currentUser, credentials.newPassword);
 
       return { success: true };
     } catch (error) {
@@ -439,12 +471,13 @@ class FirebaseAuthService {
    */
   async sendEmailVerification(): Promise<{ success: boolean; error?: string }> {
     try {
+      const { sendEmailVerification } = getFirebaseAuthModule();
       const currentUser = getAuthSafe().currentUser;
       if (!currentUser) {
         throw new Error('No user is currently signed in');
       }
 
-      await firebaseSendEmailVerification(currentUser);
+      await sendEmailVerification(currentUser);
       return { success: true };
     } catch (error) {
       return {
@@ -467,12 +500,13 @@ class FirebaseAuthService {
    */
   async getIdToken(forceRefresh?: boolean): Promise<string> {
     try {
+      const { getIdToken } = getFirebaseAuthModule();
       const currentUser = getAuthSafe().currentUser;
       if (!currentUser) {
         throw new Error('No user is currently signed in');
       }
 
-      return await firebaseGetIdToken(currentUser, forceRefresh);
+      return await getIdToken(currentUser, forceRefresh);
     } catch (error) {
       throw error;
     }
@@ -482,6 +516,7 @@ class FirebaseAuthService {
    * Initialize auth state listener
    */
   initializeAuthStateListener(callback: (user: AppUser | null) => void): () => void {
+    const { onAuthStateChanged } = getFirebaseAuthModule();
     const unsubscribe = onAuthStateChanged(getAuthSafe(), (firebaseUser) => {
       const appUser = firebaseUser ? this.mapFirebaseUserToAppUser(firebaseUser) : null;
       callback(appUser);
@@ -496,6 +531,7 @@ class FirebaseAuthService {
    */
   async verifyEmailCode(code: string): Promise<void> {
     try {
+      const { applyActionCode } = getFirebaseAuthModule();
       await applyActionCode(getAuthSafe(), code);
     } catch (error) {
       throw error;
@@ -507,7 +543,8 @@ class FirebaseAuthService {
    */
   async verifyPasswordResetCode(code: string): Promise<string> {
     try {
-      const email = await firebaseVerifyPasswordResetCode(getAuthSafe(), code);
+      const { verifyPasswordResetCode } = getFirebaseAuthModule();
+      const email = await verifyPasswordResetCode(getAuthSafe(), code);
       return email;
     } catch (error) {
       throw error;
@@ -522,7 +559,8 @@ class FirebaseAuthService {
     newPassword: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      await firebaseConfirmPasswordReset(getAuthSafe(), code, newPassword);
+      const { confirmPasswordReset } = getFirebaseAuthModule();
+      await confirmPasswordReset(getAuthSafe(), code, newPassword);
       return { success: true };
     } catch (error) {
       return {
