@@ -259,9 +259,9 @@ export class MercadoPagoService {
         : undefined,
 
       back_urls: {
-        success: `${process.env.APP_SCHEME || 'tifossi'}://payment/success`,
-        failure: `${process.env.APP_SCHEME || 'tifossi'}://payment/failure`,
-        pending: `${process.env.APP_SCHEME || 'tifossi'}://payment/pending`,
+        success: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentSuccess=true&external_reference=${encodeURIComponent(orderData.orderNumber)}`,
+        failure: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentFailure=true&external_reference=${encodeURIComponent(orderData.orderNumber)}`,
+        pending: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentPending=true&external_reference=${encodeURIComponent(orderData.orderNumber)}`,
       },
 
       auto_return: 'approved' as const,
