@@ -76,8 +76,19 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   'google-signin-failed': 'Error al iniciar sesión con Google.',
 };
 
-// Get auth instance once (modular API)
-const auth = getAuth();
+// Lazy-initialize auth to prevent crashes if Firebase isn't ready
+let _authInstance: ReturnType<typeof getAuth> | null = null;
+const getAuthSafe = (): ReturnType<typeof getAuth> => {
+  if (!_authInstance) {
+    try {
+      _authInstance = getAuth();
+    } catch (error) {
+      console.error('Failed to initialize Firebase Auth:', error);
+      throw error;
+    }
+  }
+  return _authInstance;
+};
 
 class FirebaseAuthService {
   private isInitialized = false;
@@ -143,7 +154,7 @@ class FirebaseAuthService {
    */
   async signInWithEmail(email: string, password: string): Promise<AuthResult> {
     try {
-      const userCredential = await firebaseSignInWithEmail(auth, email, password);
+      const userCredential = await firebaseSignInWithEmail(getAuthSafe(), email, password);
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
       const token = await firebaseGetIdToken(userCredential.user);
 
@@ -169,7 +180,7 @@ class FirebaseAuthService {
     displayName?: string
   ): Promise<AuthResult> {
     try {
-      const userCredential = await firebaseCreateUser(auth, email, password);
+      const userCredential = await firebaseCreateUser(getAuthSafe(), email, password);
 
       // Update display name if provided
       if (displayName) {
@@ -245,7 +256,7 @@ class FirebaseAuthService {
       const googleCredential = GoogleAuthProvider.credential(userInfo.data.idToken);
 
       // Sign in with Firebase using Google credential
-      const userCredential = await signInWithCredential(auth, googleCredential);
+      const userCredential = await signInWithCredential(getAuthSafe(), googleCredential);
 
       // Update display name if provided by Google (only on first sign-in)
       if (userInfo.data.user.name && !userCredential.user.displayName) {
@@ -326,7 +337,7 @@ class FirebaseAuthService {
       const appleCredential = AppleAuthProvider.credential(identityToken);
 
       // Sign in with Firebase
-      const userCredential = await signInWithCredential(auth, appleCredential);
+      const userCredential = await signInWithCredential(getAuthSafe(), appleCredential);
 
       // Update display name if provided by Apple (only on first sign-in)
       if (appleAuthRequestResponse.fullName?.givenName) {
@@ -371,7 +382,7 @@ class FirebaseAuthService {
    */
   async signOutUser(): Promise<void> {
     try {
-      await firebaseSignOut(auth);
+      await firebaseSignOut(getAuthSafe());
     } catch (error) {
       throw error;
     }
@@ -382,7 +393,7 @@ class FirebaseAuthService {
    */
   async sendPasswordReset(email: string): Promise<{ success: boolean; error?: string }> {
     try {
-      await firebaseSendPasswordReset(auth, email);
+      await firebaseSendPasswordReset(getAuthSafe(), email);
       return { success: true };
     } catch (error) {
       return {
@@ -399,7 +410,7 @@ class FirebaseAuthService {
     credentials: PasswordChangeCredentials
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const currentUser = auth.currentUser;
+      const currentUser = getAuthSafe().currentUser;
       if (!currentUser) {
         throw new Error('No user is currently signed in');
       }
@@ -428,7 +439,7 @@ class FirebaseAuthService {
    */
   async sendEmailVerification(): Promise<{ success: boolean; error?: string }> {
     try {
-      const currentUser = auth.currentUser;
+      const currentUser = getAuthSafe().currentUser;
       if (!currentUser) {
         throw new Error('No user is currently signed in');
       }
@@ -447,7 +458,7 @@ class FirebaseAuthService {
    * Get current app user
    */
   getCurrentAppUser(): AppUser | null {
-    const firebaseUser = auth.currentUser;
+    const firebaseUser = getAuthSafe().currentUser;
     return firebaseUser ? this.mapFirebaseUserToAppUser(firebaseUser) : null;
   }
 
@@ -456,7 +467,7 @@ class FirebaseAuthService {
    */
   async getIdToken(forceRefresh?: boolean): Promise<string> {
     try {
-      const currentUser = auth.currentUser;
+      const currentUser = getAuthSafe().currentUser;
       if (!currentUser) {
         throw new Error('No user is currently signed in');
       }
@@ -471,7 +482,7 @@ class FirebaseAuthService {
    * Initialize auth state listener
    */
   initializeAuthStateListener(callback: (user: AppUser | null) => void): () => void {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(getAuthSafe(), (firebaseUser) => {
       const appUser = firebaseUser ? this.mapFirebaseUserToAppUser(firebaseUser) : null;
       callback(appUser);
     });
@@ -485,7 +496,7 @@ class FirebaseAuthService {
    */
   async verifyEmailCode(code: string): Promise<void> {
     try {
-      await applyActionCode(auth, code);
+      await applyActionCode(getAuthSafe(), code);
     } catch (error) {
       throw error;
     }
@@ -496,7 +507,7 @@ class FirebaseAuthService {
    */
   async verifyPasswordResetCode(code: string): Promise<string> {
     try {
-      const email = await firebaseVerifyPasswordResetCode(auth, code);
+      const email = await firebaseVerifyPasswordResetCode(getAuthSafe(), code);
       return email;
     } catch (error) {
       throw error;
@@ -511,7 +522,7 @@ class FirebaseAuthService {
     newPassword: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      await firebaseConfirmPasswordReset(auth, code, newPassword);
+      await firebaseConfirmPasswordReset(getAuthSafe(), code, newPassword);
       return { success: true };
     } catch (error) {
       return {

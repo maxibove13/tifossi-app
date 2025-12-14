@@ -91,129 +91,113 @@ export interface ApiEndpoints {
 }
 
 /**
- * Get API base URL from environment - fail fast if not configured
+ * Get API base URL from environment
+ * Uses a fallback URL in production if env var is missing to prevent crashes
  */
-const getApiBaseUrl = (environment: string): string => {
-  // Check for explicit environment variable
+const getApiBaseUrl = (): string => {
   const envUrl = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
-  if (process.env.NODE_ENV === 'test' && !envUrl) {
-    return 'http://localhost:1337';
-  }
-
-  // In test environment, always provide a default
+  // Test environment - always provide default
   if (process.env.NODE_ENV === 'test') {
     return envUrl || 'http://localhost:1337';
   }
 
-  // In development, allow localhost as fallback for developer convenience
-  if (environment === 'development' && !envUrl) {
+  // If env var is set, use it
+  if (envUrl) {
+    return envUrl;
+  }
+
+  // Development fallback
+  if (currentEnvironment === 'development') {
     safeWarn(
       '⚠️ API URL not configured. Using localhost:1337. Set EXPO_PUBLIC_API_BASE_URL in .env'
     );
     return 'http://localhost:1337';
   }
 
-  // In staging/production, REQUIRE the environment variable
-  if (!envUrl) {
-    const errorMsg = `
-🚨 CONFIGURATION ERROR: API URL is not configured!
-
-You must set one of these environment variables:
-  - EXPO_PUBLIC_API_BASE_URL
-  - EXPO_PUBLIC_BACKEND_URL
-
-For production deployment to Render:
-  EXPO_PUBLIC_API_BASE_URL=https://tifossi-strapi-backend.onrender.com
-
-For local development:
-  EXPO_PUBLIC_API_BASE_URL=http://localhost:1337
-
-Please create a .env file or set the environment variable before building.
-`;
-
-    safeError(errorMsg);
-    throw new Error('API_URL_NOT_CONFIGURED: Missing required environment variable');
-  }
-
-  return envUrl;
+  // Production/staging fallback - use production URL to prevent crash
+  // This ensures the app doesn't crash if env var wasn't properly inlined at build time
+  safeWarn('⚠️ API URL not configured, using production fallback');
+  return 'https://tifossi-strapi-backend.onrender.com';
 };
 
 /**
- * Environment-specific endpoint configurations
+ * Create endpoint configuration
+ * Single configuration used for all environments - baseUrl is determined by env var
  */
-const endpointConfigurations: Record<string, ApiEndpoints> = {
-  development: {
-    baseUrl: getApiBaseUrl('development'),
-    apiVersion: 'v1',
-    timeout: config.apiTimeout,
+const createEndpointConfig = (): ApiEndpoints => ({
+  baseUrl: getApiBaseUrl(),
+  apiVersion: 'v1',
+  timeout: config.apiTimeout,
 
-    products: '/api/products',
-    product: (id: string) => `/api/products/${id}`,
-    categories: '/api/categories',
-    search: '/api/search',
+  products: '/api/products',
+  product: (id: string) => `/api/products/${id}`,
+  categories: '/api/categories',
+  search: '/api/search',
 
-    auth: {
-      login: '/api/auth/local',
-      register: '/api/auth/local/register',
-      logout: '/api/auth/logout',
-      refresh: '/api/auth/refresh',
-      verify: '/api/auth/verify-email',
-      resendVerification: '/api/auth/resend-verification',
-      forgotPassword: '/api/auth/forgot-password',
-      resetPassword: '/api/auth/reset-password',
-      validateToken: '/api/auth/validate',
+  auth: {
+    login: '/api/auth/local',
+    register: '/api/auth/local/register',
+    logout: '/api/auth/logout',
+    refresh: '/api/auth/refresh',
+    verify: '/api/auth/verify-email',
+    resendVerification: '/api/auth/resend-verification',
+    forgotPassword: '/api/auth/forgot-password',
+    resetPassword: '/api/auth/reset-password',
+    validateToken: '/api/auth/validate',
+  },
+
+  user: {
+    profile: '/api/users/me',
+    updateProfile: '/api/user-profile/me',
+    updatePassword: '/api/users/me/password',
+    updateAvatar: '/api/users/me/avatar',
+    preferences: '/api/users/me/preferences',
+  },
+
+  cart: {
+    sync: '/api/user-profile/me',
+    add: '/api/cart/add',
+    remove: '/api/cart/remove',
+    update: '/api/cart/update',
+    clear: '/api/cart/clear',
+  },
+
+  favorites: {
+    sync: '/api/user-profile/me',
+    add: '/api/favorites/add',
+    remove: '/api/favorites/remove',
+    list: '/api/favorites',
+  },
+
+  orders: {
+    create: '/api/orders',
+    list: '/api/orders',
+    details: (id: string) => `/api/orders/${id}`,
+    cancel: (id: string) => `/api/orders/${id}/cancel`,
+    track: (id: string) => `/api/orders/${id}/track`,
+  },
+
+  payment: {
+    process: '/api/payments/process',
+    status: (id: string) => `/api/payments/${id}/status`,
+    webhook: '/api/payments/webhook',
+    mercadoPago: {
+      createPreference: '/api/payments/mercadopago/preference',
+      getPayment: (id: string) => `/api/payments/mercadopago/${id}`,
+      webhook: '/api/payments/mercadopago/webhook',
     },
+  },
 
-    user: {
-      profile: '/api/users/me', // GET - built-in Strapi endpoint
-      updateProfile: '/api/user-profile/me', // PUT - custom endpoint (avoids plugin route collision)
-      updatePassword: '/api/users/me/password',
-      updateAvatar: '/api/users/me/avatar',
-      preferences: '/api/users/me/preferences',
-    },
+  content: {
+    banners: '/api/banners',
+    promotions: '/api/promotions',
+    blog: '/api/blog',
+    pages: '/api/pages',
+  },
 
-    cart: {
-      sync: '/api/user-profile/me', // PUT with { cart: [...] } - custom endpoint
-      add: '/api/cart/add',
-      remove: '/api/cart/remove',
-      update: '/api/cart/update',
-      clear: '/api/cart/clear',
-    },
-
-    favorites: {
-      sync: '/api/user-profile/me', // PUT with { favorites: { set: [...] } } - custom endpoint
-      add: '/api/favorites/add',
-      remove: '/api/favorites/remove',
-      list: '/api/favorites',
-    },
-
-    orders: {
-      create: '/api/orders',
-      list: '/api/orders',
-      details: (id: string) => `/api/orders/${id}`,
-      cancel: (id: string) => `/api/orders/${id}/cancel`,
-      track: (id: string) => `/api/orders/${id}/track`,
-    },
-
-    payment: {
-      process: '/api/payments/process',
-      status: (id: string) => `/api/payments/${id}/status`,
-      webhook: '/api/payments/webhook',
-      mercadoPago: {
-        createPreference: '/api/payments/mercadopago/preference',
-        getPayment: (id: string) => `/api/payments/mercadopago/${id}`,
-        webhook: '/api/payments/mercadopago/webhook',
-      },
-    },
-
-    content: {
-      banners: '/api/banners',
-      promotions: '/api/promotions',
-      blog: '/api/blog',
-      pages: '/api/pages',
-    },
-
+  // Admin endpoints only in non-production
+  ...(currentEnvironment !== 'production' && {
     admin: {
       dashboard: '/api/admin/dashboard',
       analytics: '/api/admin/analytics',
@@ -221,167 +205,13 @@ const endpointConfigurations: Record<string, ApiEndpoints> = {
       products: '/api/admin/products',
       orders: '/api/admin/orders',
     },
-  },
-
-  staging: {
-    baseUrl: getApiBaseUrl('staging'),
-    apiVersion: 'v1',
-    timeout: config.apiTimeout,
-
-    products: '/api/products',
-    product: (id: string) => `/api/products/${id}`,
-    categories: '/api/categories',
-    search: '/api/search',
-
-    auth: {
-      login: '/api/auth/local',
-      register: '/api/auth/local/register',
-      logout: '/api/auth/logout',
-      refresh: '/api/auth/refresh',
-      verify: '/api/auth/verify-email',
-      resendVerification: '/api/auth/resend-verification',
-      forgotPassword: '/api/auth/forgot-password',
-      resetPassword: '/api/auth/reset-password',
-      validateToken: '/api/auth/validate',
-    },
-
-    user: {
-      profile: '/api/users/me', // GET - built-in Strapi endpoint
-      updateProfile: '/api/user-profile/me', // PUT - custom endpoint (avoids plugin route collision)
-      updatePassword: '/api/users/me/password',
-      updateAvatar: '/api/users/me/avatar',
-      preferences: '/api/users/me/preferences',
-    },
-
-    cart: {
-      sync: '/api/user-profile/me', // PUT with { cart: [...] } - custom endpoint
-      add: '/api/cart/add',
-      remove: '/api/cart/remove',
-      update: '/api/cart/update',
-      clear: '/api/cart/clear',
-    },
-
-    favorites: {
-      sync: '/api/user-profile/me', // PUT with { favorites: { set: [...] } } - custom endpoint
-      add: '/api/favorites/add',
-      remove: '/api/favorites/remove',
-      list: '/api/favorites',
-    },
-
-    orders: {
-      create: '/api/orders',
-      list: '/api/orders',
-      details: (id: string) => `/api/orders/${id}`,
-      cancel: (id: string) => `/api/orders/${id}/cancel`,
-      track: (id: string) => `/api/orders/${id}/track`,
-    },
-
-    payment: {
-      process: '/api/payments/process',
-      status: (id: string) => `/api/payments/${id}/status`,
-      webhook: '/api/payments/webhook',
-      mercadoPago: {
-        createPreference: '/api/payments/mercadopago/preference',
-        getPayment: (id: string) => `/api/payments/mercadopago/${id}`,
-        webhook: '/api/payments/mercadopago/webhook',
-      },
-    },
-
-    content: {
-      banners: '/api/banners',
-      promotions: '/api/promotions',
-      blog: '/api/blog',
-      pages: '/api/pages',
-    },
-
-    admin: {
-      dashboard: '/api/admin/dashboard',
-      analytics: '/api/admin/analytics',
-      users: '/api/admin/users',
-      products: '/api/admin/products',
-      orders: '/api/admin/orders',
-    },
-  },
-
-  production: {
-    baseUrl: getApiBaseUrl('production'),
-    apiVersion: 'v1',
-    timeout: config.apiTimeout,
-
-    products: '/api/products',
-    product: (id: string) => `/api/products/${id}`,
-    categories: '/api/categories',
-    search: '/api/search',
-
-    auth: {
-      login: '/api/auth/local',
-      register: '/api/auth/local/register',
-      logout: '/api/auth/logout',
-      refresh: '/api/auth/refresh',
-      verify: '/api/auth/verify-email',
-      resendVerification: '/api/auth/resend-verification',
-      forgotPassword: '/api/auth/forgot-password',
-      resetPassword: '/api/auth/reset-password',
-      validateToken: '/api/auth/validate',
-    },
-
-    user: {
-      profile: '/api/users/me', // GET - built-in Strapi endpoint
-      updateProfile: '/api/user-profile/me', // PUT - custom endpoint (avoids plugin route collision)
-      updatePassword: '/api/users/me/password',
-      updateAvatar: '/api/users/me/avatar',
-      preferences: '/api/users/me/preferences',
-    },
-
-    cart: {
-      sync: '/api/user-profile/me', // PUT with { cart: [...] } - custom endpoint
-      add: '/api/cart/add',
-      remove: '/api/cart/remove',
-      update: '/api/cart/update',
-      clear: '/api/cart/clear',
-    },
-
-    favorites: {
-      sync: '/api/user-profile/me', // PUT with { favorites: { set: [...] } } - custom endpoint
-      add: '/api/favorites/add',
-      remove: '/api/favorites/remove',
-      list: '/api/favorites',
-    },
-
-    orders: {
-      create: '/api/orders',
-      list: '/api/orders',
-      details: (id: string) => `/api/orders/${id}`,
-      cancel: (id: string) => `/api/orders/${id}/cancel`,
-      track: (id: string) => `/api/orders/${id}/track`,
-    },
-
-    payment: {
-      process: '/api/payments/process',
-      status: (id: string) => `/api/payments/${id}/status`,
-      webhook: '/api/payments/webhook',
-      mercadoPago: {
-        createPreference: '/api/payments/mercadopago/preference',
-        getPayment: (id: string) => `/api/payments/mercadopago/${id}`,
-        webhook: '/api/payments/mercadopago/webhook',
-      },
-    },
-
-    content: {
-      banners: '/api/banners',
-      promotions: '/api/promotions',
-      blog: '/api/blog',
-      pages: '/api/pages',
-    },
-
-    // No admin endpoints in production for security
-  },
-};
+  }),
+});
 
 /**
  * Current endpoints configuration
  */
-export const endpoints = endpointConfigurations[currentEnvironment];
+export const endpoints = createEndpointConfig();
 
 /**
  * URL builder utilities
