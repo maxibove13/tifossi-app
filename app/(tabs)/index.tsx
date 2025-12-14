@@ -123,13 +123,8 @@ function HomeScreen() {
             ...current,
             highlightedProducts: loadedAssets.highlightedProducts,
           }));
-
-          // Mark this section as loaded
-          setSectionLoadingState((current) => ({
-            ...current,
-            highlighted: false,
-          }));
         }
+        setSectionLoadingState((current) => ({ ...current, highlighted: false }));
 
         // Short delay before showing featured product (feels more natural)
         setTimeout(() => {
@@ -138,13 +133,9 @@ function HomeScreen() {
               ...current,
               featuredProduct: loadedAssets.featuredProduct,
             }));
-
-            setSectionLoadingState((current) => ({
-              ...current,
-              featured: false,
-            }));
           }
-        }, 100); // Very small delay for staggered effect
+          setSectionLoadingState((current) => ({ ...current, featured: false }));
+        }, 100);
 
         // Second wave: Recommended products (mid-priority)
         setTimeout(() => {
@@ -153,64 +144,51 @@ function HomeScreen() {
               ...current,
               recommendedProducts: loadedAssets.recommendedProducts,
             }));
-
-            setSectionLoadingState((current) => ({
-              ...current,
-              recommended: false,
-            }));
           }
+          setSectionLoadingState((current) => ({ ...current, recommended: false }));
         }, 200);
 
         // Third wave: Lower priority content with staggered updates
         setTimeout(() => {
-          // Update trending products
           if (loadedAssets.trendingProducts.length > 0) {
             setData((current) => ({
               ...current,
               trendingProducts: loadedAssets.trendingProducts,
             }));
-
-            setSectionLoadingState((current) => ({
-              ...current,
-              trending: false,
-            }));
           }
+          setSectionLoadingState((current) => ({ ...current, trending: false }));
         }, 300);
 
         setTimeout(() => {
-          // Update new releases
           if (loadedAssets.newReleases.length > 0) {
             setData((current) => ({
               ...current,
               newReleases: loadedAssets.newReleases,
             }));
-
-            setSectionLoadingState((current) => ({
-              ...current,
-              newReleases: false,
-            }));
           }
+          setSectionLoadingState((current) => ({ ...current, newReleases: false }));
         }, 400);
 
         setTimeout(() => {
-          // Update launch & opportunity products
           if (loadedAssets.launchAndOpportunityProducts.length > 0) {
             setData((current) => ({
               ...current,
               launchAndOpportunityProducts: loadedAssets.launchAndOpportunityProducts,
             }));
-
-            setSectionLoadingState((current) => ({
-              ...current,
-              launchOpportunity: false,
-            }));
           }
-
-          // Exit global loading state once all sections have started updating
+          setSectionLoadingState((current) => ({ ...current, launchOpportunity: false }));
           setIsLoading(false);
         }, 500);
       } catch {
-        // Ensure we exit loading state even if some data fails to load
+        // Ensure we exit all loading states even if data fails to load
+        setSectionLoadingState({
+          highlighted: false,
+          featured: false,
+          recommended: false,
+          trending: false,
+          newReleases: false,
+          launchOpportunity: false,
+        });
         setIsLoading(false);
       }
     };
@@ -432,7 +410,7 @@ function HomeScreen() {
         >
           <View style={styles.launchSection}>
             <View style={styles.launchHeader}>
-              <Text style={styles.launchTitle}>Oportunidades</Text>
+              <Text style={styles.launchTitle}>Lanzamiento & Oportunidades</Text>
               <Pressable onPress={() => handleViewMore('opportunity')}>
                 <Text style={styles.launchViewMore}>Ver Más</Text>
               </Pressable>

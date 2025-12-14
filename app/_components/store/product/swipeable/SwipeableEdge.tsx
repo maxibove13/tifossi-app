@@ -16,6 +16,7 @@ import BottomSheet, {
   useBottomSheet,
 } from '@gorhom/bottom-sheet';
 import Animated, { useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
@@ -171,6 +172,7 @@ const SwipeableEdge = ({
 }: SwipeableEdgeProps) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const { width: deviceWidth } = Dimensions.get('window');
+  const { bottom: bottomSafeArea } = useSafeAreaInsets();
 
   const [expanded, setExpanded] = useState(false);
   const [quantity, setQuantity] = useState<number>(quantityProp ?? 1);
@@ -199,8 +201,11 @@ const SwipeableEdge = ({
     if (measuredHeaderHeight === null) {
       return undefined;
     }
-    return Math.max(measuredHeaderHeight + COLLAPSED_EXTRA_PADDING, MIN_COLLAPSED_SNAP_HEIGHT);
-  }, [measuredHeaderHeight]);
+    return Math.max(
+      measuredHeaderHeight + COLLAPSED_EXTRA_PADDING + bottomSafeArea,
+      MIN_COLLAPSED_SNAP_HEIGHT
+    );
+  }, [measuredHeaderHeight, bottomSafeArea]);
 
   const snapPoints = useMemo(() => {
     return collapsedSnap ? [collapsedSnap, '100%'] : [];

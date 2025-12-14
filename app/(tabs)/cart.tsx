@@ -214,6 +214,7 @@ export default function CartScreen() {
         contentContainerStyle={[
           styles.scrollContent,
           isEmpty && styles.scrollContentEmpty, // Apply light background when empty
+          !isEmpty && !isLoggedIn && styles.scrollContentWithAuthPrompt, // Extra padding for auth prompt
         ]}
       >
         {isEmpty ? (
@@ -366,6 +367,9 @@ const styles = StyleSheet.create({
   },
   scrollContentEmpty: {
     backgroundColor: colors.background.light,
+  },
+  scrollContentWithAuthPrompt: {
+    paddingBottom: 320, // Extra padding to account for auth prompt height
   },
   section: {
     paddingVertical: spacing.xl,
