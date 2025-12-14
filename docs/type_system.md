@@ -98,7 +98,6 @@ Product statuses and labels are defined using TypeScript enums:
 ```typescript
 enum ProductStatus {
   NEW = 'new',
-  SALE = 'sale',
   FEATURED = 'featured',
   OPPORTUNITY = 'opportunity',
   RECOMMENDED = 'recommended',
@@ -111,7 +110,6 @@ enum ProductLabel {
   NEW = 'Nuevo',
   FEATURED = 'Destacado',
   OPPORTUNITY = 'Oportunidad',
-  SALE = 'Descuento',
   RECOMMENDED = 'Recomendado',
   POPULAR = 'Popular',
   APP_EXCLUSIVE = 'Exclusivo in-app',
@@ -120,6 +118,8 @@ enum ProductLabel {
 ```
 
 These enums are used with type guard functions like `isValidStatus()` and `isValidLabel()` for runtime validation.
+
+**Note:** Discounted products are identified by checking `discountedPrice < price`, not by a status flag. The special "Descuentos" category (`CATEGORY_IDS.DISCOUNTED` in `app/_types/constants.ts`) filters products using this price comparison instead of status-based filtering.
 
 ### 3. Product Card System
 

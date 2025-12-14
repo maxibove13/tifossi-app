@@ -692,6 +692,46 @@ class StrapiApiService {
     }
   }
 
+  // --- Cart Validation Methods ---
+
+  /**
+   * Checks which product IDs still exist in the backend
+   * Used for validating cart items against deleted products
+   */
+  async checkProductsExist(productIds: string[]): Promise<Set<string>> {
+    if (productIds.length === 0) {
+      return new Set();
+    }
+
+    try {
+      // Build filter for multiple documentIds using Strapi's $in operator
+      const filterParams = productIds
+        .map((id, index) => `filters[documentId][$in][${index}]=${encodeURIComponent(id)}`)
+        .join('&');
+
+      const response = await httpClient.get<StrapiResponse<StrapiProduct[]>>(
+        `/products?${filterParams}&fields[0]=documentId`
+      );
+
+      const existingIds = new Set<string>();
+      if (response.data && Array.isArray(response.data)) {
+        response.data.forEach((product: any) => {
+          if (product.documentId) {
+            existingIds.add(product.documentId);
+          }
+        });
+      }
+
+      return existingIds;
+    } catch (error) {
+      // On error, assume all products exist to avoid accidentally clearing cart
+      if (__DEV__) {
+        console.warn('Failed to validate cart products:', error);
+      }
+      return new Set(productIds);
+    }
+  }
+
   // --- Utility Methods ---
 
   /**
@@ -737,6 +777,7 @@ const strapiApiExport = {
   changePassword: strapiApi.changePassword.bind(strapiApi),
   updateProfilePicture: strapiApi.updateProfilePicture.bind(strapiApi),
   syncUserData: strapiApi.syncUserData.bind(strapiApi),
+  checkProductsExist: strapiApi.checkProductsExist.bind(strapiApi),
 
   // Additional utility methods
   setCacheEnabled: strapiApi.setCacheEnabled.bind(strapiApi),

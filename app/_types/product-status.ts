@@ -4,7 +4,6 @@
  */
 export enum ProductStatus {
   NEW = 'new',
-  SALE = 'sale',
   FEATURED = 'featured',
   OPPORTUNITY = 'opportunity',
   RECOMMENDED = 'recommended',
@@ -21,7 +20,6 @@ export enum ProductLabel {
   NEW = 'Nuevo',
   FEATURED = 'Destacado',
   OPPORTUNITY = 'Oportunidad',
-  SALE = 'Descuento',
   RECOMMENDED = 'Recomendado',
   POPULAR = 'Popular',
   APP_EXCLUSIVE = 'Exclusivo in-app',
@@ -36,7 +34,6 @@ export type ProductLabelType = keyof typeof ProductLabel;
 
 export const STATUS_TO_LABEL: Record<ProductStatus, ProductLabel> = {
   [ProductStatus.NEW]: ProductLabel.NEW,
-  [ProductStatus.SALE]: ProductLabel.SALE,
   [ProductStatus.FEATURED]: ProductLabel.FEATURED,
   [ProductStatus.OPPORTUNITY]: ProductLabel.OPPORTUNITY,
   [ProductStatus.RECOMMENDED]: ProductLabel.RECOMMENDED,
@@ -47,7 +44,6 @@ export const STATUS_TO_LABEL: Record<ProductStatus, ProductLabel> = {
 
 export const LABEL_TO_STATUS: Record<ProductLabel, ProductStatus> = {
   [ProductLabel.NEW]: ProductStatus.NEW,
-  [ProductLabel.SALE]: ProductStatus.SALE,
   [ProductLabel.FEATURED]: ProductStatus.FEATURED,
   [ProductLabel.OPPORTUNITY]: ProductStatus.OPPORTUNITY,
   [ProductLabel.RECOMMENDED]: ProductStatus.RECOMMENDED,
@@ -102,7 +98,6 @@ export const STATUS_PRIORITY: ProductStatus[] = [
   ProductStatus.RECOMMENDED,
   ProductStatus.FEATURED,
   ProductStatus.OPPORTUNITY,
-  ProductStatus.SALE,
   ProductStatus.NEW,
   ProductStatus.APP_EXCLUSIVE,
   ProductStatus.HIGHLIGHTED, // Highest priority
