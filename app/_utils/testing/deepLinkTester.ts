@@ -16,41 +16,39 @@ export interface TestCase {
 }
 
 export const deepLinkTestCases: TestCase[] = [
-  // Payment callback tests
+  // Payment callback tests - now using direct /checkout/payment-result URL format
   {
     name: 'Payment Success',
-    url: 'tifossi://payment/success?payment_id=123456789&external_reference=TIF-20241201-123456&collection_id=987654321',
+    url: 'tifossi://checkout/payment-result?paymentSuccess=true&order_id=123&external_reference=TIF-20241201-123456&payment_id=123456789',
     expectedRoute: '/checkout/payment-result',
     expectedParams: {
       paymentSuccess: 'true',
-      paymentId: '123456789',
-      orderId: 'TIF-20241201-123456',
-      collectionId: '987654321',
+      payment_id: '123456789',
+      external_reference: 'TIF-20241201-123456',
     },
-    description: 'Test successful payment callback from MercadoPago',
+    description: 'Test successful payment callback from MercadoPago (direct expo-router)',
   },
   {
     name: 'Payment Failure',
-    url: 'tifossi://payment/failure?payment_id=123456789&external_reference=TIF-20241201-123456&error=Payment rejected',
+    url: 'tifossi://checkout/payment-result?paymentFailure=true&order_id=123&external_reference=TIF-20241201-123456&payment_id=123456789',
     expectedRoute: '/checkout/payment-result',
     expectedParams: {
       paymentFailure: 'true',
-      paymentId: '123456789',
-      orderId: 'TIF-20241201-123456',
-      error: 'Payment rejected',
+      payment_id: '123456789',
+      external_reference: 'TIF-20241201-123456',
     },
-    description: 'Test failed payment callback from MercadoPago',
+    description: 'Test failed payment callback from MercadoPago (direct expo-router)',
   },
   {
     name: 'Payment Pending',
-    url: 'tifossi://payment/pending?payment_id=123456789&external_reference=TIF-20241201-123456',
+    url: 'tifossi://checkout/payment-result?paymentPending=true&order_id=123&external_reference=TIF-20241201-123456&payment_id=123456789',
     expectedRoute: '/checkout/payment-result',
     expectedParams: {
       paymentPending: 'true',
-      paymentId: '123456789',
-      orderId: 'TIF-20241201-123456',
+      payment_id: '123456789',
+      external_reference: 'TIF-20241201-123456',
     },
-    description: 'Test pending payment callback from MercadoPago',
+    description: 'Test pending payment callback from MercadoPago (direct expo-router)',
   },
 
   // Product link tests
@@ -136,14 +134,14 @@ export const deepLinkTestCases: TestCase[] = [
   },
   {
     name: 'Web Payment Success',
-    url: 'https://pay.tifossi.app/payment/success?payment_id=web123&external_reference=WEB-123',
+    url: 'https://pay.tifossi.app/checkout/payment-result?paymentSuccess=true&order_id=123&external_reference=WEB-123&payment_id=web123',
     expectedRoute: '/checkout/payment-result',
     expectedParams: {
       paymentSuccess: 'true',
-      paymentId: 'web123',
-      orderId: 'WEB-123',
+      payment_id: 'web123',
+      external_reference: 'WEB-123',
     },
-    description: 'Test web-based payment callback',
+    description: 'Test web-based payment callback (direct expo-router)',
   },
 
   // Auth deep link tests (handled by auth service)
@@ -238,7 +236,7 @@ export class DeepLinkTester {
     const categoryTests = deepLinkTestCases.filter((test) => {
       switch (category) {
         case 'payment':
-          return test.url.includes('/payment/');
+          return test.url.includes('payment-result') || test.name.toLowerCase().includes('payment');
         case 'product':
           return test.url.includes('/product/');
         case 'category':

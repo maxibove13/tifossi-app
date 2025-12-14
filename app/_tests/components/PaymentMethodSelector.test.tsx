@@ -53,14 +53,6 @@ mockAlert.mockImplementation(() => {});
 // Mock SVG components
 jest.mock('../../../assets/icons/close.svg', () => 'CloseIcon');
 
-// Mock payment deep links
-jest.mock('../../_utils/payment/deepLinkHandler', () => ({
-  PaymentDeepLinks: {
-    initialize: jest.fn(),
-    stopListening: jest.fn(),
-  },
-}));
-
 const httpClientMock = httpClient as HttpClientMock;
 const webBrowserMock = require('expo-web-browser');
 const defaultHttpGet = httpClientMock.get.getMockImplementation();

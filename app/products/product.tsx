@@ -120,8 +120,9 @@ export default function ProductScreen() {
   };
 
   const handleSupportAction = (action: 'chat' | 'faq' | 'call') => {
-    if (action === 'call' && appSettings?.supportPhoneNumber) {
-      Linking.openURL(`tel:${appSettings.supportPhoneNumber}`);
+    if (action === 'call') {
+      const phoneNumber = appSettings?.supportPhoneNumber || '+59899000000';
+      Linking.openURL(`tel:${phoneNumber}`);
     }
   };
 
@@ -174,13 +175,6 @@ export default function ProductScreen() {
 
   // Use longDescription directly, no fallback to description
   const longDescription = product.longDescription;
-
-  // DEBUG LOG
-  console.warn('product.tsx passing to SwipeableEdge:', {
-    productTitle: product.title,
-    sizesLength: product.sizes?.length,
-    sizes: product.sizes,
-  });
 
   return (
     <View style={styles.container}>

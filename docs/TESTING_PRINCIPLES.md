@@ -1188,9 +1188,9 @@ describe('Revenue-Critical: MercadoPago Real Sandbox Tests', () => {
         external_reference: 'ORDER-TEST-' + Date.now(),
         notification_url: 'https://api.tifossi.com.uy/webhooks/mercadopago',
         back_urls: {
-          success: 'tifossi://payment/success',
-          failure: 'tifossi://payment/failure',
-          pending: 'tifossi://payment/pending'
+          success: 'tifossi://checkout/payment-result?paymentSuccess=true',
+          failure: 'tifossi://checkout/payment-result?paymentFailure=true',
+          pending: 'tifossi://checkout/payment-result?paymentPending=true'
         }
       });
 

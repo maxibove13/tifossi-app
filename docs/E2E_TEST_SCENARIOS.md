@@ -194,8 +194,9 @@ See [E2E_PAYMENT_TESTING.md](./E2E_PAYMENT_TESTING.md) for payment flow details.
 |----------|---------|----------|
 | Home | `tifossi://` | Home screen |
 | Product | `tifossi://products/{id}` | Product detail |
-| Payment success | `tifossi://payment/success?...` | Success screen |
-| Payment failure | `tifossi://payment/failure?...` | Failure screen |
+| Payment success | `tifossi://checkout/payment-result?paymentSuccess=true&...` | Success screen |
+| Payment failure | `tifossi://checkout/payment-result?paymentFailure=true&...` | Failure screen |
+| Payment pending | `tifossi://checkout/payment-result?paymentPending=true&...` | Pending screen |
 
 ---
 

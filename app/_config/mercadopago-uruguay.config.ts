@@ -198,9 +198,9 @@ export const createTestPreferenceData = (overrides: any = {}) => {
     external_reference: orderRef,
     notification_url: process.env.TEST_WEBHOOK_URL || 'http://localhost:1337/webhooks/mercadopago',
     back_urls: {
-      success: `${process.env.APP_SCHEME || 'tifossi'}://payment/success`,
-      failure: `${process.env.APP_SCHEME || 'tifossi'}://payment/failure`,
-      pending: `${process.env.APP_SCHEME || 'tifossi'}://payment/pending`,
+      success: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentSuccess=true`,
+      failure: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentFailure=true`,
+      pending: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentPending=true`,
     },
     auto_return: 'approved',
     binary_mode: false,

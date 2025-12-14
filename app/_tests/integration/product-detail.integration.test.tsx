@@ -242,17 +242,31 @@ describe('Product Detail Flow - Integration', () => {
       });
     });
 
-    // Skip sizes test as they're now properly rendered in test mode
-    it('should display available sizes', async () => {
-      const { getByTestId } = render(
+    // Sizes are now selected via overlay, not inline on product page
+    // This test verifies the overlay size selection flow instead
+    it('should display size selection via overlay', async () => {
+      const { getByTestId, getByText, getAllByText } = render(
         <TestWrapper>
           <ProductDetailScreen />
         </TestWrapper>
       );
 
+      // Wait for page to load
       await waitFor(() => {
-        // Check that at least one size is visible
-        expect(getByTestId('size-option-S')).toBeTruthy();
+        expect(getByText('Agregar al carrito')).toBeTruthy();
+      });
+
+      // Press add to cart to open overlay
+      const addToCartButton = getByTestId('add-to-cart-button');
+      await act(async () => {
+        fireEvent.press(addToCartButton);
+      });
+
+      // Overlay should show "Talle" selection option
+      // Note: May show "Listo" if size is pre-selected, or "Seleccionar" if not
+      await waitFor(() => {
+        expect(getByText('Talle')).toBeTruthy();
+        expect(getByText('Cantidad')).toBeTruthy();
       });
     });
   });
@@ -328,33 +342,32 @@ describe('Product Detail Flow - Integration', () => {
       // In real implementation, this would update the selected color state
     });
 
-    it('should select size variant', async () => {
-      const { getByTestId } = render(
+    // Sizes are now selected via overlay - testing the overlay interaction
+    it('should open size overlay when tapping size selection', async () => {
+      const { getByTestId, getByText, getAllByText } = render(
         <TestWrapper>
           <ProductDetailScreen />
         </TestWrapper>
       );
 
+      // Wait for page to load
       await waitFor(() => {
-        expect(getByTestId('size-option-L')).toBeTruthy();
+        expect(getByText('Agregar al carrito')).toBeTruthy();
       });
 
-      // Select size
-      const largeSizeOption = getByTestId('size-option-L');
-      let pressableParent = largeSizeOption as any;
-
-      while (pressableParent && typeof pressableParent.props?.onPress !== 'function') {
-        pressableParent = pressableParent.parent;
-      }
-
-      expect(typeof pressableParent?.props?.onPress).toBe('function');
-
-      act(() => {
-        pressableParent.props.onPress();
+      // Press add to cart to open checkout overlay
+      const addToCartButton = getByTestId('add-to-cart-button');
+      await act(async () => {
+        fireEvent.press(addToCartButton);
       });
 
-      // Size should be selected
-      // In real implementation, this would update the selected size state
+      // Wait for overlay to show
+      await waitFor(() => {
+        expect(getByText('Talle')).toBeTruthy();
+      });
+
+      // The overlay provides size selection interaction
+      // Note: Full size selection is tested via completeAddToCartFlow helper
     });
   });
 
@@ -609,7 +622,7 @@ describe('Product Detail Flow - Integration', () => {
 
   describe('Complete Purchase Journey from Product', () => {
     it('should complete flow from product view to cart', async () => {
-      const { getAllByText, getByTestId } = render(
+      const { getAllByText, getByTestId, getByText } = render(
         <TestWrapper>
           <ProductDetailScreen />
         </TestWrapper>
@@ -623,32 +636,14 @@ describe('Product Detail Flow - Integration', () => {
       const colorOption = getByTestId('color-option-azul');
       fireEvent.press(colorOption);
 
-      const sizeOptionNode = getByTestId('size-option-L');
-      let pressableWrapper = sizeOptionNode as any;
-
-      while (pressableWrapper && typeof pressableWrapper.props?.onPress !== 'function') {
-        pressableWrapper = pressableWrapper.parent;
-      }
-
-      expect(typeof pressableWrapper?.props?.onPress).toBe('function');
-
-      act(() => {
-        pressableWrapper.props.onPress();
-      });
-
-      await waitFor(() => {
-        const selectedSizeChip = getByTestId('size-option-L');
-        expect(selectedSizeChip.props.accessibilityState?.selected).toBe(true);
-      });
-
+      // Size selection now happens via overlay, not inline
       // Complete the add-to-cart flow including overlay interaction
       await completeAddToCartFlow(getByTestId, getAllByText);
 
       await waitFor(() => {
         const cartState = useCartStore.getState();
         expect(cartState.items).toHaveLength(1);
-        // Note: The overlay uses its own internal size state (default 'S')
-        // rather than syncing with pre-selected size from product page
+        // The overlay handles size/quantity selection internally
         expect(cartState.items[0]).toMatchObject({
           productId: 'prod-1',
           quantity: 1,

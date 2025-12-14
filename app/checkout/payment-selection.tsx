@@ -27,7 +27,6 @@ import { fontWeights } from '../_styles/typography';
 import { useCartStore } from '../_stores/cartStore';
 import { usePaymentStore } from '../_stores/paymentStore';
 import { useAuthStore } from '../_stores/authStore';
-import { PaymentDeepLinks } from '../_utils/payment/deepLinkHandler';
 import addressService, { Address } from '../_services/address/addressService';
 import mercadoPagoService, { OrderData } from '../_services/payment/mercadoPago';
 
@@ -81,21 +80,6 @@ export default function PaymentSelectionScreen() {
 
     fetchSelectedAddress();
   }, [selectedAddressId, token]);
-
-  // Initialize deep link handler for payment callbacks
-  useEffect(() => {
-    PaymentDeepLinks.initialize({
-      onPaymentSuccess: (_data) => {
-        // Navigation will be handled by deep link handler
-      },
-      onPaymentFailure: (_data) => {},
-      onPaymentPending: (_data) => {},
-    });
-
-    return () => {
-      PaymentDeepLinks.stopListening();
-    };
-  }, []);
 
   // Clear payment state when leaving screen
   useEffect(() => {

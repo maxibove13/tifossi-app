@@ -1,5 +1,4 @@
 import { StyleSheet, View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, typography, radius } from './styles';
 
 interface ProductInfoHeaderProps {
@@ -25,8 +24,8 @@ export default function ProductInfoHeader({
 }: ProductInfoHeaderProps) {
   return (
     <View style={styles.container}>
-      {/* Discount Label - Top Row */}
-      {isDiscounted && <Text style={styles.discountLabel}>Descuento</Text>}
+      {/* Discount Label - Top Row (always reserve space for consistent height) */}
+      <Text style={[styles.discountLabel, !isDiscounted && styles.hidden]}>Descuento</Text>
 
       {/* Product Name and Current Price - Middle Row */}
       <View style={styles.titleRow}>
@@ -34,34 +33,31 @@ export default function ProductInfoHeader({
         <Text style={styles.currentPrice}>{currentPrice}</Text>
       </View>
 
-      {/* Personalizable and Original Price - Bottom Row */}
+      {/* Personalizable and Original Price - Bottom Row (always reserve space) */}
       <View style={styles.detailsRow}>
         <View style={styles.leftColumn}>
-          {isCustomizable && <Text style={styles.featureLabel}>Personalizable</Text>}
+          <Text style={[styles.featureLabel, !isCustomizable && styles.hidden]}>
+            Personalizable
+          </Text>
         </View>
         <View style={styles.rightColumn}>
-          {originalPrice && <Text style={styles.originalPrice}>{originalPrice}</Text>}
+          <Text style={[styles.originalPrice, !originalPrice && styles.hidden]}>
+            {originalPrice || '$0'}
+          </Text>
         </View>
       </View>
 
       {/* Add to Cart Button */}
       <TouchableOpacity
-        style={styles.addToCartButtonContainer}
+        style={[styles.addToCartButton, disabled && styles.addToCartButtonDisabled]}
         onPress={onAddToCart}
         activeOpacity={0.8}
         disabled={disabled}
         testID="add-to-cart-button"
       >
-        <LinearGradient
-          colors={[colors.secondary.gradientStart, colors.secondary.gradientEnd]}
-          style={styles.addToCartButton}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
-            {addToCartLabel}
-          </Text>
-        </LinearGradient>
+        <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
+          {addToCartLabel}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -78,10 +74,11 @@ type Styles = {
   featureLabel: TextStyle;
   currentPrice: TextStyle;
   originalPrice: TextStyle;
-  addToCartButtonContainer: ViewStyle;
   addToCartButton: ViewStyle;
+  addToCartButtonDisabled: ViewStyle;
   buttonText: TextStyle;
   buttonTextDisabled: TextStyle;
+  hidden: TextStyle;
 };
 
 const styles = StyleSheet.create<Styles>({
@@ -145,29 +142,31 @@ const styles = StyleSheet.create<Styles>({
     textAlign: 'right',
     textDecorationLine: 'line-through',
   },
-  addToCartButtonContainer: {
+  addToCartButton: {
     width: '100%',
     height: 48,
     borderRadius: radius.xxl,
-    overflow: 'hidden',
     marginTop: spacing.md,
-  },
-  addToCartButton: {
-    width: '100%',
-    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
-    opacity: 1,
+    backgroundColor: colors.background.overlay,
+  },
+  addToCartButtonDisabled: {
+    opacity: 0.5,
   },
   buttonText: {
     fontFamily: typography.button.fontFamily,
     fontWeight: '500',
     fontSize: typography.button.fontSize,
-    color: colors.primary.background,
+    color: colors.primary.text,
     textAlign: 'center',
   },
   buttonTextDisabled: {
     opacity: 0.6,
+  },
+  hidden: {
+    opacity: 0,
   },
 });

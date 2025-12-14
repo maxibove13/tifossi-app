@@ -129,13 +129,13 @@ More reliable than WebView automation:
 
 ```bash
 # Success
-xcrun simctl openurl booted "tifossi://payment/success?payment_id=123&external_reference=TIF-123"
+xcrun simctl openurl booted "tifossi://checkout/payment-result?paymentSuccess=true&payment_id=123&external_reference=TIF-123"
 
 # Failure
-xcrun simctl openurl booted "tifossi://payment/failure?payment_id=123&external_reference=TIF-123"
+xcrun simctl openurl booted "tifossi://checkout/payment-result?paymentFailure=true&payment_id=123&external_reference=TIF-123"
 
 # Pending
-xcrun simctl openurl booted "tifossi://payment/pending?payment_id=123&external_reference=TIF-123"
+xcrun simctl openurl booted "tifossi://checkout/payment-result?paymentPending=true&payment_id=123&external_reference=TIF-123"
 ```
 
 After each, `ui_describe_all` to verify correct screen displayed.
