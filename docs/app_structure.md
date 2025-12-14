@@ -21,7 +21,7 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 │       └── SEED_TO_RENDER.md  # Backend sync documentation
 ├── docs/               # Documentation files
 ├── hooks/              # Custom React hooks
-│   ├── useProducts.ts  # Product data fetching hooks
+│   ├── useColorScheme.ts # Color scheme hook
 │   ├── useSearch.ts    # Search functionality hook
 │   ├── useFavoriteStatus.ts # Favorite status hooks
 │   ├── useProductFilters.ts # Product filtering hooks
@@ -30,8 +30,8 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 ├── ios/                # iOS specific configuration
 ├── android/            # Android specific configuration
 ├── types/              # Global type definitions
-├── __tests__/          # Test files and utilities
-├── run/                # Husky scripts and hooks
+├── infrastructure/     # Deployment configs and templates
+├── .husky/             # Git hooks (pre-commit, etc.)
 ├── .vscode/            # VSCode configuration
 └── .cursor/            # Project guidelines and rules (if exists)
 ```
@@ -133,6 +133,11 @@ app/
 │   ├── categories.ts   # Category definitions
 │   ├── models.ts       # Model definitions
 │   └── stores.ts       # Store location data
+├── _config/            # Application configuration
+│   ├── environment.ts  # Environment variables and config
+│   ├── initialization.ts # App initialization logic
+│   ├── endpoints.ts    # API endpoint definitions
+│   └── mercadopago-uruguay.config.ts # MercadoPago payment config
 ├── not-found.tsx       # 404 error page
 ├── _layout.tsx         # Root layout component
 └── index.tsx           # Entry point
