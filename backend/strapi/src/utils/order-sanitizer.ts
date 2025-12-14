@@ -1,7 +1,6 @@
 import { randomUUID } from 'crypto';
 
-const DEFAULT_SHIPPING_THRESHOLD = 100;
-const DEFAULT_SHIPPING_FEE = 10;
+const DEFAULT_SHIPPING_FEE = 200;
 
 // Type definitions
 interface RawAddress {
@@ -268,12 +267,8 @@ export const generateOrderNumber = (): string => {
   return `TIF-${year}${month}${day}-${timestamp}`;
 };
 
-export const calculateShippingCost = (shippingMethod: string, subtotal: number): number => {
+export const calculateShippingCost = (shippingMethod: string, _subtotal: number): number => {
   if (shippingMethod === 'pickup') {
-    return 0;
-  }
-
-  if (subtotal >= DEFAULT_SHIPPING_THRESHOLD) {
     return 0;
   }
 

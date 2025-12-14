@@ -224,7 +224,7 @@ export default function PaymentSelectionScreen() {
         const price = item.discountedPrice ?? item.price ?? 0;
         return sum + price * item.quantity;
       }, 0);
-      const shippingCost = shippingMethod === 'pickup' ? 0 : subtotal >= 100 ? 0 : 10;
+      const shippingCost = shippingMethod === 'pickup' ? 0 : 200;
       const total = subtotal + shippingCost;
 
       // Build shipping address for delivery orders only
@@ -260,7 +260,6 @@ export default function PaymentSelectionScreen() {
       // Build order data - backend creates order + preference in one call
       // Note: productName/description are placeholders - backend fetches fresh product data
       const orderData: OrderData = {
-        orderNumber: mercadoPagoService.generateOrderNumber(),
         items: cartItems.map((item) => ({
           productId: item.productId,
           productName: `Product ${item.productId}`, // Backend overwrites with actual name

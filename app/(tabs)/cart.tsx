@@ -257,7 +257,7 @@ export default function CartScreen() {
               )}
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Envío</Text>
-                <Text style={styles.summaryValue}>$0.00</Text>
+                <Text style={[styles.summaryValue, styles.pendingValue]}>Por definir</Text>
               </View>
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text style={styles.totalLabel}>Total a pagar</Text>
@@ -409,6 +409,10 @@ const styles = StyleSheet.create({
   },
   discountValue: {
     color: colors.error,
+  },
+  pendingValue: {
+    color: colors.secondary,
+    fontStyle: 'italic',
   },
   totalRow: {
     marginTop: spacing.xs,
