@@ -159,7 +159,7 @@ export const productFactory = {
     // Generate statuses for this product
     const statuses: ProductStatus[] = [];
     if (Math.random() < 0.3) statuses.push(ProductStatus.NEW);
-    if (hasDiscount) statuses.push(ProductStatus.SALE);
+    if (hasDiscount) statuses.push(ProductStatus.OPPORTUNITY);
     if (Math.random() < 0.2) statuses.push(ProductStatus.FEATURED);
     if (Math.random() < 0.15) statuses.push(ProductStatus.POPULAR);
 
@@ -252,7 +252,7 @@ export const productFactory = {
     return productFactory.create({
       price,
       discountedPrice: Math.round(price * 0.7),
-      statuses: [ProductStatus.SALE],
+      statuses: [ProductStatus.OPPORTUNITY],
       ...overrides,
     });
   },

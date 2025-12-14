@@ -1,64 +1,28 @@
 [
   {
-    "name": "Tifossi Centro",
-    "slug": "tifossi-centro",
-    "code": "TC001",
-    "description": "Tienda principal en el centro de Montevideo",
+    "name": "Centro",
+    "slug": "centro-mvd",
+    "code": "centro_mvd",
+    "description": "Tienda Centro - Wilson Ferreira Aldunate 1341",
     "address": {
-      "name": "Tifossi Centro",
-      "phoneNumber": "+598 2XXX XXXX",
-      "street": "18 de Julio",
-      "number": "1234",
-      "neighborhood": "Centro",
+      "firstName": "Tifossi",
+      "lastName": "Store",
+      "addressLine1": "Wilson Ferreira Aldunate 1341, esq. 18 de Julio",
       "city": "Montevideo",
-      "department": "Montevideo",
-      "country": "Uruguay",
-      "isDefault": true,
-      "addressType": "work"
+      "postalCode": "11100",
+      "country": "UY",
+      "phoneNumber": "+598 2XXX XXXX"
     },
     "phoneNumber": "+598 2XXX XXXX",
     "email": "centro@tifossi.com",
     "operatingHours": [
-      {
-        "dayOfWeek": "monday",
-        "isOpen": true,
-        "openTime": "09:00",
-        "closeTime": "20:00"
-      },
-      {
-        "dayOfWeek": "tuesday",
-        "isOpen": true,
-        "openTime": "09:00",
-        "closeTime": "20:00"
-      },
-      {
-        "dayOfWeek": "wednesday",
-        "isOpen": true,
-        "openTime": "09:00",
-        "closeTime": "20:00"
-      },
-      {
-        "dayOfWeek": "thursday",
-        "isOpen": true,
-        "openTime": "09:00",
-        "closeTime": "20:00"
-      },
-      {
-        "dayOfWeek": "friday",
-        "isOpen": true,
-        "openTime": "09:00",
-        "closeTime": "20:00"
-      },
-      {
-        "dayOfWeek": "saturday",
-        "isOpen": true,
-        "openTime": "10:00",
-        "closeTime": "18:00"
-      },
-      {
-        "dayOfWeek": "sunday",
-        "isOpen": false
-      }
+      { "dayOfWeek": "monday", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
+      { "dayOfWeek": "tuesday", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
+      { "dayOfWeek": "wednesday", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
+      { "dayOfWeek": "thursday", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
+      { "dayOfWeek": "friday", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
+      { "dayOfWeek": "saturday", "isOpen": true, "openTime": "10:00", "closeTime": "18:00" },
+      { "dayOfWeek": "sunday", "isOpen": false }
     ],
     "hasPickupService": true,
     "hasParking": false,
@@ -68,71 +32,67 @@
     "displayOrder": 1
   },
   {
-    "name": "Tifossi Pocitos",
-    "slug": "tifossi-pocitos",
-    "code": "TP001",
-    "description": "Sucursal en Pocitos",
+    "name": "Plaza Italia Shopping",
+    "slug": "plaza-italia-mvd",
+    "code": "plaza_italia_mvd",
+    "description": "Tienda Plaza Italia Shopping - Piso 3, Local 14",
     "address": {
-      "name": "Tifossi Pocitos",
-      "phoneNumber": "+598 2XXX XXXY",
-      "street": "Bulevar Artigas",
-      "number": "5678",
-      "neighborhood": "Pocitos",
+      "firstName": "Tifossi",
+      "lastName": "Store",
+      "addressLine1": "Av. Italia - Piso 3, Local 14",
       "city": "Montevideo",
-      "department": "Montevideo",
-      "country": "Uruguay",
-      "isDefault": false,
-      "addressType": "work"
+      "postalCode": "11600",
+      "country": "UY",
+      "phoneNumber": "+598 2XXX XXXX"
     },
-    "phoneNumber": "+598 2XXX XXXY",
-    "email": "pocitos@tifossi.com",
+    "phoneNumber": "+598 2XXX XXXX",
+    "email": "plazaitalia@tifossi.com",
     "operatingHours": [
-      {
-        "dayOfWeek": "monday",
-        "isOpen": true,
-        "openTime": "10:00",
-        "closeTime": "19:00"
-      },
-      {
-        "dayOfWeek": "tuesday",
-        "isOpen": true,
-        "openTime": "10:00",
-        "closeTime": "19:00"
-      },
-      {
-        "dayOfWeek": "wednesday",
-        "isOpen": true,
-        "openTime": "10:00",
-        "closeTime": "19:00"
-      },
-      {
-        "dayOfWeek": "thursday",
-        "isOpen": true,
-        "openTime": "10:00",
-        "closeTime": "19:00"
-      },
-      {
-        "dayOfWeek": "friday",
-        "isOpen": true,
-        "openTime": "10:00",
-        "closeTime": "19:00"
-      },
-      {
-        "dayOfWeek": "saturday",
-        "isOpen": true,
-        "openTime": "10:00",
-        "closeTime": "17:00"
-      },
-      {
-        "dayOfWeek": "sunday",
-        "isOpen": false
-      }
+      { "dayOfWeek": "monday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+      { "dayOfWeek": "tuesday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+      { "dayOfWeek": "wednesday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+      { "dayOfWeek": "thursday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+      { "dayOfWeek": "friday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+      { "dayOfWeek": "saturday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+      { "dayOfWeek": "sunday", "isOpen": true, "openTime": "12:00", "closeTime": "20:00" }
+    ],
+    "hasPickupService": true,
+    "hasParking": true,
+    "isAccessible": true,
+    "maxPickupItems": 40,
+    "isActive": true,
+    "displayOrder": 2
+  },
+  {
+    "name": "Punta del Este",
+    "slug": "punta-del-este-pde",
+    "code": "punta_del_este_pde",
+    "description": "Tienda Punta del Este - Box Garden",
+    "address": {
+      "firstName": "Tifossi",
+      "lastName": "Store",
+      "addressLine1": "Box Garden, Piso 3 - Parada 2, Playa Mansa",
+      "city": "Punta del Este",
+      "postalCode": "20100",
+      "country": "UY",
+      "phoneNumber": "+598 42XX XXXX"
+    },
+    "phoneNumber": "+598 42XX XXXX",
+    "email": "puntadeleste@tifossi.com",
+    "operatingHours": [
+      { "dayOfWeek": "monday", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "dayOfWeek": "tuesday", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "dayOfWeek": "wednesday", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "dayOfWeek": "thursday", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "dayOfWeek": "friday", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "dayOfWeek": "saturday", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "dayOfWeek": "sunday", "isOpen": true, "openTime": "12:00", "closeTime": "18:00" }
     ],
     "hasPickupService": true,
     "hasParking": true,
     "isAccessible": true,
     "maxPickupItems": 30,
     "isActive": true,
-    "displayOrder": 2
+    "displayOrder": 3
   }
 ]

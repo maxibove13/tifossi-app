@@ -28,6 +28,10 @@ const sharedConfig = {
 };
 
 module.exports = {
+  // Root-level options (apply to all projects)
+  coverageReporters: ['text', 'lcov', 'html'],
+  coverageDirectory: '<rootDir>/coverage',
+
   projects: [
     // Default project for component/integration tests (jsdom)
     {
@@ -69,13 +73,11 @@ module.exports = {
           statements: 29,
         },
       },
-      coverageReporters: ['text', 'lcov', 'html'],
-      coverageDirectory: '<rootDir>/coverage',
       testEnvironment: 'jsdom',
       testEnvironmentOptions: {
         url: 'http://localhost:3000',
       },
-      testTimeout: 5000,
+      // Note: testTimeout set via jest.setTimeout() in setup.ts for jsdom
     },
     // Contract tests project (node - allows real HTTP requests)
     {
@@ -83,7 +85,7 @@ module.exports = {
       displayName: 'contract',
       testEnvironment: 'node',
       testMatch: ['**/contract/**/*.test.[jt]s?(x)'],
-      testTimeout: 30000, // Longer timeout for real API calls
+      // Note: testTimeout set via jest.setTimeout() in test file for longer API calls
     },
   ],
 };

@@ -51,7 +51,7 @@ describe('Test Utilities Example Usage', () => {
 
       // Create specific product types
       const saleProduct = productFactory.createOnSale();
-      expect(saleProduct).toHaveProductStatus('sale');
+      expect(saleProduct).toHaveProductStatus('opportunity');
       expect(saleProduct).toHaveDiscountPercentage(30);
 
       const outOfStockProduct = productFactory.createOutOfStock();

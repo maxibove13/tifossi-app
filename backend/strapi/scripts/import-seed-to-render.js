@@ -22,48 +22,70 @@ const SEED_DIR = path.join(__dirname, '..', 'seed');
 const ASSETS_DIR = path.join(__dirname, '..', '..', '..', 'assets', 'images', 'products');
 
 // Image mapping: product slug -> image filename (without /products/ prefix)
+// Based on verified image-to-product linking from product_image_mapping.json
 const PRODUCT_IMAGE_MAP = {
-  'tiffosi-fast': 'product_socks_1.png',
-  'classic-socks': 'product_socks_2.png',
-  'socks-v2': 'product_socks_0.png',
-  'regular-black': 'product_bag_0.png',
-  'mochila-sq': 'product_bag_1.png',
-  'buzo-oversize': 'product_sweater.png',
-  'neceser-ball': 'product_bag_2.png',
-  'mochila-classic': 'product_bag_3.png',
-  'cap-v3': 'product_cap_black.png',
-  'relaxed-classic': 'product_shirt_black_relaxed.png',
-  'regular-shirt': 'product_shirt_black_regular.png',
-  'white-shirt': 'product_shirt_white.png',
-  't-shirt-black': 'product_t_shirt_black.png',
-  'backpack-pro': 'product_bag_4.png',
-  'neceser-globo': 'product_bag_5.png',
-  'backpack-travel': 'product_bag_6.png',
+  'backpack-pro': 'product_bag_6.png',
   'mochila-gold': 'mochila-gold.png',
   'mochila-black': 'mochila-black.png',
-  'campera-deportiva': 'campera-deportiva.png',
-  'antideslizantes-1': 'antideslizantes-1.png',
+  'antideslizantes-1': 'antideslizantes.png',
   'antideslizantes-2': 'antideslizantes-2.png',
-  'tiffosi-antideslizante-1': 'antideslizantes-3.png',
   'shinguards-pro': 'shinguards-1.png',
+  'backpack-travel': 'product_bag_3.png',
+  'campera-deportiva': 'campera-deportiva-bg.png',
+  'tiffosi-antideslizante-1': 'antideslizantes-3.png',
+  'mochila-classic': 'product_bag_1.png',
+  'neceser-f2': 'neceser9-3.png',
+  'relaxed-classic': 'product_shirt_white.png',
+  'neceser-globo': 'product_bag_4.png',
   'shinguards-lite': 'shinguards-2.png',
-  'shirt-os-black': 'shirt-os-black-1.png',
+  'shirt-os-black': 'shirt-os-black.png',
+  'tiffosi-fast': 'tiffosi-fast.png',
+  'socks-v2': 'socks-v2.png',
+  'relaxed-black': 'product_t_shirt_black.png',
+  'buzo-oversize': 'product_shirt_black_relaxed.png',
+  'neceser-ball': 'neceser-pelota.png',
+  'mochila-sq': 'mochila-squared.png',
+  'neceser-wx': 'product_bag_5.png',
+  'black-neceser': 'neceser9-1.png',
+  'cap-v3': 'product_cap_black.png',
+  'classic-socks': 'product_socks_1.png',
+  'regular-black': 'product_shirt_black_regular.png',
+  'antideslizante-nando': 'antideslizante-nando.png',
+  'shinguards-nico': 'shinguards-nico.png',
 };
 
 // Color-specific images for products with multiple colors
+// Based on verified image-to-product linking from product_image_mapping.json
 const COLOR_IMAGE_MAP = {
   'tiffosi-fast': {
-    Blanco: ['white-sock-1.png', 'white-sock-2.png', 'white-sock-3.png'],
+    Blanco: ['sock-color-1.png'],
     Negro: ['sock-color-2.png'],
     Naranja: ['sock-color-3.png'],
     Verde: ['sock-color-5.png'],
     Amarillo: ['sock-color-4.png'],
   },
-  'neceser-globo': {
-    Negro: ['neceser9-1.png', 'neceser9-3.png', 'neceser9-4.png'],
+  'socks-v2': {
+    Blanco: ['product_socks_0.png', 'white-sock-1.png', 'white-sock-2.png', 'white-sock-3.png'],
+    Negro: ['product_socks_2.png'],
   },
   'shirt-os-black': {
     Negro: ['shirt-os-black-1.png', 'shirt-os-black-2.png', 'shirt-os-black-3.png'],
+  },
+  'neceser-f2': {
+    Negro: ['neceser9-3.png', 'neceser9-1.png', 'neceser9-4.png'],
+  },
+  'buzo-oversize': {
+    Negro: ['product_shirt_black_relaxed.png', 'product_sweater.png'],
+  },
+  'shinguards-lite': {
+    Blanco: ['shinguards-2.png', 'shinguards-1.png'],
+  },
+  'black-neceser': {
+    Negro: ['neceser9-1.png', 'neceser9-4.png'],
+  },
+  'regular-black': {
+    Blanco: ['product_shirt_white.png'],
+    Negro: ['product_shirt_black_regular.png'],
   },
 };
 
@@ -248,11 +270,11 @@ async function uploadProductImages() {
         console.log(`  ✓ Uploaded: ${filename} (ID: ${result[0].id})`);
       }
       // Add delay between uploads to avoid overwhelming Render/Cloudinary
-      await delay(1000);
+      await delay(3000);
     } catch (error) {
       console.error(`  ✗ Failed to upload ${filename}:`, error.message);
       // Wait longer on error (might be rate limited)
-      await delay(3000);
+      await delay(10000);
     }
   }
 
@@ -422,9 +444,9 @@ async function importProducts(uploadedImages = {}) {
   const modelMap = {};
   const statusMap = {};
 
-  (categoriesRes.data || []).forEach((cat) => (categoryMap[cat.slug] = cat.id));
-  (modelsRes.data || []).forEach((model) => (modelMap[model.slug] = model.id));
-  (statusesRes.data || []).forEach((status) => (statusMap[status.name] = status.id));
+  (categoriesRes.data || []).forEach((cat) => (categoryMap[cat.slug] = cat.documentId));
+  (modelsRes.data || []).forEach((model) => (modelMap[model.slug] = model.documentId));
+  (statusesRes.data || []).forEach((status) => (statusMap[status.name] = status.documentId));
 
   for (const product of products) {
     try {
@@ -470,6 +492,30 @@ async function importProducts(uploadedImages = {}) {
       const frontImageFilename = PRODUCT_IMAGE_MAP[product.slug];
       const frontImageId = frontImageFilename ? uploadedImages[frontImageFilename] : null;
 
+      // Enrich colors with image IDs from COLOR_IMAGE_MAP
+      const colorImageMapping = COLOR_IMAGE_MAP[product.slug] || {};
+      const enrichedColors = (product.colors || []).map((color) => {
+        const colorImages = colorImageMapping[color.colorName];
+        if (!colorImages || colorImages.length === 0) {
+          return color;
+        }
+
+        // First image is main, rest are additional
+        const [mainFilename, ...additionalFilenames] = colorImages;
+        const mainImageId = uploadedImages[mainFilename];
+        const additionalImageIds = additionalFilenames
+          .map((f) => uploadedImages[f])
+          .filter(Boolean);
+
+        return {
+          ...color,
+          images: {
+            main: mainImageId || null,
+            additional: additionalImageIds.length > 0 ? additionalImageIds : undefined,
+          },
+        };
+      });
+
       const productData = {
         title: product.title,
         slug: product.slug,
@@ -480,11 +526,11 @@ async function importProducts(uploadedImages = {}) {
         warranty: product.warranty,
         returnPolicy: product.returnPolicy,
         dimensions: transformedDimensions,
-        colors: product.colors,
+        colors: enrichedColors,
         sizes: transformedSizes,
         category: categoryId,
         model: modelId,
-        statuses: statusIds,
+        statuses: statusIds.length > 0 ? { connect: statusIds.map(id => ({ documentId: id })) } : undefined,
         totalStock: product.colors?.reduce((sum, c) => sum + (c.quantity || 0), 0) || 0,
         isActive: true,
         isCustomizable: product.isCustomizable || false,
@@ -497,7 +543,12 @@ async function importProducts(uploadedImages = {}) {
       }
 
       await strapiRequest('/products', 'POST', productData);
-      console.log(`  ✓ Created product: ${product.title}${frontImageId ? ' (with image)' : ''}`);
+      const hasColorImages = enrichedColors.some((c) => c.images?.main);
+      const imageInfo = [
+        frontImageId ? 'front' : null,
+        hasColorImages ? 'color gallery' : null,
+      ].filter(Boolean).join(' + ');
+      console.log(`  ✓ Created product: ${product.title}${imageInfo ? ` (${imageInfo})` : ''}`);
     } catch (error) {
       console.error(`  ✗ Failed to create product ${product.title}:`, error.message);
     }

@@ -133,7 +133,7 @@ Jest matchers for domain-specific assertions.
 expect(product).toBeValidProduct();
 expect(product.price).toBeValidPrice();
 expect(product).toBeInStock();
-expect(product).toHaveProductStatus('sale');
+expect(product).toHaveProductStatus('opportunity');
 expect(product).toHaveDiscountPercentage(25);
 
 // Cart matchers

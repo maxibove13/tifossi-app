@@ -217,7 +217,7 @@ describe('API Transforms', () => {
         price: 99.99,
         statuses: [
           { id: 1, name: 'new', priority: 1 },
-          { id: 2, name: 'sale', priority: 2 },
+          { id: 2, name: 'opportunity', priority: 2 },
         ],
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
@@ -226,7 +226,7 @@ describe('API Transforms', () => {
 
       const result = transformStrapiProduct(strapiProduct);
 
-      expect(result.statuses).toEqual(['new', 'sale']);
+      expect(result.statuses).toEqual(['new', 'opportunity']);
     });
 
     it('should transform short description', () => {
