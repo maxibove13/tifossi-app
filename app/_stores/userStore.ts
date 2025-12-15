@@ -5,12 +5,20 @@ import apiManager from '../_services/api';
 import { handleApiError } from '../_services/api/errorHandler';
 import { User } from '../_types/auth';
 
-// Setup MMKV storage for user profile data
-const storage = new MMKV({ id: 'user-storage' });
+// Lazy-initialize MMKV to prevent crashes on real devices
+// Native modules can't be instantiated during bundle evaluation
+let _storage: MMKV | null = null;
+const getStorage = () => {
+  if (!_storage) {
+    _storage = new MMKV({ id: 'user-storage' });
+  }
+  return _storage;
+};
+
 const mmkvStorage = createJSONStorage(() => ({
-  getItem: (name) => storage.getString(name) ?? null,
-  setItem: (name, value) => storage.set(name, value),
-  removeItem: (name) => storage.delete(name),
+  getItem: (name) => getStorage().getString(name) ?? null,
+  setItem: (name, value) => getStorage().set(name, value),
+  removeItem: (name) => getStorage().delete(name),
 }));
 
 export type UserActionStatus = 'idle' | 'loading' | 'success' | 'error';
