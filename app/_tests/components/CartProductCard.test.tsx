@@ -186,12 +186,12 @@ describe('CartProductCard', () => {
       expect(getByText('Editar')).toBeTruthy();
     });
 
-    it('should still render edit button even when onEdit is not provided', () => {
+    it('should NOT render edit button when onEdit is not provided', () => {
       const product = createMockCartProduct();
-      const { getByText } = render(<CartProductCard product={product} quantity={1} />);
+      const { queryByText } = render(<CartProductCard product={product} quantity={1} />);
 
-      // The component always renders the edit button, even without a handler
-      expect(getByText('Editar')).toBeTruthy();
+      // The edit button should not render when onEdit is not provided
+      expect(queryByText('Editar')).toBeNull();
     });
   });
 
