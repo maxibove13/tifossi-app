@@ -486,6 +486,118 @@ export default {
   },
 
   /**
+   * Redirect from MercadoPago back to app
+   * GET /api/payment/redirect
+   * Serves an HTML page that redirects to the app scheme
+   */
+  async redirect(ctx: any) {
+    const { status, order_id, external_reference, payment_id, collection_id } = ctx.query;
+
+    const appScheme = process.env.APP_SCHEME || 'tifossi';
+
+    // Sanitize inputs to prevent XSS - only allow alphanumeric, dash, underscore
+    const sanitize = (val: string | undefined): string => {
+      if (!val) return '';
+      return String(val).replace(/[^a-zA-Z0-9_-]/g, '');
+    };
+
+    const safeOrderId = sanitize(order_id);
+    const safeExternalRef = sanitize(external_reference);
+    const safePaymentId = sanitize(payment_id || collection_id);
+
+    // Map MercadoPago status values to app status flags
+    // MercadoPago sends: approved, rejected, in_process, pending
+    // Our back_urls send: success, failure, pending
+    let statusFlag = '';
+    if (status === 'success' || status === 'approved') {
+      statusFlag = 'paymentSuccess';
+    } else if (status === 'failure' || status === 'rejected') {
+      statusFlag = 'paymentFailure';
+    } else if (status === 'pending' || status === 'in_process') {
+      statusFlag = 'paymentPending';
+    }
+
+    // Build deep link params using URLSearchParams for proper encoding
+    const params = new URLSearchParams();
+    if (statusFlag) {
+      params.set(statusFlag, 'true');
+    }
+    if (safeOrderId) {
+      params.set('order_id', safeOrderId);
+    }
+    if (safeExternalRef) {
+      params.set('external_reference', safeExternalRef);
+    }
+    if (safePaymentId) {
+      params.set('payment_id', safePaymentId);
+    }
+
+    const deepLink = `${appScheme}://checkout/payment-result?${params.toString()}`;
+
+    // HTML-encode for safe embedding in HTML attributes and script
+    const htmlEncode = (str: string): string => {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
+
+    const safeDeepLink = htmlEncode(deepLink);
+
+    // Serve HTML page that redirects to app scheme
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Redirecting to Tifossi...</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f5f5f5;
+      text-align: center;
+      padding: 20px;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e0e0e0;
+      border-top-color: #0C0C0C;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    h1 { font-size: 18px; color: #333; margin: 0 0 10px; }
+    p { color: #666; font-size: 14px; margin: 0; }
+    a { color: #0C0C0C; margin-top: 20px; display: inline-block; }
+  </style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <h1>Regresando a Tifossi...</h1>
+  <p>Si no eres redirigido automaticamente, <a href="${safeDeepLink}">toca aqui</a></p>
+  <script>
+    window.location.href = "${safeDeepLink}";
+  </script>
+</body>
+</html>`;
+
+    ctx.type = 'text/html';
+    ctx.body = html;
+  },
+
+  /**
    * Request payment refund
    * POST /api/payment/refund
    */

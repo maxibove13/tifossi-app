@@ -115,18 +115,20 @@ export const CartProductCard = ({
             >
               {title}
             </Text>
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={onEdit}
-              hitSlop={{
-                top: spacing.sm,
-                right: spacing.sm,
-                bottom: spacing.sm,
-                left: spacing.sm,
-              }}
-            >
-              <Text style={styles.editButtonText}>Editar</Text>
-            </TouchableOpacity>
+            {onEdit && (
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={onEdit}
+                hitSlop={{
+                  top: spacing.sm,
+                  right: spacing.sm,
+                  bottom: spacing.sm,
+                  left: spacing.sm,
+                }}
+              >
+                <Text style={styles.editButtonText}>Editar</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Product Attributes */}

@@ -21,6 +21,14 @@ interface RoutesModule {
 const paymentRoutes: RoutesModule = {
   routes: [
     {
+      method: 'GET',
+      path: '/payment/redirect',
+      handler: 'payment.redirect',
+      config: {
+        auth: false,
+      },
+    },
+    {
       method: 'POST',
       path: '/payment/create-preference',
       handler: 'payment.createPreference',

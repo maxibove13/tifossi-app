@@ -69,6 +69,9 @@ MP_TEST_ACCESS_TOKEN=TEST-4166909433694983-072404-...
 MP_TEST_PUBLIC_KEY=TEST-6f7d3927-50fe-403e-b32c-...
 MP_WEBHOOK_SECRET=<generated-secret-from-step-4>
 
+# Public URL (required for payment redirects)
+PUBLIC_URL=http://localhost:1337
+
 # Webhook URL (local development)
 WEBHOOK_URL=http://localhost:1337/api/webhooks/mercadopago
 

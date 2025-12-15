@@ -219,10 +219,10 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       await waitFor(
         () => {
           // Check header
-          expect(screen.getByText('Método de pago')).toBeTruthy();
+          expect(screen.getByText('Resumen y pago')).toBeTruthy();
 
           // Check section titles
-          expect(screen.getByText('Métodos predeterminados')).toBeTruthy();
+          expect(screen.getByText('Método de pago')).toBeTruthy();
           expect(screen.getByText('Otros métodos')).toBeTruthy();
 
           // Only enabled payment methods are shown (Mercado Pago)
@@ -246,7 +246,7 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
 
       await waitFor(() => {
         // The header should be rendered with title
-        expect(screen.getByText('Método de pago')).toBeTruthy();
+        expect(screen.getByText('Resumen y pago')).toBeTruthy();
         // The close icon is mocked as 'CloseIcon' string
         // Just verify the header renders without checking for button role
       });

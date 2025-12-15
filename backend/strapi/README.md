@@ -329,11 +329,14 @@ GET    /api/orders/:id            # Get order details (authenticated, own orders
 ```
 POST   /api/payment/create-preference        # Create MercadoPago preference (authenticated)
 POST   /api/payment/guest/create-preference  # Create preference for guest checkout (rate limited)
+GET    /api/payment/redirect                 # Redirect from MercadoPago back to app
 GET    /api/payment/verify/:paymentId        # Verify payment status
 GET    /api/payment/orders                   # Get user's payment orders
 GET    /api/payment/orders/:orderId          # Get specific order details
 POST   /api/payment/refund                   # Request refund
 ```
+
+**Payment Redirect Flow**: After payment completion, MercadoPago redirects to `/api/payment/redirect` which serves an HTML page that redirects to the `tifossi://` app scheme. This avoids Safari's "invalid address" error with direct custom URL scheme redirects. The endpoint sanitizes all query parameters to prevent XSS.
 
 **Guest Checkout**: The `/api/payment/guest/create-preference` endpoint is rate limited to 5 requests per minute per IP address to prevent abuse. Returns 429 Too Many Requests when exceeded.
 

@@ -241,15 +241,18 @@ export class PreferenceBuilder {
 
   /**
    * Build back URLs for payment callbacks
-   * Routes directly to /checkout/payment-result which exists in expo-router file structure
+   * Uses HTTPS redirect endpoint to properly redirect to app scheme
+   * Safari cannot handle custom URL schemes directly, so we need an intermediate HTTPS page
    */
   private buildBackUrls(orderData: ExtendedOrderData) {
     const baseParams = `order_id=${orderData.id}&external_reference=${orderData.orderNumber}`;
 
+    // Use HTTPS redirect endpoint that serves HTML with JS redirect to app scheme
+    // This avoids Safari's "invalid address" error when redirecting to custom schemes
     return {
-      success: `${this.appScheme}://checkout/payment-result?paymentSuccess=true&${baseParams}`,
-      failure: `${this.appScheme}://checkout/payment-result?paymentFailure=true&${baseParams}`,
-      pending: `${this.appScheme}://checkout/payment-result?paymentPending=true&${baseParams}`,
+      success: `${this.baseUrl}/api/payment/redirect?status=success&${baseParams}`,
+      failure: `${this.baseUrl}/api/payment/redirect?status=failure&${baseParams}`,
+      pending: `${this.baseUrl}/api/payment/redirect?status=pending&${baseParams}`,
     };
   }
 
@@ -552,9 +555,9 @@ export class PreferenceBuilder {
         email: 'test@example.com',
       },
       back_urls: {
-        success: `${this.appScheme}://test/success`,
-        failure: `${this.appScheme}://test/failure`,
-        pending: `${this.appScheme}://test/pending`,
+        success: `${this.baseUrl}/api/payment/redirect?status=success&external_reference=${externalReference}`,
+        failure: `${this.baseUrl}/api/payment/redirect?status=failure&external_reference=${externalReference}`,
+        pending: `${this.baseUrl}/api/payment/redirect?status=pending&external_reference=${externalReference}`,
       },
       notification_url: this.buildNotificationUrl(),
       auto_return: this.config.autoReturn,

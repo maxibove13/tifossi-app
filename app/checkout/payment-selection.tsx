@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -17,16 +17,19 @@ import {
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import CloseIcon from '../../assets/icons/close.svg';
 import RadioButton from '../_components/ui/form/RadioButton';
+import CartProductCard from '../_components/store/product/cart/CartProductCard';
 
 // Import style tokens
 import { colors } from '../_styles/colors';
 import { spacing, radius } from '../_styles/spacing';
-import { fontWeights } from '../_styles/typography';
+import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 
 // Import stores and services
 import { useCartStore } from '../_stores/cartStore';
 import { usePaymentStore } from '../_stores/paymentStore';
 import { useAuthStore } from '../_stores/authStore';
+import { useProductStore } from '../_stores/productStore';
+import { Product } from '../_types/product';
 import addressService, { Address } from '../_services/address/addressService';
 import mercadoPagoService, { OrderData } from '../_services/payment/mercadoPago';
 
@@ -46,6 +49,7 @@ export default function PaymentSelectionScreen() {
   // Store hooks
   const { items: cartItems } = useCartStore();
   const { user, token } = useAuthStore();
+  const { products: allProducts } = useProductStore();
   const isLoading = usePaymentStore((state) => state.isLoading);
   const error = usePaymentStore((state) => state.error);
   const setCurrentOrder = usePaymentStore((state) => state.setCurrentOrder);
@@ -56,6 +60,39 @@ export default function PaymentSelectionScreen() {
   const guestContactInfo = usePaymentStore((state) => state.guestContactInfo);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
+
+  // Cart display item type
+  interface CartDisplayItem extends Product {
+    quantity: number;
+    selectedSize?: string;
+    color?: string;
+  }
+
+  // Convert cart items to displayable format with product details
+  const cartDisplayItems = useMemo(() => {
+    const result: CartDisplayItem[] = [];
+    for (const item of cartItems) {
+      const product = allProducts?.find((p) => p.id === item.productId);
+      if (product) {
+        result.push({
+          ...product,
+          quantity: item.quantity,
+          selectedSize: item.size,
+          color: item.color,
+        });
+      }
+    }
+    return result;
+  }, [cartItems, allProducts]);
+
+  // Calculate order totals
+  const shippingMethod = selectedStore ? 'pickup' : 'delivery';
+  const subtotal = cartItems.reduce((sum, item) => {
+    const price = item.discountedPrice ?? item.price ?? 0;
+    return sum + price * item.quantity;
+  }, 0);
+  const shippingCost = shippingMethod === 'pickup' ? 0 : 200;
+  const total = subtotal + shippingCost;
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
@@ -346,7 +383,7 @@ export default function PaymentSelectionScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Método de pago</Text>
+        <Text style={styles.title}>Resumen y pago</Text>
         <TouchableOpacity
           style={styles.closeButton}
           onPress={handleClose}
@@ -362,9 +399,61 @@ export default function PaymentSelectionScreen() {
       {/* Content */}
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
+          {/* Order Summary - Cart Items */}
+          <View style={styles.orderSummaryContainer}>
+            <Text style={[styles.sectionTitle, styles.orderSummaryTitle]}>Tu pedido</Text>
+            <View style={styles.cartItemsList}>
+              {cartDisplayItems.map((item) => (
+                <CartProductCard
+                  key={`${item.id}-${item.color}-${item.selectedSize}`}
+                  product={item}
+                  quantity={item.quantity}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* Shipping Info */}
+          <View style={styles.shippingInfoContainer}>
+            <Text style={styles.sectionTitle}>
+              {shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'}
+            </Text>
+            <View style={styles.shippingInfoContent}>
+              {shippingMethod === 'pickup' && selectedStore ? (
+                <Text style={styles.shippingInfoText}>{selectedStore.name}</Text>
+              ) : selectedAddress ? (
+                <Text style={styles.shippingInfoText}>
+                  {addressService.formatAddressDisplay(selectedAddress)}
+                </Text>
+              ) : guestAddress ? (
+                <Text style={styles.shippingInfoText}>
+                  {`${guestAddress.addressLine1}, ${guestAddress.city}`}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+
+          {/* Order Totals */}
+          <View style={styles.totalsContainer}>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Subtotal</Text>
+              <Text style={styles.totalValue}>${subtotal.toFixed(2)}</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Envío</Text>
+              <Text style={styles.totalValue}>
+                {shippingCost === 0 ? 'Gratis' : `$${shippingCost.toFixed(2)}`}
+              </Text>
+            </View>
+            <View style={[styles.totalRow, styles.finalTotalRow]}>
+              <Text style={styles.finalTotalLabel}>Total</Text>
+              <Text style={styles.finalTotalValue}>${total.toFixed(2)}</Text>
+            </View>
+          </View>
+
           {/* Default Payment Methods */}
           <View style={styles.paymentMethodsContainer}>
-            <Text style={styles.sectionTitle}>Métodos predeterminados</Text>
+            <Text style={styles.sectionTitle}>Método de pago</Text>
 
             <View style={styles.paymentMethodsList}>
               {defaultPaymentMethods
@@ -429,6 +518,19 @@ type Styles = {
   title: TextStyle;
   closeButton: ViewStyle;
   content: ViewStyle;
+  orderSummaryContainer: ViewStyle;
+  orderSummaryTitle: TextStyle;
+  cartItemsList: ViewStyle;
+  shippingInfoContainer: ViewStyle;
+  shippingInfoContent: ViewStyle;
+  shippingInfoText: TextStyle;
+  totalsContainer: ViewStyle;
+  totalRow: ViewStyle;
+  totalLabel: TextStyle;
+  totalValue: TextStyle;
+  finalTotalRow: ViewStyle;
+  finalTotalLabel: TextStyle;
+  finalTotalValue: TextStyle;
   paymentMethodsContainer: ViewStyle;
   sectionTitle: TextStyle;
   paymentMethodsList: ViewStyle;
@@ -474,8 +576,76 @@ const styles = StyleSheet.create<Styles>({
   },
   content: {
     flex: 1,
-    gap: spacing.xxl,
+    gap: spacing.lg,
     paddingBottom: spacing.xxl,
+  },
+  orderSummaryContainer: {
+    backgroundColor: colors.background.light,
+    paddingTop: spacing.md,
+  },
+  orderSummaryTitle: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  cartItemsList: {
+    gap: 0,
+  },
+  shippingInfoContainer: {
+    backgroundColor: colors.background.light,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  shippingInfoContent: {
+    marginTop: spacing.sm,
+  },
+  shippingInfoText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    lineHeight: lineHeights.md,
+    color: colors.primary,
+  },
+  totalsContainer: {
+    backgroundColor: colors.background.light,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: spacing.xs,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  totalLabel: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    lineHeight: lineHeights.md,
+    color: colors.secondary,
+  },
+  totalValue: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
+    lineHeight: lineHeights.md,
+    color: colors.secondary,
+  },
+  finalTotalRow: {
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.background.medium,
+  },
+  finalTotalLabel: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.lg,
+    color: colors.primary,
+  },
+  finalTotalValue: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.lg,
+    color: colors.primary,
   },
   paymentMethodsContainer: {
     gap: spacing.md,
