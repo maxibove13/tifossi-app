@@ -331,17 +331,9 @@ export default function PaymentSelectionScreen() {
       }
       // WebView will handle the rest through deep links
     } catch (error) {
-      // Determine appropriate error message based on error type
-      let errorMessage = 'Ocurrió un error al procesar el pago.';
-
-      if (error instanceof Error) {
-        if (error.message.includes('network')) {
-          errorMessage = 'Sin conexión a internet. Verifica tu conexión.';
-        } else if (error.message.includes('auth')) {
-          errorMessage = 'Debes iniciar sesión para continuar.';
-        }
-      }
-
+      // Show actual error message for debugging
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('[Checkout] Payment error:', errorMessage);
       Alert.alert('Error de Pago', errorMessage);
     } finally {
       setIsProcessingPayment(false);
