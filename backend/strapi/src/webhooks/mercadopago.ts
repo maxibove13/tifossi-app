@@ -319,10 +319,11 @@ module.exports = {
         });
 
         if (orders && orders.length > 0) {
-          order = orders[0];
+          const foundOrder = orders[0];
+          order = foundOrder;
           strapi.log.info('[MP-PAYMENT] Order found by orderNumber', {
-            orderId: order.id,
-            orderNumber: order.orderNumber,
+            orderId: foundOrder.id,
+            orderNumber: foundOrder.orderNumber,
           });
         } else {
           strapi.log.warn('[MP-PAYMENT] No order found by orderNumber', {
@@ -344,10 +345,11 @@ module.exports = {
         });
 
         if (orders && orders.length > 0) {
-          order = orders[0];
+          const foundOrder = orders[0];
+          order = foundOrder;
           strapi.log.info('[MP-PAYMENT] Order found by mpPaymentId/mpPreferenceId', {
-            orderId: order.id,
-            orderNumber: order.orderNumber,
+            orderId: foundOrder.id,
+            orderNumber: foundOrder.orderNumber,
           });
         } else {
           strapi.log.warn('[MP-PAYMENT] No order found by mpPaymentId/mpPreferenceId');

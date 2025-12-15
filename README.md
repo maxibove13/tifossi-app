@@ -78,9 +78,9 @@ See [TIFOSSI_DELIVERY_PLAN.md](./docs/project/TIFOSSI_DELIVERY_PLAN.md) for comp
 ### Quality Assurance
 
 - **Linting**: `npm run lint`
-- **Type checking**: `npm run typecheck`
+- **Type checking**: `npm run typecheck` (frontend only)
 - **Testing**: `npm test`
-- **All checks**: `npm run check-all`
+- **All checks**: `npm run check-all` (includes frontend + backend typecheck)
 - **Fix imports**: `npm run fix-imports`
 
 ### Build Management
