@@ -1,3 +1,4 @@
 #!/usr/bin/env sh
 
+./scripts/check-version-tag.sh
 npx lint-staged
