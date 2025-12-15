@@ -315,11 +315,12 @@ GET    /api/store-locations/:id   # Get single store location
 #### Orders
 
 ```
-GET    /api/orders                # User's orders
-POST   /api/orders                # Create order (includes storeLocationId for pickup)
-GET    /api/orders/:id            # Get order details
-PUT    /api/orders/:id            # Update order status
+GET    /api/orders                # List user's orders (authenticated, auto-scoped to user)
+POST   /api/orders                # Create order (authenticated, includes storeLocationId for pickup)
+GET    /api/orders/:id            # Get order details (authenticated, own orders only)
 ```
+
+**Authentication**: All order endpoints require JWT authentication via the `jwt-auth` middleware. Users can only access their own orders.
 
 **Order Creation**: Include `storeLocationId` field when shipping method is 'pickup'.
 

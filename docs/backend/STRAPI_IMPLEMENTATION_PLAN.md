@@ -319,8 +319,9 @@ export const usePaymentStore = create((set, get) => ({
 | `/api/user-profile/me/addresses/:idx` | PUT    | Update address by index                | Yes (Strapi JWT) |
 | `/api/user-profile/me/addresses/:idx` | DELETE | Delete address by index                | Yes (Strapi JWT) |
 | `/api/user-profile/me/addresses/:idx/default` | PUT | Set address as default          | Yes (Strapi JWT) |
-| `/api/orders`                         | GET/POST | Manage orders                        | Yes              |
-| `/api/orders/:id`                     | GET    | Get order details                      | Yes              |
+| `/api/orders`                         | GET    | List user's orders (auto-scoped)       | Yes (JWT)        |
+| `/api/orders`                         | POST   | Create order for authenticated user    | Yes (JWT)        |
+| `/api/orders/:id`                     | GET    | Get order details (own orders only)    | Yes (JWT)        |
 | `/api/payments/create`                | POST   | Create payment                         | Yes              |
 | `/api/payments/verify`                | POST   | Verify payment                         | Yes              |
 | `/api/webhooks/mercadopago`           | POST   | Payment webhook                        | No (signed)      |

@@ -144,12 +144,15 @@ interface MockOrder {
 
 ### Order Endpoints
 
-- `POST /api/orders` - Create new order
-- `GET /api/orders` - List user orders
-- `GET /api/orders/:id` - Get order details
-- `PUT /api/orders/:id/status` - Update order status
-- `PUT /api/orders/:id/cancel` - Cancel order
-- `GET /api/orders/:id/tracking` - Order tracking
+**Production API:**
+- `POST /api/orders` - Create new order (authenticated)
+- `GET /api/orders` - List user's orders (authenticated, auto-scoped to user)
+- `GET /api/orders/:id` - Get order details (authenticated, own orders only)
+
+**Mock-only (not in production):**
+- `PUT /api/orders/:id/status` - Update order status (admin-only via Strapi panel)
+- `PUT /api/orders/:id/cancel` - Cancel order (not yet implemented)
+- `GET /api/orders/:id/tracking` - Order tracking (not yet implemented)
 
 ### Favorites Endpoints
 

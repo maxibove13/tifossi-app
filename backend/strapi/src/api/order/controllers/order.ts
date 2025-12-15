@@ -24,9 +24,105 @@ interface OrderEntity {
 }
 
 export default factories.createCoreController('api::order.order', ({ strapi }) => ({
-  async create(ctx: any) {
+  async find(ctx: any) {
+    // User populated by jwt-auth middleware
     const authUser = ctx.state.user;
+    if (!authUser) {
+      return ctx.unauthorized('Authentication required');
+    }
 
+    const { page = 1, pageSize = 10 } = ctx.query;
+
+    const orders = await strapi.documents('api::order.order').findMany({
+      filters: { user: authUser.id },
+      sort: { createdAt: 'desc' },
+      populate: {
+        items: { populate: { product: true } },
+        storeLocation: true,
+      },
+      limit: Number(pageSize),
+      offset: (Number(page) - 1) * Number(pageSize),
+    });
+
+    const total = await strapi.documents('api::order.order').count({
+      filters: { user: authUser.id },
+    });
+
+    ctx.body = {
+      orders: orders.map((order: any) => ({
+        id: order.documentId || order.id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        items: order.items || [],
+        total: order.total,
+        subtotal: order.subtotal,
+        shippingCost: order.shippingCost,
+        shippingMethod: order.shippingMethod,
+      })),
+      pagination: {
+        page: Number(page),
+        pageSize: Number(pageSize),
+        total,
+        totalPages: Math.ceil(total / Number(pageSize)),
+      },
+    };
+  },
+
+  async findOne(ctx: any) {
+    // User populated by jwt-auth middleware
+    const authUser = ctx.state.user;
+    if (!authUser) {
+      return ctx.unauthorized('Authentication required');
+    }
+
+    const { id } = ctx.params;
+
+    const order = await strapi.documents('api::order.order').findOne({
+      documentId: id,
+      populate: {
+        items: { populate: { product: true } },
+        user: true,
+        storeLocation: true,
+      },
+    });
+
+    if (!order) {
+      return ctx.notFound('Order not found');
+    }
+
+    // Verify the order belongs to this user
+    if ((order as any).user?.id !== authUser.id) {
+      return ctx.forbidden('You can only access your own orders');
+    }
+
+    const orderData = order as any;
+    ctx.body = {
+      order: {
+        id: orderData.documentId || orderData.id,
+        orderNumber: orderData.orderNumber,
+        status: orderData.status,
+        paymentStatus: orderData.paymentStatus,
+        createdAt: orderData.createdAt,
+        updatedAt: orderData.updatedAt,
+        items: orderData.items || [],
+        total: orderData.total,
+        subtotal: orderData.subtotal,
+        discount: orderData.discount,
+        shippingCost: orderData.shippingCost,
+        shippingMethod: orderData.shippingMethod,
+        shippingAddress: orderData.shippingAddress,
+        storeLocation: orderData.storeLocation,
+        notes: orderData.notes,
+      },
+    };
+  },
+
+  async create(ctx: any) {
+    // User populated by jwt-auth middleware
+    const authUser = ctx.state.user;
     if (!authUser) {
       return ctx.unauthorized('Authentication required');
     }
@@ -150,13 +246,5 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       strapi.log.error('Guest order creation failed:', error);
       ctx.badRequest(error.message || 'Unable to create guest order');
     }
-  },
-
-  async update(ctx: any) {
-    return ctx.forbidden('Order updates are not allowed through this endpoint.');
-  },
-
-  async delete(ctx: any) {
-    return ctx.forbidden('Order deletion is not allowed through this endpoint.');
   },
 }));
