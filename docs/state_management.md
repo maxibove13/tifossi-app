@@ -136,8 +136,7 @@ app/
 ├── _stores/               # Zustand stores
 │   ├── authStore.ts       # Authentication state
 │   ├── cartStore.ts       # Shopping cart state
-│   ├── favoritesStore.ts  # Favorites state
-│   └── localStorageAdapter.ts  # MMKV adapter utilities
+│   └── favoritesStore.ts  # Favorites state
 hooks/                     # Custom hooks for state access
     ├── useFavoriteStatus.ts    # Favorites status hook
     ├── useProductFilters.ts    # Product filtering hook

@@ -1551,7 +1551,7 @@ Command:     npm run test:app
 
 #### Missing Store Tests ❌
 
-- `localStorageAdapter.test.ts` - Adapter exists but no tests (may not need direct testing if covered via stores)
+None - all stores are tested.
 
 ### Service Test Coverage (NEW - December 2024)
 

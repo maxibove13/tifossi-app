@@ -326,7 +326,10 @@ export default {
 
       const paymentInfo = await mpService.getPayment(paymentId);
 
-      const orders = await strapi.documents('api::order.order').findMany({
+      // Try to find order by multiple methods:
+      // 1. By mpPaymentId (if webhook already processed)
+      // 2. By orderNumber from external_reference (primary lookup)
+      let orders = await strapi.documents('api::order.order').findMany({
         filters: {
           mpPaymentId: paymentId,
           user: ctx.state.user.id,
@@ -334,7 +337,21 @@ export default {
         populate: ['user'],
       });
 
+      // If not found by paymentId, try by external_reference (orderNumber)
+      if ((!orders || orders.length === 0) && paymentInfo.external_reference) {
+        orders = await strapi.documents('api::order.order').findMany({
+          filters: {
+            orderNumber: paymentInfo.external_reference,
+            user: ctx.state.user.id,
+          },
+          populate: ['user'],
+        });
+      }
+
       if (!orders || orders.length === 0) {
+        strapi.log.warn(
+          `Order not found for payment ${paymentId}, external_reference: ${paymentInfo.external_reference}`
+        );
         return ctx.notFound('Order not found');
       }
 
@@ -345,7 +362,7 @@ export default {
       const _updatedOrder = await strapi.documents('api::order.order').update({
         documentId: order.documentId,
         data: {
-          mpPaymentId: paymentInfo.id,
+          mpPaymentId: String(paymentInfo.id),
           mpPaymentStatus: paymentInfo.status,
           status: orderStatus,
           paidAt: paymentInfo.status === 'approved' ? paymentInfo.date_approved : null,

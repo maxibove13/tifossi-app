@@ -106,8 +106,7 @@ app/
 │   ├── cartStore.ts    # Shopping cart state management
 │   ├── favoritesStore.ts # Favorites state management
 │   ├── authStore.ts    # Authentication state management
-│   ├── paymentStore.ts # Payment state including guest checkout data
-│   └── localStorageAdapter.ts # Storage adapter for state persistence
+│   └── paymentStore.ts # Payment state including guest checkout data
 ├── _types/             # TypeScript type definitions
 │   ├── README.md       # Type system documentation
 │   ├── STYLE_GUIDE.md  # Style system guidelines

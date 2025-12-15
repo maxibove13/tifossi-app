@@ -247,12 +247,12 @@ function HomeScreen() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.horizontalScrollContent}
               >
-                {[1, 2, 3].map((key) => (
+                {[1, 2].map((key) => (
                   <View key={key} style={styles.highlightedCardSkeleton}>
                     {createSectionSkeleton({
                       title: false,
-                      height: 180,
-                      width: 280,
+                      height: 145,
+                      width: 328,
                       borderRadius: 8,
                     })}
                   </View>
@@ -523,8 +523,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   highlightedCardSkeleton: {
-    width: 280,
-    height: 180,
+    // Figma: 328x145
+    width: 328,
+    height: 145,
     marginHorizontal: spacing.sm,
   },
   sectionTitleSkeleton: {

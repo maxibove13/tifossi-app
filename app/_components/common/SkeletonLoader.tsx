@@ -50,17 +50,16 @@ const SkeletonPlaceholder: React.FC<SkeletonPlaceholderProps> = ({
   if (animationType === 'shimmer') {
     const translateX = animValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [-100, 100],
+      outputRange: [-160, 160],
     });
 
     return (
       <View style={[styles.shimmerContainer, style]}>
         <Animated.View
           style={[
-            StyleSheet.absoluteFillObject,
+            styles.shimmerOverlay,
             {
               transform: [{ translateX }],
-              backgroundColor: 'rgba(255, 255, 255, 0.3)',
             },
           ]}
         />
@@ -186,18 +185,25 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
             >
+              {/* Header with toggle pill and search icon - Figma spec */}
               <View style={styles.homeHeader}>
-                <SkeletonPlaceholder style={styles.headerLogo} animationType={animationType} />
+                <SkeletonPlaceholder style={styles.headerToggle} animationType={animationType} />
+                <SkeletonPlaceholder style={styles.headerSearch} animationType={animationType} />
               </View>
 
-              {/* Highlighted Section */}
+              {/* Title bone */}
+              <View style={styles.homeTitleContainer}>
+                <SkeletonPlaceholder style={styles.homeTitle} animationType={animationType} />
+              </View>
+
+              {/* Highlighted Section - Figma: 328x145 cards */}
               <View style={styles.highlightedSection}>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.horizontalScrollContent}
                 >
-                  {[1, 2, 3].map((key) => (
+                  {[1, 2].map((key) => (
                     <SkeletonPlaceholder
                       key={key}
                       style={styles.highlightedCard}
@@ -207,7 +213,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
                 </ScrollView>
               </View>
 
-              {/* Section with products */}
+              {/* Recommended Section with products */}
               <View style={styles.section}>
                 <View style={styles.sectionHeaderContainer}>
                   <SkeletonPlaceholder style={styles.sectionTitle} animationType={animationType} />
@@ -218,31 +224,114 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.horizontalScrollContent}
                 >
-                  {[1, 2, 3, 4].map((key) => (
-                    <SkeletonPlaceholder
-                      key={key}
-                      style={styles.promotionCard}
-                      animationType={animationType}
-                    />
+                  {[1, 2, 3].map((key) => (
+                    <View key={key} style={styles.productCardSkeletonContainer}>
+                      <SkeletonPlaceholder
+                        style={styles.productCardImage}
+                        animationType={animationType}
+                      />
+                      <View style={styles.productCardTextContainer}>
+                        <SkeletonPlaceholder
+                          style={styles.productCardTextShort}
+                          animationType={animationType}
+                        />
+                        <SkeletonPlaceholder
+                          style={styles.productCardTextLong}
+                          animationType={animationType}
+                        />
+                        <SkeletonPlaceholder
+                          style={styles.productCardTextMedium}
+                          animationType={animationType}
+                        />
+                      </View>
+                    </View>
                   ))}
                 </ScrollView>
               </View>
 
+              {/* Category Showcases - 3 dark bones */}
+              <View style={styles.categoryShowcaseSection}>
+                {[1, 2, 3].map((key) => (
+                  <SkeletonPlaceholder
+                    key={key}
+                    style={styles.categoryShowcaseBone}
+                    animationType={animationType}
+                  />
+                ))}
+              </View>
+
+              {/* Trending Section */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeaderContainer}>
+                  <SkeletonPlaceholder style={styles.sectionTitle} animationType={animationType} />
+                  <SkeletonPlaceholder style={styles.sectionButton} animationType={animationType} />
+                </View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.horizontalScrollContent}
+                >
+                  {[1, 2, 3].map((key) => (
+                    <View key={key} style={styles.trendingCardContainer}>
+                      <SkeletonPlaceholder
+                        style={styles.trendingCardImage}
+                        animationType={animationType}
+                      />
+                      <View style={styles.productCardTextContainer}>
+                        <SkeletonPlaceholder
+                          style={styles.productCardTextLong}
+                          animationType={animationType}
+                        />
+                        <SkeletonPlaceholder
+                          style={styles.productCardTextMedium}
+                          animationType={animationType}
+                        />
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* Featured Section */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeaderContainer}>
+                  <SkeletonPlaceholder style={styles.sectionTitle} animationType={animationType} />
+                  <SkeletonPlaceholder style={styles.sectionButton} animationType={animationType} />
+                </View>
+                <SkeletonPlaceholder style={styles.featuredCard} animationType={animationType} />
+              </View>
+
               {/* Grid Section */}
               <View style={styles.section}>
+                <View style={styles.sectionHeaderContainer}>
+                  <SkeletonPlaceholder style={styles.sectionTitle} animationType={animationType} />
+                  <SkeletonPlaceholder style={styles.sectionButton} animationType={animationType} />
+                </View>
                 <View style={styles.productGrid}>
                   {[1, 2, 3, 4].map((key) => (
-                    <SkeletonPlaceholder
-                      key={key}
-                      style={styles.homeGridCard}
-                      animationType={animationType}
-                    />
+                    <View key={key} style={styles.homeGridCardContainer}>
+                      <SkeletonPlaceholder
+                        style={styles.homeGridCard}
+                        animationType={animationType}
+                      />
+                      <View style={styles.productCardTextContainer}>
+                        <SkeletonPlaceholder
+                          style={styles.productCardTextShort}
+                          animationType={animationType}
+                        />
+                        <SkeletonPlaceholder
+                          style={styles.productCardTextLong}
+                          animationType={animationType}
+                        />
+                        <SkeletonPlaceholder
+                          style={styles.productCardTextMedium}
+                          animationType={animationType}
+                        />
+                      </View>
+                    </View>
                   ))}
                 </View>
               </View>
-
-              {/* Footer */}
-              <SkeletonPlaceholder style={styles.footer} animationType={animationType} />
             </ScrollView>
           </View>
         );
@@ -294,6 +383,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     borderRadius: radius.xs,
   },
+  shimmerOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 160,
+    // Figma: linear-gradient(270deg, rgba(194,194,194,0) 0%, #999999 50%, rgba(194,194,194,0) 100%)
+    // Using a centered gray highlight that fades on edges
+    backgroundColor: '#999999',
+    opacity: 0.4,
+  },
   // Header styles
   header: {
     backgroundColor: colors.background.light,
@@ -313,16 +412,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     borderRadius: radius.sm,
     marginBottom: spacing.md,
-  },
-  homeHeader: {
-    paddingHorizontal: spacing.lg,
-    height: 48,
-    marginBottom: spacing.lg,
-  },
-  headerLogo: {
-    width: 50.7,
-    height: 48,
-    borderRadius: 4,
   },
   // Grid styles
   gridContainer: {
@@ -389,7 +478,38 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   // Home screen styles
+  homeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.sm,
+  },
+  headerToggle: {
+    // Figma: 89px x 32px, rounded pill
+    width: 89,
+    height: 32,
+    borderRadius: 100,
+  },
+  headerSearch: {
+    // Figma: 24px x 24px search icon bone
+    width: 24,
+    height: 24,
+    borderRadius: radius.xs,
+  },
+  homeTitleContainer: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  homeTitle: {
+    // Figma: Title 343px x 44px
+    width: '60%',
+    height: 44,
+    borderRadius: radius.xs,
+  },
   highlightedSection: {
+    marginTop: spacing.md,
     marginBottom: spacing.xl,
   },
   section: {
@@ -408,8 +528,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   sectionButton: {
-    width: 80,
-    height: 24,
+    width: 51,
+    height: 16,
     borderRadius: 4,
   },
   horizontalScrollContent: {
@@ -417,31 +537,88 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   highlightedCard: {
-    width: 280,
-    height: 180,
-    borderRadius: 8,
+    // Figma: 328px x 145px (was 280x180)
+    width: 328,
+    height: 145,
+    borderRadius: radius.md,
   },
-  promotionCard: {
+  // Product card skeleton for horizontal scroll
+  productCardSkeletonContainer: {
+    width: 132,
+    gap: spacing.sm,
+  },
+  productCardImage: {
+    // Figma: 132x132
     width: 132,
     height: 132,
-    borderRadius: 8,
+    borderRadius: radius.xs,
   },
+  productCardTextContainer: {
+    gap: spacing.xs,
+    paddingHorizontal: spacing.xs,
+  },
+  productCardTextShort: {
+    // Figma: 65px x 16px
+    width: 65,
+    height: 16,
+    borderRadius: radius.xs,
+  },
+  productCardTextLong: {
+    // Figma: 108px x 16px
+    width: 108,
+    height: 16,
+    borderRadius: radius.xs,
+  },
+  productCardTextMedium: {
+    // Figma: 88px x 16px
+    width: 88,
+    height: 16,
+    borderRadius: radius.xs,
+  },
+  // Category showcase section
+  categoryShowcaseSection: {
+    gap: spacing.md,
+    paddingVertical: spacing.xxl,
+  },
+  categoryShowcaseBone: {
+    // Figma: 375px x 92px dark showcase
+    width: '100%',
+    height: 92,
+    borderRadius: 0,
+  },
+  // Trending cards (taller)
+  trendingCardContainer: {
+    width: 134,
+    gap: spacing.sm,
+  },
+  trendingCardImage: {
+    // Figma: 134x256
+    width: 134,
+    height: 256,
+    borderRadius: radius.xs,
+  },
+  // Featured card
+  featuredCard: {
+    marginHorizontal: spacing.lg,
+    height: 424,
+    borderRadius: radius.sm,
+  },
+  // Grid section
   productGrid: {
     paddingHorizontal: spacing.lg,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.md,
+    gap: spacing.lg,
     justifyContent: 'space-between',
   },
-  homeGridCard: {
+  homeGridCardContainer: {
     width: '48%',
-    aspectRatio: 1,
-    borderRadius: 8,
+    gap: spacing.sm,
   },
-  footer: {
-    height: 300,
-    marginTop: spacing.xl,
-    borderRadius: 8,
+  homeGridCard: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: radius.xs,
   },
   // List styles
   listContainer: {
