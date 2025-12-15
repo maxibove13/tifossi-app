@@ -311,6 +311,12 @@ Components related to the user's favorite products.
 
 1. **EmptyFavorites (`/favorites/EmptyFavorites.tsx`):** Placeholder shown when no favorites exist.
 
+#### Orders Components (`/store/orders/`)
+
+Components related to order management.
+
+1. **EmptyOrders (`/orders/EmptyOrders.tsx`):** Placeholder shown when user has no orders. Displays a message and button to navigate to the store.
+
 #### Review Components (`/store/review/`)
 
 Components for displaying product reviews.
