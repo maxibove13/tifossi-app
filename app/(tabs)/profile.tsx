@@ -165,6 +165,11 @@ export default function ProfileScreen() {
 
       {isLoggedIn && (
         <View style={styles.actionButtonsContainer}>
+          <ProfileListItem
+            IconComponent={() => <Feather name="package" size={24} color={colors.primary} />}
+            text="Mis Pedidos"
+            onPress={() => router.push('/profile/orders')}
+          />
           {isEmailUser && (
             <ProfileListItem
               IconComponent={() => <Feather name="lock" size={24} color={colors.primary} />}

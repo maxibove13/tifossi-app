@@ -43,6 +43,12 @@ app/
 │   ├── _layout.tsx         # Products layout
 │   ├── product.tsx         # Product details screen
 │   └── index.ts            # Product exports
+├── profile/                # Profile-related screens
+│   ├── _layout.tsx         # Profile screens layout
+│   ├── change-password.tsx # Password change screen
+│   └── orders/             # Order management screens
+│       ├── index.tsx       # Orders list screen
+│       └── [id].tsx        # Order detail screen
 ├── not-found.tsx           # 404 page
 ├── _layout.tsx             # Root layout (includes splash screen)
 └── index.tsx               # Entry point (redirects to tabs)
@@ -325,6 +331,8 @@ The app supports deep linking to specific screens:
 - Favorites: `app://favorites`
 - Location stores: `app://locations/{cityId}`
 - Location store details: `app://locations/{cityId}/{zoneId}`
+- Orders list: `app://profile/orders`
+- Order detail: `app://profile/orders/{orderId}`
 
 ## Navigation Best Practices
 

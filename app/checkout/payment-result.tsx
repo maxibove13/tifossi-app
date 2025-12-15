@@ -71,8 +71,7 @@ export default function PaymentResultScreen() {
   }, [paymentSuccess, isVerifying, clearCart]);
 
   const handleGoToOrders = () => {
-    router.replace('/(tabs)/profile');
-    // Navigate to orders section in profile
+    router.replace('/profile/orders');
   };
 
   const handleTryAgain = () => {
