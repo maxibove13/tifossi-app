@@ -159,6 +159,7 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       const ctx = {
         request: {
           body: webhookPayload,
+          query: {},
           headers: {
             'x-signature': `ts=${timestamp},v1=${invalidSignature}`,
             'x-request-id': xRequestId,
@@ -215,6 +216,7 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       const ctx = {
         request: {
           body: webhookPayload,
+          query: {},
           headers: {
             'x-signature': `ts=${timestamp},v1=${validSignature}`,
             'x-request-id': xRequestId,
@@ -270,6 +272,7 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       const createContext = () => ({
         request: {
           body: { ...webhookPayload },
+          query: {},
           headers: {
             'x-signature': `ts=${timestamp},v1=${validSignature}`,
             'x-request-id': xRequestId,
@@ -426,7 +429,8 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       expect(strapi.documents).toHaveBeenCalledWith('api::order.order');
       expect(mockUpdate).toHaveBeenCalled();
       expect(strapi.log.info).toHaveBeenCalledWith(
-        expect.stringContaining('Found order')
+        expect.stringContaining('Order found'),
+        expect.any(Object)
       );
     });
 
@@ -848,13 +852,11 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
         webhookHandler.handlePaymentNotification({ id: paymentId }, 'req-no-order')
       ).resolves.not.toThrow();
 
-      // Should log warning - note: log.warn is called with a single string parameter
-      expect(strapi.log.warn).toHaveBeenCalledWith(
-        expect.stringContaining('No order found')
+      // Should log error about orphaned payment (implementation logs error, not warn)
+      expect(strapi.log.error).toHaveBeenCalledWith(
+        expect.stringContaining('ORDER NOT FOUND'),
+        expect.any(Object)
       );
-
-      // Should NOT crash the system
-      expect(strapi.log.error).not.toHaveBeenCalled();
     });
 
     it('should handle database errors', async () => {
@@ -898,18 +900,19 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       // Should log error before throwing
       expect(strapi.log.error).toHaveBeenCalledWith(
-        'Error handling payment notification:',
-        expect.any(Error)
+        expect.stringContaining('FAILED'),
+        expect.any(Object)
       );
     });
 
     it('should handle malformed webhook data', async () => {
       const webhookHandler = require('../src/webhooks/mercadopago');
 
-      // Test 1: Null body
+      // Test 1: Null body and empty query - unknown format
       const ctx1 = {
         request: {
           body: null,
+          query: {},
           headers: {},
         },
         badRequest: jest.fn(),
@@ -932,17 +935,17 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       await webhookHandler.handleWebhook(ctx1);
 
-      // Should call badRequest - validation happens after signature check
-      // But since headers are missing, it stops at header validation
-      expect(ctx1.badRequest).toHaveBeenCalledWith('Missing required webhook data');
+      // Should call badRequest for unknown webhook format
+      expect(ctx1.badRequest).toHaveBeenCalledWith('Unknown webhook format');
 
-      // Test 2: Missing headers but with body
+      // Test 2: v1 format body but missing signature headers
       const ctx2 = {
         request: {
           body: {
             type: 'payment',
             data: { id: '123' },
           },
+          query: {},
           headers: {}, // Missing x-signature and x-request-id
         },
         badRequest: jest.fn(),
@@ -965,8 +968,8 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       await webhookHandler.handleWebhook(ctx2);
 
-      // Should call badRequest for missing required webhook data (headers)
-      expect(ctx2.badRequest).toHaveBeenCalledWith('Missing required webhook data');
+      // Should call badRequest for missing signature headers (v1 format requires them)
+      expect(ctx2.badRequest).toHaveBeenCalledWith('Missing signature headers');
     });
 
     it('should handle MercadoPago API errors', async () => {
@@ -994,8 +997,8 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       // Should log error before throwing
       expect(strapi.log.error).toHaveBeenCalledWith(
-        'Error handling payment notification:',
-        expect.any(Error)
+        expect.stringContaining('FAILED'),
+        expect.any(Object)
       );
     });
 
@@ -1035,18 +1038,19 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       // Should log error before throwing
       expect(strapi.log.error).toHaveBeenCalledWith(
-        'Error handling payment notification:',
-        expect.any(Error)
+        expect.stringContaining('FAILED'),
+        expect.any(Object)
       );
     });
 
     it('should handle missing webhook headers', async () => {
       const webhookHandler = require('../src/webhooks/mercadopago');
 
-      // Missing x-signature
+      // v1 format with missing x-signature
       const ctx1 = {
         request: {
           body: { type: 'payment', data: { id: '123' } },
+          query: {},
           headers: {
             'x-request-id': 'test-req-id',
             // Missing x-signature
@@ -1072,13 +1076,14 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       await webhookHandler.handleWebhook(ctx1);
 
-      // Should call badRequest for missing headers
-      expect(ctx1.badRequest).toHaveBeenCalledWith('Missing required webhook data');
+      // Should call badRequest for missing signature headers (v1 format)
+      expect(ctx1.badRequest).toHaveBeenCalledWith('Missing signature headers');
 
-      // Missing x-request-id
+      // v1 format with missing x-request-id
       const ctx2 = {
         request: {
           body: { type: 'payment', data: { id: '123' } },
+          query: {},
           headers: {
             'x-signature': 'test-signature',
             // Missing x-request-id
@@ -1104,8 +1109,8 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       await webhookHandler.handleWebhook(ctx2);
 
-      // Should call badRequest for missing headers
-      expect(ctx2.badRequest).toHaveBeenCalledWith('Missing required webhook data');
+      // Should call badRequest for missing signature headers (v1 format)
+      expect(ctx2.badRequest).toHaveBeenCalledWith('Missing signature headers');
     });
 
     it('should handle concurrent webhook processing', async () => {
@@ -1322,6 +1327,7 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       const ctx = {
         request: {
           body: webhookPayload,
+          query: {},
           headers: {
             'x-signature': `ts=${timestamp},v1=${validSignature}`,
             'x-request-id': xRequestId,
@@ -1371,13 +1377,12 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       expect(ctx.body.success).toBe(true);
       expect(ctx.body.status).toBe('queued');
 
-      // Should create queue entry
+      // Should create queue entry - payload is normalized, not raw
       expect(mockCreate).toHaveBeenCalledWith({
         data: expect.objectContaining({
           requestId: xRequestId,
           webhookType: 'payment',
           dataId: dataId,
-          payload: webhookPayload,
           status: 'queued',
           retryCount: 0,
           maxRetries: 5,
@@ -1659,6 +1664,7 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       const ctx = {
         request: {
           body: webhookPayload,
+          query: {},
           headers: {
             'x-signature': `ts=${timestamp},v1=${validSignature}`,
             'x-request-id': xRequestId,
@@ -1671,14 +1677,13 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
         body: null,
       };
 
-      // Mock existing webhook log (already processed)
-      const existingLog = {
-        id: 99,
-        requestId: xRequestId,
-        webhookKey,
-        processedAt: new Date().toISOString(),
-        status: 'success',
-      };
+      // Mock webhook log create to throw unique constraint error (duplicate)
+      const mockLogCreate = jest.fn(() => {
+        const error = new Error('Unique constraint violation');
+        error.code = '23505';
+        throw error;
+      });
+      const mockQueueCreate = jest.fn();
 
       global.strapi = {
         log: {
@@ -1690,12 +1695,12 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
         documents: jest.fn((type) => {
           if (type === 'api::webhook-log.webhook-log') {
             return {
-              findMany: jest.fn(() => Promise.resolve([existingLog])), // Found existing
-              create: jest.fn(),
+              findMany: jest.fn(() => Promise.resolve([])),
+              create: mockLogCreate,
             };
           } else if (type === 'api::webhook-queue.webhook-queue') {
             return {
-              create: jest.fn(), // Should not be called
+              create: mockQueueCreate,
             };
           }
           return { findMany: jest.fn(() => Promise.resolve([])) };
@@ -1715,8 +1720,7 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       expect(ctx.body.status).toBe('duplicate');
 
       // Should NOT queue webhook
-      const queueCreate = strapi.documents('api::webhook-queue.webhook-queue').create;
-      expect(queueCreate).not.toHaveBeenCalled();
+      expect(mockQueueCreate).not.toHaveBeenCalled();
     });
   });
 });
