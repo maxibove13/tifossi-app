@@ -65,6 +65,9 @@ export default function OverlayCheckoutShipping({
 
   useEffect(() => {
     if (isVisible) {
+      // Reset state when becoming visible
+      setSelectedQuantity(initialQuantity);
+      setSelectedSize(initialSize);
       // Start fade-in and slide-up animations when overlay becomes visible
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -83,7 +86,7 @@ export default function OverlayCheckoutShipping({
       fadeAnim.setValue(0);
       slideAnim.setValue(height);
     }
-  }, [isVisible, fadeAnim, slideAnim]);
+  }, [isVisible, fadeAnim, slideAnim, initialQuantity, initialSize]);
 
   const handleSelectQuantity = () => {
     // Show the quantity overlay
