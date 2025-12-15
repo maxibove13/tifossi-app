@@ -333,13 +333,16 @@ class FirebaseAuthService {
    * Apple Sign-In
    */
   async signInWithApple(): Promise<AuthResult> {
+    console.log('[Apple Sign-In] Starting...');
     try {
       const AppleAuthentication = getAppleAuthModule();
       const { signInWithCredential, AppleAuthProvider, updateProfile, getIdToken } =
         getFirebaseAuthModule();
 
       // Check if Apple auth is available
+      console.log('[Apple Sign-In] Checking availability...');
       const isAppleAvailable = await AppleAuthentication.isAvailableAsync();
+      console.log('[Apple Sign-In] Available:', isAppleAvailable);
       if (!isAppleAvailable) {
         return {
           success: false,
@@ -348,24 +351,41 @@ class FirebaseAuthService {
       }
 
       // Perform Apple sign-in
+      console.log('[Apple Sign-In] Requesting Apple authentication...');
       const appleAuthRequestResponse = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
+      console.log('[Apple Sign-In] Apple response received:', {
+        user: appleAuthRequestResponse.user?.substring(0, 10) + '...',
+        email: appleAuthRequestResponse.email,
+        hasIdentityToken: !!appleAuthRequestResponse.identityToken,
+        identityTokenLength: appleAuthRequestResponse.identityToken?.length,
+        hasAuthorizationCode: !!appleAuthRequestResponse.authorizationCode,
+        fullName: appleAuthRequestResponse.fullName,
+      });
 
       // Create Firebase credential
       const { identityToken } = appleAuthRequestResponse;
 
       if (!identityToken) {
+        console.log('[Apple Sign-In] ERROR: No identity token received');
         throw new Error('No identity token received from Apple');
       }
 
+      console.log('[Apple Sign-In] Creating Firebase credential with identity token...');
       const appleCredential = AppleAuthProvider.credential(identityToken);
+      console.log('[Apple Sign-In] Firebase credential created, signing in...');
 
       // Sign in with Firebase
       const userCredential = await signInWithCredential(getAuthSafe(), appleCredential);
+      console.log('[Apple Sign-In] Firebase sign-in successful:', {
+        uid: userCredential.user.uid,
+        email: userCredential.user.email,
+        emailVerified: userCredential.user.emailVerified,
+      });
 
       // Update display name if provided by Apple (only on first sign-in)
       if (appleAuthRequestResponse.fullName?.givenName) {
@@ -383,6 +403,7 @@ class FirebaseAuthService {
 
       const user = this.mapFirebaseUserToAppUser(userCredential.user);
       const token = await getIdToken(userCredential.user);
+      console.log('[Apple Sign-In] Complete success, token length:', token?.length);
 
       return {
         success: true,
@@ -390,6 +411,13 @@ class FirebaseAuthService {
         token,
       };
     } catch (error: any) {
+      console.log('[Apple Sign-In] ERROR:', {
+        code: error?.code,
+        message: error?.message,
+        name: error?.name,
+        fullError: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+      });
+
       // Handle Apple Sign-In cancellation
       if (error.code === 'ERR_CANCELLED' || error.code === 'ERR_REQUEST_CANCELED') {
         return {

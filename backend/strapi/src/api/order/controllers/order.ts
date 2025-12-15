@@ -23,6 +23,80 @@ interface OrderEntity {
   updatedAt: string;
 }
 
+// Status mapping from Strapi (lowercase) to frontend (uppercase)
+const ORDER_STATUS_MAP: Record<string, string> = {
+  pending: 'PAYMENT_PENDING',
+  processing: 'PROCESSING',
+  paid: 'PAID',
+  shipped: 'SHIPPED',
+  delivered: 'DELIVERED',
+  cancelled: 'CANCELLED',
+  refunded: 'REFUNDED',
+};
+
+const PAYMENT_STATUS_MAP: Record<string, string> = {
+  pending: 'PENDING',
+  approved: 'APPROVED',
+  rejected: 'REJECTED',
+  cancelled: 'CANCELLED',
+  refunded: 'REFUNDED',
+};
+
+const transformStatus = (status: string): string => {
+  return ORDER_STATUS_MAP[status?.toLowerCase()] || 'PAYMENT_PENDING';
+};
+
+const transformPaymentStatus = (status: string): string => {
+  return PAYMENT_STATUS_MAP[status?.toLowerCase()] || 'PENDING';
+};
+
+interface StrapiOrderItem {
+  id?: number;
+  product?: { id: number; documentId?: string };
+  productSnapshot?: {
+    id?: number;
+    title?: string;
+    slug?: string;
+    price?: number;
+    discountedPrice?: number;
+    description?: string;
+    image?: string;
+  };
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  selectedColor?: string;
+  selectedSize?: string;
+}
+
+interface ClientOrderItem {
+  productId: string;
+  productName: string;
+  description?: string;
+  quantity: number;
+  price: number;
+  discountedPrice?: number;
+  size?: string;
+  color?: string;
+  imageUrl?: string;
+}
+
+const transformOrderItems = (items: StrapiOrderItem[]): ClientOrderItem[] => {
+  if (!items || !Array.isArray(items)) return [];
+
+  return items.map((item) => ({
+    productId: String(item.product?.id || item.productSnapshot?.id || ''),
+    productName: item.productSnapshot?.title || 'Producto',
+    description: item.productSnapshot?.description,
+    quantity: item.quantity,
+    price: item.unitPrice,
+    discountedPrice: item.productSnapshot?.discountedPrice ?? undefined,
+    size: item.selectedSize ?? undefined,
+    color: item.selectedColor ?? undefined,
+    imageUrl: item.productSnapshot?.image ?? undefined,
+  }));
+};
+
 export default factories.createCoreController('api::order.order', ({ strapi }) => ({
   async find(ctx: any) {
     // User populated by jwt-auth middleware
@@ -52,14 +126,15 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       orders: orders.map((order: any) => ({
         id: order.documentId || order.id,
         orderNumber: order.orderNumber,
-        status: order.status,
-        paymentStatus: order.paymentStatus,
+        status: transformStatus(order.status),
+        paymentStatus: transformPaymentStatus(order.paymentStatus),
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
-        items: order.items || [],
-        total: order.total,
-        subtotal: order.subtotal,
-        shippingCost: order.shippingCost,
+        items: transformOrderItems(order.items || []),
+        total: order.total ?? 0,
+        subtotal: order.subtotal ?? 0,
+        discount: order.discount ?? 0,
+        shippingCost: order.shippingCost ?? 0,
         shippingMethod: order.shippingMethod,
       })),
       pagination: {
@@ -103,18 +178,19 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       order: {
         id: orderData.documentId || orderData.id,
         orderNumber: orderData.orderNumber,
-        status: orderData.status,
-        paymentStatus: orderData.paymentStatus,
+        status: transformStatus(orderData.status),
+        paymentStatus: transformPaymentStatus(orderData.paymentStatus),
         createdAt: orderData.createdAt,
         updatedAt: orderData.updatedAt,
-        items: orderData.items || [],
-        total: orderData.total,
-        subtotal: orderData.subtotal,
-        discount: orderData.discount,
-        shippingCost: orderData.shippingCost,
+        items: transformOrderItems(orderData.items || []),
+        total: orderData.total ?? 0,
+        subtotal: orderData.subtotal ?? 0,
+        discount: orderData.discount ?? 0,
+        shippingCost: orderData.shippingCost ?? 0,
         shippingMethod: orderData.shippingMethod,
         shippingAddress: orderData.shippingAddress,
         storeLocation: orderData.storeLocation,
+        trackingNumber: orderData.trackingNumber,
         notes: orderData.notes,
       },
     };

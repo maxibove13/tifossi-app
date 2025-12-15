@@ -106,6 +106,12 @@
       "default": "pending",
       "required": true
     },
+    "paymentStatus": {
+      "type": "enumeration",
+      "enum": ["pending", "approved", "rejected", "cancelled", "refunded"],
+      "default": "pending",
+      "required": true
+    },
     "trackingNumber": {
       "type": "string"
     },
