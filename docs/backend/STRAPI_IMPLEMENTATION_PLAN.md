@@ -144,13 +144,14 @@ module.exports = ({ env }) => ({
     "total": { "type": "decimal", "required": true },
     "status": {
       "type": "enumeration",
-      "enum": ["pending", "processing", "shipped", "delivered", "cancelled"],
+      "enum": ["pending", "processing", "paid", "shipped", "delivered", "cancelled", "refunded"],
       "default": "pending"
     },
     "paymentStatus": {
       "type": "enumeration",
-      "enum": ["pending", "approved", "rejected", "refunded"],
-      "default": "pending"
+      "enum": ["pending", "approved", "rejected", "cancelled", "refunded"],
+      "default": "pending",
+      "required": true
     },
     "mercadoPagoId": { "type": "string" },
     "shippingAddress": { "type": "json" },
@@ -158,6 +159,28 @@ module.exports = ({ env }) => ({
   }
 }
 ```
+
+### Status Transformation (Controller):
+
+The order controller transforms status values from lowercase (Strapi storage) to uppercase (frontend constants):
+
+| Strapi Status | Frontend Status |
+|---------------|-----------------|
+| `pending` | `PAYMENT_PENDING` |
+| `processing` | `PROCESSING` |
+| `paid` | `PAID` |
+| `shipped` | `SHIPPED` |
+| `delivered` | `DELIVERED` |
+| `cancelled` | `CANCELLED` |
+| `refunded` | `REFUNDED` |
+
+| Strapi Payment Status | Frontend Payment Status |
+|-----------------------|-------------------------|
+| `pending` | `PENDING` |
+| `approved` | `APPROVED` |
+| `rejected` | `REJECTED` |
+| `cancelled` | `CANCELLED` |
+| `refunded` | `REFUNDED` |
 
 ---
 
