@@ -331,10 +331,20 @@ export default function PaymentSelectionScreen() {
       }
       // WebView will handle the rest through deep links
     } catch (error) {
-      // Show actual error message for debugging
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error('[Checkout] Payment error:', errorMessage);
-      Alert.alert('Error de Pago', errorMessage);
+      const rawMessage = error instanceof Error ? error.message : String(error);
+      console.error('[Checkout] Payment error:', rawMessage);
+
+      // Convert technical errors to user-friendly messages
+      let userMessage: string;
+      if (rawMessage.toLowerCase().includes('network')) {
+        userMessage = 'Sin conexión a internet. Verifica tu conexión.';
+      } else if (rawMessage.toLowerCase().includes('auth')) {
+        userMessage = 'Debes iniciar sesión para continuar.';
+      } else {
+        userMessage = rawMessage;
+      }
+
+      Alert.alert('Error de Pago', userMessage);
     } finally {
       setIsProcessingPayment(false);
       setLoading(false);
