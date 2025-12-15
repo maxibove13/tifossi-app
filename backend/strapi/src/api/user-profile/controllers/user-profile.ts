@@ -48,7 +48,7 @@ interface CleanAddress {
 
 /**
  * Strips internal Strapi metadata from address objects to ensure proper component updates.
- * Strapi 5's db.query().update() requires clean objects without internal fields like id, __component, etc.
+ * Strapi 5's entityService.update() requires clean objects without internal fields like id, __component, etc.
  */
 function cleanAddress(addr: any, overrides: Partial<CleanAddress> = {}): CleanAddress {
   return {
@@ -237,10 +237,13 @@ export default {
     }
 
     try {
-      const currentUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-        where: { id: user.id },
-        populate: ['addresses'],
-      });
+      // Use entityService for proper component handling in Strapi 5
+      // Type assertion needed because custom schema extensions aren't reflected in generated types
+      const currentUser = (await strapi.entityService.findOne(
+        'plugin::users-permissions.user',
+        user.id,
+        { populate: ['addresses'] as any }
+      )) as any;
 
       const addresses = currentUser?.addresses || [];
       // Add index as id for frontend reference
@@ -301,10 +304,13 @@ export default {
     }
 
     try {
-      const currentUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-        where: { id: user.id },
-        populate: ['addresses'],
-      });
+      // Use entityService for proper component handling in Strapi 5
+      // Type assertion needed because custom schema extensions aren't reflected in generated types
+      const currentUser = (await strapi.entityService.findOne(
+        'plugin::users-permissions.user',
+        user.id,
+        { populate: ['addresses'] as any }
+      )) as any;
 
       const existingAddresses = currentUser?.addresses || [];
       const isNewDefault = body.isDefault || false;
@@ -316,9 +322,8 @@ export default {
       );
       cleanAddresses.push(newAddress);
 
-      await strapi.db.query('plugin::users-permissions.user').update({
-        where: { id: user.id },
-        data: { addresses: cleanAddresses },
+      await strapi.entityService.update('plugin::users-permissions.user', user.id, {
+        data: { addresses: cleanAddresses } as any,
       });
 
       ctx.body = { ...newAddress, id: cleanAddresses.length - 1 };
@@ -384,10 +389,13 @@ export default {
     }
 
     try {
-      const currentUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-        where: { id: user.id },
-        populate: ['addresses'],
-      });
+      // Use entityService for proper component handling in Strapi 5
+      // Type assertion needed because custom schema extensions aren't reflected in generated types
+      const currentUser = (await strapi.entityService.findOne(
+        'plugin::users-permissions.user',
+        user.id,
+        { populate: ['addresses'] as any }
+      )) as any;
 
       const existingAddresses = currentUser?.addresses || [];
 
@@ -427,9 +435,8 @@ export default {
         return cleanAddress(addr, { isDefault: body.isDefault === true ? false : addr.isDefault });
       });
 
-      await strapi.db.query('plugin::users-permissions.user').update({
-        where: { id: user.id },
-        data: { addresses: cleanAddresses },
+      await strapi.entityService.update('plugin::users-permissions.user', user.id, {
+        data: { addresses: cleanAddresses } as any,
       });
 
       ctx.body = { ...cleanAddresses[index], id: index };
@@ -458,10 +465,13 @@ export default {
     }
 
     try {
-      const currentUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-        where: { id: user.id },
-        populate: ['addresses'],
-      });
+      // Use entityService for proper component handling in Strapi 5
+      // Type assertion needed because custom schema extensions aren't reflected in generated types
+      const currentUser = (await strapi.entityService.findOne(
+        'plugin::users-permissions.user',
+        user.id,
+        { populate: ['addresses'] as any }
+      )) as any;
 
       const existingAddresses = currentUser?.addresses || [];
 
@@ -482,9 +492,8 @@ export default {
         cleanAddresses[0].isDefault = true;
       }
 
-      await strapi.db.query('plugin::users-permissions.user').update({
-        where: { id: user.id },
-        data: { addresses: cleanAddresses },
+      await strapi.entityService.update('plugin::users-permissions.user', user.id, {
+        data: { addresses: cleanAddresses } as any,
       });
 
       ctx.body = { success: true };
@@ -513,10 +522,13 @@ export default {
     }
 
     try {
-      const currentUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-        where: { id: user.id },
-        populate: ['addresses'],
-      });
+      // Use entityService for proper component handling in Strapi 5
+      // Type assertion needed because custom schema extensions aren't reflected in generated types
+      const currentUser = (await strapi.entityService.findOne(
+        'plugin::users-permissions.user',
+        user.id,
+        { populate: ['addresses'] as any }
+      )) as any;
 
       const existingAddresses = currentUser?.addresses || [];
 
@@ -530,9 +542,8 @@ export default {
         cleanAddress(addr, { isDefault: i === index })
       );
 
-      await strapi.db.query('plugin::users-permissions.user').update({
-        where: { id: user.id },
-        data: { addresses: cleanAddresses },
+      await strapi.entityService.update('plugin::users-permissions.user', user.id, {
+        data: { addresses: cleanAddresses } as any,
       });
 
       ctx.body = cleanAddresses.map((addr: any, i: number) => ({ ...addr, id: i }));
