@@ -412,8 +412,8 @@ jobs:
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          echo "Pushing OTA update to preview channel..."
-          eas update --channel preview \
+          echo "Pushing OTA update to production channel..."
+          eas update --channel production \
             --message "$COMMIT_MESSAGE" \
             --non-interactive
 
@@ -424,7 +424,7 @@ jobs:
           echo "======================================"
           echo "EAS UPDATE SUMMARY"
           echo "======================================"
-          echo "Channel: preview"
+          echo "Channel: production"
           echo "Message: $COMMIT_MESSAGE"
           echo ""
           echo "Users with the app installed will receive"

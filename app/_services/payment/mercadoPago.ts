@@ -132,10 +132,11 @@ class MercadoPagoService {
           guestPhone: orderData.user.phone?.number,
         };
 
-        // Debug: Log checkout payload
-        console.log('[Checkout] Items being sent:', JSON.stringify(guestOrderData.items, null, 2));
+        const url = `${this.baseUrl}/api/payment/guest/create-preference`;
+        console.log('[MercadoPago] Guest request URL:', url);
+        console.log('[MercadoPago] Guest request data:', JSON.stringify(guestOrderData, null, 2));
 
-        const response = await fetch(`${this.baseUrl}/api/payment/guest/create-preference`, {
+        const response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -147,16 +148,24 @@ class MercadoPagoService {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            errorData.message || `HTTP ${response.status}: Failed to create payment preference`
-          );
+          const responseText = await response.text();
+          let errorMessage = `HTTP ${response.status}`;
+          try {
+            const errorData = JSON.parse(responseText);
+            errorMessage = errorData.error?.message || errorData.message || errorMessage;
+          } catch {
+            // Response wasn't JSON, use text or status
+            if (responseText.length < 200) errorMessage = responseText || errorMessage;
+          }
+          console.error('[MercadoPago] Guest API error:', response.status, errorMessage);
+          throw new Error(errorMessage);
         }
 
         const result = await response.json();
+        console.log('[MercadoPago] Guest response:', JSON.stringify(result, null, 2));
 
         if (!result.success || !result.data) {
-          throw new Error('Invalid response format');
+          throw new Error('Invalid response format from server');
         }
 
         return {
@@ -167,7 +176,11 @@ class MercadoPagoService {
       }
 
       // Use authenticated endpoint for logged-in users
-      const response = await fetch(`${this.baseUrl}/api/payment/create-preference`, {
+      const url = `${this.baseUrl}/api/payment/create-preference`;
+      console.log('[MercadoPago] Auth request URL:', url);
+      console.log('[MercadoPago] Auth request data:', JSON.stringify(orderData, null, 2));
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,16 +193,24 @@ class MercadoPagoService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `HTTP ${response.status}: Failed to create payment preference`
-        );
+        const responseText = await response.text();
+        let errorMessage = `HTTP ${response.status}`;
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error?.message || errorData.message || errorMessage;
+        } catch {
+          // Response wasn't JSON, use text or status
+          if (responseText.length < 200) errorMessage = responseText || errorMessage;
+        }
+        console.error('[MercadoPago] Auth API error:', response.status, errorMessage);
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
+      console.log('[MercadoPago] Auth response:', JSON.stringify(result, null, 2));
 
       if (!result.success || !result.data) {
-        throw new Error('Invalid response format');
+        throw new Error('Invalid response format from server');
       }
 
       return {
@@ -198,9 +219,9 @@ class MercadoPagoService {
         externalReference: result.data.preference.externalReference,
       };
     } catch (error) {
-      throw new Error(
-        `Failed to create payment preference: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('[MercadoPago] createPaymentPreference failed:', msg);
+      throw new Error(msg);
     }
   }
 
