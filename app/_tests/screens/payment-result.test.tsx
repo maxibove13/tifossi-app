@@ -141,7 +141,7 @@ describe('PaymentResultScreen', () => {
 
       fireEvent.press(getByText('Ver mis pedidos'));
 
-      expect(router.replace).toHaveBeenCalledWith('/(tabs)/profile');
+      expect(router.replace).toHaveBeenCalledWith('/profile/orders');
     });
   });
 

@@ -80,7 +80,11 @@ app/
 │   ├── product.tsx     # Product details screen
 │   └── index.ts        # Product exports
 ├── profile/            # Profile-related screens
-│   └── change-password.tsx # Password change screen
+│   ├── _layout.tsx     # Profile screens layout
+│   ├── change-password.tsx # Password change screen
+│   └── orders/         # Order management screens
+│       ├── index.tsx   # Orders list screen
+│       └── [id].tsx    # Order detail screen
 ├── legal/              # Legal screens
 │   ├── terms.tsx       # Terms and conditions screen
 │   └── privacy.tsx     # Privacy policy screen
@@ -126,6 +130,8 @@ app/
 │   ├── shadows.ts      # Shadow definitions
 │   └── tokens/         # Design tokens by feature
 │       └── featured.ts # Featured section tokens
+├── _utils/             # Utility functions
+│   └── orderUtils.ts   # Order formatting utilities (status, date, currency)
 ├── _data/              # Mock data and content
 │   ├── products.ts     # Mock product data
 │   ├── categories.ts   # Category definitions
@@ -243,6 +249,8 @@ _components/
 │   │   └── EmptyCart.tsx    # Empty cart state
 │   ├── favorites/      # Favorites components
 │   │   └── EmptyFavorites.tsx # Empty favorites state
+│   ├── orders/         # Order components
+│   │   └── EmptyOrders.tsx  # Empty orders state
 │   └── review/          # Product review components
 │       └── ReviewCard.tsx   # Review component
 ├── home/               # Home screen components
@@ -530,7 +538,7 @@ interface CardDimensions {
 - Store Location Screens
 - Product Sharing (via Native Share Sheet)
 - Authentication System (Complete with mock API integration)
-- Profile Management (Password change, profile picture)
+- Profile Management (Password change, profile picture, order history)
 - Cart Validation (removes stale products on app startup)
 
 🟡 **Partially Implemented**
