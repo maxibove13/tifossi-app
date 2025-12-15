@@ -6,12 +6,20 @@ import { transformStrapiProduct, StrapiResponse, StrapiProduct } from '../_utils
 import { Product } from '../_types/product';
 import { ProductStatus } from '../_types/product-status';
 
-// Setup MMKV storage for product data caching
-const storage = new MMKV({ id: 'product-storage' });
+// Lazy-initialize MMKV to prevent crashes on real devices
+// Native modules can't be instantiated during bundle evaluation
+let _storage: MMKV | null = null;
+const getStorage = () => {
+  if (!_storage) {
+    _storage = new MMKV({ id: 'product-storage' });
+  }
+  return _storage;
+};
+
 const mmkvStorage = createJSONStorage(() => ({
-  getItem: (name) => storage.getString(name) ?? null,
-  setItem: (name, value) => storage.set(name, value),
-  removeItem: (name) => storage.delete(name),
+  getItem: (name) => getStorage().getString(name) ?? null,
+  setItem: (name, value) => getStorage().set(name, value),
+  removeItem: (name) => getStorage().delete(name),
 }));
 
 export type ProductActionStatus = 'idle' | 'loading' | 'success' | 'error';

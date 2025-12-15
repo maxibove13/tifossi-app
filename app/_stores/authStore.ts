@@ -12,12 +12,20 @@ import {
   PasswordChangeCredentials,
 } from '../_types/auth';
 
-// Setup MMKV storage for non-sensitive auth data
-const storage = new MMKV({ id: 'auth-storage' });
+// Lazy-initialize MMKV to prevent crashes on real devices
+// Native modules can't be instantiated during bundle evaluation
+let _storage: MMKV | null = null;
+const getStorage = () => {
+  if (!_storage) {
+    _storage = new MMKV({ id: 'auth-storage' });
+  }
+  return _storage;
+};
+
 const mmkvStorage = createJSONStorage(() => ({
-  getItem: (name) => storage.getString(name) ?? null,
-  setItem: (name, value) => storage.set(name, value),
-  removeItem: (name) => storage.delete(name),
+  getItem: (name) => getStorage().getString(name) ?? null,
+  setItem: (name, value) => getStorage().set(name, value),
+  removeItem: (name) => getStorage().delete(name),
 }));
 
 const AUTH_TOKEN_KEY = 'tifossi_auth_token';

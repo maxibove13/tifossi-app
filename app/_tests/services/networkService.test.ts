@@ -172,7 +172,7 @@ describe('NetworkService', () => {
     }
   });
 
-  it('should hydrate from persisted state on startup', () => {
+  it('should hydrate from persisted state on initialize', async () => {
     const persistedState = {
       isConnected: true,
       isInternetReachable: true,
@@ -183,8 +183,15 @@ describe('NetworkService', () => {
     };
 
     setMMKVReturnValue(JSON.stringify(persistedState));
+    // Mock NetInfo.fetch for initialize()
+    netInfoMock.fetch.mockResolvedValueOnce(
+      createState({ isConnected: true, isInternetReachable: true, type: NetInfoStateType.cellular })
+    );
 
     const { networkService } = loadModule();
+    // Persisted state is now loaded in initialize() to defer native module access
+    networkService.initialize();
+    await flushAsync();
 
     const state = networkService.getState();
     expect(state).toEqual(expect.objectContaining(persistedState));

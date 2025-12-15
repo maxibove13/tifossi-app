@@ -102,7 +102,6 @@ app/
 │   │   ├── strapiApi.ts       # Strapi backend integration
 │   │   ├── errorHandler.ts    # API error handling
 │   │   └── queryHooks.ts      # React Query hooks
-│   └── mmkvTest.ts     # MMKV testing/implementation
 ├── _stores/            # Global state stores
 │   ├── cartStore.ts    # Shopping cart state management
 │   ├── favoritesStore.ts # Favorites state management

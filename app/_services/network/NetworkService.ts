@@ -2,8 +2,15 @@ import NetInfo, { NetInfoState, NetInfoStateType } from '@react-native-community
 import { MMKV } from 'react-native-mmkv';
 import { safeLog, safeWarn } from '../../_config/environment';
 
-// Storage for network state persistence
-const networkStorage = new MMKV({ id: 'network-storage' });
+// Lazy-initialize MMKV to prevent crashes on real devices
+// Native modules can't be instantiated during bundle evaluation
+let _networkStorage: MMKV | null = null;
+const getNetworkStorage = () => {
+  if (!_networkStorage) {
+    _networkStorage = new MMKV({ id: 'network-storage' });
+  }
+  return _networkStorage;
+};
 
 export interface NetworkState {
   isConnected: boolean;
@@ -22,9 +29,9 @@ class NetworkService {
   private unsubscribe?: () => void;
 
   constructor() {
-    // Initialize with persisted state or defaults
-    this.currentState = this.getPersistedState();
-    safeLog('[NetworkService] Initialized with state:', this.currentState);
+    // Initialize with defaults - persisted state loaded in initialize()
+    // to avoid accessing native modules during bundle evaluation
+    this.currentState = this.getDefaultState();
   }
 
   /**
@@ -35,6 +42,10 @@ class NetworkService {
       safeWarn('[NetworkService] Already initialized');
       return;
     }
+
+    // Load persisted state now that native modules are ready
+    this.currentState = this.getPersistedState();
+    safeLog('[NetworkService] Initialized with state:', this.currentState);
 
     // Subscribe to network state changes
     this.unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
@@ -186,7 +197,7 @@ class NetworkService {
    */
   private persistState(): void {
     try {
-      networkStorage.set('network-state', JSON.stringify(this.currentState));
+      getNetworkStorage().set('network-state', JSON.stringify(this.currentState));
     } catch (error) {
       safeWarn('[NetworkService] Failed to persist network state:', error);
     }
@@ -197,7 +208,7 @@ class NetworkService {
    */
   private getPersistedState(): NetworkState {
     try {
-      const stored = networkStorage.getString('network-state');
+      const stored = getNetworkStorage().getString('network-state');
       if (stored) {
         return JSON.parse(stored);
       }
@@ -205,7 +216,13 @@ class NetworkService {
       safeWarn('[NetworkService] Failed to load persisted network state:', error);
     }
 
-    // Default state
+    return this.getDefaultState();
+  }
+
+  /**
+   * Get default network state
+   */
+  private getDefaultState(): NetworkState {
     return {
       isConnected: false,
       isInternetReachable: false,
