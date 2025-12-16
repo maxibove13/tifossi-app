@@ -6,12 +6,14 @@
  */
 
 import { firebaseAdmin } from '../../lib/auth/firebase-admin-setup';
+import userSchema from './content-types/user/schema.json';
 
 type Plugin = {
   register?: (params: any) => Promise<void> | void;
   bootstrap?: (params: any) => Promise<void> | void;
   services?: Record<string, any>;
   middlewares?: Record<string, any>;
+  contentTypes?: Record<string, { schema: any }>;
 };
 
 let userServiceExtended = false;
@@ -72,6 +74,11 @@ const extendUserService = (plugin: Plugin) => {
 };
 
 export default (plugin: Plugin) => {
+  // Register the extended user content-type schema
+  plugin.contentTypes = {
+    ...plugin.contentTypes,
+    user: { schema: userSchema },
+  };
   const initializeFirebase = async () => {
     const hasCredentials =
       process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
