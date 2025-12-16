@@ -40,7 +40,7 @@ export interface Order {
   subtotal: number;
   discount: number;
   total: number;
-  paymentStatus: PaymentStatus;
+  mpCollectionStatus?: string; // Raw MercadoPago status for debugging
   paymentMethod?: string;
   paymentId?: string;
   createdAt: string;
@@ -59,8 +59,6 @@ export type OrderStatus =
   | 'DELIVERED'
   | 'CANCELLED'
   | 'REFUNDED';
-
-export type PaymentStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'REFUNDED';
 
 export interface CreateOrderRequest {
   items: CartItem[];
@@ -160,7 +158,6 @@ class OrderService {
           discount: totals.discount,
           total: totals.total,
           status: 'CREATED' as OrderStatus,
-          paymentStatus: 'PENDING' as PaymentStatus,
           notes: orderRequest.notes,
         };
 
@@ -186,7 +183,6 @@ class OrderService {
         discount: totals.discount,
         total: totals.total,
         status: 'CREATED' as OrderStatus,
-        paymentStatus: 'PENDING' as PaymentStatus,
         notes: orderRequest.notes,
       };
 
@@ -539,18 +535,21 @@ class OrderService {
   }
 
   /**
-   * Get payment status display text
+   * Get payment status text derived from order status
+   * Payment is confirmed when order has progressed past 'pending'
    */
-  getPaymentStatusText(status: PaymentStatus): string {
-    const statusTexts: Record<PaymentStatus, string> = {
-      PENDING: 'Pendiente',
-      APPROVED: 'Aprobado',
-      REJECTED: 'Rechazado',
-      CANCELLED: 'Cancelado',
-      REFUNDED: 'Reembolsado',
-    };
-
-    return statusTexts[status] || 'Estado desconocido';
+  getPaymentStatusFromOrder(status: string): string {
+    const lowerStatus = status.toLowerCase();
+    if (['paid', 'processing', 'shipped', 'delivered'].includes(lowerStatus)) {
+      return 'Confirmado';
+    }
+    if (['cancelled'].includes(lowerStatus)) {
+      return 'Cancelado';
+    }
+    if (['refunded'].includes(lowerStatus)) {
+      return 'Reembolsado';
+    }
+    return 'Pendiente';
   }
 
   /**
@@ -566,7 +565,7 @@ class OrderService {
    */
   canRefundOrder(order: Order): boolean {
     const refundableStatuses: OrderStatus[] = ['PAID', 'PROCESSING', 'SHIPPED'];
-    return refundableStatuses.includes(order.status) && order.paymentStatus === 'APPROVED';
+    return refundableStatuses.includes(order.status);
   }
 }
 

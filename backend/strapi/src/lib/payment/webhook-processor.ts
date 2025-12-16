@@ -20,7 +20,7 @@ interface StrapiOrder {
   mpPaymentId?: string;
   mpPreferenceId?: string;
   mpCollectionId?: string;
-  mpPaymentStatus?: string;
+  mpCollectionStatus?: string;
   paidAt?: string;
   metadata?: Record<string, any>;
   user: {
@@ -38,7 +38,7 @@ interface StrapiOrder {
 interface WebhookUpdateData {
   mpPaymentId?: string;
   mpCollectionId?: string;
-  mpPaymentStatus?: string;
+  mpCollectionStatus?: string;
   status?: OrderStatus;
   paidAt?: string;
   metadata?: Record<string, any>;
@@ -279,7 +279,7 @@ export class WebhookProcessor {
       const updateData: WebhookUpdateData = {
         mpPaymentId: paymentInfo.id.toString(),
         mpCollectionId: paymentData.collection_id || paymentInfo.id.toString(),
-        mpPaymentStatus: paymentInfo.status,
+        mpCollectionStatus: paymentInfo.status,
         metadata: {
           ...order.metadata,
           lastWebhookUpdate: new Date().toISOString(),

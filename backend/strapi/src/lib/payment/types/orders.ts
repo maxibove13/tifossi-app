@@ -106,8 +106,7 @@ export interface Order extends OrderData, IdentifiableEntity, AuditableEntity {
   mpPreferenceId?: string;
   mpPaymentId?: string;
   mpCollectionId?: string;
-  mpPaymentStatus?: string;
-  mpPaymentStatusDetail?: string;
+  mpCollectionStatus?: string;
   paidAt?: Date | string;
   shippedAt?: Date | string;
   deliveredAt?: Date | string;

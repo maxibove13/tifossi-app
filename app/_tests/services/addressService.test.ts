@@ -36,7 +36,8 @@ describe('AddressService', () => {
   describe('fetchUserAddresses', () => {
     it('should fetch all user addresses', async () => {
       const mockAddresses = [validAddress, { ...validAddress, id: 1 }];
-      mockHttpClient.get.mockResolvedValue({ data: { addresses: mockAddresses } });
+      // httpClient.get returns response.data directly (unwrapped)
+      mockHttpClient.get.mockResolvedValue({ addresses: mockAddresses });
 
       const result = await addressService.fetchUserAddresses();
 
@@ -50,13 +51,15 @@ describe('AddressService', () => {
     });
 
     it('should handle direct array response', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: [validAddress] });
+      // httpClient.get returns response.data directly (unwrapped)
+      mockHttpClient.get.mockResolvedValue([validAddress]);
       const result = await addressService.fetchUserAddresses();
       expect(result).toEqual([validAddress]);
     });
 
     it('should handle empty response', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: { addresses: [] } });
+      // httpClient.get returns response.data directly (unwrapped)
+      mockHttpClient.get.mockResolvedValue({ addresses: [] });
       const result = await addressService.fetchUserAddresses();
       expect(result).toEqual([]);
     });
@@ -84,7 +87,8 @@ describe('AddressService', () => {
 
     it('should create a new address with valid data', async () => {
       const createdAddress = { ...newAddress, id: 2 };
-      mockHttpClient.post.mockResolvedValue({ data: { address: createdAddress } });
+      // httpClient.post returns response.data directly (unwrapped)
+      mockHttpClient.post.mockResolvedValue({ address: createdAddress });
 
       const result = await addressService.createAddress(newAddress);
 
@@ -144,7 +148,8 @@ describe('AddressService', () => {
     it('should update an existing address', async () => {
       const updates = { addressLine1: 'New Street 789' };
       const updatedAddress = { ...validAddress, ...updates };
-      mockHttpClient.put.mockResolvedValue({ data: { address: updatedAddress } });
+      // httpClient.put returns response.data directly (unwrapped)
+      mockHttpClient.put.mockResolvedValue({ address: updatedAddress });
 
       const result = await addressService.updateAddress(0, updates);
 
@@ -158,9 +163,8 @@ describe('AddressService', () => {
 
     it('should allow partial updates', async () => {
       const partialUpdate = { addressLine2: 'Suite 5' };
-      mockHttpClient.put.mockResolvedValue({
-        data: { address: { ...validAddress, ...partialUpdate } },
-      });
+      // httpClient.put returns response.data directly (unwrapped)
+      mockHttpClient.put.mockResolvedValue({ address: { ...validAddress, ...partialUpdate } });
 
       const result = await addressService.updateAddress(0, partialUpdate);
 
@@ -211,7 +215,8 @@ describe('AddressService', () => {
         { ...validAddress, id: 1, isDefault: true },
         { ...validAddress, id: 2, isDefault: false },
       ];
-      mockHttpClient.get.mockResolvedValue({ data: { addresses } });
+      // httpClient.get returns response.data directly (unwrapped)
+      mockHttpClient.get.mockResolvedValue({ addresses });
 
       const result = await addressService.getDefaultAddress();
 
@@ -223,7 +228,8 @@ describe('AddressService', () => {
         { ...validAddress, id: 0, isDefault: false },
         { ...validAddress, id: 1, isDefault: false },
       ];
-      mockHttpClient.get.mockResolvedValue({ data: { addresses } });
+      // httpClient.get returns response.data directly (unwrapped)
+      mockHttpClient.get.mockResolvedValue({ addresses });
 
       const result = await addressService.getDefaultAddress();
 

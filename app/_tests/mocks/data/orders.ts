@@ -56,7 +56,7 @@ export interface MockOrder {
   subtotal: number;
   discount: number;
   total: number;
-  paymentStatus: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'REFUNDED';
+  mpCollectionStatus?: string;
   paymentMethod?: string;
   paymentId?: string;
   createdAt: string;
@@ -363,12 +363,12 @@ for (let i = 1; i <= 150; i++) {
     subtotal,
     discount,
     total,
-    paymentStatus:
+    mpCollectionStatus:
       selectedStatus === 'CANCELLED' || selectedStatus === 'REFUNDED'
-        ? 'CANCELLED'
+        ? selectedStatus.toLowerCase()
         : selectedStatus === 'CREATED' || selectedStatus === 'PAYMENT_PENDING'
-          ? 'PENDING'
-          : 'APPROVED',
+          ? 'pending'
+          : 'approved',
     paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
     paymentId: `mp_${Math.random().toString(36).substr(2, 15)}`,
     createdAt: createdDate.toISOString(),
@@ -437,7 +437,7 @@ const testOrders: MockOrder[] = [
     subtotal: 119.98,
     discount: 0,
     total: 119.98,
-    paymentStatus: 'APPROVED',
+    mpCollectionStatus: 'approved',
     paymentMethod: 'MercadoPago - Tarjeta de Crédito',
     paymentId: 'mp_test_payment_123',
     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -517,7 +517,7 @@ const testOrders: MockOrder[] = [
     subtotal: 169.98,
     discount: 20, // 10% discount
     total: 299.98,
-    paymentStatus: 'APPROVED',
+    mpCollectionStatus: 'approved',
     paymentMethod: 'MercadoPago - PagoFacil',
     paymentId: 'mp_test_payment_456',
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -627,7 +627,7 @@ export const generateOrder = (orderData: any): MockOrder => {
     subtotal,
     discount,
     total,
-    paymentStatus: 'PENDING',
+    mpCollectionStatus: 'pending',
     createdAt,
     updatedAt: createdAt,
     estimatedDelivery: calculateDeliveryDate(orderData.shippingMethod || 'delivery', createdAt),

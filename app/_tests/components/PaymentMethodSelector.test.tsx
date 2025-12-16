@@ -120,20 +120,23 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
     mockRouter.push.mockReset();
     mockRouter.replace.mockReset();
 
-    if (defaultHttpGet) {
-      httpClientMock.get.mockImplementation((url: string, config?: AxiosRequestConfig) => {
-        if (url === '/user-profile/me/addresses') {
-          // Return array format - addressService handles both array and { addresses: [] } formats
-          return Promise.resolve({ data: [defaultSelectedAddress] });
-        }
+    // Always set up httpClient mock (httpClient.get returns unwrapped data, not { data: ... })
+    httpClientMock.get.mockImplementation((url: string, config?: AxiosRequestConfig) => {
+      if (url === '/user-profile/me/addresses') {
+        // Return array directly - httpClient.get returns response.data unwrapped
+        return Promise.resolve([defaultSelectedAddress]);
+      }
 
-        if (url.startsWith('/user-profile/me/addresses/')) {
-          return Promise.resolve({ data: defaultSelectedAddress });
-        }
+      if (url.startsWith('/user-profile/me/addresses/')) {
+        return Promise.resolve(defaultSelectedAddress);
+      }
 
+      // Fall back to default handler if available
+      if (defaultHttpGet) {
         return defaultHttpGet(url, config);
-      });
-    }
+      }
+      return Promise.resolve([]);
+    });
     if (defaultHttpPost) {
       httpClientMock.post.mockImplementation(defaultHttpPost);
     }

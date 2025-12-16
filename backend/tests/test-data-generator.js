@@ -513,7 +513,7 @@ class UserDataGenerator {
       total: total,
       currency: 'UYU',
       paymentMethod: faker.helpers.arrayElement(['credit_card', 'debit_card', 'bank_transfer']),
-      paymentStatus: faker.helpers.arrayElement(['pending', 'approved', 'rejected']),
+      mpCollectionStatus: faker.helpers.arrayElement(['pending', 'approved', 'rejected']),
       createdAt: faker.date.past().toISOString(),
       updatedAt: faker.date.recent().toISOString(),
     };
@@ -599,7 +599,7 @@ class OrderDataGenerator {
       total: total,
       currency: faker.helpers.arrayElement(this.options.currencies),
       paymentMethod: faker.helpers.arrayElement(this.options.paymentMethods),
-      paymentStatus: this.selectWeightedStatus(this.paymentStatuses),
+      mpCollectionStatus: this.selectWeightedStatus(this.paymentStatuses),
       shippingMethod: faker.helpers.arrayElement(this.options.shippingMethods),
       shippingAddress: this.generateShippingAddress(),
       billingAddress: this.generateBillingAddress(),

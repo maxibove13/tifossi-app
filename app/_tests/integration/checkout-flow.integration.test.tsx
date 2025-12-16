@@ -132,7 +132,6 @@ type OrderOverrides = {
   id: string;
   orderNumber: string;
   status: string;
-  paymentStatus: string;
   shippingCost: number;
   subtotal: number;
   discount: number;
@@ -150,7 +149,7 @@ const queueOrderSuccess = (overrides: Partial<OrderOverrides> = {}): void => {
           id: overrides.id ?? 'ORDER_TEST_123',
           orderNumber: overrides.orderNumber ?? 'ORDER_TEST_123',
           status: overrides.status ?? 'PAYMENT_PENDING',
-          paymentStatus: overrides.paymentStatus ?? 'PENDING',
+          mpCollectionStatus: undefined,
           items,
           shippingCost: overrides.shippingCost ?? 150,
           subtotal: overrides.subtotal ?? 3000,

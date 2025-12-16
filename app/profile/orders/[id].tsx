@@ -243,10 +243,14 @@ export default function OrderDetailScreen() {
               <Text
                 style={[
                   styles.paymentValue,
-                  { color: order.paymentStatus === 'APPROVED' ? colors.success : colors.secondary },
+                  {
+                    color: ['paid', 'processing', 'shipped', 'delivered'].includes(order.status)
+                      ? colors.success
+                      : colors.secondary,
+                  },
                 ]}
               >
-                {orderService.getPaymentStatusText(order.paymentStatus)}
+                {orderService.getPaymentStatusFromOrder(order.status)}
               </Text>
             </View>
             {order.paymentMethod && (

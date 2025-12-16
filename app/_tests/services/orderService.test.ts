@@ -7,11 +7,7 @@
 import httpClient from '../../_services/api/httpClient';
 import { orderService } from '../../_services/order/orderService';
 import mercadoPagoService from '../../_services/payment/mercadoPago';
-import type {
-  CreateOrderRequest,
-  OrderStatus,
-  PaymentStatus,
-} from '../../_services/order/orderService';
+import type { CreateOrderRequest, OrderStatus } from '../../_services/order/orderService';
 
 // Mock httpClient at the boundary
 jest.mock('../../_services/api/httpClient');
@@ -80,7 +76,6 @@ describe('OrderService', () => {
           shippingAddress: validOrderRequest.shippingAddress,
           shippingMethod: 'delivery',
           status: 'CREATED',
-          paymentStatus: 'PENDING',
         }),
         expect.objectContaining({
           headers: { Authorization: 'Bearer test-auth-token' },
@@ -416,19 +411,24 @@ describe('OrderService', () => {
       });
     });
 
-    describe('getPaymentStatusText', () => {
-      it('should return Spanish text for payment status', () => {
-        expect(orderService.getPaymentStatusText('PENDING')).toBe('Pendiente');
-        expect(orderService.getPaymentStatusText('APPROVED')).toBe('Aprobado');
-        expect(orderService.getPaymentStatusText('REJECTED')).toBe('Rechazado');
-        expect(orderService.getPaymentStatusText('CANCELLED')).toBe('Cancelado');
-        expect(orderService.getPaymentStatusText('REFUNDED')).toBe('Reembolsado');
+    describe('getPaymentStatusFromOrder', () => {
+      it('should return Confirmado for paid order statuses', () => {
+        expect(orderService.getPaymentStatusFromOrder('paid')).toBe('Confirmado');
+        expect(orderService.getPaymentStatusFromOrder('processing')).toBe('Confirmado');
+        expect(orderService.getPaymentStatusFromOrder('shipped')).toBe('Confirmado');
+        expect(orderService.getPaymentStatusFromOrder('delivered')).toBe('Confirmado');
       });
 
-      it('should handle unknown status', () => {
-        expect(orderService.getPaymentStatusText('UNKNOWN' as PaymentStatus)).toBe(
-          'Estado desconocido'
-        );
+      it('should return Pendiente for pending status', () => {
+        expect(orderService.getPaymentStatusFromOrder('pending')).toBe('Pendiente');
+      });
+
+      it('should return Cancelado for cancelled status', () => {
+        expect(orderService.getPaymentStatusFromOrder('cancelled')).toBe('Cancelado');
+      });
+
+      it('should return Reembolsado for refunded status', () => {
+        expect(orderService.getPaymentStatusFromOrder('refunded')).toBe('Reembolsado');
       });
     });
 
@@ -451,39 +451,26 @@ describe('OrderService', () => {
         expect(
           orderService.canRefundOrder({
             status: 'PAID',
-            paymentStatus: 'APPROVED',
           } as any)
         ).toBe(true);
 
         expect(
           orderService.canRefundOrder({
             status: 'SHIPPED',
-            paymentStatus: 'APPROVED',
           } as any)
         ).toBe(true);
-      });
-
-      it('should prevent refund if payment not approved', () => {
-        expect(
-          orderService.canRefundOrder({
-            status: 'PAID',
-            paymentStatus: 'PENDING',
-          } as any)
-        ).toBe(false);
       });
 
       it('should prevent refund for invalid order states', () => {
         expect(
           orderService.canRefundOrder({
             status: 'CREATED',
-            paymentStatus: 'APPROVED',
           } as any)
         ).toBe(false);
 
         expect(
           orderService.canRefundOrder({
             status: 'CANCELLED',
-            paymentStatus: 'APPROVED',
           } as any)
         ).toBe(false);
       });

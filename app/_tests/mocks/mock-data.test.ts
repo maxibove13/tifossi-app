@@ -159,7 +159,7 @@ describe('Mock Data Validation', () => {
       expect(order).toHaveProperty('shippingAddress');
       expect(order).toHaveProperty('subtotal');
       expect(order).toHaveProperty('total');
-      expect(order).toHaveProperty('paymentStatus');
+      expect(order).toHaveProperty('mpCollectionStatus');
       expect(order).toHaveProperty('createdAt');
       expect(order).toHaveProperty('updatedAt');
     });
