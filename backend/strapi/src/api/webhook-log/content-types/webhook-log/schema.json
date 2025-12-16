@@ -35,8 +35,8 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["success", "failed", "duplicate"],
-      "default": "success"
+      "enum": ["received", "success", "failed", "duplicate"],
+      "default": "received"
     },
     "metadata": {
       "type": "json"
