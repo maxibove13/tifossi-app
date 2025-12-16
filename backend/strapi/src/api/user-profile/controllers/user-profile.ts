@@ -326,9 +326,21 @@ export default {
         `[user-profile] Saving ${cleanAddresses.length} addresses for user ${user.id}`
       );
 
-      await strapi.entityService.update('plugin::users-permissions.user', user.id, {
-        data: { addresses: cleanAddresses } as any,
-      });
+      // Try entityService first (preferred for components in Strapi 5)
+      try {
+        await strapi.entityService.update('plugin::users-permissions.user', user.id, {
+          data: { addresses: cleanAddresses } as any,
+        });
+      } catch (entityError: any) {
+        strapi.log.warn(
+          `[user-profile] entityService.update failed, trying db.query: ${entityError.message}`
+        );
+        // Fallback to db.query if entityService fails
+        await strapi.db.query('plugin::users-permissions.user').update({
+          where: { id: user.id },
+          data: { addresses: cleanAddresses },
+        });
+      }
 
       // Verify the save by reading back
       const verifyUser = (await strapi.entityService.findOne(
