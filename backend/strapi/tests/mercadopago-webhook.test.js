@@ -398,7 +398,7 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
         expect(params.documentId).toBe('doc-1');
         expect(params.data.status).toBe('PAID');
         expect(params.data.mpPaymentId).toBe('123');
-        expect(params.data.mpPaymentStatus).toBe('approved');
+        expect(params.data.mpCollectionStatus).toBe('approved');
         expect(params.data.paidAt).toBeDefined();
         return Promise.resolve(mockOrder);
       });
@@ -461,7 +461,7 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       const mockUpdate = jest.fn((params) => {
         expect(params.data.status).toBe('cancelled');
-        expect(params.data.mpPaymentStatus).toBe('rejected');
+        expect(params.data.mpCollectionStatus).toBe('rejected');
         return Promise.resolve(mockOrder);
       });
 
@@ -522,7 +522,7 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       const mockUpdate = jest.fn((params) => {
         // Should stay in pending status
         expect(params.data.status).toBe('pending');
-        expect(params.data.mpPaymentStatus).toBe('pending');
+        expect(params.data.mpCollectionStatus).toBe('pending');
         return Promise.resolve(mockOrder);
       });
 
@@ -582,7 +582,7 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       const mockUpdate = jest.fn((params) => {
         expect(params.data.status).toBe('REFUNDED');
-        expect(params.data.mpPaymentStatus).toBe('refunded');
+        expect(params.data.mpCollectionStatus).toBe('refunded');
         return Promise.resolve(mockOrder);
       });
 

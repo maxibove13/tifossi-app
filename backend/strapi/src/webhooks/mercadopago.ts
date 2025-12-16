@@ -25,7 +25,7 @@ interface StrapiOrder {
   mpPaymentId?: string;
   mpPreferenceId?: string;
   mpCollectionId?: string;
-  mpPaymentStatus?: string;
+  mpCollectionStatus?: string;
   paidAt?: string;
   metadata?: Record<string, any>;
   user: {
@@ -75,8 +75,13 @@ module.exports = {
       // Validate webhook format
       if (!body?.type || !body?.data?.id) {
         strapi.log.error('[MP-WEBHOOK] Invalid format - missing type or data.id');
-        ctx.status = 400;
-        ctx.body = { error: 'Invalid webhook format' };
+        const ctxAny = ctx as any;
+        if (typeof ctxAny.badRequest === 'function') {
+          ctxAny.badRequest('Unknown webhook format');
+        } else {
+          ctx.status = 400;
+          ctx.body = { error: 'Unknown webhook format' };
+        }
         return;
       }
 
@@ -86,8 +91,13 @@ module.exports = {
           hasSignature: !!signature,
           hasRequestId: !!requestId,
         });
-        ctx.status = 401;
-        ctx.body = { error: 'Missing signature headers' };
+        const ctxAny = ctx as any;
+        if (typeof ctxAny.badRequest === 'function') {
+          ctxAny.badRequest('Missing signature headers');
+        } else {
+          ctx.status = 400;
+          ctx.body = { error: 'Missing signature headers' };
+        }
         return;
       }
 
@@ -98,8 +108,13 @@ module.exports = {
       const mpService = strapi.mercadoPago;
       if (!mpService.verifyWebhookSignature(signature, requestId, dataId)) {
         strapi.log.error('[MP-WEBHOOK] Signature verification FAILED', { dataId, requestId });
-        ctx.status = 401;
-        ctx.body = { error: 'Invalid signature' };
+        const ctxAny = ctx as any;
+        if (typeof ctxAny.unauthorized === 'function') {
+          ctxAny.unauthorized('Invalid signature');
+        } else {
+          ctx.status = 401;
+          ctx.body = { error: 'Invalid signature' };
+        }
         return;
       }
       strapi.log.info('[MP-WEBHOOK] Signature verified', { dataId, requestId });
