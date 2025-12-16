@@ -325,7 +325,7 @@ class MercadoPagoService {
    */
   async getOrderStatusByNumber(
     orderNumber: string
-  ): Promise<{ orderNumber: string; status: string; paymentStatus: string }> {
+  ): Promise<{ orderNumber: string; status: string; mpCollectionStatus?: string }> {
     try {
       const response = await fetch(`${this.baseUrl}/api/payment/order-status/${orderNumber}`, {
         method: 'GET',

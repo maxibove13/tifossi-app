@@ -115,7 +115,7 @@ interface MockOrder {
   shippingCost: number;
   discount: number;
   total: number;
-  paymentStatus: PaymentStatus;
+  mpCollectionStatus?: string;
   statusHistory?: StatusEvent[];
 }
 ```
@@ -223,6 +223,32 @@ import { server } from './mocks/server';
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
+```
+
+### Important: Mock Response Format
+
+**httpClient returns unwrapped data:**
+
+The httpClient wrapper automatically returns `response.data`, so when mocking httpClient directly:
+
+```typescript
+// ✅ CORRECT - httpClient mock returns data directly
+mockHttpClient.get.mockResolvedValue([{ id: 1, name: 'Address' }]);
+mockHttpClient.post.mockResolvedValue({ order: { id: 'ORDER_1' } });
+
+// ❌ WRONG - Don't wrap in {data: ...}
+mockHttpClient.get.mockResolvedValue({ data: [{ id: 1, name: 'Address' }] });
+```
+
+**This differs from MSW handlers** which mock the HTTP layer and should return full responses:
+
+```typescript
+// MSW handlers return full HTTP responses
+http.get('/api/products', () => {
+  return HttpResponse.json({
+    data: products  // ✅ Correct for MSW
+  });
+});
 ```
 
 ## Usage Examples

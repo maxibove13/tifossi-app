@@ -424,10 +424,9 @@ jest.mock('../_services/api/httpClient', () => {
       };
     }
 
+    // httpClient.get returns response.data unwrapped, so return data directly
     if (url === '/user-profile/me/addresses') {
-      return {
-        data: listAddresses(),
-      };
+      return listAddresses();
     }
 
     if (url.startsWith('/user-profile/me/addresses/')) {
@@ -439,9 +438,7 @@ jest.mock('../_services/api/httpClient', () => {
         throw new Error('Address not found');
       }
 
-      return {
-        data: deepClone(address),
-      };
+      return deepClone(address);
     }
 
     return { data: [] };
@@ -456,6 +453,7 @@ jest.mock('../_services/api/httpClient', () => {
         throw new Error('Mock HTTP error');
       }
 
+      // httpClient.post returns response.data unwrapped
       if (url === '/user-profile/me/addresses') {
         const newIndex = addressStore.length;
         const newAddress = {
@@ -469,9 +467,7 @@ jest.mock('../_services/api/httpClient', () => {
           mutateDefaultAddress(newIndex);
         }
 
-        return {
-          data: deepClone(newAddress),
-        };
+        return deepClone(newAddress);
       }
 
       if (url === '/cart/migrate') {
@@ -511,14 +507,13 @@ jest.mock('../_services/api/httpClient', () => {
       throw new Error('Mock HTTP error');
     }
 
+    // httpClient.put returns response.data unwrapped
     if (url.endsWith('/default')) {
       const parts = url.split('/');
       const addressIndex = parseInt(parts[4], 10);
       mutateDefaultAddress(addressIndex);
 
-      return {
-        data: listAddresses(),
-      };
+      return listAddresses();
     }
 
     if (matchesAddressEndpoint(url)) {
@@ -541,9 +536,7 @@ jest.mock('../_services/api/httpClient', () => {
         mutateDefaultAddress(addressIndex);
       }
 
-      return {
-        data: deepClone(updated),
-      };
+      return deepClone(updated);
     }
 
     return { data: {} };

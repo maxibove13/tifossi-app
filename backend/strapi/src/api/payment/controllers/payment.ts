@@ -55,7 +55,6 @@ export default {
           discount: sanitizedOrder.discount,
           total: sanitizedOrder.total,
           paymentMethod: 'mercadopago',
-          paymentStatus: 'pending',
           status: 'pending',
           notes: rawOrder.notes || undefined,
           metadata: {
@@ -207,7 +206,6 @@ export default {
           discount: sanitizedOrder.discount,
           total: sanitizedOrder.total,
           paymentMethod: 'mercadopago',
-          paymentStatus: 'pending',
           status: 'pending',
           notes: rawOrder.notes || undefined,
           metadata: {
@@ -363,7 +361,7 @@ export default {
         documentId: order.documentId,
         data: {
           mpPaymentId: String(paymentInfo.id),
-          mpPaymentStatus: paymentInfo.status,
+          mpCollectionStatus: paymentInfo.status,
           status: orderStatus,
           paidAt: paymentInfo.status === 'approved' ? paymentInfo.date_approved : null,
           metadata: {
@@ -623,15 +621,13 @@ export default {
 
       const order = orders[0];
 
-      // Cast to any to access fields that exist in schema but not in TS types
       const orderData = order as any;
       ctx.body = {
         success: true,
         data: {
           orderNumber: orderData.orderNumber,
           status: orderData.status,
-          paymentStatus: orderData.paymentStatus,
-          mpPaymentStatus: orderData.mpPaymentStatus,
+          mpCollectionStatus: orderData.mpCollectionStatus,
         },
       };
     } catch (error) {

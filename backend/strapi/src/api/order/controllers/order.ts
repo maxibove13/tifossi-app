@@ -9,7 +9,6 @@ interface OrderEntity {
   id: number;
   orderNumber: string;
   status: string;
-  paymentStatus: string;
   user?: {
     id: number;
     email: string;
@@ -34,20 +33,8 @@ const ORDER_STATUS_MAP: Record<string, string> = {
   refunded: 'REFUNDED',
 };
 
-const PAYMENT_STATUS_MAP: Record<string, string> = {
-  pending: 'PENDING',
-  approved: 'APPROVED',
-  rejected: 'REJECTED',
-  cancelled: 'CANCELLED',
-  refunded: 'REFUNDED',
-};
-
 const transformStatus = (status: string): string => {
   return ORDER_STATUS_MAP[status?.toLowerCase()] || 'PAYMENT_PENDING';
-};
-
-const transformPaymentStatus = (status: string): string => {
-  return PAYMENT_STATUS_MAP[status?.toLowerCase()] || 'PENDING';
 };
 
 interface StrapiOrderItem {
@@ -127,7 +114,6 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         id: order.documentId || order.id,
         orderNumber: order.orderNumber,
         status: transformStatus(order.status),
-        paymentStatus: transformPaymentStatus(order.paymentStatus),
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
         items: transformOrderItems(order.items || []),
@@ -179,7 +165,6 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         id: orderData.documentId || orderData.id,
         orderNumber: orderData.orderNumber,
         status: transformStatus(orderData.status),
-        paymentStatus: transformPaymentStatus(orderData.paymentStatus),
         createdAt: orderData.createdAt,
         updatedAt: orderData.updatedAt,
         items: transformOrderItems(orderData.items || []),
@@ -192,6 +177,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         storeLocation: orderData.storeLocation,
         trackingNumber: orderData.trackingNumber,
         notes: orderData.notes,
+        paymentMethod: orderData.paymentMethod,
       },
     };
   },
@@ -230,7 +216,6 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           discount: sanitizedOrder.discount,
           total: sanitizedOrder.total,
           paymentMethod: payload.paymentMethod || 'mercadopago',
-          paymentStatus: 'pending',
           status: 'pending',
           notes: payload.notes || undefined,
           metadata: sanitizedOrder.metadata,
@@ -297,7 +282,6 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           discount: sanitizedOrder.discount,
           total: sanitizedOrder.total,
           paymentMethod: payload.paymentMethod || 'mercadopago',
-          paymentStatus: 'pending',
           status: 'pending',
           notes: payload.notes || undefined,
           metadata: sanitizedOrder.metadata,

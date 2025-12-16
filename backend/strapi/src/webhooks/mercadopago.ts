@@ -43,7 +43,7 @@ interface StrapiOrder {
 interface WebhookUpdateData {
   mpPaymentId?: string;
   mpCollectionId?: string;
-  mpPaymentStatus?: string;
+  mpCollectionStatus?: string;
   status?: OrderStatus;
   paidAt?: string;
   metadata?: Record<string, any>;
@@ -51,14 +51,8 @@ interface WebhookUpdateData {
 
 module.exports = {
   /**
-   * Handle MercadoPago webhook notifications
+   * Handle MercadoPago webhook notifications (v1.0 signed webhooks only)
    * POST /webhooks/mercadopago
-   *
-   * MercadoPago sends TWO different webhook formats:
-   * - v1.0 WebHook: ?data.id=X&type=payment with x-signature header (signed)
-   * - v2.0 Feed: ?id=X&topic=payment without signature (legacy, unsigned)
-   *
-   * This handler supports both formats for maximum compatibility.
    */
   async handleWebhook(ctx: Context): Promise<void> {
     const startTime = Date.now();
@@ -70,207 +64,108 @@ module.exports = {
       const requestId = ctx.request.headers['x-request-id'] as string;
       const userAgent = (ctx.request.headers['user-agent'] as string) || '';
 
-      // Entry logging - capture everything for debugging
       strapi.log.info('[MP-WEBHOOK] Incoming request', {
-        method: ctx.request.method,
-        url: ctx.request.url,
-        query: JSON.stringify(query),
         bodyType: body?.type,
         bodyDataId: body?.data?.id,
-        bodyAction: body?.action,
         hasSignature: !!signature,
         hasRequestId: !!requestId,
         ip: ctx.request.ip,
-        userAgent: userAgent.substring(0, 100),
       });
 
-      // Detect webhook format and extract data accordingly
-      // v1.0: body has {type, data: {id}}, query has data.id and type
-      // v2.0: query has id and topic, body may be empty
-      const isV1Format = !!(body?.type && body?.data?.id);
-      const isV2Format = !!(query.id && query.topic);
-
-      let webhookType: MPWebhookType;
-      let dataId: string;
-
-      if (isV1Format) {
-        webhookType = body.type;
-        // Use query param data.id for signature verification (MercadoPago signs using URL params)
-        // Fall back to body.data.id for processing if query param missing
-        dataId = query['data.id'] || body.data.id.toString();
-        strapi.log.info('[MP-WEBHOOK] Format detected: v1.0 (signed)', {
-          webhookType,
-          dataId,
-          queryDataId: query['data.id'],
-          bodyDataId: body.data.id,
-        });
-      } else if (isV2Format) {
-        webhookType =
-          query.topic === 'merchant_order' ? MPWebhookType.MERCHANT_ORDER : MPWebhookType.PAYMENT;
-        dataId = query.id;
-        strapi.log.info('[MP-WEBHOOK] Format detected: v2.0 (unsigned)', {
-          webhookType,
-          dataId,
-          topic: query.topic,
-        });
-      } else {
-        strapi.log.error('[MP-WEBHOOK] Unknown format - rejecting', {
-          query: JSON.stringify(query),
-          bodyKeys: Object.keys(body),
-          bodyType: typeof body,
-        });
-        ctx.badRequest('Unknown webhook format');
+      // Validate webhook format
+      if (!body?.type || !body?.data?.id) {
+        strapi.log.error('[MP-WEBHOOK] Invalid format - missing type or data.id');
+        ctx.status = 400;
+        ctx.body = { error: 'Invalid webhook format' };
         return;
       }
 
-      // Signature verification only for v1.0 webhooks (v2.0 Feed doesn't have signatures)
-      const mpService = strapi.mercadoPago;
-      if (isV1Format) {
-        if (!signature || !requestId) {
-          strapi.log.error('[MP-WEBHOOK] v1.0 missing signature headers', {
-            hasSignature: !!signature,
-            hasRequestId: !!requestId,
-            dataId,
-          });
-          ctx.badRequest('Missing signature headers');
-          return;
-        }
-
-        strapi.log.debug('[MP-WEBHOOK] Verifying v1.0 signature', {
-          dataId,
-          requestId,
-          signatureLength: signature.length,
+      // Require signature headers
+      if (!signature || !requestId) {
+        strapi.log.error('[MP-WEBHOOK] Missing required headers', {
+          hasSignature: !!signature,
+          hasRequestId: !!requestId,
         });
-        if (!mpService.verifyWebhookSignature(signature, requestId, dataId)) {
-          strapi.log.error('[MP-WEBHOOK] Signature verification FAILED', {
-            dataId,
-            requestId,
-            signaturePreview: signature.substring(0, 50) + '...',
-          });
-          ctx.unauthorized('Invalid signature');
-          return;
-        }
-        strapi.log.info('[MP-WEBHOOK] Signature verification PASSED', { dataId, requestId });
-      } else {
-        // v2.0 webhooks are unsigned - log for security awareness
-        strapi.log.info('[MP-WEBHOOK] v2.0 webhook accepted (unsigned)', {
-          dataId,
-          topic: query.topic,
-          ip: ctx.request.ip,
-        });
+        ctx.status = 401;
+        ctx.body = { error: 'Missing signature headers' };
+        return;
       }
 
-      // Use provided requestId or generate one for v2.0
-      const effectiveRequestId = requestId || `v2_${dataId}_${Date.now()}`;
+      const webhookType: MPWebhookType = body.type;
+      const dataId = query['data.id'] || body.data.id.toString();
 
-      // Deduplication strategy:
-      // - v1.0: Dedupe by requestId (MercadoPago uses same requestId for retries)
-      // - v2.0: No reliable dedup possible (no requestId), use 60-second time window
-      // - Payment processor has idempotency (only updates if status changed) as backup
-      const timeWindow = Math.floor(Date.now() / 60000); // 1-minute buckets
-      const webhookKey = isV1Format
-        ? `v1_${webhookType}_${dataId}_${requestId}`
-        : `v2_${webhookType}_${dataId}_${timeWindow}`;
+      // Verify signature
+      const mpService = strapi.mercadoPago;
+      if (!mpService.verifyWebhookSignature(signature, requestId, dataId)) {
+        strapi.log.error('[MP-WEBHOOK] Signature verification FAILED', { dataId, requestId });
+        ctx.status = 401;
+        ctx.body = { error: 'Invalid signature' };
+        return;
+      }
+      strapi.log.info('[MP-WEBHOOK] Signature verified', { dataId, requestId });
 
-      strapi.log.info('[MP-WEBHOOK] Dedup check', { webhookKey, effectiveRequestId });
+      // Deduplication by requestId
+      const webhookKey = `${webhookType}_${dataId}_${requestId}`;
 
-      // Try to create log entry - unique constraint handles race conditions atomically
       try {
         await strapi.documents('api::webhook-log.webhook-log').create({
           data: {
-            requestId: effectiveRequestId,
-            webhookType: webhookType,
-            dataId: dataId,
+            requestId,
+            webhookType,
+            dataId,
             webhookKey,
             processedAt: new Date().toISOString(),
             status: 'received',
             metadata: {
               action: body.action,
               apiVersion: body.api_version,
-              format: isV1Format ? 'v1.0' : 'v2.0',
               receivedAt: new Date().toISOString(),
             } as any,
           },
         });
-        strapi.log.info('[MP-WEBHOOK] Log entry created (not duplicate)', { webhookKey });
       } catch (dbError: any) {
-        // Unique constraint violation = duplicate webhook
         if (dbError.message?.includes('unique') || dbError.code === '23505') {
-          strapi.log.info('[MP-WEBHOOK] Duplicate webhook - skipping', { webhookKey, dataId });
-          const responseTime = Date.now() - startTime;
+          strapi.log.info('[MP-WEBHOOK] Duplicate - skipping', { webhookKey });
           ctx.status = 200;
-          ctx.body = { success: true, status: 'duplicate', responseTime: `${responseTime}ms` };
+          ctx.body = { success: true, status: 'duplicate' };
           return;
         }
-        strapi.log.error('[MP-WEBHOOK] DB error creating log entry', {
-          error: dbError.message,
-          code: dbError.code,
-          webhookKey,
-        });
-        throw dbError; // Re-throw other errors
+        throw dbError;
       }
 
-      // Build normalized payload for queue processing
-      // Use partial type since v2.0 webhooks don't have all fields
-      const normalizedPayload = {
-        type: webhookType,
-        data: { id: dataId },
-        action: body.action || 'payment.updated',
-        api_version: body.api_version || 'v2',
-      };
-
       // Queue for async processing
-      strapi.log.info('[MP-WEBHOOK] Queueing for async processing', { dataId, webhookType });
       await strapi.documents('api::webhook-queue.webhook-queue').create({
         data: {
-          requestId: effectiveRequestId,
-          webhookType: webhookType,
-          dataId: dataId,
-          payload: normalizedPayload,
+          requestId,
+          webhookType,
+          dataId,
+          payload: {
+            type: webhookType,
+            data: { id: dataId },
+            action: body.action,
+            api_version: body.api_version,
+          },
           status: 'queued',
           retryCount: 0,
           maxRetries: 5,
           scheduledAt: new Date().toISOString(),
-          metadata: {
-            queuedAt: new Date().toISOString(),
-            userAgent,
-            format: isV1Format ? 'v1.0' : 'v2.0',
-          },
+          metadata: { queuedAt: new Date().toISOString(), userAgent },
         },
       });
 
       const responseTime = Date.now() - startTime;
-      strapi.log.info('[MP-WEBHOOK] SUCCESS - queued', {
+      strapi.log.info('[MP-WEBHOOK] Queued', {
         dataId,
         webhookType,
-        format: isV1Format ? 'v1.0' : 'v2.0',
         responseTime: `${responseTime}ms`,
       });
 
-      // Always return 200 OK immediately to acknowledge webhook receipt
       ctx.status = 200;
-      ctx.body = {
-        success: true,
-        status: 'queued',
-        requestId: effectiveRequestId,
-        responseTime: `${responseTime}ms`,
-      };
+      ctx.body = { success: true, status: 'queued', requestId };
     } catch (error: any) {
-      const responseTime = Date.now() - startTime;
-      strapi.log.error('[MP-WEBHOOK] FAILED - unhandled error', {
-        error: error.message,
-        stack: error.stack?.substring(0, 500),
-        responseTime: `${responseTime}ms`,
-      });
-
-      // Return 200 OK even on error to prevent MercadoPago retries for unrecoverable errors
+      strapi.log.error('[MP-WEBHOOK] Error', { error: error.message });
       ctx.status = 200;
-      ctx.body = {
-        success: false,
-        error: 'Webhook queueing failed',
-        message: error.message,
-        responseTime: `${responseTime}ms`,
-      };
+      ctx.body = { success: false, error: error.message };
     }
   },
 
@@ -469,7 +364,7 @@ module.exports = {
       const updateData: WebhookUpdateData = {
         mpPaymentId: paymentInfo.id.toString(),
         mpCollectionId: paymentData.collection_id || paymentInfo.id.toString(),
-        mpPaymentStatus: paymentInfo.status,
+        mpCollectionStatus: paymentInfo.status,
         metadata: {
           ...order.metadata,
           lastWebhookUpdate: new Date().toISOString(),

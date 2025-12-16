@@ -25,7 +25,7 @@ import mercadoPagoService from '../_services/payment/mercadoPago';
 export default function PaymentResultScreen() {
   const params = useLocalSearchParams();
   const { clearCart } = useCartStore();
-  const { token, isLoggedIn } = useAuthStore();
+  const { isLoggedIn } = useAuthStore();
   const { currentOrderNumber } = usePaymentStore();
 
   const [isVerifying, setIsVerifying] = useState(true);
@@ -33,87 +33,90 @@ export default function PaymentResultScreen() {
     null
   );
 
-  // Extract payment result from params (handle both camelCase and MercadoPago's snake_case)
-  const paymentSuccessParam = params.paymentSuccess === 'true';
-  const paymentPendingParam = params.paymentPending === 'true';
+  // Extract payment result from params
   const paymentFailureParam = params.paymentFailure === 'true';
-  const paymentId = (params.paymentId || params.payment_id) as string;
   const externalReference = (params.external_reference || params.externalReference) as string;
   const error = params.error as string;
 
-  // Order number: from params, store, or external reference
+  // Order number: from params or store
   const orderNumber = externalReference || currentOrderNumber;
 
-  // Determine if we have a definitive status from deep link params
-  const hasDefinitiveStatus = paymentSuccessParam || paymentPendingParam || paymentFailureParam;
-
-  // Verify payment status by polling the backend
+  // Poll backend to verify payment status (webhook is source of truth)
   useEffect(() => {
-    const verifyPaymentStatus = async () => {
-      // If we already have a definitive status from deep link, use it
-      if (hasDefinitiveStatus) {
-        if (paymentSuccessParam) setResolvedStatus('success');
-        else if (paymentPendingParam) setResolvedStatus('pending');
-        else if (paymentFailureParam) setResolvedStatus('failed');
-        setIsVerifying(false);
-        return;
+    // If payment failed at MercadoPago, show failure immediately
+    if (paymentFailureParam) {
+      setResolvedStatus('failed');
+      setIsVerifying(false);
+      return;
+    }
+
+    // No order number - can't verify
+    if (!orderNumber) {
+      setResolvedStatus('pending');
+      setIsVerifying(false);
+      return;
+    }
+
+    let isMounted = true;
+    let attempts = 0;
+    let verifying = true;
+    let intervalId: ReturnType<typeof setInterval>;
+    const maxPolls = 15; // 15 polls * 2s = 30 seconds max
+    const pollInterval = 2000;
+    setIsVerifying(true);
+
+    const stopPolling = () => {
+      verifying = false;
+      setIsVerifying(false);
+    };
+
+    const pollStatus = async () => {
+      try {
+        const orderStatus = await mercadoPagoService.getOrderStatusByNumber(orderNumber);
+
+        if (!isMounted) return;
+
+        // Check order status (updated by webhook)
+        if (orderStatus.status === 'paid' || orderStatus.status === 'processing') {
+          setResolvedStatus('success');
+          stopPolling();
+          clearInterval(intervalId);
+          return;
+        }
+
+        if (orderStatus.status === 'cancelled') {
+          setResolvedStatus('failed');
+          stopPolling();
+          clearInterval(intervalId);
+          return;
+        }
+      } catch (err) {
+        console.error('[PaymentResult] Poll failed:', err);
       }
 
-      // If we have an order number, check its status from the backend
-      if (orderNumber) {
-        setIsVerifying(true);
-        try {
-          // First try to verify by payment ID if available (more accurate)
-          if (paymentId && token) {
-            mercadoPagoService.setAuthToken(token);
-            const status = await mercadoPagoService.verifyPaymentStatus(paymentId);
-            if (status.status === 'paid' || status.status === 'approved') {
-              setResolvedStatus('success');
-            } else if (status.status === 'pending' || status.status === 'in_process') {
-              setResolvedStatus('pending');
-            } else {
-              setResolvedStatus('failed');
-            }
-            setIsVerifying(false);
-            return;
-          }
-
-          // Otherwise check order status by order number (works for guests too)
-          const orderStatus = await mercadoPagoService.getOrderStatusByNumber(orderNumber);
-          if (orderStatus.paymentStatus === 'paid' || orderStatus.status === 'paid') {
-            setResolvedStatus('success');
-          } else if (orderStatus.paymentStatus === 'pending' || orderStatus.status === 'pending') {
-            setResolvedStatus('pending');
-          } else if (orderStatus.paymentStatus === 'failed' || orderStatus.status === 'cancelled') {
-            setResolvedStatus('failed');
-          } else {
-            // Default to pending - webhook may not have been processed yet
-            setResolvedStatus('pending');
-          }
-        } catch (error) {
-          // If we can't verify, show pending state - webhook may update later
-          console.error('[PaymentResult] Status verification failed:', error);
-          setResolvedStatus('pending');
-        } finally {
-          setIsVerifying(false);
-        }
-      } else {
-        // No order number available - show pending
-        setResolvedStatus('pending');
-        setIsVerifying(false);
+      attempts += 1;
+      if (attempts >= maxPolls && isMounted) {
+        setResolvedStatus('pending'); // Webhook may still process after timeout
+        stopPolling();
+        clearInterval(intervalId);
       }
     };
 
-    verifyPaymentStatus();
-  }, [
-    paymentId,
-    orderNumber,
-    token,
-    hasDefinitiveStatus,
-    paymentSuccessParam,
-    paymentPendingParam,
-    paymentFailureParam,
-  ]);
+    // Start polling
+    pollStatus();
+    intervalId = setInterval(() => {
+      if (attempts < maxPolls && isMounted && verifying) {
+        pollStatus();
+      } else {
+        clearInterval(intervalId);
+      }
+    }, pollInterval);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [orderNumber, paymentFailureParam]);
 
   // Determine final display status
   const paymentSuccess = resolvedStatus === 'success';

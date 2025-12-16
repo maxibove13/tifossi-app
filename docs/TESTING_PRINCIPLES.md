@@ -263,6 +263,17 @@ jest.mock('zustand');
 // The mock is already set up globally in setup.ts
 // It returns realistic Strapi-formatted responses
 
+// CRITICAL: httpClient returns response.data UNWRAPPED
+// This means mocks should return data directly, NOT wrapped in {data: ...}
+
+// ✅ CORRECT - return data directly
+mockHttpClient.get.mockResolvedValue([{ id: 1, name: 'Address' }]);
+mockHttpClient.post.mockResolvedValue({ order: { id: 'ORDER_1', total: 1234 } });
+
+// ❌ WRONG - don't wrap in {data: ...}
+mockHttpClient.get.mockResolvedValue({ data: [{ id: 1, name: 'Address' }] });
+mockHttpClient.post.mockResolvedValue({ data: { order: { id: 'ORDER_1' } } });
+
 // To test error scenarios:
 import httpClient from '../../_services/api/httpClient';
 const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
@@ -275,7 +286,7 @@ mockHttpClient.__setError(true, '/specific-endpoint'); // Error for specific end
 // Need a one-off response? Override for that call only.
 mockHttpClient.post.mockImplementationOnce(async (url, data) => {
   if (url === '/orders') {
-    return { order: { id: 'ORDER_TEST', total: 1234 } };
+    return { order: { id: 'ORDER_TEST', total: 1234 } }; // ✅ Unwrapped
   }
   return defaultHttpPost(url, data);
 });

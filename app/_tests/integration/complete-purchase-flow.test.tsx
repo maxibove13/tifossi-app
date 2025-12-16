@@ -45,7 +45,6 @@ const enqueueOrderSuccess = () => {
           id: 'ORDER_TEST_123',
           orderNumber: 'ORDER_TEST_123',
           status: 'PAYMENT_PENDING',
-          paymentStatus: 'PENDING',
           items,
           shippingCost: 150,
           subtotal: 3000,

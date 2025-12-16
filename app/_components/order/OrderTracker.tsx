@@ -238,10 +238,14 @@ export default function OrderTracker({ orderId, onClose }: OrderTrackerProps) {
           <Text
             style={[
               styles.summaryValue,
-              { color: order.paymentStatus === 'APPROVED' ? colors.success : colors.secondary },
+              {
+                color: ['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.status)
+                  ? colors.success
+                  : colors.secondary,
+              },
             ]}
           >
-            {orderService.getPaymentStatusText(order.paymentStatus)}
+            {orderService.getPaymentStatusFromOrder(order.status)}
           </Text>
         </View>
         {order.estimatedDelivery && (

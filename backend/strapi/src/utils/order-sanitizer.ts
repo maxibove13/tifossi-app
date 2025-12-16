@@ -193,7 +193,6 @@ interface OrderEntity {
   id: number;
   orderNumber: string;
   status: string;
-  paymentStatus: string;
   user?: {
     id: number;
     email: string;
@@ -208,7 +207,6 @@ interface ClientOrder {
   id: number;
   orderNumber: string;
   status: string;
-  paymentStatus: string;
   subtotal: number;
   discount: number;
   shippingCost: number;
@@ -879,7 +877,6 @@ export const buildClientOrder = (
     id: orderEntity.id,
     orderNumber: orderEntity.orderNumber,
     status: orderEntity.status,
-    paymentStatus: orderEntity.paymentStatus,
     subtotal: clientSummary.subtotal,
     discount: clientSummary.discount,
     shippingCost: clientSummary.shippingCost,
