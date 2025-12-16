@@ -74,6 +74,15 @@ const paymentRoutes: RoutesModule = {
       },
     },
     {
+      method: 'GET',
+      path: '/payment/order-status/:orderNumber',
+      handler: 'payment.getOrderStatus',
+      config: {
+        auth: false,
+        middlewares: ['global::guest-rate-limit'], // Rate limit to prevent enumeration
+      },
+    },
+    {
       method: 'POST',
       path: '/payment/refund',
       handler: 'payment.requestRefund',

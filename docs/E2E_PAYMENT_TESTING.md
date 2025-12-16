@@ -109,10 +109,21 @@ mcp__mercadopago__simulate_webhook
 
 | Test | Steps | Pass Criteria |
 |------|-------|---------------|
-| User cancels payment | Navigate to WebView, swipe back | Cart preserved, returns to app |
+| User presses Done button | Complete payment, press Done in WebView | App shows loading, verifies status via API, shows correct result |
+| User cancels payment | Navigate to WebView, swipe back before paying | App shows pending/verifying state, then status from backend |
 | Duplicate payment | Complete payment, try same order again | Second attempt rejected |
 | Network loss in WebView | Lose connection mid-payment | Error shown, can retry |
 | Invalid card format | Enter malformed card number | Validation error in WebView |
+| Guest user payment | Complete payment without account | Success screen shows, no "Ver mis pedidos" button, only "Volver al inicio" |
+
+### WebBrowser Dismissal Behavior
+
+When the user presses "Done" in the MercadoPago WebView:
+1. `WebBrowser.result.type` returns `'cancel'` (NOT an error)
+2. App navigates to payment-result screen with `external_reference` param
+3. Screen shows "Verificando pago..." loading state
+4. App calls `GET /api/payment/order-status/:orderNumber`
+5. Shows appropriate result based on actual order status
 
 ---
 

@@ -598,6 +598,49 @@ export default {
   },
 
   /**
+   * Get order status by order number (for payment result verification)
+   * GET /api/payment/order-status/:orderNumber
+   * No auth required - allows guest order status checks
+   */
+  async getOrderStatus(ctx: any) {
+    try {
+      const { orderNumber } = ctx.params;
+
+      if (!orderNumber) {
+        return ctx.badRequest('Order number is required');
+      }
+
+      const orders = await strapi.documents('api::order.order').findMany({
+        filters: {
+          orderNumber,
+        },
+        limit: 1,
+      });
+
+      if (!orders || orders.length === 0) {
+        return ctx.notFound('Order not found');
+      }
+
+      const order = orders[0];
+
+      // Cast to any to access fields that exist in schema but not in TS types
+      const orderData = order as any;
+      ctx.body = {
+        success: true,
+        data: {
+          orderNumber: orderData.orderNumber,
+          status: orderData.status,
+          paymentStatus: orderData.paymentStatus,
+          mpPaymentStatus: orderData.mpPaymentStatus,
+        },
+      };
+    } catch (error) {
+      strapi.log.error('Error fetching order status:', error);
+      ctx.internalServerError('Failed to fetch order status');
+    }
+  },
+
+  /**
    * Request payment refund
    * POST /api/payment/refund
    */

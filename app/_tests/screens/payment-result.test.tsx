@@ -6,7 +6,6 @@
 
 import React from 'react';
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
-import { Alert } from 'react-native';
 import PaymentResultScreen from '../../checkout/payment-result';
 import { usePaymentStore } from '../../_stores/paymentStore';
 import { useCartStore } from '../../_stores/cartStore';
@@ -64,8 +63,8 @@ describe('PaymentResultScreen', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({});
   });
 
-  describe('Successful Payment', () => {
-    it('should display success UI when payment is successful', () => {
+  describe('Successful Payment (from deep link)', () => {
+    it('should display success UI when paymentSuccess=true in params', async () => {
       (useLocalSearchParams as jest.Mock).mockReturnValue({
         paymentSuccess: 'true',
         orderId: 'ORDER-123',
@@ -74,9 +73,11 @@ describe('PaymentResultScreen', () => {
 
       const { getByText } = render(<PaymentResultScreen />);
 
-      expect(getByText('¡Pago exitoso!')).toBeTruthy();
-      expect(getByText('Tu pedido ha sido procesado correctamente.')).toBeTruthy();
-      expect(getByText('Ver mis pedidos')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('¡Pago exitoso!')).toBeTruthy();
+        expect(getByText('Tu pedido ha sido procesado correctamente.')).toBeTruthy();
+        expect(getByText('Ver mis pedidos')).toBeTruthy();
+      });
     });
 
     it('should clear cart on successful payment', async () => {
@@ -97,47 +98,17 @@ describe('PaymentResultScreen', () => {
       clearCartSpy.mockRestore();
     });
 
-    it('should verify payment status when paymentId is provided', async () => {
-      const mockVerifyStatus = jest
-        .spyOn(mercadoPagoService, 'verifyPaymentStatus')
-        .mockResolvedValue({
-          orderId: 'ORDER-123',
-          orderNumber: 'ORD-2024-001',
-          status: 'approved',
-          paymentInfo: {
-            id: 'PAY-456',
-            status: 'approved',
-            statusDetail: 'accredited',
-            amount: 1000,
-            currency: 'UYU',
-            paymentMethod: 'credit_card',
-            dateCreated: new Date().toISOString(),
-            dateApproved: new Date().toISOString(),
-          },
-        });
-
-      (useLocalSearchParams as jest.Mock).mockReturnValue({
-        paymentSuccess: 'true',
-        orderId: 'ORDER-123',
-        paymentId: 'PAY-456',
-      });
-
-      render(<PaymentResultScreen />);
-
-      await waitFor(() => {
-        expect(mockVerifyStatus).toHaveBeenCalledWith('PAY-456');
-      });
-
-      mockVerifyStatus.mockRestore();
-    });
-
-    it('should navigate to orders when "Ver Mis Pedidos" is pressed', () => {
+    it('should navigate to orders when "Ver Mis Pedidos" is pressed', async () => {
       (useLocalSearchParams as jest.Mock).mockReturnValue({
         paymentSuccess: 'true',
         orderId: 'ORDER-123',
       });
 
       const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(getByText('Ver mis pedidos')).toBeTruthy();
+      });
 
       fireEvent.press(getByText('Ver mis pedidos'));
 
@@ -145,8 +116,8 @@ describe('PaymentResultScreen', () => {
     });
   });
 
-  describe('Failed Payment', () => {
-    it('should display failure UI when payment fails', () => {
+  describe('Failed Payment (from deep link)', () => {
+    it('should display failure UI when paymentFailure=true in params', async () => {
       (useLocalSearchParams as jest.Mock).mockReturnValue({
         paymentFailure: 'true',
         error: 'Fondos insuficientes',
@@ -154,9 +125,11 @@ describe('PaymentResultScreen', () => {
 
       const { getByText } = render(<PaymentResultScreen />);
 
-      expect(getByText('Pago no completado')).toBeTruthy();
-      expect(getByText('Fondos insuficientes')).toBeTruthy();
-      expect(getByText('Intentar nuevamente')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('Pago no completado')).toBeTruthy();
+        expect(getByText('Fondos insuficientes')).toBeTruthy();
+        expect(getByText('Intentar nuevamente')).toBeTruthy();
+      });
     });
 
     it('should NOT clear cart on failed payment', async () => {
@@ -177,12 +150,16 @@ describe('PaymentResultScreen', () => {
       clearCartSpy.mockRestore();
     });
 
-    it('should navigate back when "Intentar Nuevamente" is pressed', () => {
+    it('should navigate back when "Intentar Nuevamente" is pressed', async () => {
       (useLocalSearchParams as jest.Mock).mockReturnValue({
         paymentFailure: 'true',
       });
 
       const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(getByText('Intentar nuevamente')).toBeTruthy();
+      });
 
       fireEvent.press(getByText('Intentar nuevamente'));
 
@@ -190,8 +167,8 @@ describe('PaymentResultScreen', () => {
     });
   });
 
-  describe('Pending Payment', () => {
-    it('should display pending UI when payment is pending', () => {
+  describe('Pending Payment (from deep link)', () => {
+    it('should display pending UI when paymentPending=true in params', async () => {
       (useLocalSearchParams as jest.Mock).mockReturnValue({
         paymentPending: 'true',
         orderId: 'ORDER-789',
@@ -199,10 +176,11 @@ describe('PaymentResultScreen', () => {
 
       const { getByText } = render(<PaymentResultScreen />);
 
-      expect(getByText('Pago pendiente')).toBeTruthy();
-      expect(getByText('Tu pago está siendo procesado.')).toBeTruthy();
-      // Order number is shown in store state, not directly
-      expect(getByText('Ver mis pedidos')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('Pago pendiente')).toBeTruthy();
+        expect(getByText('Tu pago está siendo procesado.')).toBeTruthy();
+        expect(getByText('Ver mis pedidos')).toBeTruthy();
+      });
     });
 
     it('should NOT clear cart for pending payment', async () => {
@@ -223,116 +201,91 @@ describe('PaymentResultScreen', () => {
     });
   });
 
-  describe('Payment Error', () => {
-    it('should display error UI when there is a payment error', () => {
+  describe('Status Verification (when no deep link status)', () => {
+    it('should verify order status by order number when no status params', async () => {
+      const mockGetOrderStatus = jest
+        .spyOn(mercadoPagoService, 'getOrderStatusByNumber')
+        .mockResolvedValue({
+          orderNumber: 'ORDER-123',
+          status: 'paid',
+          paymentStatus: 'paid',
+        });
+
       (useLocalSearchParams as jest.Mock).mockReturnValue({
-        paymentError: 'true',
-        error: 'Network timeout',
+        external_reference: 'ORDER-123',
+        // No paymentSuccess/Failure/Pending params
       });
 
       const { getByText } = render(<PaymentResultScreen />);
 
-      expect(getByText('Pago no completado')).toBeTruthy();
-      expect(getByText('Network timeout')).toBeTruthy();
+      await waitFor(() => {
+        expect(mockGetOrderStatus).toHaveBeenCalledWith('ORDER-123');
+        expect(getByText('¡Pago exitoso!')).toBeTruthy();
+      });
+
+      mockGetOrderStatus.mockRestore();
     });
 
-    it('should navigate home when "Volver al Inicio" is pressed on error', () => {
+    it('should show pending when order status is pending', async () => {
+      const mockGetOrderStatus = jest
+        .spyOn(mercadoPagoService, 'getOrderStatusByNumber')
+        .mockResolvedValue({
+          orderNumber: 'ORDER-123',
+          status: 'pending',
+          paymentStatus: 'pending',
+        });
+
       (useLocalSearchParams as jest.Mock).mockReturnValue({
-        paymentError: 'true',
+        external_reference: 'ORDER-123',
       });
 
       const { getByText } = render(<PaymentResultScreen />);
 
-      fireEvent.press(getByText('Volver al inicio'));
-
-      expect(router.replace).toHaveBeenCalledWith('/');
-    });
-  });
-
-  describe('Payment Verification', () => {
-    it('should show Alert on verification error', async () => {
-      const alertSpy = jest.spyOn(Alert, 'alert');
-      const mockVerifyStatus = jest
-        .spyOn(mercadoPagoService, 'verifyPaymentStatus')
-        .mockRejectedValue(new Error('Verification failed'));
-
-      (useLocalSearchParams as jest.Mock).mockReturnValue({
-        paymentSuccess: 'true',
-        paymentId: 'PAY-ERROR',
-      });
-
-      render(<PaymentResultScreen />);
-
       await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith(
-          'Error',
-          'No pudimos verificar el estado del pago. Por favor, revisa tus pedidos.'
-        );
+        expect(getByText('Pago pendiente')).toBeTruthy();
       });
 
-      alertSpy.mockRestore();
-      mockVerifyStatus.mockRestore();
+      mockGetOrderStatus.mockRestore();
     });
 
-    it('should use currentOrderId from store when not in params', async () => {
-      usePaymentStore.setState({
-        currentOrderId: 'STORE-ORDER-123',
-        currentOrderNumber: 'STORE-ORDER-123',
-      });
+    it('should show loading state while verifying', async () => {
+      const mockGetOrderStatus = jest
+        .spyOn(mercadoPagoService, 'getOrderStatusByNumber')
+        .mockImplementation(() => new Promise(() => {})); // Never resolves
 
       (useLocalSearchParams as jest.Mock).mockReturnValue({
-        paymentSuccess: 'true',
-        paymentId: 'PAY-123',
-        // No orderId in params
+        external_reference: 'ORDER-123',
       });
 
       const { getByText } = render(<PaymentResultScreen />);
 
-      // The order number is shown separately in the component
-      expect(getByText('STORE-ORDER-123')).toBeTruthy();
+      // Should show verifying message while loading
+      await waitFor(() => {
+        expect(getByText('Verificando pago...')).toBeTruthy();
+      });
+
+      mockGetOrderStatus.mockRestore();
     });
 
-    it('should not verify payment when paymentId is missing', async () => {
-      const mockVerifyStatus = jest.spyOn(mercadoPagoService, 'verifyPaymentStatus');
+    it('should fall back to pending when verification fails', async () => {
+      const mockGetOrderStatus = jest
+        .spyOn(mercadoPagoService, 'getOrderStatusByNumber')
+        .mockRejectedValue(new Error('Network error'));
 
       (useLocalSearchParams as jest.Mock).mockReturnValue({
-        paymentSuccess: 'true',
-        orderId: 'ORDER-123',
-        // No paymentId
+        external_reference: 'ORDER-123',
       });
 
-      render(<PaymentResultScreen />);
+      const { getByText } = render(<PaymentResultScreen />);
 
       await waitFor(() => {
-        expect(mockVerifyStatus).not.toHaveBeenCalled();
+        expect(getByText('Pago pendiente')).toBeTruthy();
       });
 
-      mockVerifyStatus.mockRestore();
+      mockGetOrderStatus.mockRestore();
     });
 
-    it('should not verify payment when token is missing', async () => {
-      useAuthStore.setState({
-        token: null,
-        isLoggedIn: false,
-      });
-
-      const mockVerifyStatus = jest.spyOn(mercadoPagoService, 'verifyPaymentStatus');
-
-      (useLocalSearchParams as jest.Mock).mockReturnValue({
-        paymentSuccess: 'true',
-        paymentId: 'PAY-123',
-      });
-
-      render(<PaymentResultScreen />);
-
-      await waitFor(() => {
-        expect(mockVerifyStatus).not.toHaveBeenCalled();
-      });
-
-      mockVerifyStatus.mockRestore();
-    });
-
-    it('should set auth token before verification', async () => {
+    it('should use paymentId verification when available with token', async () => {
       const setAuthTokenSpy = jest.spyOn(mercadoPagoService, 'setAuthToken');
       const mockVerifyStatus = jest
         .spyOn(mercadoPagoService, 'verifyPaymentStatus')
@@ -352,15 +305,17 @@ describe('PaymentResultScreen', () => {
         });
 
       (useLocalSearchParams as jest.Mock).mockReturnValue({
-        paymentSuccess: 'true',
-        paymentId: 'PAY-123',
+        external_reference: 'ORDER-123',
+        payment_id: 'PAY-123',
+        // No paymentSuccess param - need to verify
       });
 
-      render(<PaymentResultScreen />);
+      const { getByText } = render(<PaymentResultScreen />);
 
       await waitFor(() => {
         expect(setAuthTokenSpy).toHaveBeenCalledWith('test-auth-token');
-        expect(mockVerifyStatus).toHaveBeenCalled();
+        expect(mockVerifyStatus).toHaveBeenCalledWith('PAY-123');
+        expect(getByText('¡Pago exitoso!')).toBeTruthy();
       });
 
       setAuthTokenSpy.mockRestore();
@@ -368,27 +323,127 @@ describe('PaymentResultScreen', () => {
     });
   });
 
-  describe('Loading States', () => {
-    it('should show loading indicator while verifying payment', async () => {
-      const mockVerifyStatus = jest
-        .spyOn(mercadoPagoService, 'verifyPaymentStatus')
-        .mockImplementation(() => new Promise(() => {})); // Never resolves
+  describe('Order Number Display', () => {
+    it('should display order number from external_reference param', async () => {
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        paymentSuccess: 'true',
+        external_reference: 'ORD-2024-001',
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(getByText('ORD-2024-001')).toBeTruthy();
+      });
+    });
+
+    it('should use currentOrderNumber from store when not in params', async () => {
+      usePaymentStore.setState({
+        currentOrderId: 'STORE-ORDER-123',
+        currentOrderNumber: 'STORE-ORDER-123',
+      });
 
       (useLocalSearchParams as jest.Mock).mockReturnValue({
         paymentSuccess: 'true',
-        paymentId: 'PAY-123',
+        // No external_reference in params
       });
 
-      // The component doesn't implement a loading indicator with testID
-      // Verification happens in the background without visible loading state
       const { getByText } = render(<PaymentResultScreen />);
 
-      // Just verify the component renders successfully
       await waitFor(() => {
+        expect(getByText('STORE-ORDER-123')).toBeTruthy();
+      });
+    });
+  });
+
+  describe('Guest User', () => {
+    it('should NOT show "Ver mis pedidos" for guest users on success', async () => {
+      useAuthStore.setState({
+        token: null,
+        isLoggedIn: false,
+        user: null,
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        paymentSuccess: 'true',
+        orderId: 'ORDER-123',
+      });
+
+      const { queryByText, getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(getByText('¡Pago exitoso!')).toBeTruthy();
+        expect(queryByText('Ver mis pedidos')).toBeNull();
+        expect(getByText('Volver al inicio')).toBeTruthy();
+      });
+    });
+
+    it('should NOT show "Ver mis pedidos" for guest users on pending', async () => {
+      useAuthStore.setState({
+        token: null,
+        isLoggedIn: false,
+        user: null,
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        paymentPending: 'true',
+        orderId: 'ORDER-789',
+      });
+
+      const { queryByText, getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(getByText('Pago pendiente')).toBeTruthy();
+        expect(queryByText('Ver mis pedidos')).toBeNull();
+        expect(getByText('Volver al inicio')).toBeTruthy();
+      });
+    });
+
+    it('should verify by order number for guest users', async () => {
+      useAuthStore.setState({
+        token: null,
+        isLoggedIn: false,
+        user: null,
+      });
+
+      const mockGetOrderStatus = jest
+        .spyOn(mercadoPagoService, 'getOrderStatusByNumber')
+        .mockResolvedValue({
+          orderNumber: 'GUEST-ORDER-123',
+          status: 'paid',
+          paymentStatus: 'paid',
+        });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        external_reference: 'GUEST-ORDER-123',
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(mockGetOrderStatus).toHaveBeenCalledWith('GUEST-ORDER-123');
         expect(getByText('¡Pago exitoso!')).toBeTruthy();
       });
 
-      mockVerifyStatus.mockRestore();
+      mockGetOrderStatus.mockRestore();
+    });
+  });
+
+  describe('Navigation', () => {
+    it('should navigate home when "Volver al Inicio" is pressed on error', async () => {
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        paymentFailure: 'true',
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(getByText('Volver al inicio')).toBeTruthy();
+      });
+
+      fireEvent.press(getByText('Volver al inicio'));
+
+      expect(router.replace).toHaveBeenCalledWith('/');
     });
   });
 });

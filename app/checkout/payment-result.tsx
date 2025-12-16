@@ -7,7 +7,7 @@ import {
   SafeAreaView,
   ViewStyle,
   TextStyle,
-  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,43 +25,99 @@ import mercadoPagoService from '../_services/payment/mercadoPago';
 export default function PaymentResultScreen() {
   const params = useLocalSearchParams();
   const { clearCart } = useCartStore();
-  const { token } = useAuthStore();
+  const { token, isLoggedIn } = useAuthStore();
   const { currentOrderNumber } = usePaymentStore();
 
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationComplete, setVerificationComplete] = useState(false);
-  const [, setPaymentStatus] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [resolvedStatus, setResolvedStatus] = useState<'success' | 'pending' | 'failed' | null>(
+    null
+  );
 
   // Extract payment result from params (handle both camelCase and MercadoPago's snake_case)
-  const paymentSuccess = params.paymentSuccess === 'true';
-  const paymentPending = params.paymentPending === 'true';
+  const paymentSuccessParam = params.paymentSuccess === 'true';
+  const paymentPendingParam = params.paymentPending === 'true';
+  const paymentFailureParam = params.paymentFailure === 'true';
   const paymentId = (params.paymentId || params.payment_id) as string;
+  const externalReference = (params.external_reference || params.externalReference) as string;
   const error = params.error as string;
 
-  // Verify payment status
+  // Order number: from params, store, or external reference
+  const orderNumber = externalReference || currentOrderNumber;
+
+  // Determine if we have a definitive status from deep link params
+  const hasDefinitiveStatus = paymentSuccessParam || paymentPendingParam || paymentFailureParam;
+
+  // Verify payment status by polling the backend
   useEffect(() => {
     const verifyPaymentStatus = async () => {
-      if (paymentId && !verificationComplete && token) {
+      // If we already have a definitive status from deep link, use it
+      if (hasDefinitiveStatus) {
+        if (paymentSuccessParam) setResolvedStatus('success');
+        else if (paymentPendingParam) setResolvedStatus('pending');
+        else if (paymentFailureParam) setResolvedStatus('failed');
+        setIsVerifying(false);
+        return;
+      }
+
+      // If we have an order number, check its status from the backend
+      if (orderNumber) {
         setIsVerifying(true);
         try {
-          mercadoPagoService.setAuthToken(token);
-          const status = await mercadoPagoService.verifyPaymentStatus(paymentId);
-          setPaymentStatus(status.status);
-          setVerificationComplete(true);
-        } catch {
-          // Error is handled by Alert, no need for console logging in production
-          Alert.alert(
-            'Error',
-            'No pudimos verificar el estado del pago. Por favor, revisa tus pedidos.'
-          );
+          // First try to verify by payment ID if available (more accurate)
+          if (paymentId && token) {
+            mercadoPagoService.setAuthToken(token);
+            const status = await mercadoPagoService.verifyPaymentStatus(paymentId);
+            if (status.status === 'paid' || status.status === 'approved') {
+              setResolvedStatus('success');
+            } else if (status.status === 'pending' || status.status === 'in_process') {
+              setResolvedStatus('pending');
+            } else {
+              setResolvedStatus('failed');
+            }
+            setIsVerifying(false);
+            return;
+          }
+
+          // Otherwise check order status by order number (works for guests too)
+          const orderStatus = await mercadoPagoService.getOrderStatusByNumber(orderNumber);
+          if (orderStatus.paymentStatus === 'paid' || orderStatus.status === 'paid') {
+            setResolvedStatus('success');
+          } else if (orderStatus.paymentStatus === 'pending' || orderStatus.status === 'pending') {
+            setResolvedStatus('pending');
+          } else if (orderStatus.paymentStatus === 'failed' || orderStatus.status === 'cancelled') {
+            setResolvedStatus('failed');
+          } else {
+            // Default to pending - webhook may not have been processed yet
+            setResolvedStatus('pending');
+          }
+        } catch (error) {
+          // If we can't verify, show pending state - webhook may update later
+          console.error('[PaymentResult] Status verification failed:', error);
+          setResolvedStatus('pending');
         } finally {
           setIsVerifying(false);
         }
+      } else {
+        // No order number available - show pending
+        setResolvedStatus('pending');
+        setIsVerifying(false);
       }
     };
 
     verifyPaymentStatus();
-  }, [paymentId, verificationComplete, token]);
+  }, [
+    paymentId,
+    orderNumber,
+    token,
+    hasDefinitiveStatus,
+    paymentSuccessParam,
+    paymentPendingParam,
+    paymentFailureParam,
+  ]);
+
+  // Determine final display status
+  const paymentSuccess = resolvedStatus === 'success';
+  const paymentPending = resolvedStatus === 'pending' || isVerifying;
 
   // Clear cart on successful payment
   useEffect(() => {
@@ -96,17 +152,24 @@ export default function PaymentResultScreen() {
           </View>
           <Text style={styles.title}>¡Pago exitoso!</Text>
           <Text style={styles.message}>Tu pedido ha sido procesado correctamente.</Text>
-          {currentOrderNumber && (
+          {orderNumber && (
             <View style={styles.orderInfo}>
               <Text style={styles.orderLabel}>Número de pedido:</Text>
-              <Text style={styles.orderNumber}>{currentOrderNumber}</Text>
+              <Text style={styles.orderNumber}>{orderNumber}</Text>
             </View>
           )}
-          <TouchableOpacity style={styles.primaryButton} onPress={handleGoToOrders}>
-            <Text style={styles.primaryButtonText}>Ver mis pedidos</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleBackToHome}>
-            <Text style={styles.secondaryButtonText}>Volver al inicio</Text>
+          {isLoggedIn && (
+            <TouchableOpacity style={styles.primaryButton} onPress={handleGoToOrders}>
+              <Text style={styles.primaryButtonText}>Ver mis pedidos</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={isLoggedIn ? styles.secondaryButton : styles.primaryButton}
+            onPress={handleBackToHome}
+          >
+            <Text style={isLoggedIn ? styles.secondaryButtonText : styles.primaryButtonText}>
+              Volver al inicio
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -122,24 +185,45 @@ export default function PaymentResultScreen() {
           }}
         />
         <View style={styles.content}>
-          <View style={styles.pendingIcon}>
-            <Ionicons name="time-outline" size={80} color="#FFC107" />
-          </View>
-          <Text style={styles.title}>Pago pendiente</Text>
-          <Text style={styles.message}>Tu pago está siendo procesado.</Text>
-          {currentOrderNumber && (
+          {isVerifying ? (
+            <>
+              <ActivityIndicator size="large" color="#0C0C0C" style={styles.pendingIcon} />
+              <Text style={styles.title}>Verificando pago...</Text>
+              <Text style={styles.message}>Estamos confirmando el estado de tu pago.</Text>
+            </>
+          ) : (
+            <>
+              <View style={styles.pendingIcon}>
+                <Ionicons name="time-outline" size={80} color="#FFC107" />
+              </View>
+              <Text style={styles.title}>Pago pendiente</Text>
+              <Text style={styles.message}>Tu pago está siendo procesado.</Text>
+            </>
+          )}
+          {orderNumber && (
             <View style={styles.orderInfo}>
               <Text style={styles.orderLabel}>Número de pedido:</Text>
-              <Text style={styles.orderNumber}>{currentOrderNumber}</Text>
+              <Text style={styles.orderNumber}>{orderNumber}</Text>
             </View>
           )}
-          <Text style={styles.submessage}>Te notificaremos cuando el pago sea confirmado.</Text>
-          <TouchableOpacity style={styles.primaryButton} onPress={handleGoToOrders}>
-            <Text style={styles.primaryButtonText}>Ver mis pedidos</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleBackToHome}>
-            <Text style={styles.secondaryButtonText}>Volver al inicio</Text>
-          </TouchableOpacity>
+          {!isVerifying && (
+            <Text style={styles.submessage}>Te notificaremos cuando el pago sea confirmado.</Text>
+          )}
+          {!isVerifying && isLoggedIn && (
+            <TouchableOpacity style={styles.primaryButton} onPress={handleGoToOrders}>
+              <Text style={styles.primaryButtonText}>Ver mis pedidos</Text>
+            </TouchableOpacity>
+          )}
+          {!isVerifying && (
+            <TouchableOpacity
+              style={isLoggedIn ? styles.secondaryButton : styles.primaryButton}
+              onPress={handleBackToHome}
+            >
+              <Text style={isLoggedIn ? styles.secondaryButtonText : styles.primaryButtonText}>
+                Volver al inicio
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </SafeAreaView>
     );

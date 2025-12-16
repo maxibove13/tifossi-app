@@ -227,6 +227,15 @@ class MercadoPagoService {
 
   /**
    * Open payment flow using WebBrowser
+   *
+   * NOTE: The WebBrowser result type only indicates HOW the browser was closed,
+   * NOT whether the payment succeeded. When a user presses "Done" after paying,
+   * it returns 'cancel' even though payment was successful.
+   *
+   * Payment success is determined by:
+   * 1. Deep link callback (if JS redirect works)
+   * 2. MercadoPago webhook notifications
+   * 3. Polling the order status via API
    */
   async initiatePayment(preference: PaymentPreference): Promise<PaymentResult> {
     try {
@@ -251,15 +260,19 @@ class MercadoPagoService {
       // Cool down WebBrowser
       await WebBrowser.coolDownAsync();
 
-      if (result.type === 'cancel') {
+      // IMPORTANT: WebBrowser result.type only indicates how browser was closed,
+      // NOT payment outcome. 'cancel' means user pressed "Done" button which
+      // happens AFTER successful payment when they see the redirect page.
+      // Always return success=true to let the caller check actual payment status.
+      if (result.type === 'cancel' || result.type === 'dismiss') {
         return {
-          success: false,
-          error: 'Pago cancelado por el usuario',
+          success: true,
+          orderId: preference.externalReference,
+          // Signal that we need to verify payment status
+          status: 'pending',
         };
       }
 
-      // The actual payment result will be handled via deep link
-      // This method returns immediately after opening the browser
       return {
         success: true,
         orderId: preference.externalReference,
@@ -303,6 +316,38 @@ class MercadoPagoService {
     } catch (error) {
       throw new Error(
         `Failed to verify payment: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Get order status by order number (no auth required for guest orders)
+   */
+  async getOrderStatusByNumber(
+    orderNumber: string
+  ): Promise<{ orderNumber: string; status: string; paymentStatus: string }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/payment/order-status/${orderNumber}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: Failed to fetch order status`
+        );
+      }
+
+      const result = await response.json();
+
+      if (!result.success || !result.data) {
+        throw new Error('Invalid response format');
+      }
+
+      return result.data;
+    } catch (error) {
+      throw new Error(
+        `Failed to fetch order status: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
