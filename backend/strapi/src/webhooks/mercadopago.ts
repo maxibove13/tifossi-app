@@ -95,8 +95,15 @@ module.exports = {
 
       if (isV1Format) {
         webhookType = body.type;
-        dataId = body.data.id.toString();
-        strapi.log.info('[MP-WEBHOOK] Format detected: v1.0 (signed)', { webhookType, dataId });
+        // Use query param data.id for signature verification (MercadoPago signs using URL params)
+        // Fall back to body.data.id for processing if query param missing
+        dataId = query['data.id'] || body.data.id.toString();
+        strapi.log.info('[MP-WEBHOOK] Format detected: v1.0 (signed)', {
+          webhookType,
+          dataId,
+          queryDataId: query['data.id'],
+          bodyDataId: body.data.id,
+        });
       } else if (isV2Format) {
         webhookType =
           query.topic === 'merchant_order' ? MPWebhookType.MERCHANT_ORDER : MPWebhookType.PAYMENT;
