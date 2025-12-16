@@ -322,9 +322,31 @@ export default {
       );
       cleanAddresses.push(newAddress);
 
+      strapi.log.info(
+        `[user-profile] Saving ${cleanAddresses.length} addresses for user ${user.id}`
+      );
+
       await strapi.entityService.update('plugin::users-permissions.user', user.id, {
         data: { addresses: cleanAddresses } as any,
       });
+
+      // Verify the save by reading back
+      const verifyUser = (await strapi.entityService.findOne(
+        'plugin::users-permissions.user',
+        user.id,
+        { populate: ['addresses'] as any }
+      )) as any;
+
+      const savedAddresses = verifyUser?.addresses || [];
+      strapi.log.info(
+        `[user-profile] Verified ${savedAddresses.length} addresses saved for user ${user.id}`
+      );
+
+      if (savedAddresses.length !== cleanAddresses.length) {
+        strapi.log.error(
+          `[user-profile] Address save failed: expected ${cleanAddresses.length}, got ${savedAddresses.length}`
+        );
+      }
 
       ctx.body = { ...newAddress, id: cleanAddresses.length - 1 };
     } catch (error: any) {
