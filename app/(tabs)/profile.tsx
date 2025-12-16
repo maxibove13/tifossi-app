@@ -170,6 +170,11 @@ export default function ProfileScreen() {
             text="Mis Pedidos"
             onPress={() => router.push('/profile/orders')}
           />
+          <ProfileListItem
+            IconComponent={() => <Feather name="map-pin" size={24} color={colors.primary} />}
+            text="Direcciones de Envío"
+            onPress={() => router.push('/profile/addresses')}
+          />
           {isEmailUser && (
             <ProfileListItem
               IconComponent={() => <Feather name="lock" size={24} color={colors.primary} />}

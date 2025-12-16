@@ -3,6 +3,8 @@ export const colors = {
   secondary: '#707070',
   border: '#DCDCDC',
   error: '#AD3026',
+  errorBackground: '#FFEBEE',
+  errorBorder: '#FFCDD2',
   success: '#367C39',
   subtleText: '#E9F5FE',
   text: {
