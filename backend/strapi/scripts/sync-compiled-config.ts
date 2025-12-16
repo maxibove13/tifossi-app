@@ -130,6 +130,34 @@ function syncDirectory(sourceName: string, targetName: string): boolean {
 }
 
 /**
+ * Copy JSON files from source to destination recursively.
+ * This handles schema.json and other config files that TypeScript doesn't copy.
+ */
+function copyJsonFiles(src: string, dest: string): number {
+  if (!fs.existsSync(src)) {
+    return 0;
+  }
+
+  let count = 0;
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+
+    if (entry.isDirectory()) {
+      count += copyJsonFiles(srcPath, destPath);
+    } else if (entry.name.endsWith('.json')) {
+      fs.mkdirSync(dest, { recursive: true });
+      fs.copyFileSync(srcPath, destPath);
+      count++;
+    }
+  }
+
+  return count;
+}
+
+/**
  * Copy runtime-required directories additively from source
  */
 function syncRuntimeDirectories(): void {
@@ -157,6 +185,15 @@ function syncRuntimeDirectories(): void {
         console.warn(
           `[sync-compiled-config] This may cause runtime errors. Check Strapi build configuration.`
         );
+      }
+    }
+
+    // Always copy JSON schema files from source (TypeScript doesn't copy these)
+    const srcDir = path.join(srcRoot, dirName);
+    if (fs.existsSync(srcDir)) {
+      const jsonCount = copyJsonFiles(srcDir, destDir);
+      if (jsonCount > 0) {
+        console.log(`[sync-compiled-config] Copied ${jsonCount} JSON file(s) for ${dirName}`);
       }
     }
   }
