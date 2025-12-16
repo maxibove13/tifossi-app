@@ -327,9 +327,19 @@ export default function PaymentSelectionScreen() {
       const paymentResult = await mercadoPagoService.initiatePayment(preference);
 
       if (!paymentResult.success) {
+        // Only show error if payment couldn't be initiated at all
         Alert.alert('Error', paymentResult.error || 'No se pudo iniciar el pago');
+        return;
       }
-      // WebView will handle the rest through deep links
+
+      // After browser closes, navigate to payment result to check actual status.
+      // The browser 'cancel' type doesn't mean payment failed - user may have
+      // completed payment and pressed "Done" on the redirect page.
+      // Use replace to avoid stacking screens if deep link already navigated there.
+      navigation.replace({
+        pathname: '/checkout/payment-result',
+        params: { external_reference: preference.externalReference },
+      });
     } catch (error) {
       const rawMessage = error instanceof Error ? error.message : String(error);
       console.error('[Checkout] Payment error:', rawMessage);

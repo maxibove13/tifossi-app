@@ -347,6 +347,7 @@ export const usePaymentStore = create((set, get) => ({
 | `/api/orders/:id`                     | GET    | Get order details (own orders only)    | Yes (JWT)        |
 | `/api/payments/create`                | POST   | Create payment                         | Yes              |
 | `/api/payments/verify`                | POST   | Verify payment                         | Yes              |
+| `/api/payment/order-status/:orderNumber` | GET | Get order status by number             | No (rate-limited) |
 | `/api/webhooks/mercadopago`           | POST   | Payment webhook                        | No (signed)      |
 
 **Cart & Favorites via `/user-profile/me`:**
@@ -382,6 +383,29 @@ We created a custom `/api/user-profile/me` endpoint for PUT operations to avoid 
 - **GET /users/me**: Uses Strapi's built-in JWT validation (no custom policy needed)
 - **PUT /user-profile/me**: Uses Strapi's default JWT validation (no custom policy needed)
 - **Payment routes**: Use `global::is-authenticated` policy because they also accept Firebase tokens via custom `firebaseAuth` middleware
+- **GET /payment/order-status/:orderNumber**: No auth required (rate-limited via `global::guest-rate-limit` middleware). Used by payment-result screen to verify status after WebBrowser dismissal.
+
+**Order Status Endpoint Details:**
+
+The `/api/payment/order-status/:orderNumber` endpoint allows checking order status without authentication:
+
+```typescript
+// Response format
+{
+  success: true,
+  data: {
+    orderNumber: string,
+    status: string,        // Order status (pending, paid, etc.)
+    paymentStatus: string, // Payment status
+    mpPaymentStatus: string // MercadoPago payment status
+  }
+}
+```
+
+**Use cases:**
+- Guest order status verification
+- Payment result screen status polling when deep link params unavailable
+- Mobile app status verification after WebBrowser dismissal
 
 ---
 

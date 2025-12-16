@@ -72,6 +72,18 @@ User → Mobile App → Create Preference → MercadoPago Checkout
                  ↓
          User Completes Payment
                  ↓
+    ┌─────────────┴─────────────┐
+    ↓                           ↓
+Deep Link Redirect        User Presses "Done"
+(JS redirect works)       (No deep link params)
+    ↓                           ↓
+Payment Result Screen     Payment Result Screen
+(uses URL params)         (verifies via API)
+                                ↓
+                     GET /api/payment/order-status/:orderNumber
+                                ↓
+                          Show Actual Status
+                 ↓
       MercadoPago → Webhook → Backend
                  ↓
    Validate Signature (<5ms)
@@ -86,6 +98,17 @@ User → Mobile App → Create Preference → MercadoPago Checkout
                  ↓
    Update Order Status
 ```
+
+### WebBrowser Behavior Note
+
+When the user presses "Done" in the WebBrowser after completing payment, `WebBrowser.result.type` returns `'cancel'`. This does NOT mean the payment failed - it only indicates how the browser was closed.
+
+**Payment success is determined by:**
+1. Deep link callback (if JS redirect works)
+2. API status verification via `/api/payment/order-status/:orderNumber`
+3. MercadoPago webhook notifications
+
+The mobile app now handles this gracefully by always navigating to the payment result screen and verifying status via API when deep link params are not available.
 
 ### Key Components
 
