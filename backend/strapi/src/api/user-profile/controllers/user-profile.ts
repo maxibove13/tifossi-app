@@ -237,6 +237,13 @@ export default {
     }
 
     try {
+      // Check schema registration
+      const userContentType = strapi.contentTypes['plugin::users-permissions.user'] as any;
+      const hasAddressesAttr = userContentType?.attributes?.addresses;
+      strapi.log.info(
+        `[user-profile] GET addresses - Schema has addresses: ${!!hasAddressesAttr}, component: ${hasAddressesAttr?.component}`
+      );
+
       // Use entityService for proper component handling in Strapi 5
       // Type assertion needed because custom schema extensions aren't reflected in generated types
       const currentUser = (await strapi.entityService.findOne(
@@ -246,10 +253,14 @@ export default {
       )) as any;
 
       const addresses = currentUser?.addresses || [];
+      strapi.log.info(
+        `[user-profile] GET addresses - User ${user.id} has ${addresses.length} addresses`
+      );
+
       // Add index as id for frontend reference
       ctx.body = addresses.map((addr: any, index: number) => ({ ...addr, id: index }));
     } catch (error: any) {
-      strapi.log.error('[user-profile] Get addresses failed:', error);
+      strapi.log.error('[user-profile] Get addresses failed:', error.message, error.stack);
       ctx.internalServerError('Failed to fetch addresses');
     }
   },
@@ -304,6 +315,13 @@ export default {
     }
 
     try {
+      // Check if addresses attribute exists in the content-type schema
+      const userContentType = strapi.contentTypes['plugin::users-permissions.user'] as any;
+      const hasAddressesAttr = userContentType?.attributes?.addresses;
+      strapi.log.info(
+        `[user-profile] Schema check - addresses attribute exists: ${!!hasAddressesAttr}, type: ${hasAddressesAttr?.type}`
+      );
+
       // Use entityService for proper component handling in Strapi 5
       // Type assertion needed because custom schema extensions aren't reflected in generated types
       const currentUser = (await strapi.entityService.findOne(
@@ -311,6 +329,10 @@ export default {
         user.id,
         { populate: ['addresses'] as any }
       )) as any;
+
+      strapi.log.info(
+        `[user-profile] Current user ${user.id} has ${currentUser?.addresses?.length ?? 0} existing addresses`
+      );
 
       const existingAddresses = currentUser?.addresses || [];
       const isNewDefault = body.isDefault || false;
@@ -323,23 +345,43 @@ export default {
       cleanAddresses.push(newAddress);
 
       strapi.log.info(
-        `[user-profile] Saving ${cleanAddresses.length} addresses for user ${user.id}`
+        `[user-profile] Attempting to save ${cleanAddresses.length} addresses for user ${user.id}`
       );
+      strapi.log.debug(`[user-profile] Address data: ${JSON.stringify(cleanAddresses[0])}`);
 
       // Try entityService first (preferred for components in Strapi 5)
+      let updateResult: any;
       try {
-        await strapi.entityService.update('plugin::users-permissions.user', user.id, {
-          data: { addresses: cleanAddresses } as any,
-        });
+        updateResult = await strapi.entityService.update(
+          'plugin::users-permissions.user',
+          user.id,
+          {
+            data: { addresses: cleanAddresses } as any,
+            populate: ['addresses'] as any,
+          }
+        );
+        strapi.log.info(
+          `[user-profile] entityService.update returned ${updateResult?.addresses?.length ?? 0} addresses`
+        );
       } catch (entityError: any) {
-        strapi.log.warn(
-          `[user-profile] entityService.update failed, trying db.query: ${entityError.message}`
+        strapi.log.error(
+          `[user-profile] entityService.update failed: ${entityError.message}`,
+          entityError.stack
         );
         // Fallback to db.query if entityService fails
-        await strapi.db.query('plugin::users-permissions.user').update({
-          where: { id: user.id },
-          data: { addresses: cleanAddresses },
-        });
+        try {
+          updateResult = await strapi.db.query('plugin::users-permissions.user').update({
+            where: { id: user.id },
+            data: { addresses: cleanAddresses },
+          });
+          strapi.log.info(`[user-profile] db.query fallback completed`);
+        } catch (dbError: any) {
+          strapi.log.error(
+            `[user-profile] db.query also failed: ${dbError.message}`,
+            dbError.stack
+          );
+          throw dbError;
+        }
       }
 
       // Verify the save by reading back
@@ -351,18 +393,29 @@ export default {
 
       const savedAddresses = verifyUser?.addresses || [];
       strapi.log.info(
-        `[user-profile] Verified ${savedAddresses.length} addresses saved for user ${user.id}`
+        `[user-profile] Verification: ${savedAddresses.length} addresses found for user ${user.id}`
       );
 
       if (savedAddresses.length !== cleanAddresses.length) {
         strapi.log.error(
-          `[user-profile] Address save failed: expected ${cleanAddresses.length}, got ${savedAddresses.length}`
+          `[user-profile] ADDRESS PERSISTENCE FAILED: expected ${cleanAddresses.length}, got ${savedAddresses.length}`
         );
+        // Check if component table exists
+        try {
+          const tableCheck = await strapi.db.connection.raw(
+            `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'components_shared_addresses')`
+          );
+          strapi.log.info(
+            `[user-profile] Component table exists: ${JSON.stringify(tableCheck.rows)}`
+          );
+        } catch (e: any) {
+          strapi.log.error(`[user-profile] Could not check table: ${e.message}`);
+        }
       }
 
       ctx.body = { ...newAddress, id: cleanAddresses.length - 1 };
     } catch (error: any) {
-      strapi.log.error('[user-profile] Create address failed:', error);
+      strapi.log.error('[user-profile] Create address failed:', error.message, error.stack);
       ctx.internalServerError('Failed to create address');
     }
   },
