@@ -13,7 +13,7 @@ import { router, Stack, useFocusEffect } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
 import { colors } from '../../_styles/colors';
-import { spacing, radius } from '../../_styles/spacing';
+import { spacing, radius, components } from '../../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../_styles/typography';
 import { useAuthStore } from '../../_stores/authStore';
 import orderService, { Order } from '../../_services/order/orderService';
@@ -154,7 +154,7 @@ export default function OrdersListScreen() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Mis Pedidos</Text>
           <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <Feather name="x" size={20} color={colors.secondary} />
+            <Feather name="x" size={24} color={colors.secondary} />
           </TouchableOpacity>
         </View>
         <ReusableAuthPrompt message="Inicia sesión para ver tus pedidos." />
@@ -169,7 +169,7 @@ export default function OrdersListScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mis Pedidos</Text>
         <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-          <Feather name="x" size={20} color={colors.secondary} />
+          <Feather name="x" size={24} color={colors.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -229,8 +229,12 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   closeButton: {
-    padding: spacing.sm,
+    width: components.closeButton.width,
+    height: components.closeButton.height,
+    paddingHorizontal: spacing.sm,
     borderRadius: radius.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingContainer: {
     flex: 1,

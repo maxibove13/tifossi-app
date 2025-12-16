@@ -28,6 +28,28 @@ export const layout = {
     vertical: spacing.md,
     horizontal: spacing.xl,
   },
+  safeAreaBottom: 34,
+};
+
+export const components = {
+  button: {
+    height: 48,
+  },
+  closeButton: {
+    width: 40,
+    height: 24,
+  },
+  dropdown: {
+    height: 40,
+    maxHeight: 220,
+  },
+  flagImage: {
+    width: 24,
+    height: 16,
+  },
+  input: {
+    numberWidth: 80,
+  },
 };
 
 export default spacing;

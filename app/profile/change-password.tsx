@@ -10,11 +10,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, radius, components } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
-import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
 
 export default function ChangePasswordScreen() {
@@ -97,7 +97,7 @@ export default function ChangePasswordScreen() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Cambiar Contraseña</Text>
           <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
+            <Feather name="x" size={24} color={colors.secondary} />
           </TouchableOpacity>
         </View>
 
@@ -210,8 +210,12 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   closeButton: {
-    padding: spacing.sm,
+    width: components.closeButton.width,
+    height: components.closeButton.height,
+    paddingHorizontal: spacing.sm,
     borderRadius: radius.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
@@ -237,7 +241,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     width: '100%',
-    height: 48,
+    height: components.button.height,
     borderRadius: radius.xxl,
     justifyContent: 'center',
     alignItems: 'center',
@@ -256,7 +260,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     width: '100%',
-    height: 48,
+    height: components.button.height,
     borderRadius: radius.xxl,
     justifyContent: 'center',
     alignItems: 'center',

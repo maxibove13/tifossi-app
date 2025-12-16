@@ -26,10 +26,15 @@ export const colors = {
   secondary: '#707070',
   border: '#DCDCDC',
   error: '#AD3026',
+  errorBackground: '#FFEBEE',  // For error banner backgrounds
+  errorBorder: '#FFCDD2',      // For error banner borders
   success: '#367C39',
   background: {
     light: '#FFFFFF',
     dark: '#0C0C0C',
+    medium: '#F5F5F5',
+    offWhite: '#FBFBFB',
+    offWhite25: 'rgba(251, 251, 251, 0.25)',
   },
 };
 ```
@@ -46,6 +51,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: colors.error,
+  },
+  // For error banners/alerts
+  errorBanner: {
+    backgroundColor: colors.errorBackground,
+    borderColor: colors.errorBorder,
+    borderWidth: 1,
   },
 });
 ```
@@ -71,6 +82,7 @@ export const radius = {
   md: 8,
   lg: 16,
   xl: 20,
+  button: 22,
   xxl: 24,
   circle: 100,
 };
@@ -84,13 +96,36 @@ export const layout = {
     vertical: spacing.md,
     horizontal: spacing.xl,
   },
+  safeAreaBottom: 34,  // iOS safe area bottom margin
+};
+
+// Component-specific tokens for consistent sizing
+export const components = {
+  button: {
+    height: 48,
+  },
+  closeButton: {
+    width: 40,
+    height: 24,
+  },
+  dropdown: {
+    height: 40,
+    maxHeight: 220,
+  },
+  flagImage: {
+    width: 24,
+    height: 16,
+  },
+  input: {
+    numberWidth: 80,
+  },
 };
 ```
 
 Use these spacing tokens for margin, padding, and positioning:
 
 ```typescript
-import { spacing, radius, layout } from '../../styles/spacing';
+import { spacing, radius, layout, components } from '../../styles/spacing';
 
 const styles = StyleSheet.create({
   container: {
@@ -99,8 +134,45 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   button: {
+    height: components.button.height,
     paddingVertical: layout.buttonPadding.vertical,
     paddingHorizontal: layout.buttonPadding.horizontal,
+  },
+  closeButton: {
+    width: components.closeButton.width,
+    height: components.closeButton.height,
+  },
+  actionButtons: {
+    marginBottom: layout.safeAreaBottom,
+  },
+});
+```
+
+### Component Tokens
+
+Component-specific tokens provide standardized dimensions for UI components. Use these to ensure consistency:
+
+```typescript
+import { components } from '../../styles/spacing';
+
+const styles = StyleSheet.create({
+  // Buttons
+  primaryButton: {
+    height: components.button.height,
+  },
+  // Close buttons (header)
+  closeButton: {
+    width: components.closeButton.width,
+    height: components.closeButton.height,
+  },
+  // Dropdowns
+  dropdown: {
+    height: components.dropdown.height,
+    maxHeight: components.dropdown.maxHeight,
+  },
+  // Number inputs
+  numberInput: {
+    width: components.input.numberWidth,
   },
 });
 ```

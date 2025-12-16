@@ -50,11 +50,10 @@ class AddressService {
 
   async fetchUserAddresses(): Promise<Address[]> {
     try {
-      const response = await httpClient.get('/user-profile/me/addresses', {
+      // httpClient.get already returns response.data directly
+      const data = await httpClient.get('/user-profile/me/addresses', {
         headers: this.getHeaders(),
       });
-      // Handle various response formats
-      const data = response.data;
       if (Array.isArray(data)) return data;
       if (data?.addresses && Array.isArray(data.addresses)) return data.addresses;
       return [];
@@ -72,10 +71,11 @@ class AddressService {
     }
 
     try {
-      const response = await httpClient.post('/user-profile/me/addresses', addressData, {
+      // httpClient.post already returns response.data directly
+      const data = await httpClient.post('/user-profile/me/addresses', addressData, {
         headers: this.getHeaders(),
       });
-      return response.data?.address || response.data || response;
+      return data?.address || data;
     } catch (error) {
       const apiError = handleApiError(error, 'createAddress');
       throw new Error(apiError.message);
@@ -84,10 +84,11 @@ class AddressService {
 
   async updateAddress(index: number, addressData: Partial<Address>): Promise<Address> {
     try {
-      const response = await httpClient.put(`/user-profile/me/addresses/${index}`, addressData, {
+      // httpClient.put already returns response.data directly
+      const data = await httpClient.put(`/user-profile/me/addresses/${index}`, addressData, {
         headers: this.getHeaders(),
       });
-      return response.data?.address || response.data || response;
+      return data?.address || data;
     } catch (error) {
       const apiError = handleApiError(error, 'updateAddress');
       throw new Error(apiError.message);
@@ -107,12 +108,13 @@ class AddressService {
 
   async setDefaultAddress(index: number): Promise<Address[]> {
     try {
-      const response = await httpClient.put(
+      // httpClient.put already returns response.data directly
+      const data = await httpClient.put(
         `/user-profile/me/addresses/${index}/default`,
         {},
         { headers: this.getHeaders() }
       );
-      return response.data || response || [];
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       const apiError = handleApiError(error, 'setDefaultAddress');
       throw new Error(apiError.message);
