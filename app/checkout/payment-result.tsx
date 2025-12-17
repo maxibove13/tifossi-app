@@ -34,8 +34,10 @@ export default function PaymentResultScreen() {
   );
 
   // Extract payment result from params
+  // MercadoPago may duplicate external_reference in redirect URL, causing array
   const paymentFailureParam = params.paymentFailure === 'true';
-  const externalReference = (params.external_reference || params.externalReference) as string;
+  const rawExternalRef = params.external_reference || params.externalReference;
+  const externalReference = Array.isArray(rawExternalRef) ? rawExternalRef[0] : rawExternalRef;
   const error = params.error as string;
 
   // Order number: from params or store
