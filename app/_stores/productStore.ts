@@ -107,6 +107,7 @@ export const useProductStore = create<ProductState>()(
                 'shortDescription',
                 'sizes',
               ],
+              'pagination[pageSize]': 500,
             },
           });
 
