@@ -183,6 +183,7 @@ class StrapiApiService {
           'shortDescription',
         ],
         sort: ['createdAt:desc'],
+        pagination: { pageSize: 500 },
       });
 
       const response = await httpClient.get<StrapiResponse<StrapiProduct[]>>(

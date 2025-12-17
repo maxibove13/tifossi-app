@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, Text, Pressable } from 'react-native';
+import { StyleSheet, View, ScrollView, Text, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../_styles/colors';
 import { spacing } from '../_styles/spacing';
@@ -14,7 +14,7 @@ import ProgressiveLoadingSection, {
   createSectionSkeleton,
 } from '../_components/skeletons/ProgressiveLoadingSection';
 import ProductSections from '../_components/store/product/sections/ProductSections';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import DefaultLargeCard from '../_components/store/product/default/large';
 import { fonts, fontSizes, lineHeights } from '../_styles/typography';
 import PromotionCard from '../_components/store/product/promotion/PromotionCard';
@@ -35,6 +35,7 @@ interface HomeScreenData {
 function HomeScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch products using Zustand store
   const {
@@ -42,7 +43,19 @@ function HomeScreen() {
     isLoading: productsLoading,
     error: productsError,
     fetchProducts,
+    refreshProducts,
   } = useProductStore();
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshProducts();
+    } catch {
+      // Error state is already handled by the store
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshProducts]);
 
   // Track loading state of individual sections for progressive loading
   const [sectionLoadingState, setSectionLoadingState] = useState({
@@ -234,6 +247,13 @@ function HomeScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
       >
         {/* Header removed from here, it's now handled by _layout.tsx */}
 

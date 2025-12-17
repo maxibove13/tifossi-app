@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { StyleSheet, View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import DefaultLargeCard from '../_components/store/product/default/large';
 import CategoryData from '../_data/categories';
@@ -142,8 +142,23 @@ export default function CatalogScreen() {
   const [loading, setLoading] = useState(true);
 
   // Fetch products using TanStack Query
-  const { data: allProducts, isLoading: isLoadingProducts, error: productsError } = useProducts();
+  const {
+    data: allProducts,
+    isLoading: isLoadingProducts,
+    error: productsError,
+    refetch,
+  } = useProducts();
   const [appliedFilters, setAppliedFilters] = useState<ProductFilters>({});
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
 
   // Use the original title or default to 'Tienda'
   const rawPageTitle = params.title || 'Tienda';
@@ -450,6 +465,13 @@ export default function CatalogScreen() {
       <ScrollView
         style={styles.productsContainer}
         contentContainerStyle={styles.scrollContentContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
       >
         {loading || isLoadingProducts ? (
           <SkeletonLoader type="productGrid" rows={3} />
