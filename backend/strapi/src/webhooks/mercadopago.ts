@@ -58,7 +58,6 @@ module.exports = {
     const startTime = Date.now();
 
     try {
-      const query = ctx.request.query as Record<string, string>;
       const body: MPWebhookPayload = (ctx.request as any).body || {};
       const signature = ctx.request.headers['x-signature'] as string;
       const requestId = ctx.request.headers['x-request-id'] as string;
@@ -102,7 +101,8 @@ module.exports = {
       }
 
       const webhookType: MPWebhookType = body.type;
-      const dataId = query['data.id'] || body.data.id.toString();
+      // Always use body.data.id for signature verification - MercadoPago signs using body value
+      const dataId = String(body.data.id);
 
       // Verify signature
       const mpService = strapi.mercadoPago;
