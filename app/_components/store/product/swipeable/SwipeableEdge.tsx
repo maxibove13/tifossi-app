@@ -93,7 +93,7 @@ function triggerHaptic() {
   }
 }
 const MIN_COLLAPSED_SNAP_HEIGHT = 0;
-const COLLAPSED_EXTRA_PADDING = spacing.xxl + spacing.sm;
+const COLLAPSED_EXTRA_PADDING = spacing.xxl + spacing.md;
 
 // Optimize: Replace LinearGradient with View for better performance
 // The visual appearance is nearly identical - dark background with rounded corners
@@ -202,10 +202,8 @@ const SwipeableEdge = ({
     if (measuredHeaderHeight === null) {
       return undefined;
     }
-    return Math.max(
-      measuredHeaderHeight + COLLAPSED_EXTRA_PADDING + bottomSafeArea,
-      MIN_COLLAPSED_SNAP_HEIGHT
-    );
+    // measuredHeaderHeight already includes COLLAPSED_EXTRA_PADDING from the measurement view
+    return Math.max(measuredHeaderHeight + bottomSafeArea, MIN_COLLAPSED_SNAP_HEIGHT);
   }, [measuredHeaderHeight, bottomSafeArea]);
 
   const snapPoints = useMemo(() => {

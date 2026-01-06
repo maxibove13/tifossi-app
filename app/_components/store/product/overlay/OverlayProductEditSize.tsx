@@ -9,6 +9,7 @@ import {
   Animated,
   TouchableWithoutFeedback,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Import shared components
 import RadioButton from '../../../../_components/ui/form/RadioButton';
@@ -204,12 +205,14 @@ export default function OverlayProductEditSize({
 
             {/* Save button */}
             <TouchableOpacity
-              style={styles.saveButton}
+              style={styles.saveButtonWrapper}
               onPress={handleSave}
               activeOpacity={0.7}
-              disabled={!selectedSize && !isTalleUnico} // Allow save if TalleUnico even if selectedSize is initial empty string briefly
+              disabled={!selectedSize && !isTalleUnico}
             >
-              <Text style={styles.saveButtonText}>Guardar</Text>
+              <LinearGradient colors={['#373737', '#0C0C0C']} style={styles.saveButton}>
+                <Text style={styles.saveButtonText}>Guardar</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -231,8 +234,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
-    padding: spacing.xxl,
-    paddingBottom: spacing.xxl + 2,
+    paddingTop: spacing.xxl,
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: 34,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -242,7 +246,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 10,
     width: '100%',
-    gap: spacing.xxl + spacing.md,
+    gap: 40,
   },
   header: {
     width: '100%',
@@ -268,13 +272,13 @@ const styles = StyleSheet.create({
   sizeSelectionContainer: {
     width: '100%',
     flexDirection: 'column',
-    gap: spacing.md,
+    gap: spacing.lg,
   },
   sizeOption: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: '#DCDCDC',
   },
@@ -285,9 +289,9 @@ const styles = StyleSheet.create({
   },
   sizeOptionText: {
     fontFamily: 'Inter',
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
     fontWeight: '400',
-    lineHeight: lineHeights.md,
+    lineHeight: lineHeights.lg,
     color: '#0C0C0C',
   },
   sizeOptionTextDisabled: {
@@ -305,8 +309,6 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
     gap: spacing.sm,
   },
   backButton: {
@@ -317,29 +319,29 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.xl,
   },
   backButtonText: {
     fontFamily: 'Inter',
-    fontSize: fontSizes.sm,
+    fontSize: fontSizes.md,
     fontWeight: '500',
-    lineHeight: fontSizes.sm * 1.429,
+    lineHeight: lineHeights.md,
     color: '#424242',
+  },
+  saveButtonWrapper: {
+    flex: 1,
+    height: 44,
   },
   saveButton: {
     flex: 1,
-    height: 44,
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-    backgroundColor: colors.background.dark,
   },
   saveButtonText: {
     fontFamily: 'Inter',
-    fontSize: fontSizes.sm,
+    fontSize: fontSizes.md,
     fontWeight: '500',
-    lineHeight: fontSizes.sm * 1.429,
+    lineHeight: lineHeights.md,
     color: '#FBFBFB',
   },
 });

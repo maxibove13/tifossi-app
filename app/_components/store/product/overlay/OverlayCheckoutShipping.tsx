@@ -11,6 +11,7 @@ import {
   Animated,
   TouchableWithoutFeedback,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../../../_stores/authStore';
 import CloseIcon from '../../../../../assets/icons/close.svg';
@@ -191,70 +192,71 @@ export default function OverlayCheckoutShipping({
 
           {/* Animated container that slides up */}
           <Animated.View style={[styles.container, { transform: [{ translateY: slideAnim }] }]}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.title}>Agregar al carrito</Text>
-              <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-                <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-              </TouchableOpacity>
-            </View>
+            {/* Frame 175: Header + Selection Rows */}
+            <View style={styles.contentWrapper}>
+              {/* Header */}
+              <View style={styles.header}>
+                <Text style={styles.title}>Agregar al carrito</Text>
+                <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
+                  <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
+                </TouchableOpacity>
+              </View>
 
-            {/* Content */}
-            <View style={styles.content}>
-              {/* Size Selection Row */}
-              <TouchableOpacity
-                style={styles.selectionRow}
-                onPress={handleOpenSizeOverlay}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.selectionTitle}>Talle</Text>
-                <View style={styles.actionButton}>
-                  {hasExplicitlySelectedSize ? (
-                    <>
-                      <Text style={[styles.actionText, styles.doneText]}>Listo</Text>
-                      <ChevronRightGreen width={8} height={14} />
-                    </>
-                  ) : (
-                    <>
-                      <Text style={styles.actionText}>Seleccionar</Text>
-                      <ChevronRight width={8} height={14} />
-                    </>
-                  )}
-                </View>
-              </TouchableOpacity>
+              {/* Selection Rows */}
+              <View style={styles.selectionRows}>
+                {/* Size Selection Row */}
+                <TouchableOpacity
+                  style={styles.selectionRow}
+                  onPress={handleOpenSizeOverlay}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.selectionTitle}>Talle</Text>
+                  <View style={styles.actionButton}>
+                    {hasExplicitlySelectedSize ? (
+                      <>
+                        <Text style={[styles.actionText, styles.doneText]}>Listo</Text>
+                        <ChevronRightGreen width={8} height={14} />
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.actionText}>Seleccionar</Text>
+                        <ChevronRight width={8} height={14} />
+                      </>
+                    )}
+                  </View>
+                </TouchableOpacity>
 
-              {/* Quantity Selection Row */}
-              <TouchableOpacity
-                style={styles.selectionRow}
-                onPress={handleSelectQuantity}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.selectionTitle}>Cantidad</Text>
-                <View style={styles.actionButton}>
-                  {hasExplicitlySelectedQuantity ? (
-                    <>
-                      <Text style={[styles.actionText, styles.doneText]}>Listo</Text>
-                      <ChevronRightGreen width={8} height={14} />
-                    </>
-                  ) : (
-                    <>
-                      <Text style={styles.actionText}>Seleccionar</Text>
-                      <ChevronRight width={8} height={14} />
-                    </>
-                  )}
-                </View>
-              </TouchableOpacity>
+                {/* Quantity Selection Row */}
+                <TouchableOpacity
+                  style={styles.selectionRow}
+                  onPress={handleSelectQuantity}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.selectionTitle}>Cantidad</Text>
+                  <View style={styles.actionButton}>
+                    {hasExplicitlySelectedQuantity ? (
+                      <>
+                        <Text style={[styles.actionText, styles.doneText]}>Listo</Text>
+                        <ChevronRightGreen width={8} height={14} />
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.actionText}>Seleccionar</Text>
+                        <ChevronRight width={8} height={14} />
+                      </>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Action Buttons - only show when user has explicitly selected both */}
             {hasExplicitlySelectedSize && hasExplicitlySelectedQuantity && (
               <View style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={styles.primaryButton}
-                  onPress={handleBuyNow}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.primaryButtonText}>Comprar ahora</Text>
+                <TouchableOpacity onPress={handleBuyNow} activeOpacity={0.7}>
+                  <LinearGradient colors={['#373737', '#0C0C0C']} style={styles.primaryButton}>
+                    <Text style={styles.primaryButtonText}>Comprar ahora</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -303,10 +305,11 @@ type Styles = {
   modalContainer: ViewStyle;
   overlay: ViewStyle;
   container: ViewStyle;
+  contentWrapper: ViewStyle;
   header: ViewStyle;
   title: TextStyle;
   closeButton: ViewStyle;
-  content: ViewStyle;
+  selectionRows: ViewStyle;
   selectionRow: ViewStyle;
   selectionTitle: TextStyle;
   actionButton: ViewStyle;
@@ -329,18 +332,20 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   container: {
-    backgroundColor: colors.background.light,
+    backgroundColor: colors.background.antiflash,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
-    padding: spacing.xxl,
-    paddingBottom: spacing.xxl + 2,
+    paddingTop: spacing.xxl,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: 34,
+    gap: 40,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: -4,
+      height: -16,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     elevation: 10,
     width: '100%',
   },
@@ -348,8 +353,6 @@ const styles = StyleSheet.create<Styles>({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.xl + spacing.md,
-    width: '100%',
   },
   title: {
     fontFamily: fonts.primary,
@@ -362,9 +365,12 @@ const styles = StyleSheet.create<Styles>({
     padding: spacing.sm,
     borderRadius: radius.sm,
   },
-  content: {
+  contentWrapper: {
+    paddingHorizontal: spacing.lg,
+    gap: spacing.xl,
+  },
+  selectionRows: {
     gap: spacing.lg,
-    marginBottom: spacing.xl,
   },
   selectionRow: {
     flexDirection: 'row',
@@ -401,7 +407,6 @@ const styles = StyleSheet.create<Styles>({
     flexDirection: 'column',
     width: '100%',
     gap: spacing.sm,
-    marginTop: spacing.xl,
   },
   primaryButton: {
     width: '100%',
@@ -410,14 +415,13 @@ const styles = StyleSheet.create<Styles>({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
-    backgroundColor: colors.background.dark,
   },
   primaryButtonText: {
-    fontFamily: 'Inter',
-    fontSize: fontSizes.md,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
-    color: '#FBFBFB',
+    lineHeight: lineHeights.lg,
+    color: colors.background.offWhite,
   },
   secondaryButton: {
     width: '100%',
@@ -427,14 +431,14 @@ const styles = StyleSheet.create<Styles>({
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
     borderWidth: 1,
-    borderColor: '#DCDCDC',
+    borderColor: colors.border,
     backgroundColor: 'transparent',
   },
   secondaryButtonText: {
-    fontFamily: 'Inter',
-    fontSize: fontSizes.md,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
-    color: '#0C0C0C',
+    lineHeight: lineHeights.lg,
+    color: colors.primary,
   },
 });
