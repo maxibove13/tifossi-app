@@ -1,7 +1,6 @@
 import { StyleSheet, View, Text, Pressable, Image, Share } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../_styles/colors';
 import { fonts, fontSizes, lineHeights } from '../../../_styles/typography';
 import { useFavoriteStatus } from '../../../../hooks/useFavoriteStatus';
@@ -22,6 +21,12 @@ import HeartInactiveHeader from '../../../../assets/icons/heart_inactive_header.
 
 // Import SliderIcon
 import SliderIcon from '../../../../assets/icons/slider.svg';
+
+// Import ChevronLeft icon
+import ChevronLeft from '../../../../assets/icons/chevron_left.svg';
+
+// Import Share icon
+import ShareIcon from '../../../../assets/icons/share.svg';
 
 // Types needed for filter props
 import { ProductColor, ProductSize, Product } from '../../../_types/product';
@@ -147,7 +152,7 @@ function Header({
             onPress={() => router.back()}
             hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
           >
-            <Ionicons name="chevron-back" size={24} color={colors.primary} />
+            <ChevronLeft width={24} height={24} />
             <Text style={styles.backText}>Volver</Text>
           </Pressable>
         ) : variant === 'store' ? (
@@ -181,7 +186,7 @@ function Header({
           {variant === 'product' && (
             <>
               <Pressable hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} onPress={onShare}>
-                <Ionicons name="share-outline" size={24} color={colors.primary} />
+                <ShareIcon width={24} height={24} />
               </Pressable>
               <Pressable
                 testID="favorite-button"
@@ -209,8 +214,7 @@ function Header({
                 hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
                 onPress={handleSearchPress}
               >
-                {/* Use Ionicons search for consistency here, or keep SVG if preferred */}
-                <Ionicons name="search-outline" size={24} color={colors.primary} />
+                <SearchIcon width={24} height={24} />
               </Pressable>
             </>
           )}
@@ -255,13 +259,12 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    width: 80, // Fixed width for alignment
     justifyContent: 'flex-start',
+    width: 60,
   },
   backText: {
-    fontSize: fontSizes.md,
-    lineHeight: lineHeights.md,
+    fontSize: fontSizes.sm,
+    lineHeight: lineHeights.sm,
     color: colors.primary,
     fontFamily: fonts.secondary,
   },
@@ -276,7 +279,7 @@ const styles = StyleSheet.create({
     width: '100%', // Adjust width automatically based on resizeMode
   },
   placeholder: {
-    width: 80, // Match backButton width
+    width: 60,
   },
   titleContainer: {
     flex: 1,
@@ -284,11 +287,11 @@ const styles = StyleSheet.create({
     // Title is centered due to flex: 1 and alignItems: center on row
   },
   title: {
-    fontSize: fontSizes.md, // Using ProductHeader title size
-    fontWeight: '600',
-    lineHeight: lineHeights.md,
+    fontSize: fontSizes.lg,
+    fontWeight: '500',
+    lineHeight: lineHeights.lg,
     color: colors.primary,
-    fontFamily: fonts.secondary,
+    fontFamily: fonts.primary,
   },
   authTitle: {
     fontSize: fontSizes.xxxl,
@@ -300,8 +303,8 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    width: 80, // Fixed width for alignment
+    gap: 12,
+    width: 60,
     justifyContent: 'flex-end',
   },
   // Removed unused styles like toggleParent, toggle, etc.
