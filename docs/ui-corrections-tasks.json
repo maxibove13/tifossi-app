@@ -197,11 +197,12 @@
         {
           "id": "PRODUCT-006",
           "description": "Cuando se pulsa 'Agregar al carrito' que las opciones de selección detalle y la cantidad no aparezcan como 'Listo'; forzar al usuario a seleccionar las opciones correctas y que no agregue las predeterminadas por la app",
-          "component": "app/_components/store/product/overlay/OverlayProductEdit.tsx",
+          "component": "app/_components/store/product/overlay/OverlayCheckoutShipping.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Current logic auto-selects first available option and shows 'Listo'. Change to: 1) Initialize selection state as null/undefined, 2) Show 'Seleccionar' instead of 'Listo' until user explicitly taps an option, 3) Disable 'Agregar' button until all required selections are made."
+          "status": "completed",
+          "completedAt": "2026-01-06",
+          "implementation": "Added hasExplicitlySelectedSize and hasExplicitlySelectedQuantity state flags. Reset to false when overlay opens. Set to true only when user explicitly saves from sub-overlays. UI shows 'Seleccionar' until explicit selection, action buttons hidden until both selected."
         },
         {
           "id": "PRODUCT-007",
