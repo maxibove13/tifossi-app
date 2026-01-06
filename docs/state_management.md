@@ -68,6 +68,7 @@ const profile = await httpClient.get('/users/me');
   - `cartStore.ts`: Shopping cart management
   - `favoritesStore.ts`: Product favorites management
   - `authStore.ts`: Authentication state
+  - `paymentStore.ts`: Payment/checkout UI state
 
 ### 3.2 Store Implementations
 
@@ -105,6 +106,21 @@ const profile = await httpClient.get('/users/me');
   - Triggers cart/favorites sync after login
   - Development toggle for testing authenticated state
 
+#### Payment Store (`paymentStore.ts`)
+
+- **Persistence:** None (transient UI state only)
+- **Key Features:**
+  - Current order tracking (orderNumber, orderId)
+  - Selected store location for pickup orders
+  - Guest checkout data:
+    - `GuestAddress`: Delivery address for non-authenticated users
+    - `GuestContactInfo`: Contact info for pickup orders
+  - **"Comprar ahora" (Buy Now) flow:**
+    - `PendingBuyNowItem`: Stores product info for direct purchase without adding to cart
+    - Allows users to back out of checkout without polluting their cart
+    - Cleared automatically via `clearPaymentState()` when leaving checkout
+  - Loading and error state for payment processing UI
+
 ## 4. Search Implementation
 
 **Current Implementation:** Basic filtering via `useSearch` hook in `hooks/useSearch.ts`
@@ -122,6 +138,7 @@ const profile = await httpClient.get('/users/me');
 | Shopping Cart      | Zustand           | MMKV               | Guest: local-only. Auth: syncs via `PUT /user-profile/me` (cart is JSON field)       |
 | Favorites          | Zustand           | MMKV               | Guest: local-only. Auth: syncs via `PUT /user-profile/me` (favorites is relation)    |
 | Auth Tokens        | Zustand           | SecureStore        | Managed by `useAuthStore`, login triggers cart/favorites sync                 |
+| Payment UI         | Zustand           | None               | Transient checkout state: guest data, pending buy-now items, order tracking   |
 | UI Interactions    | Local React State | None               | Component-local state using useState/useReducer                               |
 
 ## 6. Current Project Structure
@@ -136,7 +153,8 @@ app/
 ├── _stores/               # Zustand stores
 │   ├── authStore.ts       # Authentication state
 │   ├── cartStore.ts       # Shopping cart state
-│   └── favoritesStore.ts  # Favorites state
+│   ├── favoritesStore.ts  # Favorites state
+│   └── paymentStore.ts    # Payment/checkout UI state
 hooks/                     # Custom hooks for state access
     ├── useFavoriteStatus.ts    # Favorites status hook
     ├── useProductFilters.ts    # Product filtering hook

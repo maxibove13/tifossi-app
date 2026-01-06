@@ -65,6 +65,7 @@ function OverlayProductAdding({ isVisible, onClose }: OverlayProductAddingProps)
 
   const handleBackToStore = () => {
     onClose();
+    router.navigate('/(tabs)');
   };
 
   return (

@@ -220,6 +220,46 @@ Local state is managed using a two-pronged approach:
   );
   ```
 
+  ### c) Payment Store (`app/_stores/paymentStore.ts`)
+
+  Manages transient checkout/payment UI state. Unlike cart and favorites, this store does NOT persist - all state is cleared when leaving the checkout flow.
+
+  ```typescript
+  // In app/_stores/paymentStore.ts
+  import { create } from 'zustand';
+
+  // Pending buy now item - for "Comprar ahora" flow without adding to cart
+  export interface PendingBuyNowItem {
+    productId: string;
+    title: string;
+    size: string;
+    quantity: number;
+    color?: string;
+    price: number;
+    discountedPrice?: number;
+    imageUrl?: string;
+  }
+
+  interface PaymentUIState {
+    currentOrderNumber: string | null;
+    currentOrderId: string | null;
+    selectedStore: SelectedStore | null;  // For pickup orders
+    guestAddress: GuestAddress | null;    // Guest delivery address
+    guestContactInfo: GuestContactInfo | null;  // Guest contact for pickup
+    pendingBuyNowItem: PendingBuyNowItem | null;  // "Comprar ahora" item
+    isLoading: boolean;
+    error: string | null;
+    // Actions...
+    clearPaymentState: () => void;
+    setPendingBuyNowItem: (item: PendingBuyNowItem | null) => void;
+  }
+  ```
+
+  **Key Use Cases:**
+  - **Guest Checkout:** Stores delivery address or contact info for non-authenticated users
+  - **"Comprar ahora" (Buy Now) Flow:** Stores product selection in `pendingBuyNowItem` without adding to cart, allowing users to back out cleanly
+  - **Order Tracking:** Temporarily holds current order info during payment processing
+
 ## 3. Local Component State (React Hooks)
 
 - **Responsibility:** Managing state that is specific to a component's rendering logic, UI interactions, or temporary data.
@@ -293,6 +333,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 ## 4. Data Flow and Integration
 
 - Zustand stores (`cartStore`, `favoritesStore`) hold the persistent global client state (cart items, favorite IDs).
+- `paymentStore` holds transient checkout state (guest info, pending buy-now items) - not persisted.
 - Components subscribe to relevant parts of the Zustand stores using selector hooks.
 - Components use local `useState` or `useReducer` for their internal UI logic (e.g., form inputs, selections, modal visibility).
 - When a user interacts (e.g., adds to cart), the component updates its local state (if necessary) and calls action functions from the relevant Zustand store (e.g., `addItemToCart`).

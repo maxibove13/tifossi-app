@@ -58,6 +58,8 @@ export default function PaymentSelectionScreen() {
   const selectedStore = usePaymentStore((state) => state.selectedStore);
   const guestAddress = usePaymentStore((state) => state.guestAddress);
   const guestContactInfo = usePaymentStore((state) => state.guestContactInfo);
+  // PRODUCT-012: Pending buy now item (for "Comprar ahora" flow without cart)
+  const pendingBuyNowItem = usePaymentStore((state) => state.pendingBuyNowItem);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
 
@@ -69,8 +71,11 @@ export default function PaymentSelectionScreen() {
   }
 
   // Convert cart items to displayable format with product details
+  // PRODUCT-012: Also include pending buy now item if present
   const cartDisplayItems = useMemo(() => {
     const result: CartDisplayItem[] = [];
+
+    // Add cart items
     for (const item of cartItems) {
       const product = allProducts?.find((p) => p.id === item.productId);
       if (product) {
@@ -82,15 +87,34 @@ export default function PaymentSelectionScreen() {
         });
       }
     }
+
+    // Add pending buy now item if present (for "Comprar ahora" flow)
+    if (pendingBuyNowItem) {
+      const product = allProducts?.find((p) => p.id === pendingBuyNowItem.productId);
+      if (product) {
+        result.push({
+          ...product,
+          quantity: pendingBuyNowItem.quantity,
+          selectedSize: pendingBuyNowItem.size,
+          color: pendingBuyNowItem.color,
+        });
+      }
+    }
+
     return result;
-  }, [cartItems, allProducts]);
+  }, [cartItems, allProducts, pendingBuyNowItem]);
 
   // Calculate order totals
+  // PRODUCT-012: Include pending buy now item in totals
   const shippingMethod = selectedStore ? 'pickup' : 'delivery';
-  const subtotal = cartItems.reduce((sum, item) => {
+  const cartSubtotal = cartItems.reduce((sum, item) => {
     const price = item.discountedPrice ?? item.price ?? 0;
     return sum + price * item.quantity;
   }, 0);
+  const pendingItemSubtotal = pendingBuyNowItem
+    ? (pendingBuyNowItem.discountedPrice ?? pendingBuyNowItem.price) * pendingBuyNowItem.quantity
+    : 0;
+  const subtotal = cartSubtotal + pendingItemSubtotal;
   const shippingCost = shippingMethod === 'pickup' ? 0 : 200;
   const total = subtotal + shippingCost;
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);

@@ -47,7 +47,7 @@ export default function OverlayCheckoutShipping({
   onClose,
   onSelectSize,
   onSelectQuantity,
-  onBuyNow: _onBuyNow = () => {},
+  onBuyNow,
   onAddToCart = () => {},
   initialQuantity = 1,
   initialSize = '',
@@ -99,6 +99,10 @@ export default function OverlayCheckoutShipping({
       // Reset animation values when overlay is hidden
       fadeAnim.setValue(0);
       slideAnim.setValue(height);
+      // Reset nested overlay states to prevent blocking issues (PRODUCT-011)
+      setIsQuantityOverlayVisible(false);
+      setIsSizeOverlayVisible(false);
+      setIsShippingOverlayVisible(false);
     }
   }, [isVisible, fadeAnim, slideAnim, initialQuantity, initialSize, wasVisible]);
 
@@ -143,12 +147,10 @@ export default function OverlayCheckoutShipping({
   const handleSelectShipping = async (method: 'delivery' | 'pickup' | '') => {
     if (!method) return;
 
-    try {
-      // Add item to cart before proceeding to checkout
-      await onAddToCart(selectedSize, selectedQuantity);
-    } catch {
-      // Error is handled by the cart store (shows alert to user)
-      return;
+    // PRODUCT-012: Don't add to cart yet - use onBuyNow to set pending item
+    // Cart addition will happen at order confirmation
+    if (onBuyNow) {
+      onBuyNow(selectedSize, selectedQuantity);
     }
 
     setIsShippingOverlayVisible(false);
@@ -196,7 +198,11 @@ export default function OverlayCheckoutShipping({
             <View style={styles.contentWrapper}>
               {/* Header */}
               <View style={styles.header}>
-                <Text style={styles.title}>Agregar al carrito</Text>
+                <Text style={styles.title}>
+                  {hasExplicitlySelectedSize && hasExplicitlySelectedQuantity
+                    ? 'Agregar al carrito'
+                    : 'Editar'}
+                </Text>
                 <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
                   <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
                 </TouchableOpacity>
