@@ -72,7 +72,7 @@ export const Input = ({
             endIcon && styles.inputWithEndIcon,
             style,
           ]}
-          placeholderTextColor="#909090"
+          placeholderTextColor="#707070"
           onFocus={handleFocus}
           onBlur={handleBlur}
           {...props}
@@ -115,9 +115,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#DCDCDC',
-    borderRadius: 2,
+    borderRadius: 4,
     backgroundColor: '#FFFFFF',
-    minHeight: 44,
+    height: 40,
   },
   inputContainerFocused: {
     borderColor: '#0C0C0C',
@@ -128,11 +128,12 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontFamily: 'Inter',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '400',
+    lineHeight: 24,
     color: '#0C0C0C',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   inputWithStartIcon: {
     paddingLeft: 8,

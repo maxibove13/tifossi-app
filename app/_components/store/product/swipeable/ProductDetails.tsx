@@ -88,7 +88,7 @@ const styles = StyleSheet.create<Styles>({
     gap: spacing.xl,
   },
   section: {
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   specifications: {
     fontFamily: typography.body.fontFamily,
@@ -101,15 +101,15 @@ const styles = StyleSheet.create<Styles>({
     fontFamily: typography.small.fontFamily,
     fontWeight: '400',
     fontSize: typography.small.fontSize,
+    lineHeight: 14,
     color: colors.primary.text,
-    marginTop: spacing.xs,
   },
   sectionTitle: {
     fontFamily: typography.body.fontFamily,
     fontWeight: '400',
     fontSize: typography.body.fontSize,
+    lineHeight: 20,
     color: colors.primary.text,
-    marginBottom: spacing.xs,
     textDecorationLine: 'underline',
   },
   sectionText: {

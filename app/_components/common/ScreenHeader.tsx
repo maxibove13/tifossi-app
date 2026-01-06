@@ -27,16 +27,12 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({ title }) => {
 
 const styles = StyleSheet.create<Styles>({
   header: {
-    backgroundColor: colors.background.light,
-    // Adjusted paddingTop, assuming the main Header above handles safe area.
-    // If this ScreenHeader is used standalone, this padding might need to be larger.
-    paddingTop: spacing.md,
+    backgroundColor: colors.background.offWhite,
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
-    // Removed gap as headerTopSpace is gone, direct padding used for title spacing.
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.4,
     borderBottomColor: colors.border,
-    alignItems: 'flex-start', // Align title to the left
+    alignItems: 'flex-start',
   },
   title: {
     fontSize: fontSizes.xxxl,

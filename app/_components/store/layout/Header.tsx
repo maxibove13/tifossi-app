@@ -137,9 +137,9 @@ function Header({
 
   const showBackButton = variant === 'product' || variant === 'catalog' || variant === 'auth';
 
-  // If invisible, render a placeholder view that occupies space but shows nothing
+  // If invisible, render a placeholder view that only provides safe area top padding
   if (invisible) {
-    return <View style={styles.header} />;
+    return <View style={styles.invisibleHeader} />;
   }
 
   return (
@@ -248,6 +248,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: '#FBFBFB', // Match existing header background
     alignItems: 'center', // Center items vertically within the header height
+  },
+  invisibleHeader: {
+    width: '100%',
+    paddingTop: 96, // Safe area top padding (spacing.xxxxl)
+    backgroundColor: '#FBFBFB',
   },
   row: {
     flex: 1,

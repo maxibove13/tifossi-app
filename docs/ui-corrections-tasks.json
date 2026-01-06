@@ -168,28 +168,31 @@
           "id": "PRODUCT-003",
           "description": "Incrementar el ancho del botón 'Agregar al carrito'",
           "component": "app/_components/store/product/cart/AddToCartButton.tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Need exact width value or percentage from Figma"
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-06",
+          "implementation": "Full width (343px on 375px screen) with 16px horizontal margins. Height: 48px, borderRadius: 24px, background: rgba(251,251,251,0.25), text: Inter 500 16px/24px #FBFBFB"
         },
         {
           "id": "PRODUCT-004",
           "description": "Incrementar el ancho del cuerpo del texto de la información del producto",
           "component": "app/_components/store/product/swipeable/ProductDetails.tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Need exact width/padding values from Figma"
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-06",
+          "implementation": "Container: paddingHorizontal 32px (311px content on 375px screen), gap 24px. Section gap: 4px. SKU: 10px/14px. Titles/text: 12px/20px Inter."
         },
         {
           "id": "PRODUCT-005",
           "description": "Incrementar la distancia entre las diferentes secciones (información del producto/productos relacionados/recomendados/tendencias/contacto)",
           "component": "app/_components/store/product/swipeable/SwipeableEdge.tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Need exact spacing values from Figma"
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-06",
+          "implementation": "Added gap: 80px to scrollContent between ProductDetails, ProductSections, and SupportContent blocks."
         },
         {
           "id": "PRODUCT-006",
@@ -419,7 +422,7 @@
   "summary": {
     "totalTasks": 47,
     "readyToImplement": 24,
-    "blockedNeedsFigma": 14,
+    "blockedNeedsFigma": 11,
     "blockedNeedsDecision": 1,
     "priorityOrder": [
       "HOME - 2 simple tasks",
