@@ -24,17 +24,24 @@ Colors are defined in `colors.ts` and provide a consistent color palette:
 export const colors = {
   primary: '#0C0C0C',
   secondary: '#707070',
+  tertiary: '#5C5C5C',          // Tertiary brand color
   border: '#DCDCDC',
+  divider: '#CAC4D0',           // Divider lines
   error: '#AD3026',
-  errorBackground: '#FFEBEE',  // For error banner backgrounds
-  errorBorder: '#FFCDD2',      // For error banner borders
+  errorBackground: '#FFEBEE',   // For error banner backgrounds
+  errorBorder: '#FFCDD2',       // For error banner borders
   success: '#367C39',
+  text: {
+    tertiary: '#5C5C5C',        // Tertiary text color
+    lightGray: '#E1E1E1',       // Light gray text (on dark backgrounds)
+  },
   background: {
     light: '#FFFFFF',
     dark: '#0C0C0C',
     medium: '#F5F5F5',
     offWhite: '#FBFBFB',
     offWhite25: 'rgba(251, 251, 251, 0.25)',
+    antiflash: '#FAFAFA',       // Auth screens background
   },
 };
 ```
@@ -74,6 +81,7 @@ export const spacing = {
   xl: 24,
   xxl: 32,
   xxxl: 44,
+  xxxxl: 96,   // Extra large spacing for headers
 };
 
 export const radius = {

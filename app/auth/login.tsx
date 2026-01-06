@@ -4,23 +4,26 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
   Platform,
+  Image,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, radius, components } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
 import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
-// Apple components removed - using custom button for consistency
 import { APPLE_AUTH_ERRORS_ES } from '../_types/auth';
 import { UnknownError } from '../_types/ui';
 
-// Helper function to extract error message from unknown error types
+const GoogleLogo = require('../../assets/icons/google-logo.png');
+const AppleLogo = require('../../assets/icons/apple-logo.png');
+
 function getErrorMessage(error: UnknownError): string {
   if (typeof error === 'string') return error;
   if (error && typeof error === 'object' && 'message' in error) {
@@ -30,6 +33,7 @@ function getErrorMessage(error: UnknownError): string {
 }
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const { emailVerified, verificationError } = useLocalSearchParams<{
     emailVerified?: string;
     verificationError?: string;
@@ -40,11 +44,8 @@ export default function LoginScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showVerifiedBanner, setShowVerifiedBanner] = useState(emailVerified === 'true');
   const [showVerificationError, setShowVerificationError] = useState(!!verificationError);
-
-  // Apple Sign-In specific state
   const [appleError, setAppleError] = useState<string | null>(null);
 
-  // Use separate selectors to avoid infinite render loop
   const login = useAuthStore((state: any) => state.login);
   const loginWithGoogle = useAuthStore((state: any) => state.loginWithGoogle);
   const loginWithApple = useAuthStore((state: any) => state.loginWithApple);
@@ -60,7 +61,6 @@ export default function LoginScreen() {
     setError(null);
     setIsSubmitting(true);
 
-    // Validate input fields
     if (!email.trim() || !password.trim()) {
       setError('Por favor, completa todos los campos.');
       setIsSubmitting(false);
@@ -76,7 +76,6 @@ export default function LoginScreen() {
       const result = await login({ email, password });
 
       if (result.needsEmailVerification) {
-        // Redirect to verification screen
         router.replace({
           pathname: '/auth/verification-code',
           params: { email },
@@ -84,14 +83,12 @@ export default function LoginScreen() {
         return;
       }
 
-      // Verified - return user to where they came from
       if (router.canGoBack()) {
         router.back();
       } else {
         router.replace('/(tabs)');
       }
     } catch (error: UnknownError) {
-      // Handle login error
       setError(getErrorMessage(error) || 'Error al iniciar sesión. Verifica tus credenciales.');
     } finally {
       setIsSubmitting(false);
@@ -113,7 +110,6 @@ export default function LoginScreen() {
         return;
       }
 
-      // Verified - return user to where they came from
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -122,7 +118,6 @@ export default function LoginScreen() {
     } catch (error: UnknownError) {
       const errorMessage = getErrorMessage(error);
 
-      // Check if user cancelled - don't show error
       if (
         errorMessage.includes('cancel') ||
         errorMessage.includes('Cancel') ||
@@ -154,7 +149,6 @@ export default function LoginScreen() {
         return;
       }
 
-      // Verified - return user to where they came from
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -165,7 +159,6 @@ export default function LoginScreen() {
       const errorCode = errorObj?.code || errorObj?.name || 'unknown-error';
       const errorMessage = getErrorMessage(error) || APPLE_AUTH_ERRORS_ES.ERROR_UNKNOWN;
 
-      // Check if user cancelled - don't show error
       if (
         errorCode.includes('canceled') ||
         errorCode.includes('cancel') ||
@@ -174,7 +167,6 @@ export default function LoginScreen() {
         return;
       }
 
-      // Set error state
       setAppleError(errorMessage);
       setError(errorMessage);
     } finally {
@@ -186,213 +178,218 @@ export default function LoginScreen() {
     if (router.canGoBack()) {
       router.back();
     } else {
-      // Fallback if no screen to go back to, e.g. navigate to a default screen
       router.replace('/(tabs)');
     }
   };
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.mainContainer}>
-        {/* Custom Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Iniciar Sesión</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-          </TouchableOpacity>
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Iniciar Sesión</Text>
+        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
+          <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Email verified success banner */}
+        {showVerifiedBanner && (
+          <View style={styles.successBanner}>
+            <Text style={styles.successBannerText}>
+              Correo verificado. Ahora puedes iniciar sesión.
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowVerifiedBanner(false)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <CloseIcon width={16} height={16} stroke={colors.success} strokeWidth={1.5} />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Verification error banner */}
+        {showVerificationError && verificationError && (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorBannerText}>
+              {verificationError.includes('expired')
+                ? 'El enlace de verificación ha expirado. Inicia sesión para reenviar.'
+                : verificationError.includes('invalid')
+                  ? 'El enlace de verificación no es válido. Inicia sesión para reenviar.'
+                  : `Error de verificación: ${verificationError}`}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowVerificationError(false)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <CloseIcon width={16} height={16} stroke={colors.error} strokeWidth={1.5} />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Form Inputs */}
+        <View style={styles.inputsContainer}>
+          <Input
+            placeholder="Correo Electrónico"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (error) setError(null);
+            }}
+            error={
+              (error && error.includes('correo')) || (authError && authError.includes('email'))
+                ? (error ?? authError ?? undefined)
+                : undefined
+            }
+          />
+          <Input
+            placeholder="Contraseña"
+            secureTextEntry
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (error) setError(null);
+            }}
+            error={
+              (error && error.includes('contraseña')) ||
+              (authError && authError.includes('password'))
+                ? (error ?? authError ?? undefined)
+                : undefined
+            }
+          />
         </View>
 
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.formContainer}>
-            {/* Email verified success banner */}
-            {showVerifiedBanner && (
-              <View style={styles.successBanner}>
-                <Text style={styles.successBannerText}>
-                  Correo verificado. Ahora puedes iniciar sesión.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setShowVerifiedBanner(false)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <CloseIcon width={16} height={16} stroke={colors.success} strokeWidth={1.5} />
-                </TouchableOpacity>
-              </View>
-            )}
+        {/* General error message */}
+        {((error &&
+          !error.includes('correo') &&
+          !error.includes('contraseña') &&
+          !error.includes('Por favor, completa')) ||
+          (authError && !authError.includes('email') && !authError.includes('password'))) && (
+          <Text style={styles.errorText}>{error || authError}</Text>
+        )}
+        {appleError && <Text style={styles.errorText}>{appleError}</Text>}
 
-            {/* Verification error banner */}
-            {showVerificationError && verificationError && (
-              <View style={styles.errorBanner}>
-                <Text style={styles.errorBannerText}>
-                  {verificationError.includes('expired')
-                    ? 'El enlace de verificación ha expirado. Inicia sesión para reenviar.'
-                    : verificationError.includes('invalid')
-                      ? 'El enlace de verificación no es válido. Inicia sesión para reenviar.'
-                      : `Error de verificación: ${verificationError}`}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setShowVerificationError(false)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <CloseIcon width={16} height={16} stroke={colors.error} strokeWidth={1.5} />
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* General error message - shown once at top */}
-            {error && error.includes('Por favor, completa') && (
-              <Text style={styles.errorText}>{error}</Text>
-            )}
-
-            <Input
-              placeholder="Correo Electrónico"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                if (error) setError(null);
-              }}
-              error={
-                (error && error.includes('correo')) || (authError && authError.includes('email'))
-                  ? (error ?? authError ?? undefined)
-                  : undefined
-              }
-              containerStyle={styles.inputSpacing}
-            />
-            <Input
-              placeholder="Contraseña"
-              secureTextEntry
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                if (error) setError(null);
-              }}
-              error={
-                (error && error.includes('contraseña')) ||
-                (authError && authError.includes('password'))
-                  ? (error ?? authError ?? undefined)
-                  : undefined
-              }
-              containerStyle={styles.inputSpacing}
-            />
-            {(error &&
-              !error.includes('correo') &&
-              !error.includes('contraseña') &&
-              !error.includes('Por favor, completa')) ||
-            (authError && !authError.includes('email') && !authError.includes('password')) ? (
-              <Text style={styles.errorText}>{error || authError}</Text>
-            ) : null}
-            {appleError && <Text style={styles.errorText}>{appleError}</Text>}
-          </View>
-        </ScrollView>
-      </View>
-      <View style={styles.actionButtonsContainer}>
-        {/* Primary action: Email/Password login */}
+        {/* Primary Button */}
         <TouchableOpacity
-          style={[styles.primaryButton, (isSubmitting || isLoading) && styles.disabledButton]}
           onPress={handleLogin}
+          activeOpacity={0.8}
+          disabled={isSubmitting || isLoading}
+          style={styles.primaryButtonWrapper}
+        >
+          <LinearGradient
+            colors={
+              isSubmitting || isLoading
+                ? colors.button.disabledGradient
+                : colors.button.defaultGradient
+            }
+            style={styles.primaryButton}
+          >
+            {isSubmitting || isLoading ? (
+              <ActivityIndicator size="small" color={colors.background.offWhite} />
+            ) : (
+              <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Forgot Password */}
+        <TouchableOpacity
+          style={styles.forgotPasswordButton}
+          onPress={() => router.push('/auth/forgot-password')}
           activeOpacity={0.7}
           disabled={isSubmitting || isLoading}
         >
-          {isSubmitting || isLoading ? (
-            <ActivityIndicator size="small" color={colors.background.light} />
-          ) : (
-            <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
-          )}
+          <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
         </TouchableOpacity>
 
         {/* Divider */}
         <View style={styles.dividerContainer}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>o</Text>
-          <View style={styles.dividerLine} />
+          <View style={styles.divider} />
         </View>
 
-        {/* Social logins grouped together */}
-        {Platform.OS === 'ios' && (
+        {/* Social Login Buttons */}
+        <View style={styles.socialButtonsContainer}>
           <TouchableOpacity
             style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
-            onPress={handleAppleLogin}
+            onPress={handleGoogleLogin}
             activeOpacity={0.7}
             disabled={isSubmitting || isLoading}
           >
-            <Text style={styles.socialButtonText}>Continuar con Apple</Text>
+            <Text style={styles.socialButtonText}>Continuar con Google</Text>
+            <Image source={GoogleLogo} style={{ width: 20, height: 20 }} />
           </TouchableOpacity>
-        )}
-        <TouchableOpacity
-          style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
-          onPress={handleGoogleLogin}
-          activeOpacity={0.7}
-          disabled={isSubmitting || isLoading}
-        >
-          <Text style={styles.socialButtonText}>Continuar con Google</Text>
-        </TouchableOpacity>
 
-        {/* Secondary links */}
-        <View style={styles.linksContainer}>
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
+              onPress={handleAppleLogin}
+              activeOpacity={0.7}
+              disabled={isSubmitting || isLoading}
+            >
+              <Text style={styles.socialButtonText}>Continuar con Apple</Text>
+              <Image source={AppleLogo} style={{ width: 15, height: 20 }} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Register Section */}
+        <View style={styles.registerSection}>
+          <Text style={styles.registerPromptText}>¿No tienes una cuenta?</Text>
           <TouchableOpacity
             onPress={() => router.push('/auth/signup')}
             activeOpacity={0.7}
             disabled={isSubmitting || isLoading}
           >
-            <Text style={styles.linkText}>¿No tienes cuenta? Regístrate</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push('/auth/forgot-password')}
-            activeOpacity={0.7}
-            disabled={isSubmitting || isLoading}
-          >
-            <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
+            <Text style={styles.registerLinkText}>Regístrate</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </SafeAreaView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeAreaContainer: {
+  container: {
     flex: 1,
-    backgroundColor: colors.background.light,
-    justifyContent: 'space-between',
-  },
-  mainContainer: {
-    flex: 1,
-    paddingTop: spacing.xl,
+    backgroundColor: colors.background.antiflash,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.background.offWhite,
+    borderBottomWidth: 0.4,
+    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
+    fontSize: fontSizes.xxxl,
     fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
+    lineHeight: lineHeights.xxxl,
     color: colors.primary,
   },
   closeButton: {
     padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   scrollView: {
     flex: 1,
   },
-  formContainer: {
+  scrollContent: {
     paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.xxl,
     gap: spacing.lg,
-  },
-  inputSpacing: {},
-  errorText: {
-    color: colors.error,
-    fontSize: fontSizes.sm,
-    fontFamily: fonts.secondary,
-    textAlign: 'center',
-    marginBottom: spacing.md,
   },
   successBanner: {
     flexDirection: 'row',
@@ -401,10 +398,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success + '15',
     borderWidth: 1,
     borderColor: colors.success,
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    marginBottom: spacing.md,
   },
   successBannerText: {
     flex: 1,
@@ -420,10 +416,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.error + '15',
     borderWidth: 1,
     borderColor: colors.error,
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    marginBottom: spacing.md,
   },
   errorBannerText: {
     flex: 1,
@@ -432,74 +427,92 @@ const styles = StyleSheet.create({
     fontFamily: fonts.secondary,
     marginRight: spacing.sm,
   },
-  actionButtonsContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.md,
+  inputsContainer: {
+    gap: spacing.sm,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: fontSizes.sm,
+    fontFamily: fonts.secondary,
+    textAlign: 'center',
+  },
+  primaryButtonWrapper: {
+    width: '100%',
   },
   primaryButton: {
-    width: '100%',
-    height: 48,
+    height: components.button.height,
     borderRadius: radius.xxl,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.dark,
     paddingHorizontal: spacing.xl,
   },
   primaryButtonText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
-    color: colors.background.light,
+    lineHeight: lineHeights.lg,
+    color: colors.background.offWhite,
   },
-  disabledButton: {
-    opacity: 0.7,
-    backgroundColor: colors.background.medium,
-  },
-  dividerContainer: {
-    flexDirection: 'row',
+  forgotPasswordButton: {
     alignItems: 'center',
-    marginVertical: spacing.sm,
+    paddingVertical: spacing.sm,
   },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.border,
-  },
-  dividerText: {
+  forgotPasswordText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
-    color: colors.secondary,
-    paddingHorizontal: spacing.md,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.sm,
+    color: colors.tertiary,
+    textDecorationLine: 'underline',
+  },
+  dividerContainer: {
+    paddingHorizontal: spacing.lg,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.divider,
+  },
+  socialButtonsContainer: {
+    gap: spacing.sm,
   },
   socialButton: {
-    width: '100%',
-    height: 48,
-    borderRadius: radius.xxl,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.light,
+    height: components.button.height,
+    borderRadius: radius.xxl,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: spacing.xl,
+    gap: spacing.xs,
   },
   socialButtonText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
+    lineHeight: lineHeights.lg,
     color: colors.primary,
   },
-  linksContainer: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.md,
+  disabledButton: {
+    opacity: 0.7,
   },
-  linkText: {
+  registerSection: {
+    alignItems: 'center',
+  },
+  registerPromptText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
-    color: colors.secondary,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.sm,
+    color: colors.tertiary,
+  },
+  registerLinkText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.sm,
+    color: colors.tertiary,
     textDecorationLine: 'underline',
+    paddingVertical: spacing.sm,
   },
 });

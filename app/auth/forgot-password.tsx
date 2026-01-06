@@ -5,19 +5,21 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, radius, components } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
 import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
 
 export default function ForgotPasswordScreen() {
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,51 +68,61 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.mainContainer}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Recuperar Contraseña</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-          </TouchableOpacity>
-        </View>
 
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.formContainer}>
-            <Text style={styles.infoText}>
-              Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu
-              contraseña.
-            </Text>
-            <Input
-              placeholder="Correo Electrónico"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                if (error) setError(null);
-              }}
-              error={error || undefined}
-              containerStyle={styles.inputSpacing}
-            />
-            {error && <Text style={styles.errorText}>{error}</Text>}
-          </View>
-        </ScrollView>
-      </View>
-      <View style={styles.actionButtonsContainer}>
-        <TouchableOpacity
-          style={[styles.primaryButton, isSubmitting && styles.disabledButton]}
-          onPress={handlePasswordReset}
-          activeOpacity={0.7}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color={colors.background.light} />
-          ) : (
-            <Text style={styles.primaryButtonText}>Enviar Instrucciones</Text>
-          )}
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Recuperar Contraseña</Text>
+        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
+          <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
         </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.infoText}>
+          Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu
+          contraseña.
+        </Text>
+
+        <Input
+          placeholder="Correo Electrónico"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={(text) => {
+            setEmail(text);
+            if (error) setError(null);
+          }}
+          error={error || undefined}
+        />
+
+        {error && <Text style={styles.errorText}>{error}</Text>}
+
+        {/* Primary Button */}
+        <TouchableOpacity
+          onPress={handlePasswordReset}
+          activeOpacity={0.8}
+          disabled={isSubmitting}
+          style={styles.primaryButtonWrapper}
+        >
+          <LinearGradient
+            colors={isSubmitting ? colors.button.disabledGradient : colors.button.defaultGradient}
+            style={styles.primaryButton}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color={colors.background.offWhite} />
+            ) : (
+              <Text style={styles.primaryButtonText}>Enviar Instrucciones</Text>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Secondary Button */}
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={handleClose}
@@ -119,44 +131,44 @@ export default function ForgotPasswordScreen() {
         >
           <Text style={styles.secondaryButtonText}>Volver</Text>
         </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeAreaContainer: {
+  container: {
     flex: 1,
-    backgroundColor: colors.background.light,
-    justifyContent: 'space-between',
-  },
-  mainContainer: {
-    flex: 1,
-    paddingTop: spacing.xl,
+    backgroundColor: colors.background.antiflash,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
+    paddingTop: spacing.xxxl + spacing.xl,
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.background.offWhite,
+    borderBottomWidth: 0.4,
+    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
+    fontSize: fontSizes.xxxl,
     fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
+    lineHeight: lineHeights.xxxl,
     color: colors.primary,
   },
   closeButton: {
     padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   scrollView: {
     flex: 1,
   },
-  formContainer: {
+  scrollContent: {
     paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xxxxl,
+    paddingBottom: spacing.xxl,
     gap: spacing.lg,
   },
   infoText: {
@@ -164,59 +176,45 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.sm,
     color: colors.secondary,
     textAlign: 'center',
-    marginBottom: spacing.md,
-  },
-  inputSpacing: {
-    // marginBottom: spacing.sm,
   },
   errorText: {
     color: colors.error,
     fontSize: fontSizes.sm,
     fontFamily: fonts.secondary,
     textAlign: 'center',
-    marginTop: spacing.xs,
   },
-  actionButtonsContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.md,
+  primaryButtonWrapper: {
+    width: '100%',
   },
   primaryButton: {
-    width: '100%',
-    height: 48,
+    height: components.button.height,
     borderRadius: radius.xxl,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.dark,
     paddingHorizontal: spacing.xl,
   },
   primaryButtonText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
-    color: colors.background.light,
-  },
-  disabledButton: {
-    opacity: 0.7,
-    backgroundColor: colors.background.medium,
+    lineHeight: lineHeights.lg,
+    color: colors.background.offWhite,
   },
   secondaryButton: {
     width: '100%',
-    height: 48,
+    height: components.button.height,
     borderRadius: radius.xxl,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: 'transparent',
     paddingHorizontal: spacing.xl,
   },
   secondaryButtonText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
+    lineHeight: lineHeights.lg,
     color: colors.primary,
   },
 });

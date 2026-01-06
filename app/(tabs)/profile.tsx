@@ -13,21 +13,36 @@ import {
   Modal,
   Linking,
   Image,
+  ScrollView,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
-import { spacing } from '../_styles/spacing';
+import { spacing, radius, components } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
-
-// Import authStore and custom components
+import Input from '../_components/ui/form/Input';
 import { useAuthStore } from '../_stores/authStore';
 import { useShallow } from 'zustand/react/shallow';
-import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
 import SplashScreen from '../_components/splash/SplashScreen';
+import { APPLE_AUTH_ERRORS_ES } from '../_types/auth';
+import { UnknownError } from '../_types/ui';
+
+const GoogleLogo = require('../../assets/icons/google-logo.png');
+const AppleLogo = require('../../assets/icons/apple-logo.png');
 
 const backgroundImage = require('../../assets/images/background_image_profile.png');
+
+function getErrorMessage(error: UnknownError): string {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return 'Error desconocido. Intenta nuevamente.';
+}
 
 interface ProfileListItemProps {
   IconComponent: React.FC<any>;
@@ -54,19 +69,14 @@ const LogoutButton = () => {
   const logout = useAuthStore((state) => state.logout);
   const [showSplashScreen, setShowSplashScreen] = useState(false);
 
-  // This will handle the logout process after the splash screen appears
   useEffect(() => {
     const performLogout = async () => {
       if (showSplashScreen) {
         try {
-          // Give the splash screen some time to appear
           await new Promise((resolve) => setTimeout(resolve, 300));
-          // Perform logout
           await logout();
-          // Navigate to the home screen
           router.replace('/(home)');
         } catch {
-          // Hide splash screen and show error
           setShowSplashScreen(false);
           Alert.alert('Error', 'No se pudo cerrar sesión. Intenta nuevamente.');
         }
@@ -85,7 +95,6 @@ const LogoutButton = () => {
         text: 'Cerrar Sesión',
         style: 'destructive',
         onPress: () => {
-          // Show the splash screen and trigger the logout process
           setShowSplashScreen(true);
         },
       },
@@ -105,7 +114,6 @@ const LogoutButton = () => {
         </View>
       </TouchableOpacity>
 
-      {/* Show the splash screen as a modal during logout */}
       {showSplashScreen && (
         <Modal transparent={false} visible={true} animationType="fade">
           <SplashScreen onComplete={() => {}} />
@@ -137,6 +145,247 @@ const LoggedInProfileCard = () => {
   );
 };
 
+const LoggedOutLoginForm = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [appleError, setAppleError] = useState<string | null>(null);
+
+  const login = useAuthStore((state: any) => state.login);
+  const loginWithGoogle = useAuthStore((state: any) => state.loginWithGoogle);
+  const loginWithApple = useAuthStore((state: any) => state.loginWithApple);
+  const isLoading = useAuthStore((state: any) => state.isLoading);
+  const authError = useAuthStore((state: any) => state.error);
+
+  const validateEmail = (text: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(text);
+  };
+
+  const handleLogin = async () => {
+    setError(null);
+    setIsSubmitting(true);
+
+    if (!email.trim() || !password.trim()) {
+      setError('Por favor, completa todos los campos.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (!validateEmail(email)) {
+      setError('Por favor, ingresa un correo electrónico válido.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const result = await login({ email, password });
+
+      if (result.needsEmailVerification) {
+        router.push({
+          pathname: '/auth/verification-code',
+          params: { email },
+        });
+      }
+    } catch (error: UnknownError) {
+      setError(getErrorMessage(error) || 'Error al iniciar sesión. Verifica tus credenciales.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const result = await loginWithGoogle();
+
+      if (result.needsEmailVerification) {
+        router.push({
+          pathname: '/auth/verification-code',
+          params: { email: result.user?.email || '' },
+        });
+      }
+    } catch (error: UnknownError) {
+      const errorMessage = getErrorMessage(error);
+
+      if (
+        errorMessage.includes('cancel') ||
+        errorMessage.includes('Cancel') ||
+        errorMessage.includes('cancelado') ||
+        errorMessage.includes('dismissed')
+      ) {
+        return;
+      }
+
+      setError(errorMessage || 'Error al iniciar sesión con Google.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setError(null);
+    setAppleError(null);
+    setIsSubmitting(true);
+
+    try {
+      const result = await loginWithApple();
+
+      if (result.needsEmailVerification) {
+        router.push({
+          pathname: '/auth/verification-code',
+          params: { email: result.user?.email || '' },
+        });
+      }
+    } catch (error: UnknownError) {
+      const errorObj = error && typeof error === 'object' ? (error as any) : {};
+      const errorCode = errorObj?.code || errorObj?.name || 'unknown-error';
+      const errorMessage = getErrorMessage(error) || APPLE_AUTH_ERRORS_ES.ERROR_UNKNOWN;
+
+      if (
+        errorCode.includes('canceled') ||
+        errorCode.includes('cancel') ||
+        errorMessage.includes('cancelado')
+      ) {
+        return;
+      }
+
+      setAppleError(errorMessage);
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <ScrollView
+      style={styles.loginScrollView}
+      contentContainerStyle={styles.loginScrollContent}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Form Inputs */}
+      <View style={styles.inputsContainer}>
+        <Input
+          placeholder="Correo Electrónico"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={(text) => {
+            setEmail(text);
+            if (error) setError(null);
+          }}
+          error={
+            (error && error.includes('correo')) || (authError && authError.includes('email'))
+              ? (error ?? authError ?? undefined)
+              : undefined
+          }
+        />
+        <Input
+          placeholder="Contraseña"
+          secureTextEntry
+          value={password}
+          onChangeText={(text) => {
+            setPassword(text);
+            if (error) setError(null);
+          }}
+          error={
+            (error && error.includes('contraseña')) || (authError && authError.includes('password'))
+              ? (error ?? authError ?? undefined)
+              : undefined
+          }
+        />
+      </View>
+
+      {/* General error message */}
+      {((error &&
+        !error.includes('correo') &&
+        !error.includes('contraseña') &&
+        !error.includes('Por favor, completa')) ||
+        (authError && !authError.includes('email') && !authError.includes('password'))) && (
+        <Text style={styles.errorText}>{error || authError}</Text>
+      )}
+      {appleError && <Text style={styles.errorText}>{appleError}</Text>}
+
+      {/* Primary Button */}
+      <TouchableOpacity
+        onPress={handleLogin}
+        activeOpacity={0.8}
+        disabled={isSubmitting || isLoading}
+        style={styles.primaryButtonWrapper}
+      >
+        <LinearGradient
+          colors={
+            isSubmitting || isLoading
+              ? colors.button.disabledGradient
+              : colors.button.defaultGradient
+          }
+          style={styles.primaryButton}
+        >
+          {isSubmitting || isLoading ? (
+            <ActivityIndicator size="small" color={colors.background.offWhite} />
+          ) : (
+            <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
+          )}
+        </LinearGradient>
+      </TouchableOpacity>
+
+      {/* Forgot Password */}
+      <TouchableOpacity
+        style={styles.forgotPasswordButton}
+        onPress={() => router.push('/auth/forgot-password')}
+        activeOpacity={0.7}
+        disabled={isSubmitting || isLoading}
+      >
+        <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+      </TouchableOpacity>
+
+      {/* Divider */}
+      <View style={styles.dividerContainer}>
+        <View style={styles.divider} />
+      </View>
+
+      {/* Social Login Buttons */}
+      <View style={styles.socialButtonsContainer}>
+        <TouchableOpacity
+          style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
+          onPress={handleGoogleLogin}
+          activeOpacity={0.7}
+          disabled={isSubmitting || isLoading}
+        >
+          <Text style={styles.socialButtonText}>Continuar con Google</Text>
+          <Image source={GoogleLogo} style={{ width: 20, height: 20 }} />
+        </TouchableOpacity>
+
+        {Platform.OS === 'ios' && (
+          <TouchableOpacity
+            style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
+            onPress={handleAppleLogin}
+            activeOpacity={0.7}
+            disabled={isSubmitting || isLoading}
+          >
+            <Text style={styles.socialButtonText}>Continuar con Apple</Text>
+            <Image source={AppleLogo} style={{ width: 15, height: 20 }} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Register Section */}
+      <View style={styles.registerSection}>
+        <Text style={styles.registerPromptText}>¿No tienes una cuenta?</Text>
+        <TouchableOpacity
+          onPress={() => router.push('/auth/signup')}
+          activeOpacity={0.7}
+          disabled={isSubmitting || isLoading}
+        >
+          <Text style={styles.registerLinkText}>Regístrate</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  );
+};
+
 export default function ProfileScreen() {
   const { isLoggedIn, user } = useAuthStore(
     useShallow((state) => ({
@@ -145,64 +394,83 @@ export default function ProfileScreen() {
     }))
   );
 
-  // Only show change password for email/password users (not OAuth)
   const isEmailUser = !user?.metadata?.provider || user.metadata.provider === 'email';
+
+  if (!isLoggedIn) {
+    return (
+      <View style={styles.container}>
+        <LoggedOutLoginForm />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {isLoggedIn ? (
-        <ImageBackground
-          source={backgroundImage}
-          style={styles.profileCardBackground}
-          imageStyle={styles.backgroundImageStyle}
-        >
-          <View style={styles.backgroundOverlay} />
-          <LoggedInProfileCard />
-        </ImageBackground>
-      ) : (
-        <ReusableAuthPrompt message="Aún no iniciaste sesión." style={styles.authPromptStyle} />
-      )}
+      <ImageBackground
+        source={backgroundImage}
+        style={styles.profileCardBackground}
+        imageStyle={styles.backgroundImageStyle}
+      >
+        <View style={styles.backgroundOverlay} />
+        <LoggedInProfileCard />
+      </ImageBackground>
 
-      {isLoggedIn && (
-        <View style={styles.actionButtonsContainer}>
+      <View style={styles.actionButtonsContainer}>
+        <ProfileListItem
+          IconComponent={() => <Feather name="package" size={24} color={colors.primary} />}
+          text="Mis Pedidos"
+          onPress={() => router.push('/profile/orders')}
+        />
+        <ProfileListItem
+          IconComponent={() => <Feather name="map-pin" size={24} color={colors.primary} />}
+          text="Direcciones de Envío"
+          onPress={() => router.push('/profile/addresses')}
+        />
+        {isEmailUser && (
           <ProfileListItem
-            IconComponent={() => <Feather name="package" size={24} color={colors.primary} />}
-            text="Mis Pedidos"
-            onPress={() => router.push('/profile/orders')}
+            IconComponent={() => <Feather name="lock" size={24} color={colors.primary} />}
+            text="Cambiar Contraseña"
+            onPress={() => router.push('/profile/change-password')}
           />
-          <ProfileListItem
-            IconComponent={() => <Feather name="map-pin" size={24} color={colors.primary} />}
-            text="Direcciones de Envío"
-            onPress={() => router.push('/profile/addresses')}
-          />
-          {isEmailUser && (
-            <ProfileListItem
-              IconComponent={() => <Feather name="lock" size={24} color={colors.primary} />}
-              text="Cambiar Contraseña"
-              onPress={() => router.push('/profile/change-password')}
-            />
-          )}
-          <ProfileListItem
-            IconComponent={() => <Feather name="shield" size={24} color={colors.primary} />}
-            text="Política de Privacidad"
-            onPress={() => {
-              const privacyUrl =
-                Constants.expoConfig?.extra?.privacyPolicyUrl ||
-                'https://tifossi-strapi-backend.onrender.com/privacy.html';
-              Linking.openURL(privacyUrl).catch(() => {
-                Alert.alert('Error', 'No se pudo abrir la política de privacidad.');
-              });
-            }}
-          />
-          <LogoutButton />
-        </View>
-      )}
+        )}
+        <ProfileListItem
+          IconComponent={() => <Feather name="shield" size={24} color={colors.primary} />}
+          text="Política de Privacidad"
+          onPress={() => {
+            const privacyUrl =
+              Constants.expoConfig?.extra?.privacyPolicyUrl ||
+              'https://tifossi-strapi-backend.onrender.com/privacy.html';
+            Linking.openURL(privacyUrl).catch(() => {
+              Alert.alert('Error', 'No se pudo abrir la política de privacidad.');
+            });
+          }}
+        />
+        <LogoutButton />
+      </View>
     </View>
   );
 }
 
 type Styles = {
   container: ViewStyle;
+  loginScrollView: ViewStyle;
+  loginScrollContent: ViewStyle;
+  inputsContainer: ViewStyle;
+  errorText: TextStyle;
+  primaryButtonWrapper: ViewStyle;
+  primaryButton: ViewStyle;
+  primaryButtonText: TextStyle;
+  forgotPasswordButton: ViewStyle;
+  forgotPasswordText: TextStyle;
+  dividerContainer: ViewStyle;
+  divider: ViewStyle;
+  socialButtonsContainer: ViewStyle;
+  socialButton: ViewStyle;
+  socialButtonText: TextStyle;
+  disabledButton: ViewStyle;
+  registerSection: ViewStyle;
+  registerPromptText: TextStyle;
+  registerLinkText: TextStyle;
   profileCardBackground: ViewStyle;
   backgroundImageStyle: ImageStyle;
   backgroundOverlay: ViewStyle;
@@ -214,7 +482,6 @@ type Styles = {
   actionButtonsContainer: ViewStyle;
   listItemContainer: ViewStyle;
   listItemText: TextStyle;
-  authPromptStyle: ViewStyle;
   logoutButtonContainer: ViewStyle;
   logoutButton: ViewStyle;
   logoutButtonText: TextStyle;
@@ -223,13 +490,110 @@ type Styles = {
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: colors.background.light,
+    backgroundColor: colors.background.antiflash,
+  },
+  loginScrollView: {
+    flex: 1,
+  },
+  loginScrollContent: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xxxxl,
+    paddingBottom: spacing.xxl,
+    gap: spacing.lg,
+  },
+  inputsContainer: {
+    gap: spacing.sm,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: fontSizes.sm,
+    fontFamily: fonts.secondary,
+    textAlign: 'center',
+  },
+  primaryButtonWrapper: {
+    width: '100%',
+  },
+  primaryButton: {
+    height: components.button.height,
+    borderRadius: radius.xxl,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  primaryButtonText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.lg,
+    color: colors.background.offWhite,
+  },
+  forgotPasswordButton: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  forgotPasswordText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.sm,
+    color: colors.tertiary,
+    textDecorationLine: 'underline',
+  },
+  dividerContainer: {
+    paddingHorizontal: spacing.lg,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.divider,
+  },
+  socialButtonsContainer: {
+    gap: spacing.sm,
+  },
+  socialButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: components.button.height,
+    borderRadius: radius.xxl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.xl,
+    gap: spacing.xs,
+  },
+  socialButtonText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.lg,
+    color: colors.primary,
+  },
+  disabledButton: {
+    opacity: 0.7,
+  },
+  registerSection: {
+    alignItems: 'center',
+  },
+  registerPromptText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.sm,
+    color: colors.tertiary,
+  },
+  registerLinkText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.sm,
+    color: colors.tertiary,
+    textDecorationLine: 'underline',
+    paddingVertical: spacing.sm,
   },
   profileCardBackground: {
-    paddingVertical: spacing.lg, // Adjusted padding for logged out view
+    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.lg,
     position: 'relative',
-    paddingBottom: spacing.xxl, // Add more padding at the bottom for the dev button
+    paddingBottom: spacing.xxl,
   },
   backgroundImageStyle: {
     resizeMode: 'cover',
@@ -271,7 +635,7 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: '400',
     fontSize: fontSizes.md,
     lineHeight: lineHeights.md,
-    color: '#E1E1E1',
+    color: colors.text.lightGray,
     textAlign: 'center',
   },
   actionButtonsContainer: {
@@ -296,9 +660,6 @@ const styles = StyleSheet.create<Styles>({
     lineHeight: lineHeights.lg,
     color: colors.primary,
     textAlign: 'left',
-  },
-  authPromptStyle: {
-    marginVertical: spacing.lg,
   },
   logoutButtonContainer: {
     marginTop: spacing.lg,

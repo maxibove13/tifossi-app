@@ -326,20 +326,26 @@ Usage:
 All authentication screens share common styling and behavior:
 
 1. **Common Features**:
-   - Consistent header with title and close button
+   - Background color: `colors.background.antiflash` (#FAFAFA)
+   - Large header title (`fontSizes.xxxl`) with bottom border
+   - `useSafeAreaInsets` for safe area handling
+   - ScrollView-based layout for content
+   - Primary buttons use `LinearGradient` for gradient styling
+   - Social login buttons with Google/Apple PNG logo icons (`assets/icons/`)
    - Form validation with error messages
-   - Action buttons at screen bottom
    - Navigation between auth screens
 
 2. **Login Screen** (`login.tsx`):
    - Email and password inputs
-   - "Forgot password" option
-   - "Create account" navigation
+   - Underlined "Forgot password" link
+   - Social login buttons (Google, Apple) with logos
+   - "Create account" navigation section
 
 3. **Signup Screen** (`signup.tsx`):
    - Name, email, password inputs
    - Password confirmation
    - Terms and privacy policy acceptance
+   - Social signup buttons (Google, Apple) with logos
    - "Already have account" navigation
 
 4. **Forgot Password Screen** (`forgot-password.tsx`):
@@ -377,8 +383,13 @@ All authentication screens share common styling and behavior:
 The profile screen (`app/(tabs)/profile.tsx`) integrates with the authentication state to show:
 
 1. **Logged-out state**:
-   - Auth prompt component for non-authenticated users
-   - Login/signup buttons
+   - Inline login form (`LoggedOutLoginForm` component) with:
+     - Email and password inputs
+     - "Forgot password" link
+     - Primary login button with gradient
+     - Social login buttons (Google, Apple) with logo icons
+     - "Create account" navigation
+   - Background color: `colors.background.antiflash`
 
 2. **Logged-in state**:
    - User profile information (name, email)

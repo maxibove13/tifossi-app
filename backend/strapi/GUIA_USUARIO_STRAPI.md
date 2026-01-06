@@ -1,6 +1,6 @@
 # Guía de Usuario - Strapi CMS para Tifossi
 
-Bienvenido a la guía de usuario de Strapi para gestionar el contenido de la aplicación móvil Tifossi. Esta guía te ayudará a administrar productos, categorías, ubicaciones de tiendas y más, sin necesidad de conocimientos técnicos.
+Bienvenido a la guía de usuario de Strapi para gestionar el contenido de la aplicación móvil Tifossi. Esta guía te ayudará a administrar productos, ubicaciones de tiendas, pedidos y más.
 
 ## Tabla de Contenidos
 
@@ -12,7 +12,10 @@ Bienvenido a la guía de usuario de Strapi para gestionar el contenido de la apl
 6. [Gestión de Modelos de Producto](#6-gestión-de-modelos-de-producto)
 7. [Gestión de Estados de Producto](#7-gestión-de-estados-de-producto)
 8. [Gestión de Ubicaciones de Tienda](#8-gestión-de-ubicaciones-de-tienda)
-9. [Consejos y Buenas Prácticas](#9-consejos-y-buenas-prácticas)
+9. [Gestión de Pedidos](#9-gestión-de-pedidos)
+10. [Configuración de la Aplicación](#10-configuración-de-la-aplicación)
+11. [Gestión de Usuarios](#11-gestión-de-usuarios)
+12. [Consejos y Buenas Prácticas](#12-consejos-y-buenas-prácticas)
 
 ---
 
@@ -22,11 +25,12 @@ Bienvenido a la guía de usuario de Strapi para gestionar el contenido de la apl
 
 Strapi es el sistema de gestión de contenidos (CMS) que alimenta la aplicación móvil de Tifossi. A través de Strapi, puedes:
 
-- Crear y editar productos
-- Gestionar categorías y modelos
-- Subir y organizar imágenes
-- Configurar ubicaciones de tiendas
-- Controlar qué contenido aparece en la aplicación móvil
+- Crear y editar productos con variantes de color y talla
+- Gestionar imágenes específicas por color de producto
+- Configurar ubicaciones de tiendas con horarios detallados
+- Visualizar y gestionar pedidos de clientes
+- Controlar configuraciones globales de la aplicación
+- Administrar usuarios y sus perfiles
 
 ### ¿Cómo acceder?
 
@@ -49,17 +53,23 @@ Una vez que inicies sesión, verás el panel de administración dividido en vari
 
 - **Content Manager**: Donde administrarás todos tus contenidos
 - **Media Library**: Biblioteca de imágenes y archivos
-- **Settings**: Configuraciones del sistema (generalmente no necesitarás acceder aquí)
+- **Settings**: Configuraciones del sistema
 
 #### Sección Content Manager
 
 Dentro de Content Manager encontrarás todos los tipos de contenido:
 
+**Collection Types (Colecciones)**:
 - **Products** (Productos)
 - **Categories** (Categorías)
 - **Product Models** (Modelos de Producto)
 - **Product Statuses** (Estados de Producto)
 - **Store Locations** (Ubicaciones de Tienda)
+- **Orders** (Pedidos)
+- **Users** (Usuarios)
+
+**Single Types (Tipos Únicos)**:
+- **App Settings** (Configuración de la App)
 
 ### Estados de Publicación
 
@@ -91,10 +101,11 @@ Los productos son el corazón de tu catálogo. Aquí aprenderás a crearlos y ge
 - El nombre del producto que verán los usuarios
 - Ejemplo: "Camiseta Peñarol Titular 2025"
 - Máximo 255 caracteres
+- Se muestra en tarjetas de producto y pantalla de detalle
 
 **Slug** - OBLIGATORIO
 - Se genera automáticamente a partir del título
-- Es la URL amigable del producto
+- Es el identificador único del producto
 - Ejemplo: "camiseta-penarol-titular-2025"
 - Generalmente no necesitas modificarlo manualmente
 
@@ -102,115 +113,197 @@ Los productos son el corazón de tu catálogo. Aquí aprenderás a crearlos y ge
 - El precio regular del producto
 - Ingresa solo números (ejemplo: 2500)
 - No uses símbolos de moneda ($)
+- Debe ser mayor o igual a 0
 
 **Discounted Price** (Precio con Descuento) - OPCIONAL
 - Usa este campo si el producto está en oferta
 - Debe ser menor que el precio regular
 - Si no hay descuento, déjalo vacío
+- Cuando está presente, la app muestra el precio original tachado
 
 #### Descripciones
 
 **Short Description** (Descripción Corta) - OPCIONAL
-- Descripción breve en dos líneas
-- **Line 1**: Primera línea (máximo 100 caracteres)
-- **Line 2**: Segunda línea (máximo 100 caracteres)
-- Ejemplo:
-  - Line 1: "Camiseta oficial Peñarol"
-  - Line 2: "Temporada 2025 - Material premium"
+Compuesto por dos campos:
+- **Line 1** (OBLIGATORIO si usas descripción corta): Primera línea, máximo 100 caracteres
+- **Line 2** (OPCIONAL): Segunda línea, máximo 100 caracteres
+
+La app usa principalmente Line 1 para mostrar en las tarjetas de producto.
+
+Ejemplo:
+- Line 1: "Camiseta oficial Peñarol"
+- Line 2: "Temporada 2025 - Material premium"
 
 **Long Description** (Descripción Larga) - OPCIONAL
 - Descripción detallada del producto
-- Puedes usar formato enriquecido (negrita, cursiva, listas)
-- Usa el editor de texto para dar formato
+- Usa formato enriquecido (negrita, cursiva, listas)
+- Se muestra en la sección de información del producto
+- Si no hay descripción corta, se usa la primera parte de esta
 
 #### Imágenes y Videos
 
 **Front Image** (Imagen Principal) - OBLIGATORIO
-- La imagen principal que aparece en la aplicación
+- La imagen principal que aparece en tarjetas y como primera imagen en el detalle
 - Solo se permite UNA imagen
-- Haz clic en "Browse" para seleccionar desde la biblioteca de medios
-- Recomendación: Usa imágenes de alta calidad (mínimo 800x800 px)
+- Recomendación: Mínimo 800x800 px, ideal 1200x1200 px
+- Esta imagen se usa como fallback cuando un color no tiene imagen propia
 
 **Images** (Imágenes Adicionales) - OPCIONAL
-- Galería de imágenes del producto
+- Galería secundaria de imágenes del producto
 - Puedes agregar múltiples imágenes
-- Los usuarios podrán deslizar para verlas en la app
-- Haz clic en "Browse" y selecciona varias imágenes a la vez
+- Se muestran en el carrusel de la pantalla de detalle
 
-> **Nota**: El campo de video está disponible en el esquema pero no se visualiza actualmente en la aplicación móvil.
+**Video Source** (Video) - OPCIONAL
+- Video del producto
+- Se muestra en la galería del producto junto con las imágenes
+- Formatos soportados: MP4, MOV
 
 #### Relaciones y Clasificación
 
 **Category** (Categoría) - OPCIONAL
 - Selecciona la categoría a la que pertenece el producto
-- Haz clic en el campo y elige una categoría de la lista
-- Ejemplo: "Camisetas", "Accesorios", "Calzado"
+- Se usa para filtrado en la app
+- Ejemplos: "Camisetas", "Accesorios", "Calzado"
+
+> **Nota Técnica**: Actualmente la app usa una lista de categorías predefinida internamente. Las categorías de Strapi se sincronizan vía el campo `slug` de la categoría con el `categoryId` del producto.
 
 **Model** (Modelo) - OPCIONAL
 - El modelo específico dentro de la categoría
 - Ejemplo: Si la categoría es "Camisetas", el modelo podría ser "Titular" o "Suplente"
 
+> **Nota Técnica**: Similar a categorías, los modelos se sincronizan vía el campo `slug`.
+
 **Statuses** (Estados) - OPCIONAL
 - Puedes asignar múltiples estados al producto
-- Ejemplos: "Nuevo", "En Oferta", "Destacado", "Exclusivo App"
-- Estos estados aparecen como etiquetas en la aplicación
+- Estos estados afectan cómo se muestra y filtra el producto en la app:
+  - **new**: Muestra badge "Nuevo" en la tarjeta
+  - **sale**: Indica que está en oferta (combina con discountedPrice)
+  - **featured**: Aparece en sección "Destacados"
+  - **popular**: Aparece en sección "Populares"
+  - **recommended**: Se muestra en productos relacionados
+  - **opportunity**: Ofertas especiales
+  - **app_exclusive**: Exclusivo de la app
+  - **highlighted**: Máxima visibilidad
 - Haz clic en "Add relation" para agregar estados
 
-#### Configuraciones Avanzadas
+#### Configuraciones del Producto
 
 **Is Customizable** (Es Personalizable) - OPCIONAL
 - Marca esta casilla si el producto puede personalizarse (ejemplo: con nombre y número)
 - Por defecto está desmarcada
+- Cuando está activo, la app muestra un badge "Personalizable"
 
 **Warranty** (Garantía) - OPCIONAL
 - Información sobre la garantía del producto
+- Se muestra en la sección de detalles del producto
 - Ejemplo: "30 días de garantía contra defectos de fabricación"
 
 **Return Policy** (Política de Devolución) - OPCIONAL
 - Condiciones para devoluciones
 - Ejemplo: "Acepta devoluciones dentro de los 15 días con etiquetas originales"
 
-#### Variantes del Producto
+> **Nota**: Actualmente la app muestra una política de devolución estándar independientemente de este campo.
 
-**Colors** (Colores) - OBLIGATORIO
-- IMPORTANTE: Todo producto debe tener al menos UN color
-- Haz clic en "Add new entry" para agregar un color
-- Para cada color debes completar:
-  - **Name**: Nombre del color (ejemplo: "Amarillo", "Negro", "Azul")
-  - **Hex Code**: Código de color hexadecimal (ejemplo: #FFFF00 para amarillo) - opcional
-  - **Is Active**: Marca si el color está disponible
-- Puedes agregar múltiples colores haciendo clic en "Add new entry" nuevamente
+**Dimensions** (Dimensiones) - OPCIONAL
+Compuesto por los siguientes campos:
+- **Length** (Largo): En la unidad seleccionada
+- **Width** (Ancho): En la unidad seleccionada
+- **Height** (Alto): En la unidad seleccionada
+- **Weight** (Peso): En la unidad de peso seleccionada
+- **Unit**: Unidad de medida (cm, in, mm) - por defecto "cm"
+- **Weight Unit**: Unidad de peso (g, kg, lb, oz) - por defecto "g"
 
-> **Nota**: El campo Display Order y la visualización de colores hexadecimales están disponibles pero no se utilizan actualmente en la app. Los colores se muestran por nombre.
+Las dimensiones se muestran en la pantalla de detalle del producto.
+
+#### Variantes del Producto - COLORES
+
+**Colors** (Colores) - OBLIGATORIO (mínimo 1)
+Todo producto DEBE tener al menos UN color. Esta es la funcionalidad más importante para variantes.
+
+Para cada color, completa:
+
+| Campo | Obligatorio | Descripción |
+|-------|-------------|-------------|
+| **Color Name** | Sí | Nombre del color (ej: "Amarillo", "Negro") - máx 50 chars |
+| **Hex** | Sí | Código hexadecimal (ej: #FFFF00) - se muestra como círculo de color |
+| **Main Image** | No | Imagen principal ESPECÍFICA de este color |
+| **Additional Images** | No | Galería adicional ESPECÍFICA de este color |
+| **Quantity** | No | Stock disponible de este color (default: 0) |
+| **Is Active** | Sí | Si está activo se muestra en la app (default: true) |
+| **Display Order** | No | Orden de visualización (default: 0) |
+
+**Importante sobre imágenes por color**:
+- Si un color tiene `Main Image`, esa imagen se muestra cuando el usuario selecciona ese color
+- Si no tiene `Main Image`, se usa la `Front Image` del producto
+- Los `Additional Images` del color se agregan a la galería cuando ese color está seleccionado
+
+**Ejemplo práctico**:
+```
+Color 1: Amarillo
+- Hex: #FFFF00
+- Main Image: camiseta-amarilla-frente.jpg
+- Additional Images: camiseta-amarilla-espalda.jpg, camiseta-amarilla-detalle.jpg
+- Quantity: 50
+- Is Active: true
+
+Color 2: Negro
+- Hex: #000000
+- Main Image: camiseta-negra-frente.jpg
+- Quantity: 30
+- Is Active: true
+```
+
+#### Variantes del Producto - TALLAS
 
 **Sizes** (Tallas) - OPCIONAL
-- Si el producto tiene tallas, agrégalas aquí
-- Haz clic en "Add new entry" para cada talla
-- Para cada talla completa:
-  - **Name**: Nombre de la talla (ejemplo: "S", "M", "L", "XL")
-  - **Stock**: Cantidad disponible en inventario
-  - **Is Active**: Marca si la talla está disponible
+Si el producto tiene tallas, agrégalas aquí.
 
-> **Nota**: Los campos Code y Display Order están disponibles pero no se utilizan actualmente en la app.
+Para cada talla, completa:
 
-> **Nota**: Los campos de dimensiones (largo, ancho, alto, peso) están disponibles en el esquema pero no se utilizan actualmente en la aplicación móvil.
+| Campo | Obligatorio | Descripción |
+|-------|-------------|-------------|
+| **Name** | Sí | Nombre de la talla (ej: "S", "M", "L", "XL") - máx 20 chars |
+| **Code** | No | Código interno de la talla (ej: "SML", "MED") - máx 10 chars |
+| **Stock** | No | Cantidad disponible de esta talla (default: 0) |
+| **Is Active** | Sí | Si está activa se muestra como opción (default: true) |
+| **Display Order** | No | Orden de visualización (default: 0) |
+
+**Ejemplo**:
+```
+Talla 1: S - Stock: 10 - Active: true
+Talla 2: M - Stock: 25 - Active: true
+Talla 3: L - Stock: 15 - Active: true
+Talla 4: XL - Stock: 5 - Active: true
+Talla 5: XXL - Stock: 0 - Active: false (sin stock, no mostrar)
+```
 
 #### Inventario y Control
 
 **Total Stock** (Stock Total) - OPCIONAL
 - Cantidad total disponible del producto
-- Si usas tallas, el stock se gestiona por talla
-- Si no usas tallas, indica aquí el stock total
 - Por defecto es 0
+- Este es un campo agregado; para control detallado usa el stock por color y talla
 
 **Is Active** (Está Activo) - OPCIONAL
 - Controla si el producto está activo en el sistema
-- Desmarca si quieres desactivar temporalmente el producto
-- Por defecto está marcado
+- Por defecto está marcado (true)
+- Desmarca para desactivar temporalmente sin eliminar
 
-> **Nota**: Los campos de contador de vistas y favoritos están disponibles en el esquema pero no se utilizan actualmente en la aplicación móvil.
+**View Count** / **Favorite Count** - NO USAR
+- Campos para métricas internas
+- Se actualizan automáticamente
+- No modificar manualmente
 
-> **Nota**: Los campos SEO están disponibles en Strapi pero no se utilizan en aplicaciones móviles.
+#### SEO (Opcional)
+
+Campos para optimización en motores de búsqueda:
+- **Meta Title**: Título para SEO (máx 70 chars)
+- **Meta Description**: Descripción para SEO (máx 160 chars)
+- **Keywords**: Palabras clave separadas por comas
+- **Meta Image**: Imagen para compartir en redes
+- **No Index** / **No Follow**: Opciones de indexación
+
+> **Nota**: Los campos SEO son para uso web futuro y no afectan la app móvil.
 
 ### 3.3 Publicar un Producto
 
@@ -218,672 +311,627 @@ Una vez completados todos los campos obligatorios:
 
 1. Revisa que toda la información sea correcta
 2. Verifica que las imágenes se vean bien
-3. En la parte superior derecha, haz clic en el botón **Save**
-4. Si quieres que el producto sea visible en la app INMEDIATAMENTE:
-   - Haz clic en **Publish**
-5. Si prefieres guardarlo como borrador para publicarlo después:
-   - Haz clic en **Save** únicamente
+3. Asegúrate de tener al menos un color con hex válido
+4. En la parte superior derecha, haz clic en **Save**
+5. Haz clic en **Publish** para que sea visible en la app
 
-**Importante**: Solo los productos con estado "Published" aparecen en la aplicación móvil.
+**Lista de verificación antes de publicar**:
+- [ ] Título completo
+- [ ] Precio establecido
+- [ ] Front Image subida
+- [ ] Al menos 1 color con nombre y código hex
+- [ ] Tallas configuradas (si aplica)
+- [ ] Categoría seleccionada
+- [ ] Estados asignados (si aplica)
 
 ### 3.4 Editar un Producto Existente
 
 1. Ve a **Content Manager** > **Products**
-2. Busca el producto que quieres editar
-   - Puedes usar el buscador en la parte superior
-   - O navegar por la lista
+2. Busca el producto (usa el buscador o navega la lista)
 3. Haz clic sobre el producto
 4. Realiza los cambios necesarios
-5. Haz clic en **Save** para guardar los cambios
-6. Si el producto ya estaba publicado, haz clic en **Publish** para actualizar la versión pública
+5. Haz clic en **Save**
+6. Si el producto ya estaba publicado, haz clic en **Publish** para actualizar
 
-### 3.5 Despublicar un Producto
+### 3.5 Despublicar / Eliminar
 
-Si necesitas quitar temporalmente un producto de la aplicación:
+**Despublicar** (recomendado para ocultar temporalmente):
+1. Abre el producto
+2. Haz clic en **Unpublish**
+3. El producto sigue existiendo pero no es visible en la app
 
-1. Abre el producto en edición
-2. En la parte superior derecha, haz clic en **Unpublish**
-3. El producto seguirá existiendo pero NO será visible en la app
-
-### 3.6 Eliminar un Producto
-
-**PRECAUCIÓN**: Eliminar un producto es permanente.
-
-1. Ve a la lista de productos
-2. Busca el producto que quieres eliminar
-3. Haz clic en el ícono de tres puntos (⋮) al lado del producto
-4. Selecciona **Delete**
-5. Confirma la eliminación
-
-**Recomendación**: En lugar de eliminar, considera despublicar el producto. Así mantienes el historial.
-
-### 3.7 Duplicar un Producto
-
-Si necesitas crear un producto similar a uno existente:
-
-1. Abre el producto que quieres duplicar
-2. Haz clic en el ícono de tres puntos (⋮) en la parte superior
-3. Selecciona **Duplicate**
-4. Strapi creará una copia
-5. Edita la copia con la nueva información
-6. Recuerda cambiar el título (el slug se actualizará automáticamente)
+**Eliminar** (permanente):
+1. En la lista de productos, haz clic en los tres puntos (⋮)
+2. Selecciona **Delete**
+3. Confirma la eliminación
 
 ---
 
 ## 4. Gestión de Medios
 
-La biblioteca de medios es donde se almacenan todas las imágenes, videos y archivos.
+La biblioteca de medios almacena todas las imágenes, videos y archivos.
 
-### 4.1 Acceder a la Biblioteca de Medios
+### 4.1 Acceder a la Biblioteca
 
 1. En el menú lateral, haz clic en **Media Library**
 2. Verás todas las imágenes y archivos subidos
 
-### 4.2 Subir Nuevos Archivos
+### 4.2 Subir Archivos
 
-**Opción 1: Arrastrar y Soltar**
-1. Abre la carpeta en tu computadora donde están las imágenes
-2. Arrastra las imágenes directamente a la ventana de Media Library
-3. Los archivos se subirán automáticamente
+**Arrastrar y Soltar**:
+- Arrastra archivos directamente a la ventana
 
-**Opción 2: Botón de Carga**
-1. Haz clic en el botón **+ Add new assets** (arriba a la derecha)
-2. Selecciona **From computer**
-3. Navega a la carpeta donde están tus archivos
-4. Selecciona uno o varios archivos
-5. Haz clic en **Abrir**
-
-### 4.3 Organizar Archivos en Carpetas
-
-Para mantener organizada tu biblioteca:
-
+**Botón de Carga**:
 1. Haz clic en **+ Add new assets**
-2. Selecciona **Create new folder**
-3. Dale un nombre a la carpeta (ejemplo: "Camisetas 2025", "Logos", "Banners")
-4. Haz clic en **Create**
-5. Arrastra archivos a las carpetas para organizarlos
+2. Selecciona **From computer**
+3. Navega y selecciona archivos
 
-**Sugerencia de estructura de carpetas**:
+### 4.3 Organizar en Carpetas
+
+**Estructura recomendada**:
 ```
 Media Library/
 ├── Productos/
 │   ├── Camisetas/
 │   ├── Accesorios/
 │   └── Calzado/
-├── Categorias/
+├── Colores/
+│   ├── Camisetas-Amarillo/
+│   ├── Camisetas-Negro/
+│   └── ...
 ├── Tiendas/
-└── Banners/
+└── General/
 ```
 
-### 4.4 Editar Información de un Archivo
+### 4.4 Especificaciones de Imágenes
 
-1. Haz clic sobre la imagen o archivo
-2. Se abrirá un panel lateral con detalles
-3. Puedes editar:
-   - **Alternative text**: Texto descriptivo (bueno para SEO)
-   - **Caption**: Leyenda o título
-4. Haz clic en **Save** para guardar cambios
+| Tipo de Imagen | Tamaño Recomendado | Formato |
+|----------------|-------------------|---------|
+| Producto (Front Image) | 1200x1200 px | JPG |
+| Galería de producto | 800x800 px | JPG |
+| Imagen de color | 1200x1200 px | JPG |
+| Foto de tienda | 1200x800 px | JPG |
+| Con transparencia | Cualquiera | PNG |
 
-### 4.5 Reemplazar un Archivo
+**Límites**:
+- Tamaño máximo por archivo: 2 MB
+- Formatos permitidos: JPG, PNG, GIF, WEBP, MP4, MOV
 
-Si necesitas actualizar una imagen que ya está en uso:
+### 4.5 Buenas Prácticas
 
-1. Haz clic sobre el archivo
-2. En el panel lateral, haz clic en **Replace media**
-3. Selecciona el nuevo archivo
-4. El archivo se actualizará en todos los lugares donde se use
-
-**Importante**: Esto actualizará la imagen en TODOS los productos que la usen.
-
-### 4.6 Eliminar Archivos
-
-**PRECAUCIÓN**: Eliminar un archivo puede afectar productos que lo usan.
-
-1. Selecciona el archivo haciendo clic en la casilla superior izquierda
-2. Haz clic en el ícono de papelera
-3. Confirma la eliminación
-
-**Recomendación**: Antes de eliminar, verifica que el archivo no esté en uso en ningún producto.
-
-### 4.7 Buscar Archivos
-
-Para encontrar rápidamente un archivo:
-
-1. Usa la barra de búsqueda en la parte superior
-2. Escribe palabras clave del nombre del archivo
-3. Filtra por tipo (imagen, video, documento)
-4. Filtra por carpeta
-
-### 4.8 Buenas Prácticas para Imágenes
-
-**Resolución Recomendada**:
-- Imágenes de productos: Mínimo 800x800 px, ideal 1200x1200 px
-- Banners: 1200x400 px
-- Íconos de categorías: 200x200 px
-
-**Formato**:
-- Usa JPG para fotografías (menor tamaño de archivo)
-- Usa PNG para logos o imágenes con transparencia
-- Evita archivos muy pesados (máximo 2 MB por imagen)
-
-**Nombres de Archivo**:
-- Usa nombres descriptivos: "camiseta-penarol-titular-frente.jpg"
-- Evita caracteres especiales o espacios
-- Usa guiones (-) en lugar de espacios
+- Usa nombres descriptivos: `camiseta-penarol-amarillo-frente.jpg`
+- Evita espacios y caracteres especiales
+- Mantén un fondo consistente (preferiblemente blanco)
+- Optimiza imágenes antes de subir (usa TinyPNG)
 
 ---
 
 ## 5. Gestión de Categorías
 
-Las categorías agrupan productos similares y facilitan la navegación en la aplicación.
+Las categorías agrupan productos similares.
 
-> **Nota Importante**: Actualmente la aplicación móvil utiliza categorías predefinidas. Las categorías creadas en Strapi están disponibles en la API pero no se visualizan dinámicamente en la app. Esta funcionalidad será implementada en una versión futura.
+### 5.1 Estado Actual de Categorías
 
-### 5.1 Ver Categorías Existentes
+> **Importante**: La aplicación móvil actualmente usa una lista de categorías predefinida internamente. Las categorías de Strapi están disponibles vía API y se sincronizan mediante el campo `slug`.
+
+### 5.2 Campos de Categoría
+
+| Campo | Obligatorio | Descripción |
+|-------|-------------|-------------|
+| **Name** | Sí | Nombre de la categoría (máx 100 chars) |
+| **Slug** | Sí | Se genera automáticamente del nombre |
+| **Description** | No | Descripción de la categoría |
+| **Icon** | No | Imagen/ícono de la categoría |
+| **Display Order** | No | Orden de visualización (default: 0) |
+| **Is Active** | No | Si está activa (default: true) |
+| **Products** | Auto | Relación con productos (no editar manualmente) |
+| **Models** | Auto | Relación con modelos (no editar manualmente) |
+
+### 5.3 Crear/Editar Categorías
 
 1. Ve a **Content Manager** > **Categories**
-2. Verás la lista de todas las categorías
+2. Haz clic en **+ Create new entry** o selecciona una existente
+3. Completa los campos
+4. Guarda y publica
 
-### 5.2 Crear una Nueva Categoría
-
-1. Haz clic en **+ Create new entry**
-2. Completa el formulario:
-
-**Name** (Nombre) - OBLIGATORIO
-- El nombre de la categoría que verán los usuarios
-- Ejemplo: "Camisetas", "Accesorios", "Calzado"
-- Máximo 100 caracteres
-
-**Slug** - OBLIGATORIO
-- Se genera automáticamente del nombre
-- Ejemplo: "camisetas"
-
-**Description** (Descripción) - OPCIONAL
-- Descripción de la categoría
-- Ejemplo: "Camisetas oficiales de todos los equipos uruguayos"
-
-**Icon** (Ícono) - OPCIONAL
-- Imagen que representa la categoría (no se muestra actualmente en la app)
-
-**Is Active** (Está Activa) - OPCIONAL
-- Marca esta casilla para que la categoría esté activa
-- Por defecto está marcada
-
-**SEO** - OPCIONAL
-- Optimización para motores de búsqueda (similar a productos)
-
-3. Haz clic en **Save**
-4. Haz clic en **Publish** para que sea visible en la app
-
-### 5.3 Editar una Categoría
-
-1. Haz clic en la categoría que quieres editar
-2. Modifica los campos necesarios
-3. Haz clic en **Save** y luego **Publish**
-
-### 5.4 Desactivar una Categoría
-
-Si no quieres eliminar una categoría pero temporalmente no la necesitas:
-
-1. Abre la categoría en edición
-2. Desmarca **Is Active**
-3. Guarda y publica
+**Nota**: Para que los productos se asignen correctamente, asegúrate de que el `slug` de la categoría coincida con las categorías esperadas por la app.
 
 ---
 
 ## 6. Gestión de Modelos de Producto
 
-Los modelos son variantes específicas dentro de una categoría.
+Los modelos son variantes específicas dentro de una categoría (ej: "Titular", "Suplente").
 
-**Ejemplo**:
-- Categoría: "Camisetas"
-- Modelos: "Titular", "Suplente", "Arquero", "Entrenamiento"
+### 6.1 Campos de Modelo
 
-### 6.1 Crear un Nuevo Modelo
+| Campo | Obligatorio | Descripción |
+|-------|-------------|-------------|
+| **Name** | Sí | Nombre del modelo (máx 100 chars) |
+| **Slug** | Sí | Se genera automáticamente |
+| **Description** | No | Descripción del modelo |
+| **Display Order** | No | Orden de visualización |
+| **Is Active** | No | Si está activo (default: true) |
+| **Category** | No | Categoría a la que pertenece |
+| **Products** | Auto | Productos con este modelo |
 
-1. Ve a **Content Manager** > **Product Models**
-2. Haz clic en **+ Create new entry**
-3. Completa el formulario:
+### 6.2 Ejemplos de Modelos por Categoría
 
-**Name** (Nombre) - OBLIGATORIO
-- Nombre del modelo
-- Ejemplo: "Titular", "Suplente", "Edición Especial"
-- Máximo 100 caracteres
-
-**Slug** - OBLIGATORIO
-- Se genera automáticamente
-
-**Description** (Descripción) - OPCIONAL
-- Descripción del modelo
-- Ejemplo: "Camiseta oficial para partidos de local"
-
-**Is Active** (Está Activo) - OPCIONAL
-- Marca para activar el modelo
-- Por defecto está marcado
-
-**Category** (Categoría) - OPCIONAL
-- Selecciona a qué categoría pertenece este modelo
-- Un modelo puede estar asociado a una categoría específica
-
-4. Haz clic en **Save** y luego **Publish**
-
-### 6.2 Casos de Uso
-
-**Ejemplo 1: Camisetas**
-- Categoría: Camisetas
-- Modelos: Titular, Suplente, Arquero, Retro, Entrenamiento
-
-**Ejemplo 2: Accesorios**
-- Categoría: Accesorios
-- Modelos: Oficiales, Edición Limitada, Clásicos
-
-### 6.3 Editar y Gestionar Modelos
-
-El proceso es similar al de categorías:
-- Puedes editar, duplicar, publicar/despublicar y eliminar modelos
-- Usa **Is Active** para desactivar temporalmente
-
-> **Nota**: El campo Display Order está disponible pero no se utiliza actualmente en la app.
+**Camisetas**: Titular, Suplente, Arquero, Retro, Entrenamiento
+**Buzos**: Regular, Oversize, Sport
+**Pantalones**: Corto, Largo, Training
 
 ---
 
 ## 7. Gestión de Estados de Producto
 
-Los estados son etiquetas visuales que destacan productos especiales.
-
-> **Nota Importante**: Los estados están predefinidos en la aplicación. Aunque Strapi permite configurar colores, etiquetas y prioridades, actualmente la app utiliza valores predefinidos en el código.
+Los estados son etiquetas visuales que destacan productos.
 
 ### 7.1 Estados Disponibles
 
-El sistema tiene estados predefinidos:
+El sistema tiene 8 estados predefinidos con funciones específicas:
 
-1. **New** (Nuevo)
-   - Para productos recién lanzados
+| Estado | Nombre Interno | Uso en la App |
+|--------|---------------|---------------|
+| **Nuevo** | `new` | Badge "Nuevo" en tarjetas |
+| **Oferta** | `sale` | Indica producto en promoción |
+| **Destacado** | `featured` | Sección "Destacados" |
+| **Oportunidad** | `opportunity` | Ofertas especiales |
+| **Recomendado** | `recommended` | Productos relacionados |
+| **Popular** | `popular` | Sección "Populares" |
+| **Exclusivo App** | `app_exclusive` | Solo disponible en app |
+| **Resaltado** | `highlighted` | Máxima visibilidad |
 
-2. **Sale** (Oferta)
-   - Para productos en promoción
+### 7.2 Campos de Estado
 
-3. **Featured** (Destacado)
-   - Productos que quieres resaltar
+| Campo | Obligatorio | Descripción |
+|-------|-------------|-------------|
+| **Name** | Sí | Valor del enum (new, sale, featured, etc.) |
+| **Priority** | Sí | Número para ordenar (menor = mayor prioridad) |
+| **Label Es** | Sí | Etiqueta en español (máx 50 chars) |
+| **Label En** | No | Etiqueta en inglés (máx 50 chars) |
+| **Color** | No | Color del texto (hex: #FFFFFF) |
+| **Background Color** | No | Color de fondo (hex: #FF0000) |
+| **Is Active** | No | Si está activo (default: true) |
 
-4. **Opportunity** (Oportunidad)
-   - Ofertas especiales o liquidaciones
+### 7.3 Asignar Estados a Productos
 
-5. **Recommended** (Recomendado)
-   - Productos recomendados por la tienda
+1. Abre el producto en edición
+2. Busca el campo **Statuses**
+3. Haz clic en **Add relation**
+4. Selecciona uno o varios estados
+5. Guarda y publica
 
-6. **Popular** (Popular)
-   - Productos más vendidos o demandados
-
-7. **App Exclusive** (Exclusivo App)
-   - Productos disponibles solo en la aplicación móvil
-
-8. **Highlighted** (Resaltado)
-   - Productos que quieres dar máxima visibilidad
-
-### 7.2 Asignar Estados a Productos
-
-Para que un estado aparezca en un producto:
-
-1. Ve a **Content Manager** > **Products**
-2. Abre el producto que quieres editar
-3. Busca el campo **Statuses**
-4. Haz clic en **Add relation**
-5. Selecciona uno o varios estados
-6. Guarda y publica el producto
+**Recomendaciones**:
+- No abuses de los estados (no todos los productos deben tener etiquetas)
+- Usa "new" solo para productos recién lanzados
+- Combina "sale" con un `discountedPrice` real
 
 ---
 
 ## 8. Gestión de Ubicaciones de Tienda
 
-Las ubicaciones de tienda permiten a los usuarios elegir dónde retirar sus pedidos.
+Las ubicaciones permiten a los usuarios elegir dónde retirar sus pedidos.
 
-### 8.1 Crear una Nueva Ubicación
-
-1. Ve a **Content Manager** > **Store Locations**
-2. Haz clic en **+ Create new entry**
-3. Completa el formulario:
+### 8.1 Campos de Ubicación
 
 #### Información Básica
 
-**Name** (Nombre) - OBLIGATORIO
-- Nombre de la tienda o sucursal
-- Ejemplo: "Tifossi Montevideo Centro", "Tifossi Punta Carretas"
-- Máximo 100 caracteres
+| Campo | Obligatorio | Descripción |
+|-------|-------------|-------------|
+| **Name** | Sí | Nombre de la tienda (máx 100 chars) |
+| **Slug** | Sí | Se genera automáticamente |
+| **Code** | Sí | Código único (ej: "MV-CENTRO") - máx 20 chars, único |
+| **Description** | No | Descripción de la ubicación |
 
-**Slug** - OBLIGATORIO
-- Se genera automáticamente
+#### Dirección (Address) - OBLIGATORIO
 
-**Code** (Código) - OBLIGATORIO
-- Código único de la tienda
-- Ejemplo: "MV-CENTRO", "PC-001"
-- Máximo 20 caracteres
-- Debe ser único (no puede repetirse)
+| Campo | Obligatorio | Descripción |
+|-------|-------------|-------------|
+| **First Name** | Sí | Nombre del encargado (máx 50 chars) |
+| **Last Name** | Sí | Apellido del encargado (máx 50 chars) |
+| **Company** | No | Nombre de la empresa |
+| **Address Line 1** | Sí | Dirección principal (máx 255 chars) |
+| **Address Line 2** | No | Complemento de dirección |
+| **City** | Sí | Ciudad (máx 100 chars) |
+| **State** | No | Departamento (máx 100 chars) |
+| **Postal Code** | No | Código postal (máx 20 chars) |
+| **Country** | Sí | Código de país 2 letras (default: "UY") |
+| **Phone Number** | No | Teléfono de la dirección |
+| **Type** | No | Tipo de dirección (shipping, billing, both) |
 
-**Description** (Descripción) - OPCIONAL
-- Descripción de la ubicación
-- Ejemplo: "Nuestra tienda principal en pleno centro de Montevideo"
+#### Contacto
 
-#### Dirección
+| Campo | Obligatorio | Descripción |
+|-------|-------------|-------------|
+| **Phone Number** | No | Teléfono principal de la tienda |
+| **Email** | No | Correo electrónico |
 
-**Address** (Dirección) - OBLIGATORIO
+#### Horarios de Operación (Operating Hours)
 
-Este es un componente con varios campos:
+Puedes configurar horarios detallados por día de la semana:
 
-**First Name** (Nombre) - OBLIGATORIO
-- Nombre del encargado o responsable
-- Máximo 50 caracteres
+| Campo | Obligatorio | Descripción |
+|-------|-------------|-------------|
+| **Day of Week** | Sí | Día (monday, tuesday, etc.) |
+| **Open Time** | No | Hora de apertura (formato HH:MM) |
+| **Close Time** | No | Hora de cierre (formato HH:MM) |
+| **Is Closed** | No | Si está cerrado ese día |
+| **Notes** | No | Notas adicionales (máx 255 chars) |
 
-**Last Name** (Apellido) - OBLIGATORIO
-- Apellido del encargado o responsable
-- Máximo 50 caracteres
+**Ejemplo de configuración**:
+```
+Lunes:    09:00 - 18:00
+Martes:   09:00 - 18:00
+Miércoles: 09:00 - 18:00
+Jueves:   09:00 - 18:00
+Viernes:  09:00 - 18:00
+Sábado:   10:00 - 14:00
+Domingo:  isClosed: true
+```
 
-**Company** (Empresa) - OPCIONAL
-- Nombre de la empresa
-- Ejemplo: "Tifossi Uruguay S.A."
+#### Características de la Tienda
 
-**Address Line 1** (Dirección Línea 1) - OBLIGATORIO
-- Dirección principal
-- Ejemplo: "Av. 18 de Julio 1234"
-- Máximo 255 caracteres
+| Campo | Default | Descripción |
+|-------|---------|-------------|
+| **Has Pickup Service** | true | Ofrece servicio de retiro |
+| **Has Parking** | false | Tiene estacionamiento |
+| **Is Accessible** | true | Es accesible (discapacitados) |
+| **Max Pickup Items** | 50 | Máximo de items por retiro |
 
-**Address Line 2** (Dirección Línea 2) - OPCIONAL
-- Complemento de dirección
-- Ejemplo: "Local 5", "Esquina Yaguarón"
+#### Control
 
-**City** (Ciudad) - OBLIGATORIO
-- Ciudad donde está ubicada la tienda
-- Ejemplo: "Montevideo"
+| Campo | Default | Descripción |
+|-------|---------|-------------|
+| **Is Active** | true | Si la ubicación está activa |
+| **Display Order** | 0 | Orden de visualización |
+| **Images** | - | Fotos de la tienda (múltiples) |
 
-**State** (Departamento) - OPCIONAL
-- Departamento (en Uruguay)
-- Ejemplo: "Montevideo", "Canelones"
+### 8.2 Crear una Ubicación
 
-**Postal Code** (Código Postal) - OPCIONAL
-- Código postal
-- Ejemplo: "11200"
-
-**Country** (País) - OBLIGATORIO
-- Código de país de 2 letras
-- Por defecto: "UY" (Uruguay)
-
-**Phone Number** (Teléfono en Dirección) - OPCIONAL
-- Teléfono de contacto
-- Máximo 20 caracteres
-
-**Type** (Tipo) - OPCIONAL
-- Tipo de dirección (generalmente no es necesario cambiar)
-- Por defecto: "both" (ambos)
-
-#### Información de Contacto
-
-**Phone Number** (Número de Teléfono) - OPCIONAL
-- Teléfono principal de la tienda
-- Ejemplo: "+598 2XXX XXXX"
-- Máximo 20 caracteres
-
-**Email** - OPCIONAL
-- Correo electrónico de la tienda
-- Ejemplo: "centro@tifossi.uy"
-
-**Store Hours** (Horarios) - OPCIONAL
-- Puedes ingresar los horarios de atención como texto simple
-- Ejemplo: "Lun. a Vier. 11:00 - 19:00 hs.\nSab. 10:00 - 14:00 hs."
-
-> **Nota**: Los campos de horarios detallados por día (Operating Hours component) y características de tienda (parking, accesibilidad, máximo de items) están disponibles en el esquema pero actualmente la app muestra los horarios como texto simple.
-
-#### Control y Visualización
-
-**Is Active** (Está Activa) - OPCIONAL
-- Marca si la ubicación está activa
-- Por defecto está marcado
-
-#### Imágenes
-
-**Images** (Imágenes) - OPCIONAL
-- Fotos de la tienda (fachada, interior, etc.)
-- Puedes agregar múltiples imágenes
-- Haz clic en "Browse" y selecciona las imágenes
-
-### 8.2 Guardar y Publicar
-
-1. Revisa que todos los campos obligatorios estén completos
-2. Haz clic en **Save**
-3. Haz clic en **Publish** para que sea visible en la app
-
-### 8.3 Editar una Ubicación Existente
-
-1. Ve a la lista de Store Locations
-2. Haz clic en la ubicación que quieres editar
-3. Modifica los campos necesarios
-4. Guarda y publica
-
-### 8.4 Desactivar Temporalmente una Tienda
-
-Si una tienda cierra temporalmente:
-
-1. Abre la ubicación en edición
-2. Desmarca **Is Active**
-3. Guarda y publica
-
-La tienda no aparecerá como opción de retiro en la app.
+1. Ve a **Content Manager** > **Store Locations**
+2. Haz clic en **+ Create new entry**
+3. Completa todos los campos obligatorios
+4. Configura los horarios de operación
+5. Guarda y publica
 
 ---
 
-## 9. Consejos y Buenas Prácticas
+## 9. Gestión de Pedidos
 
-### 9.1 Antes de Empezar
+Los pedidos se crean automáticamente cuando los clientes completan una compra.
 
-- **Haz una prueba**: Antes de crear muchos productos, crea uno de prueba para familiarizarte con el proceso
-- **Ten las imágenes listas**: Prepara todas las imágenes antes de empezar a crear productos
-- **Organiza tus medios**: Usa carpetas en la biblioteca de medios desde el principio
-- **Planifica las categorías**: Define tu estructura de categorías antes de crear productos
+### 9.1 Ver Pedidos
 
-### 9.2 Gestión de Productos
+1. Ve a **Content Manager** > **Orders**
+2. Verás la lista de todos los pedidos
+3. Puedes filtrar por estado, fecha, etc.
 
-**Información Completa**:
-- Completa todos los campos posibles, no solo los obligatorios
-- Descripciones detalladas ayudan a los usuarios a tomar decisiones
-- Usa múltiples imágenes para mostrar el producto desde diferentes ángulos
+### 9.2 Campos del Pedido
 
-**Imágenes de Calidad**:
-- Usa imágenes profesionales de alta resolución
-- Asegúrate de que el producto sea el protagonista de la foto
-- Mantén un fondo consistente (preferiblemente blanco o neutro)
-- La imagen principal debe ser la más representativa
+#### Información General
 
-**Precios Claros**:
-- Verifica que los precios sean correctos antes de publicar
-- Si hay descuento, asegúrate de que el precio con descuento sea menor que el regular
-- Actualiza los precios regularmente según tus políticas comerciales
+| Campo | Descripción |
+|-------|-------------|
+| **Order Number** | Número único del pedido |
+| **Order Date** | Fecha y hora del pedido |
+| **User** | Usuario que realizó el pedido (si está logueado) |
+| **Guest Email** | Email si es compra como invitado |
+| **Status** | Estado actual del pedido |
 
-**Stock Actualizado**:
-- Mantén el inventario actualizado para evitar vender productos agotados
-- Revisa el stock semanalmente
-- Considera usar el campo "Is Active" para productos temporalmente sin stock
+#### Estados del Pedido
 
-### 9.3 Gestión de Categorías y Modelos
+| Estado | Descripción |
+|--------|-------------|
+| `pending` | Pendiente de pago |
+| `processing` | En proceso |
+| `paid` | Pagado |
+| `shipped` | Enviado |
+| `delivered` | Entregado |
+| `cancelled` | Cancelado |
+| `refunded` | Reembolsado |
 
-**Estructura Lógica**:
-- Crea categorías amplias y modelos específicos
-- No crees demasiadas categorías (5-10 es ideal)
-- Los nombres deben ser claros y descriptivos
+#### Items del Pedido
 
-**Orden Visual**:
-- Usa el campo "Display Order" de manera consistente
-- Coloca las categorías más importantes primero
-- Revisa cómo se ve en la app después de ordenar
+Cada item contiene:
+- **Product**: Referencia al producto
+- **Product Snapshot**: Copia de los datos del producto al momento de la compra
+- **Quantity**: Cantidad
+- **Unit Price**: Precio unitario
+- **Total Price**: Precio total del item
+- **Selected Color**: Color seleccionado
+- **Selected Size**: Talla seleccionada
+- **Customizations**: Personalizaciones (si aplica)
+- **Notes**: Notas del item
 
-### 9.4 Gestión de Estados
+#### Envío
 
-**Uso Estratégico**:
-- No abuses de los estados (no todos los productos deben tener etiquetas)
-- Usa "Sale" solo cuando haya descuento real
-- Actualiza los estados regularmente (un producto no puede ser "Nuevo" por siempre)
-- Configura las prioridades de manera que las ofertas destaquen más
+| Campo | Descripción |
+|-------|-------------|
+| **Shipping Method** | "delivery" o "pickup" |
+| **Shipping Address** | Dirección de envío (si es delivery) |
+| **Store Location** | Tienda de retiro (si es pickup) |
+| **Tracking Number** | Número de seguimiento |
+| **Estimated Delivery** | Fecha estimada de entrega |
+| **Delivered At** | Fecha real de entrega |
 
-**Consistencia Visual**:
-- Usa colores coherentes con tu marca
-- Asegúrate de que el texto sea legible sobre el fondo
-- Mantén las etiquetas cortas y claras
+#### Pago (MercadoPago)
 
-### 9.5 Flujo de Trabajo Recomendado
+| Campo | Descripción |
+|-------|-------------|
+| **Payment Method** | "mercadopago" o "cash_on_delivery" |
+| **MP Payment Id** | ID del pago en MercadoPago |
+| **MP Preference Id** | ID de preferencia de MercadoPago |
+| **MP Collection Id** | ID de colección |
+| **MP Collection Status** | Estado del pago en MP |
+| **MP Payment Type** | Tipo de pago (credit_card, debit_card, etc.) |
+| **MP External Reference** | Referencia externa |
 
-**Para Nuevos Productos**:
+#### Totales
+
+| Campo | Descripción |
+|-------|-------------|
+| **Subtotal** | Suma de items |
+| **Shipping Cost** | Costo de envío |
+| **Discount** | Descuento aplicado |
+| **Tax** | Impuestos |
+| **Total** | Total final |
+
+#### Notas
+
+| Campo | Descripción |
+|-------|-------------|
+| **Customer Notes** | Notas del cliente |
+| **Internal Notes** | Notas internas (solo admin) |
+| **Notes** | Notas generales |
+
+### 9.3 Actualizar Estado de un Pedido
+
+1. Abre el pedido
+2. Cambia el campo **Status** al nuevo estado
+3. Opcionalmente agrega notas internas
+4. Guarda los cambios
+
+**Importante**: Los cambios de estado pueden disparar notificaciones al cliente.
+
+---
+
+## 10. Configuración de la Aplicación
+
+La configuración de la app es un **Single Type** (tipo único) con valores globales.
+
+### 10.1 Acceder
+
+1. Ve a **Content Manager**
+2. En "Single Types", selecciona **App Settings**
+
+### 10.2 Campos Disponibles
+
+| Campo | Obligatorio | Default | Descripción |
+|-------|-------------|---------|-------------|
+| **Support Phone Number** | Sí | +59899000000 | Teléfono de soporte |
+| **Support Email** | No | - | Email de soporte |
+| **Business Name** | No | Tifossi | Nombre del negocio |
+
+### 10.3 Editar Configuración
+
+1. Modifica los campos necesarios
+2. Haz clic en **Save**
+3. Los cambios se reflejan inmediatamente en la app
+
+---
+
+## 11. Gestión de Usuarios
+
+Los usuarios se crean automáticamente cuando se registran en la app.
+
+### 11.1 Ver Usuarios
+
+1. Ve a **Content Manager** > **Users**
+2. Verás la lista de usuarios registrados
+
+### 11.2 Campos del Usuario
+
+#### Información Básica
+
+| Campo | Descripción |
+|-------|-------------|
+| **Username** | Nombre de usuario (único) |
+| **Email** | Correo electrónico |
+| **First Name** | Nombre |
+| **Last Name** | Apellido |
+| **Phone Number** | Teléfono |
+| **Profile Picture** | Foto de perfil |
+
+#### Cuenta
+
+| Campo | Descripción |
+|-------|-------------|
+| **Firebase UID** | ID de Firebase (autenticación) |
+| **Provider** | Proveedor de auth (local, google, etc.) |
+| **Confirmed** | Si el email está confirmado |
+| **Blocked** | Si la cuenta está bloqueada |
+| **Role** | Rol del usuario |
+
+#### Preferencias
+
+| Campo | Descripción |
+|-------|-------------|
+| **Preferred Language** | Idioma preferido (es, en) |
+| **Currency** | Moneda preferida (UYU, USD) |
+| **Newsletter Subscribed** | Suscrito a newsletter |
+| **Marketing Emails** | Acepta emails de marketing |
+
+#### Direcciones
+
+- **Addresses**: Lista de direcciones guardadas
+- **Default Shipping Address**: Dirección de envío por defecto
+- **Default Billing Address**: Dirección de facturación por defecto
+
+#### Actividad
+
+| Campo | Descripción |
+|-------|-------------|
+| **Cart** | Carrito actual (JSON) |
+| **Favorites** | Productos favoritos |
+| **Orders** | Pedidos del usuario |
+| **Last Login At** | Último inicio de sesión |
+| **Total Orders** | Cantidad de pedidos |
+| **Total Spent** | Total gastado |
+| **Loyalty Points** | Puntos de fidelidad |
+
+### 11.3 Gestión de Usuarios
+
+**Bloquear un usuario**:
+1. Abre el perfil del usuario
+2. Marca la casilla **Blocked**
+3. Guarda
+
+**Ver pedidos de un usuario**:
+1. Abre el perfil del usuario
+2. En la sección **Orders** verás todos sus pedidos
+3. Haz clic en uno para ver detalles
+
+---
+
+## 12. Consejos y Buenas Prácticas
+
+### 12.1 Flujo de Trabajo para Productos
 
 1. **Preparación**:
-   - Reúne toda la información del producto
-   - Prepara y optimiza las imágenes
-   - Decide categoría, modelo y estados
+   - Prepara todas las imágenes optimizadas
+   - Define colores con códigos hex correctos
+   - Ten la información lista (precios, descripciones, tallas)
 
 2. **Creación**:
    - Crea el producto en modo borrador
-   - Completa todos los campos obligatorios
-   - Agrega imágenes y descripciones
-   - Configura colores y tallas
+   - Completa todos los campos obligatorios primero
+   - Agrega variantes de color con sus imágenes específicas
+   - Configura tallas y stock
 
 3. **Revisión**:
-   - Revisa toda la información
    - Verifica precios y stock
-   - Comprueba que las imágenes se vean correctamente
+   - Revisa que las imágenes se vean correctamente
+   - Confirma que los colores tengan hex válidos
 
 4. **Publicación**:
-   - Guarda el producto
-   - Publica cuando estés seguro de que todo está correcto
-   - Verifica en la aplicación móvil que se vea bien
+   - Guarda y publica
+   - Verifica en la app móvil
 
-**Para Actualizaciones Masivas**:
+### 12.2 Gestión de Imágenes por Color
 
-1. Planifica qué productos necesitas actualizar
-2. Prepara todos los materiales nuevos (imágenes, información)
-3. Actualiza los productos uno por uno
-4. Verifica cada cambio antes de publicar
+Esta es una funcionalidad clave que permite mostrar diferentes imágenes según el color seleccionado:
 
-### 9.6 Mantenimiento Regular
+1. Sube imágenes específicas para cada color a la Media Library
+2. Al crear/editar un color, asigna:
+   - **Main Image**: La imagen principal de ese color
+   - **Additional Images**: Imágenes adicionales del producto en ese color
+
+3. Cuando el usuario selecciona un color en la app:
+   - Se muestra el `Main Image` del color (o `Front Image` del producto si no hay)
+   - La galería incluye los `Additional Images` del color
+
+### 12.3 Gestión de Stock
+
+**Por Color**:
+- Usa el campo `Quantity` en cada color para control detallado
+- Colores con `Quantity: 0` pueden marcarse como `Is Active: false`
+
+**Por Talla**:
+- Usa el campo `Stock` en cada talla
+- Tallas sin stock pueden marcarse como `Is Active: false`
+
+**General**:
+- El campo `Total Stock` del producto es para referencia general
+- Para productos sin variantes, usa este campo
+
+### 12.4 Estados Estratégicos
+
+- **Productos nuevos**: Asigna `new` las primeras 2-4 semanas
+- **Ofertas**: Combina estado `sale` con `discountedPrice`
+- **Destacados**: Rota productos `featured` semanalmente
+- **Productos relacionados**: Usa `recommended` para sugerencias
+
+### 12.5 Mantenimiento Regular
 
 **Semanal**:
-- Revisa y actualiza el stock de productos
-- Verifica que las ofertas vigentes tengan el estado "Sale"
-- Responde a cualquier problema reportado en productos
+- Revisa y actualiza stock
+- Verifica ofertas activas
+- Revisa pedidos pendientes
 
 **Mensual**:
-- Revisa y limpia la biblioteca de medios (elimina archivos no usados)
-- Actualiza estados (remueve "Nuevo" de productos antiguos)
-- Verifica que todas las ubicaciones de tienda tengan información actualizada
-- Revisa productos con bajo stock para reordenar o despublicar
+- Limpia Media Library (elimina imágenes no usadas)
+- Actualiza estados (remueve `new` de productos antiguos)
+- Revisa ubicaciones de tienda
 
 **Trimestral**:
-- Revisa la estructura de categorías (¿necesitas agregar/eliminar alguna?)
-- Evalúa qué productos no se venden y considera despublicarlos
-- Actualiza las descripciones de productos si hay cambios en políticas
+- Evalúa productos sin ventas
+- Actualiza descripciones y precios
+- Revisa estructura de categorías
 
-### 9.7 Solución de Problemas Comunes
+### 12.6 Solución de Problemas
 
 **"No puedo publicar un producto"**
-- Verifica que todos los campos obligatorios estén completos
-- Asegúrate de que tenga al menos una imagen principal
-- Verifica que tenga al menos un color configurado
+- Verifica campos obligatorios: title, slug, price, frontImage
+- Asegúrate de tener al menos 1 color con nombre y hex
+- El hex debe ser formato válido: #RRGGBB o #RGB
 
 **"Las imágenes no se suben"**
-- Verifica que el archivo no sea muy pesado (máximo 2 MB)
-- Asegúrate de que sea un formato válido (JPG, PNG)
-- Prueba con otra imagen para descartar problemas con el archivo
+- Verifica tamaño (máx 2 MB)
+- Usa formatos válidos (JPG, PNG)
+- Prueba con otra imagen
 
-**"No veo los cambios en la aplicación"**
-- Verifica que hayas hecho clic en "Publish" después de "Save"
-- Espera unos minutos y cierra/abre la aplicación móvil
-- Verifica que el campo "Is Active" esté marcado
+**"No veo cambios en la app"**
+- Verifica que hayas hecho clic en "Publish"
+- La app tiene caché (espera 30-60 minutos o fuerza actualización)
+- Verifica que `Is Active` esté marcado
 
-**"El slug ya existe"**
-- El slug se genera del título y debe ser único
-- Cambia ligeramente el título del producto
-- Ejemplo: "Camiseta Peñarol" vs "Camiseta Peñarol 2025"
-
-**"Eliminé un archivo por error"**
-- Los archivos eliminados NO se pueden recuperar
-- Siempre verifica antes de eliminar
-- Considera hacer respaldos regulares de tus imágenes en tu computadora
-
-### 9.8 Seguridad y Respaldos
-
-**Protege tu Cuenta**:
-- Usa una contraseña fuerte y única
-- No compartas tus credenciales
-- Cierra sesión cuando termines, especialmente en computadoras compartidas
-- Cambia tu contraseña periódicamente
-
-**Respaldos**:
-- Mantén copias de tus imágenes en tu computadora
-- Guarda información importante de productos en un archivo aparte
-- Documenta tu estructura de categorías y modelos
-
-### 9.9 Recursos Útiles
-
-**Herramientas Online Recomendadas**:
-
-- **Optimización de Imágenes**: TinyPNG (https://tinypng.com)
-- **Selección de Colores**: Google Color Picker
-- **Edición Básica de Imágenes**: Canva (https://canva.com)
-- **Eliminación de Fondos**: Remove.bg (https://remove.bg)
-
-**Dimensiones de Referencia**:
-
-| Tipo de Imagen | Tamaño Recomendado |
-|----------------|-------------------|
-| Producto principal | 1200x1200 px |
-| Galería de producto | 800x800 px |
-| Ícono de categoría | 200x200 px |
-| Foto de tienda | 1200x800 px |
-
-### 9.10 Contacto y Soporte
-
-Si tienes problemas técnicos o preguntas que no están cubiertas en esta guía:
-
-1. Documenta el problema (toma capturas de pantalla si es posible)
-2. Contacta al administrador del sistema
-3. Proporciona información detallada sobre qué estabas haciendo cuando ocurrió el problema
+**"El color no muestra su imagen"**
+- Verifica que el color tenga `Main Image` asignada
+- Confirma que la imagen esté subida correctamente
+- El color debe estar `Is Active: true`
 
 ---
 
-## Glosario de Términos
+## Glosario
 
-- **CMS**: Content Management System (Sistema de Gestión de Contenidos)
-- **Draft**: Borrador, contenido guardado pero no publicado
-- **Published**: Publicado, contenido visible en la aplicación
-- **Slug**: URL amigable generada automáticamente a partir del título
-- **SEO**: Search Engine Optimization (Optimización para Motores de Búsqueda)
-- **Hex Code**: Código hexadecimal de color (ejemplo: #FF0000)
-- **Media Library**: Biblioteca donde se almacenan imágenes y archivos
-- **Component**: Conjunto de campos agrupados (ejemplo: Dirección, Horarios)
-- **Relation**: Conexión entre diferentes tipos de contenido (ejemplo: Producto-Categoría)
+| Término | Descripción |
+|---------|-------------|
+| CMS | Content Management System - Sistema de Gestión de Contenidos |
+| Draft | Borrador - contenido no publicado |
+| Published | Publicado - contenido visible en la app |
+| Slug | Identificador URL-friendly generado del título |
+| Hex Code | Código hexadecimal de color (#RRGGBB) |
+| Media Library | Biblioteca de archivos multimedia |
+| Component | Conjunto de campos reutilizable |
+| Relation | Conexión entre tipos de contenido |
+| Single Type | Tipo de contenido único (no colección) |
+| Collection Type | Tipo de contenido con múltiples entradas |
 
 ---
 
-## Checklist: Crear tu Primer Producto
+## Checklist: Crear Producto Completo
 
-Usa esta lista para asegurarte de no olvidar nada:
-
-- [ ] Título del producto
-- [ ] Precio (y precio con descuento si aplica)
-- [ ] Descripción corta (líneas 1 y 2)
+- [ ] Título descriptivo
+- [ ] Precio correcto
+- [ ] Precio con descuento (si aplica)
+- [ ] Descripción corta (línea 1)
 - [ ] Descripción larga
-- [ ] Imagen principal (Front Image)
-- [ ] Imágenes adicionales (mínimo 2-3)
+- [ ] Front Image de calidad
+- [ ] Imágenes adicionales (2-3 mínimo)
 - [ ] Categoría seleccionada
 - [ ] Modelo seleccionado (si aplica)
-- [ ] Al menos un color configurado
-- [ ] Tallas configuradas (si el producto tiene tallas)
-- [ ] Stock actualizado
-- [ ] Estados asignados (si aplica: Nuevo, Oferta, etc.)
+- [ ] Al menos 1 color con:
+  - [ ] Nombre
+  - [ ] Código hex válido
+  - [ ] Main Image (recomendado)
+  - [ ] Quantity/stock
+- [ ] Tallas configuradas (si aplica)
+- [ ] Estados asignados (new, featured, etc.)
 - [ ] Producto guardado
 - [ ] Producto publicado
-- [ ] Verificado en la aplicación móvil
+- [ ] Verificado en la app móvil
 
 ---
 
-**¡Felicidades!** Ya tienes todo lo necesario para gestionar el contenido de Tifossi en Strapi.
-
-Recuerda: La práctica hace al maestro. No tengas miedo de experimentar con productos de prueba antes de trabajar con tu catálogo real.
-
-**Última actualización**: Enero 2025
+**Última actualización**: Diciembre 2025
 **Versión de Strapi**: v5
