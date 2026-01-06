@@ -27,10 +27,11 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
 - **Color Selector**: Visual selection of available color variants
 - **Size Selector**: Size options selection
 - **Product Description**: Detailed information in expandable sections
-- **Add to Cart**: Two-stage product addition flow
+- **Add to Cart**: Multi-stage product addition flow with explicit selection
+  - Users must explicitly select both size AND quantity (no auto-filled defaults)
+  - Action buttons only appear after all required selections are made
   - Loading overlay with progress indicator while adding
   - Success confirmation with options to checkout immediately ("Comprar ahora") or continue shopping ("Volver a Tienda")
-  - Size/color/quantity validation before addition
 - **Favorites Toggle**: Save products for later purchase
 - **Related Products**: Horizontal scroll of complementary items
 

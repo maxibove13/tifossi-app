@@ -259,7 +259,10 @@ Modal overlay components for the checkout process.
    - Provides "Comprar ahora" button to proceed to checkout
    - Provides "Volver a Tienda" button to continue shopping
    - Integrates with OverlayShippingSelection for checkout flow
-3. **OverlayCheckoutShipping** (`/_components/store/product/overlay/OverlayCheckoutShipping.tsx`): Shipping information overlay
+3. **OverlayCheckoutShipping** (`/_components/store/product/overlay/OverlayCheckoutShipping.tsx`): Add-to-cart selection overlay
+   - Requires explicit user selection of both size AND quantity before showing action buttons
+   - Shows "Seleccionar" until user manually picks options (prevents accidental defaults)
+   - Action buttons ("Comprar ahora" / "Agregar al carrito") hidden until both selections made
 4. **OverlayCheckoutQuantity** (`/_components/store/product/overlay/OverlayCheckoutQuantity.tsx`): Product quantity selection overlay
 5. **OverlayDeleteConfirmation** (`/_components/store/product/overlay/OverlayDeleteConfirmation.tsx`): Delete confirmation overlay
 6. **OverlayProductEdit** (`/_components/store/product/overlay/OverlayProductEdit.tsx`): Product editing overlay

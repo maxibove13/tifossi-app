@@ -63,11 +63,18 @@ export default function OverlayCheckoutShipping({
   const [selectedQuantity, setSelectedQuantity] = useState(initialQuantity);
   const [selectedSize, setSelectedSize] = useState(initialSize);
 
+  // Track explicit user selections - must be selected manually, not auto-filled
+  const [hasExplicitlySelectedSize, setHasExplicitlySelectedSize] = useState(false);
+  const [hasExplicitlySelectedQuantity, setHasExplicitlySelectedQuantity] = useState(false);
+
   useEffect(() => {
     if (isVisible) {
       // Reset state when becoming visible
       setSelectedQuantity(initialQuantity);
       setSelectedSize(initialSize);
+      // Reset explicit selection flags - user must select manually
+      setHasExplicitlySelectedSize(false);
+      setHasExplicitlySelectedQuantity(false);
       // Start fade-in and slide-up animations when overlay becomes visible
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -95,10 +102,9 @@ export default function OverlayCheckoutShipping({
 
   const handleQuantitySave = (quantity: number) => {
     setSelectedQuantity(quantity);
+    setHasExplicitlySelectedQuantity(true);
     // Call the prop function to update the state in the parent (SwipeableEdge)
     onSelectQuantity(quantity);
-    // Just update the quantity state without calling onSelectQuantity yet
-    // User will return to this overlay after selecting a quantity
   };
 
   const handleOpenSizeOverlay = () => {
@@ -107,6 +113,7 @@ export default function OverlayCheckoutShipping({
 
   const handleSizeSave = (size: string) => {
     setSelectedSize(size);
+    setHasExplicitlySelectedSize(true);
     onSelectSize(size);
   };
 
@@ -180,9 +187,7 @@ export default function OverlayCheckoutShipping({
           <Animated.View style={[styles.container, { transform: [{ translateY: slideAnim }] }]}>
             {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.title}>
-                {selectedSize && selectedQuantity > 0 ? 'Editar' : 'Agregar al carrito'}
-              </Text>
+              <Text style={styles.title}>Agregar al carrito</Text>
               <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
                 <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
               </TouchableOpacity>
@@ -198,7 +203,7 @@ export default function OverlayCheckoutShipping({
               >
                 <Text style={styles.selectionTitle}>Talle</Text>
                 <View style={styles.actionButton}>
-                  {selectedSize ? (
+                  {hasExplicitlySelectedSize ? (
                     <>
                       <Text style={[styles.actionText, styles.doneText]}>Listo</Text>
                       <ChevronRightGreen width={8} height={14} />
@@ -220,7 +225,7 @@ export default function OverlayCheckoutShipping({
               >
                 <Text style={styles.selectionTitle}>Cantidad</Text>
                 <View style={styles.actionButton}>
-                  {selectedQuantity > 0 ? (
+                  {hasExplicitlySelectedQuantity ? (
                     <>
                       <Text style={[styles.actionText, styles.doneText]}>Listo</Text>
                       <ChevronRightGreen width={8} height={14} />
@@ -235,8 +240,8 @@ export default function OverlayCheckoutShipping({
               </TouchableOpacity>
             </View>
 
-            {/* Action Buttons - only show when both size and quantity are selected */}
-            {selectedSize && selectedQuantity > 0 && (
+            {/* Action Buttons - only show when user has explicitly selected both */}
+            {hasExplicitlySelectedSize && hasExplicitlySelectedQuantity && (
               <View style={styles.actionButtons}>
                 <TouchableOpacity
                   style={styles.primaryButton}
