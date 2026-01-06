@@ -67,14 +67,20 @@ export default function OverlayCheckoutShipping({
   const [hasExplicitlySelectedSize, setHasExplicitlySelectedSize] = useState(false);
   const [hasExplicitlySelectedQuantity, setHasExplicitlySelectedQuantity] = useState(false);
 
+  // Track previous visibility to detect open transition
+  const [wasVisible, setWasVisible] = useState(false);
+
   useEffect(() => {
-    if (isVisible) {
-      // Reset state when becoming visible
+    if (isVisible && !wasVisible) {
+      // Reset state only when overlay OPENS (transition from hidden to visible)
       setSelectedQuantity(initialQuantity);
       setSelectedSize(initialSize);
-      // Reset explicit selection flags - user must select manually
       setHasExplicitlySelectedSize(false);
       setHasExplicitlySelectedQuantity(false);
+    }
+    setWasVisible(isVisible);
+
+    if (isVisible) {
       // Start fade-in and slide-up animations when overlay becomes visible
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -93,7 +99,7 @@ export default function OverlayCheckoutShipping({
       fadeAnim.setValue(0);
       slideAnim.setValue(height);
     }
-  }, [isVisible, fadeAnim, slideAnim, initialQuantity, initialSize]);
+  }, [isVisible, fadeAnim, slideAnim, initialQuantity, initialSize, wasVisible]);
 
   const handleSelectQuantity = () => {
     // Show the quantity overlay

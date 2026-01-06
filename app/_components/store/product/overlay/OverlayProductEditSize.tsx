@@ -127,7 +127,7 @@ export default function OverlayProductEditSize({
   // Helper to format stock display
   const getStockText = (stock: number): string | null => {
     if (stock === 0) return 'Sin stock';
-    if (stock < 5) return `Solo ${stock} disponible${stock > 1 ? 's' : ''}`;
+    if (stock < 5) return `(${stock} disponible${stock > 1 ? 's' : ''})`;
     return null; // Don't show stock for items with 5+ in stock
   };
 
@@ -279,8 +279,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#DCDCDC',
   },
   sizeInfoContainer: {
-    flexDirection: 'column',
-    gap: spacing.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   sizeOptionText: {
     fontFamily: 'Inter',
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.xs,
     fontWeight: '400',
     lineHeight: lineHeights.xs,
-    color: '#FF6B00',
+    color: colors.secondary,
   },
   stockTextOutOfStock: {
     color: '#9E9E9E',
