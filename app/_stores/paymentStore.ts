@@ -39,6 +39,18 @@ export interface GuestContactInfo {
   phoneNumber: string;
 }
 
+// Pending buy now item - for "Comprar ahora" flow without adding to cart
+export interface PendingBuyNowItem {
+  productId: string;
+  title: string;
+  size: string;
+  quantity: number;
+  color?: string;
+  price: number;
+  discountedPrice?: number;
+  imageUrl?: string;
+}
+
 interface PaymentUIState {
   // Current order info for display purposes only
   currentOrderNumber: string | null;
@@ -53,6 +65,10 @@ interface PaymentUIState {
   // Guest contact info for pickup (used when not logged in)
   guestContactInfo: GuestContactInfo | null;
 
+  // Pending buy now item - product being purchased via "Comprar ahora" flow
+  // This allows checkout without adding to cart until order is confirmed
+  pendingBuyNowItem: PendingBuyNowItem | null;
+
   // UI state
   isLoading: boolean;
   error: string | null;
@@ -62,6 +78,7 @@ interface PaymentUIState {
   setSelectedStore: (store: SelectedStore | null) => void;
   setGuestAddress: (address: GuestAddress | null) => void;
   setGuestContactInfo: (info: GuestContactInfo | null) => void;
+  setPendingBuyNowItem: (item: PendingBuyNowItem | null) => void;
   clearPaymentState: () => void;
   setError: (error: string | null) => void;
   setLoading: (isLoading: boolean) => void;
@@ -74,6 +91,7 @@ export const usePaymentStore = create<PaymentUIState>((set) => ({
   selectedStore: null,
   guestAddress: null,
   guestContactInfo: null,
+  pendingBuyNowItem: null,
   isLoading: false,
   error: null,
 
@@ -98,6 +116,10 @@ export const usePaymentStore = create<PaymentUIState>((set) => ({
     set({ guestContactInfo: info });
   },
 
+  setPendingBuyNowItem: (item) => {
+    set({ pendingBuyNowItem: item });
+  },
+
   clearPaymentState: () => {
     set({
       currentOrderNumber: null,
@@ -105,6 +127,7 @@ export const usePaymentStore = create<PaymentUIState>((set) => ({
       selectedStore: null,
       guestAddress: null,
       guestContactInfo: null,
+      pendingBuyNowItem: null,
       isLoading: false,
       error: null,
     });

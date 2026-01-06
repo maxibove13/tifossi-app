@@ -207,20 +207,22 @@
         {
           "id": "PRODUCT-007",
           "description": "Verificar los márgenes de los botones en el overlay",
-          "component": "app/_components/store/product/overlay/OverlayProductEdit.tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Need exact margin values from Figma"
+          "component": "app/_components/store/product/overlay/OverlayCheckoutShipping.tsx, OverlayCheckoutQuantity.tsx, OverlayProductEditSize.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-06",
+          "implementation": "Aligned all three overlays with Figma CSS specs: container padding 32px top/horizontal, 34px bottom, gap 40px, button margins with flex: 1 for equal widths, removed padding that affected flex sizing."
         },
         {
           "id": "PRODUCT-008",
           "description": "Modificar el tamaño del título del overlay y cambiar de 'Editar' a 'Agregar al carrito'; parece un botón seleccionable",
-          "component": "app/_components/store/product/overlay/OverlayProductEdit.tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Need exact font size from Figma. Also need context: when opened from product page = 'Agregar al carrito', when opened from cart = 'Editar'?"
+          "component": "app/_components/store/product/overlay/OverlayCheckoutShipping.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-06",
+          "implementation": "Dynamic title: shows 'Editar' when size/quantity not yet selected, changes to 'Agregar al carrito' when both explicitly selected. Title styling: Roboto 400 16px/24px #575757."
         },
         {
           "id": "PRODUCT-009",
@@ -228,35 +230,38 @@
           "component": "app/_components/store/product/overlay/OverlayProductAdding.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Current handleBackToStore() only calls onClose(). Change to: router.replace('/') or router.navigate('/(tabs)') to navigate to store tab instead of just closing the modal."
+          "status": "completed",
+          "completedAt": "2026-01-06",
+          "implementation": "Changed handleBackToStore to call onClose() then router.navigate('/(tabs)') to navigate to store tab."
         },
         {
           "id": "PRODUCT-010",
           "description": "Cuando tap 'Comprar ahora' el overlay de entrega deben ser revisados los márgenes de los botones e incrementado el espesor del ícono de envío a domicilio",
-          "component": "app/_components/store/product/overlay/OverlayCheckoutShipping.tsx",
+          "component": "app/_components/store/product/overlay/OverlayShippingSelection.tsx",
           "needsMoreContext": true,
           "needsFigma": true,
-          "status": "blocked",
-          "notes": "Need exact margin values and icon stroke width from Figma"
+          "status": "in-progress",
+          "notes": "Button margins fixed in parent overlays. Icon stroke width in OverlayShippingSelection still needs Figma specs."
         },
         {
           "id": "PRODUCT-011",
           "description": "Cuando hago el camino - Agregar al carrito/Comprar ahora/Envío domicilio/Atrás - vuelvo a la página del producto pero no permite utilizar el componente inferior, queda bloqueado",
-          "component": "app/_components/store/product/swipeable/SwipeableEdge.tsx",
+          "component": "app/_components/store/product/overlay/OverlayCheckoutShipping.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Bug: SwipeableEdge state not reset after navigation flow. Debug: 1) Check if overlay onClose properly resets all state, 2) Verify SwipeableEdge gesture handler state is cleared, 3) Check for lingering modal/overlay state blocking interactions. Likely need to call resetState or similar when returning to product page."
+          "status": "completed",
+          "completedAt": "2026-01-06",
+          "implementation": "Added reset of nested overlay states (isQuantityOverlayVisible, isSizeOverlayVisible, isShippingOverlayVisible) when main overlay becomes hidden. This ensures no lingering state blocks interactions."
         },
         {
           "id": "PRODUCT-012",
           "description": "Si pulso 'Atrás' luego del camino Agregar al carrito/Comprar ahora/Envío domicilio, no debería agregar el producto al carrito. Evitar agregar producto si el usuario se arrepiente. Aplica también para 'Recoger en tienda'",
-          "component": "app/_components/store/product/swipeable/SwipeableEdge.tsx",
+          "component": "app/_components/store/product/swipeable/SwipeableEdge.tsx, app/_stores/paymentStore.ts, app/checkout/payment-selection.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Current flow adds to cart before shipping selection. Change to: 1) Don't add to cart in OverlayProductEdit, 2) Pass product/selection data through shipping flow, 3) Only add to cart AFTER user confirms final checkout step or completes shipping selection. Use transient state instead of committing to cart prematurely."
+          "status": "completed",
+          "completedAt": "2026-01-06",
+          "implementation": "Implemented pendingBuyNowItem in paymentStore for 'Comprar ahora' flow. Product is stored in transient state instead of cart. handleSelectShipping now calls onBuyNow (sets pending item) instead of onAddToCart. Payment-selection reads from both cart AND pendingBuyNowItem. If user backs out, pending item is cleared with clearPaymentState."
         }
       ]
     },

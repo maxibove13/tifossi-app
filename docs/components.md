@@ -245,6 +245,7 @@ Components that support swipe gestures for interactive product displays.
    - Performance-optimized with device-width based height caching
    - Uses lightweight View component for background instead of LinearGradient
    - Implements efficient memory usage techniques for smooth animations
+   - **"Comprar ahora" flow:** Uses `handleOverlayBuyNow` callback to store product in `pendingBuyNowItem` (paymentStore) instead of adding to cart, allowing clean checkout abandonment
 
 #### Overlay Components (`/_components/store/product/overlay/`)
 
@@ -257,12 +258,14 @@ Modal overlay components for the checkout process.
 2. **OverlayProductAdding** (`/_components/store/product/overlay/OverlayProductAdding.tsx`): Success confirmation after adding to cart
    - Shows "Item añadido al carrito" message
    - Provides "Comprar ahora" button to proceed to checkout
-   - Provides "Volver a Tienda" button to continue shopping
+   - Provides "Volver a Tienda" button that navigates to the store tab (not back to product page)
    - Integrates with OverlayShippingSelection for checkout flow
 3. **OverlayCheckoutShipping** (`/_components/store/product/overlay/OverlayCheckoutShipping.tsx`): Add-to-cart selection overlay
    - Requires explicit user selection of both size AND quantity before showing action buttons
    - Shows "Seleccionar" until user manually picks options (prevents accidental defaults)
    - Action buttons ("Comprar ahora" / "Agregar al carrito") hidden until both selections made
+   - Resets nested overlay states (quantity, size, shipping) when main overlay closes to prevent UI blocking
+   - "Comprar ahora" uses `onBuyNow` callback (stores in paymentStore) instead of adding to cart
 4. **OverlayCheckoutQuantity** (`/_components/store/product/overlay/OverlayCheckoutQuantity.tsx`): Product quantity selection overlay
 5. **OverlayDeleteConfirmation** (`/_components/store/product/overlay/OverlayDeleteConfirmation.tsx`): Delete confirmation overlay
 6. **OverlayProductEdit** (`/_components/store/product/overlay/OverlayProductEdit.tsx`): Product editing overlay

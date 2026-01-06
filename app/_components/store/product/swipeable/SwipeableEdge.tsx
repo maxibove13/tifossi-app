@@ -34,6 +34,7 @@ import OverlayProductAdding from '../overlay/OverlayProductAdding';
 
 // utils + types
 import { Product, ProductColor, ProductSize } from '../../../../_types/product';
+import { usePaymentStore } from '../../../../_stores/paymentStore';
 
 // Import card components
 import PromotionCard from '../promotion/PromotionCard';
@@ -354,6 +355,9 @@ const SwipeableEdge = ({
     [measuredHeaderHeight]
   );
 
+  // Payment store for "buy now" flow (PRODUCT-012)
+  const setPendingBuyNowItem = usePaymentStore((state) => state.setPendingBuyNowItem);
+
   const handleAddToCartPress = useCallback(() => {
     if (isOutOfStock) return;
     setShowCheckoutOverlay(true);
@@ -379,6 +383,36 @@ const SwipeableEdge = ({
       }
     },
     [onAddToCart, selectedColor, onSizeChange, onQuantityChange]
+  );
+
+  // PRODUCT-012: Handle "buy now" flow - sets pending item without adding to cart
+  const handleOverlayBuyNow = useCallback(
+    (size: string, qty: number) => {
+      // Parse price from string (e.g., "$1,500" -> 1500)
+      const parsePrice = (priceStr: string | undefined): number => {
+        if (!priceStr) return 0;
+        return parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
+      };
+
+      setPendingBuyNowItem({
+        productId: product.id,
+        title: product.name,
+        size: size,
+        quantity: qty,
+        color: selectedColor,
+        price: parsePrice(product.originalPrice || product.currentPrice),
+        discountedPrice: product.isDiscounted ? parsePrice(product.currentPrice) : undefined,
+      });
+    },
+    [
+      product.id,
+      product.name,
+      product.currentPrice,
+      product.originalPrice,
+      product.isDiscounted,
+      selectedColor,
+      setPendingBuyNowItem,
+    ]
   );
 
   const handleSupportPress = useCallback(
@@ -448,6 +482,7 @@ const SwipeableEdge = ({
             onQuantityChange?.(qty);
           }}
           onAddToCart={handleOverlayAddToCart}
+          onBuyNow={handleOverlayBuyNow}
           initialQuantity={quantity}
           initialSize={selectedSize}
           product={
@@ -570,6 +605,7 @@ const SwipeableEdge = ({
           onQuantityChange?.(qty);
         }}
         onAddToCart={handleOverlayAddToCart}
+        onBuyNow={handleOverlayBuyNow}
         initialQuantity={quantity}
         initialSize={selectedSize}
         product={
