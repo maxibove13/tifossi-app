@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { colors } from '../../../../_styles/colors';
 import { spacing, radius } from '../../../../_styles/spacing';
-import { fonts, fontSizes, fontWeights } from '../../../../_styles/typography';
+import { fonts, fontSizes, fontWeights, lineHeights } from '../../../../_styles/typography';
 import { Ionicons } from '@expo/vector-icons';
 
 interface AddToCartButtonProps {
@@ -111,7 +111,7 @@ export default function AddToCartButton({
 
 const styles = StyleSheet.create({
   container: {
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
     width: '100%',
   },
   containerDark: {
@@ -128,8 +128,8 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: colors.primary,
-    borderRadius: radius.xxl, // 24px as per Figma
-    paddingVertical: 16,
+    borderRadius: radius.xxl,
+    height: 48,
     paddingHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
@@ -137,9 +137,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   buttonDark: {
-    backgroundColor: 'rgba(251, 251, 251, 0.25)', // Semi-transparent white as per Figma
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(251, 251, 251, 0.25)',
   },
   buttonDisabled: {
     backgroundColor: colors.secondary,
@@ -154,7 +152,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
+    lineHeight: lineHeights.lg,
     fontWeight: fontWeights.medium,
     fontFamily: fonts.secondary,
     flex: 1,

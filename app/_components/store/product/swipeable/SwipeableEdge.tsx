@@ -621,6 +621,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: spacing.xxxl,
     flexGrow: 1,
+    gap: 80,
   },
   testContainer: {
     flex: 1,
@@ -632,7 +633,7 @@ const styles = StyleSheet.create({
   },
   testScrollContent: {
     paddingBottom: spacing.xxxl,
-    gap: spacing.lg,
+    gap: 80,
   },
   testSelectorsBlock: {
     gap: spacing.md,
@@ -656,7 +657,6 @@ const styles = StyleSheet.create({
     color: colors.error,
   },
   supportBlock: {
-    marginTop: spacing.xxl,
     gap: spacing.md,
   },
   supportHeader: {

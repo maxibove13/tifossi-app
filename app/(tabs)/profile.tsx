@@ -265,113 +265,121 @@ const LoggedOutLoginForm = () => {
       contentContainerStyle={styles.loginScrollContent}
       showsVerticalScrollIndicator={false}
     >
-      {/* Form Inputs */}
-      <View style={styles.inputsContainer}>
-        <Input
-          placeholder="Correo Electrónico"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={(text) => {
-            setEmail(text);
-            if (error) setError(null);
-          }}
-          error={
-            (error && error.includes('correo')) || (authError && authError.includes('email'))
-              ? (error ?? authError ?? undefined)
-              : undefined
-          }
-        />
-        <Input
-          placeholder="Contraseña"
-          secureTextEntry
-          value={password}
-          onChangeText={(text) => {
-            setPassword(text);
-            if (error) setError(null);
-          }}
-          error={
-            (error && error.includes('contraseña')) || (authError && authError.includes('password'))
-              ? (error ?? authError ?? undefined)
-              : undefined
-          }
-        />
-      </View>
+      {/* Frame 191: Form Section */}
+      <View style={styles.formSection}>
+        {/* Frame 249: Inputs + Buttons with 32px gap */}
+        <View style={styles.inputsAndButtonsContainer}>
+          {/* Frame 246: Inputs */}
+          <View style={styles.inputsContainer}>
+            <Input
+              placeholder="Correo Electrónico"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (error) setError(null);
+              }}
+              error={
+                (error && error.includes('correo')) || (authError && authError.includes('email'))
+                  ? (error ?? authError ?? undefined)
+                  : undefined
+              }
+            />
+            <Input
+              placeholder="Contraseña"
+              secureTextEntry
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (error) setError(null);
+              }}
+              error={
+                (error && error.includes('contraseña')) ||
+                (authError && authError.includes('password'))
+                  ? (error ?? authError ?? undefined)
+                  : undefined
+              }
+            />
+          </View>
 
-      {/* General error message */}
-      {((error &&
-        !error.includes('correo') &&
-        !error.includes('contraseña') &&
-        !error.includes('Por favor, completa')) ||
-        (authError && !authError.includes('email') && !authError.includes('password'))) && (
-        <Text style={styles.errorText}>{error || authError}</Text>
-      )}
-      {appleError && <Text style={styles.errorText}>{appleError}</Text>}
-
-      {/* Primary Button */}
-      <TouchableOpacity
-        onPress={handleLogin}
-        activeOpacity={0.8}
-        disabled={isSubmitting || isLoading}
-        style={styles.primaryButtonWrapper}
-      >
-        <LinearGradient
-          colors={
-            isSubmitting || isLoading
-              ? colors.button.disabledGradient
-              : colors.button.defaultGradient
-          }
-          style={styles.primaryButton}
-        >
-          {isSubmitting || isLoading ? (
-            <ActivityIndicator size="small" color={colors.background.offWhite} />
-          ) : (
-            <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
+          {/* General error message */}
+          {((error &&
+            !error.includes('correo') &&
+            !error.includes('contraseña') &&
+            !error.includes('Por favor, completa')) ||
+            (authError && !authError.includes('email') && !authError.includes('password'))) && (
+            <Text style={styles.errorText}>{error || authError}</Text>
           )}
-        </LinearGradient>
-      </TouchableOpacity>
+          {appleError && <Text style={styles.errorText}>{appleError}</Text>}
 
-      {/* Forgot Password */}
-      <TouchableOpacity
-        style={styles.forgotPasswordButton}
-        onPress={() => router.push('/auth/forgot-password')}
-        activeOpacity={0.7}
-        disabled={isSubmitting || isLoading}
-      >
-        <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
-      </TouchableOpacity>
+          {/* Frame 245: Button + Forgot Password */}
+          <View style={styles.buttonAndForgotContainer}>
+            <TouchableOpacity
+              onPress={handleLogin}
+              activeOpacity={0.8}
+              disabled={isSubmitting || isLoading}
+              style={styles.primaryButtonWrapper}
+            >
+              <LinearGradient
+                colors={
+                  isSubmitting || isLoading
+                    ? colors.button.disabledGradient
+                    : colors.button.defaultGradient
+                }
+                style={styles.primaryButton}
+              >
+                {isSubmitting || isLoading ? (
+                  <ActivityIndicator size="small" color={colors.background.offWhite} />
+                ) : (
+                  <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
 
-      {/* Divider */}
-      <View style={styles.dividerContainer}>
-        <View style={styles.divider} />
-      </View>
+            <TouchableOpacity
+              style={styles.forgotPasswordButton}
+              onPress={() => router.push('/auth/forgot-password')}
+              activeOpacity={0.7}
+              disabled={isSubmitting || isLoading}
+            >
+              <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-      {/* Social Login Buttons */}
-      <View style={styles.socialButtonsContainer}>
-        <TouchableOpacity
-          style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
-          onPress={handleGoogleLogin}
-          activeOpacity={0.7}
-          disabled={isSubmitting || isLoading}
-        >
-          <Text style={styles.socialButtonText}>Continuar con Google</Text>
-          <Image source={GoogleLogo} style={{ width: 20, height: 20 }} />
-        </TouchableOpacity>
+        {/* Divider */}
+        <View style={styles.dividerContainer}>
+          <View style={styles.divider} />
+        </View>
 
-        {Platform.OS === 'ios' && (
+        {/* Frame 190: Social Login Buttons */}
+        <View style={styles.socialButtonsContainer}>
           <TouchableOpacity
             style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
-            onPress={handleAppleLogin}
+            onPress={handleGoogleLogin}
             activeOpacity={0.7}
             disabled={isSubmitting || isLoading}
           >
-            <Text style={styles.socialButtonText}>Continuar con Apple</Text>
-            <Image source={AppleLogo} style={{ width: 15, height: 20 }} />
+            <Text style={styles.socialButtonText}>Continuar con Google</Text>
+            <Image source={GoogleLogo} style={{ width: 20, height: 20 }} />
           </TouchableOpacity>
-        )}
+
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
+              onPress={handleAppleLogin}
+              activeOpacity={0.7}
+              disabled={isSubmitting || isLoading}
+            >
+              <Text style={styles.socialButtonText}>Continuar con Apple</Text>
+              <Image source={AppleLogo} style={{ width: 15, height: 20 }} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      {/* Register Section */}
+      {/* Frame 247: Register Section */}
       <View style={styles.registerSection}>
         <Text style={styles.registerPromptText}>¿No tienes una cuenta?</Text>
         <TouchableOpacity
@@ -455,7 +463,10 @@ type Styles = {
   container: ViewStyle;
   loginScrollView: ViewStyle;
   loginScrollContent: ViewStyle;
+  formSection: ViewStyle;
+  inputsAndButtonsContainer: ViewStyle;
   inputsContainer: ViewStyle;
+  buttonAndForgotContainer: ViewStyle;
   errorText: TextStyle;
   primaryButtonWrapper: ViewStyle;
   primaryButton: ViewStyle;
@@ -496,13 +507,22 @@ const styles = StyleSheet.create<Styles>({
     flex: 1,
   },
   loginScrollContent: {
-    paddingHorizontal: spacing.lg,
     paddingTop: spacing.xxxxl,
     paddingBottom: spacing.xxl,
-    gap: spacing.lg,
+    gap: spacing.xxl, // 32px gap between formSection and registerSection (Frame 248)
+  },
+  formSection: {
+    paddingHorizontal: spacing.lg,
+    gap: spacing.lg, // 16px gap (Frame 191)
+  },
+  inputsAndButtonsContainer: {
+    gap: spacing.xxl, // 32px gap between inputs and buttons (Frame 249)
   },
   inputsContainer: {
-    gap: spacing.sm,
+    gap: spacing.sm, // 8px gap between inputs (Frame 246)
+  },
+  buttonAndForgotContainer: {
+    gap: spacing.sm, // 8px gap between button and forgot password (Frame 245)
   },
   errorText: {
     color: colors.error,
@@ -529,7 +549,8 @@ const styles = StyleSheet.create<Styles>({
   },
   forgotPasswordButton: {
     alignItems: 'center',
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.sm, // 8px vertical padding for 40px total height
+    paddingHorizontal: spacing.lg,
   },
   forgotPasswordText: {
     fontFamily: fonts.secondary,
@@ -540,11 +561,11 @@ const styles = StyleSheet.create<Styles>({
     textDecorationLine: 'underline',
   },
   dividerContainer: {
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.lg, // Inner padding for divider (total 16+16=32px horizontal inset)
   },
   divider: {
     height: 1,
-    backgroundColor: colors.divider,
+    backgroundColor: colors.divider, // #CAC4D0
   },
   socialButtonsContainer: {
     gap: spacing.sm,
