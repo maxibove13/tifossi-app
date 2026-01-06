@@ -44,7 +44,9 @@ const SkeletonPlaceholder: React.FC<SkeletonPlaceholderProps> = ({
           );
 
     animation.start();
-    return () => animation.stop();
+    // Don't stop animation in cleanup - let it run until component is fully unmounted
+    // This prevents the "freeze frame" effect when switching from skeleton to content
+    // The native driver will clean up the animation when the view is destroyed
   }, [animValue, animationType]);
 
   if (animationType === 'shimmer') {
