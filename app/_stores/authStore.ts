@@ -348,22 +348,35 @@ export const useAuthStore = create<ExtendedAuthState>()(
             });
             return { needsEmailVerification: false, user: result.user };
           } catch (error: any) {
-            // Handle Apple-specific error messages in Spanish
-            let appleError = 'Inicio de sesión con Apple falló. Por favor intenta de nuevo.';
+            const errorMessage = error.message || '';
 
-            if (error.message) {
-              if (error.message.includes('canceled') || error.message.includes('cancelled')) {
-                appleError = 'Inicio de sesión cancelado';
-              } else if (error.message.includes('not available')) {
-                appleError = 'Apple Sign-In no está disponible en este dispositivo';
-              } else if (
-                error.message.includes('network') ||
-                error.message.includes('connection')
-              ) {
-                appleError = 'Error de conexión. Verifica tu conexión a internet';
-              } else if (error.message.includes('invalid')) {
-                appleError = 'Respuesta inválida de Apple';
-              }
+            // Check if user cancelled - don't show error, just reset state
+            const isCancelled =
+              errorMessage === 'cancelled' ||
+              errorMessage.includes('cancel') ||
+              errorMessage.includes('Cancel') ||
+              errorMessage.includes('cancelado');
+
+            if (isCancelled) {
+              set({
+                user: null,
+                token: null,
+                isLoggedIn: false,
+                isLoading: false,
+                status: 'idle',
+                error: null,
+              });
+              return { needsEmailVerification: false, user: null };
+            }
+
+            // Handle other Apple-specific error messages
+            let appleError = 'Inicio de sesión con Apple falló. Por favor intenta de nuevo.';
+            if (errorMessage.includes('not available')) {
+              appleError = 'Apple Sign-In no está disponible en este dispositivo';
+            } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
+              appleError = 'Error de conexión. Verifica tu conexión a internet';
+            } else if (errorMessage.includes('invalid')) {
+              appleError = 'Respuesta inválida de Apple';
             }
 
             set({
