@@ -149,10 +149,11 @@
           "id": "PRODUCT-001",
           "description": "En el Header, botón 'Volver' disminuir grosor de texto; lo mismo los íconos. Verificar que el título sea el tamaño 16px",
           "component": "app/_components/store/layout/Header.tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Need specific font-weight values for 'Volver' text and icon stroke widths from Figma"
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-06",
+          "implementation": "Volver: 12px Inter 400. Chevron/Share/Heart icons: custom SVGs with stroke-width 1.2. Title: 16px Roboto 500, line-height 24px."
         },
         {
           "id": "PRODUCT-002",
