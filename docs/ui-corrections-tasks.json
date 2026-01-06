@@ -15,8 +15,9 @@
           "component": "app/(home)/index.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Remove auth buttons from lines 34-48"
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Removed auth buttons, Button import, and related styles. Kept auto-redirect logic for logged-in users."
         },
         {
           "id": "HOME-002",
