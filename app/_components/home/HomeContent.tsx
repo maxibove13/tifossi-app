@@ -48,9 +48,10 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    height: 48,
     backgroundColor: 'rgba(251, 251, 251, 0.25)',
     borderRadius: radius.xxl,
-    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xl,
     gap: spacing.lg,
   },
