@@ -93,7 +93,7 @@ function triggerHaptic() {
   }
 }
 const MIN_COLLAPSED_SNAP_HEIGHT = 0;
-const COLLAPSED_EXTRA_PADDING = spacing.xxl;
+const COLLAPSED_EXTRA_PADDING = spacing.xxl + spacing.sm;
 
 // Optimize: Replace LinearGradient with View for better performance
 // The visual appearance is nearly identical - dark background with rounded corners
