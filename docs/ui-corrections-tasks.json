@@ -1,0 +1,439 @@
+{
+  "metadata": {
+    "createdAt": "2026-01-06",
+    "updatedAt": "2026-01-06",
+    "description": "UI/UX corrections from designer review",
+    "totalTasks": 47
+  },
+  "screens": {
+    "HOME": {
+      "description": "Home screen after splash",
+      "tasks": [
+        {
+          "id": "HOME-001",
+          "description": "Quitar botones de iniciar sesión y registro",
+          "component": "app/(home)/index.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Remove auth buttons from lines 34-48"
+        },
+        {
+          "id": "HOME-002",
+          "description": "Incrementar height botón 'Ir a Tienda' a 48px",
+          "component": "app/_components/home/HomeContent.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Add explicit height: 48 to button style (currently uses paddingVertical: spacing.sm)"
+        }
+      ]
+    },
+    "TIENDA": {
+      "description": "Store/Shop main screen",
+      "tasks": [
+        {
+          "id": "TIENDA-001",
+          "description": "Alinear logo Tiffosi al mismo margen que ícono 'Buscar/Lupa'",
+          "component": "app/_components/store/layout/Header.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Both containers are 80px. Logo uses alignItems: 'flex-start', search uses justifyContent: 'flex-end'. Ensure symmetric horizontal padding (16px) from screen edges. Logo container should match search icon container alignment logic."
+        },
+        {
+          "id": "TIENDA-002",
+          "description": "Header mismo tono de blanco (la barra del logo y lupa con respecto a la barra dónde está alojado el título 'Tienda')",
+          "component": "app/_components/store/layout/Header.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Header uses #FBFBFB consistently. Check if tab header or category bar uses different background. Unify all header sections to #FBFBFB."
+        },
+        {
+          "id": "TIENDA-003",
+          "description": "En cards destacadas modificar margen superior del texto (8px) al igual que el inferior. Destaque y Título 0px. Márgenes de los lados 12px",
+          "component": "app/_components/store/product/horizontal/HighlightedCard.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Current: label marginBottom: 4, title marginBottom: 8. Change to: label marginBottom: 0, title marginBottom: 0 (0px gap between label and title). Keep paddingHorizontal: 12 and paddingVertical: 8 on content container."
+        },
+        {
+          "id": "TIENDA-004",
+          "description": "En cards destacadas modificar distancia entre texto secundario en color gris (margen sup, inf, y distancia entre textos=8px). 8px a cada lado del divider",
+          "component": "app/_components/store/product/horizontal/HighlightedCard.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Current: descriptionContainer gap: 8, paddingVertical: 8. separator has marginTop: 8 only. Fix: Add marginBottom: 8 to separator OR change to marginVertical: 8 for symmetric 8px spacing on both sides of divider."
+        },
+        {
+          "id": "TIENDA-005",
+          "description": "Botón 'Ver todo' de las secciones, modificar distancia del underlined (está muy pegado)",
+          "component": "app/(tabs)/index.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Current: textDecorationLine: 'underline' (no offset control in RN). Solution: Remove textDecorationLine, add borderBottomWidth: 1, borderBottomColor: colors.secondary, paddingBottom: 2-4px to create visual offset between text and underline."
+        },
+        {
+          "id": "TIENDA-006",
+          "description": "Reducir distancia del texto de las Product Cards (0px figura en prototipo; los colores están encerrados en un stack de 6px sup e inf). Distancia entre imagen y texto 8px. El texto a los lados es 16px",
+          "component": "app/_components/store/product/default/small.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Current: container gap: spacing.sm (8px) - KEEP for image-text gap. content paddingHorizontal: spacing.xs (4px) - CHANGE to spacing.lg (16px). content gap: spacing.xs (4px) - CHANGE to 0. Colors stack needs 6px vertical padding."
+        },
+        {
+          "id": "TIENDA-007",
+          "description": "Revisar Product Card destacado. Si no se logra la fidelidad del prototipo sería mejor buscar otra alternativa. Opciones: imagen como background en el frame, o producto centrado sin background sin efecto zoom in",
+          "component": "app/_components/store/product/featured/FeaturedCard.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Design decision needed. Designer suggests alternatives: image as frame background OR centered product without background/zoom. Current uses ProductImage with overlay."
+        },
+        {
+          "id": "TIENDA-008",
+          "description": "Product Card destacado, revisar color del botón 'Comprar'. Color deseado: #FBFBFB 25% (tiene transparencia)",
+          "component": "app/_components/store/product/featured/FeaturedCard.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Replace button gradient with solid backgroundColor: 'rgba(251, 251, 251, 0.25)'. Remove LinearGradient from ButtonGradient component, use simple View with this background color."
+        },
+        {
+          "id": "TIENDA-009",
+          "description": "Product Card destacado, revisar color del precio (está bastante oscuro). Color deseado: #B1B1B1",
+          "component": "app/_components/store/product/featured/FeaturedCard.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Change price style from color: colors.secondary to color: '#B1B1B1'"
+        },
+        {
+          "id": "TIENDA-010",
+          "description": "Sección Lanzamientos & Oportunidades está muy pegado a sus Product Cards respectivas",
+          "component": "app/(tabs)/index.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Current: launchSection paddingVertical: spacing.xl (24px), gap: spacing.lg (16px). Increase gap to spacing.xl (24px) or spacing.xxl (32px) for more breathing room between header and cards."
+        },
+        {
+          "id": "TIENDA-011",
+          "description": "Retirar divider debajo de las cards locales (sección 'Encuentra más en nuestros locales')",
+          "component": "app/_components/store/layout/Locations.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "No explicit divider in Locations.tsx. Check if divider comes from: 1) Parent container in index.tsx adding border/separator, 2) Footer.tsx borderTopWidth: 0.4 appearing as divider. Remove relevant border/separator style."
+        },
+        {
+          "id": "TIENDA-012",
+          "description": "Logo Tiffosi debajo de todo no está centrado; verificar si el error es ese logo o el logo central en la barra del menú de navegación",
+          "component": "app/_components/store/layout/Footer.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Footer logo IS centered (alignItems: 'center' on content and logoWrapper). Issue likely in TabBar.tsx logo. Compare both visually - if TabBar logo is off-center, that creates perception that Footer logo is misaligned. Fix whichever is actually off-center."
+        }
+      ]
+    },
+    "PRODUCT": {
+      "description": "Product detail page",
+      "tasks": [
+        {
+          "id": "PRODUCT-001",
+          "description": "En el Header, botón 'Volver' disminuir grosor de texto; lo mismo los íconos. Verificar que el título sea el tamaño 16px",
+          "component": "app/_components/store/layout/Header.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Need specific font-weight values for 'Volver' text and icon stroke widths from Figma"
+        },
+        {
+          "id": "PRODUCT-002",
+          "description": "Aumentar brevemente la distancia del texto en el componente debajo",
+          "component": "app/_components/store/product/swipeable/ProductDetails.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Vague - 'componente debajo' unclear. Need designer clarification on which specific text/component"
+        },
+        {
+          "id": "PRODUCT-003",
+          "description": "Incrementar el ancho del botón 'Agregar al carrito'",
+          "component": "app/_components/store/product/cart/AddToCartButton.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Need exact width value or percentage from Figma"
+        },
+        {
+          "id": "PRODUCT-004",
+          "description": "Incrementar el ancho del cuerpo del texto de la información del producto",
+          "component": "app/_components/store/product/swipeable/ProductDetails.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Need exact width/padding values from Figma"
+        },
+        {
+          "id": "PRODUCT-005",
+          "description": "Incrementar la distancia entre las diferentes secciones (información del producto/productos relacionados/recomendados/tendencias/contacto)",
+          "component": "app/_components/store/product/swipeable/SwipeableEdge.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Need exact spacing values from Figma"
+        },
+        {
+          "id": "PRODUCT-006",
+          "description": "Cuando se pulsa 'Agregar al carrito' que las opciones de selección detalle y la cantidad no aparezcan como 'Listo'; forzar al usuario a seleccionar las opciones correctas y que no agregue las predeterminadas por la app",
+          "component": "app/_components/store/product/overlay/OverlayProductEdit.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Current logic auto-selects first available option and shows 'Listo'. Change to: 1) Initialize selection state as null/undefined, 2) Show 'Seleccionar' instead of 'Listo' until user explicitly taps an option, 3) Disable 'Agregar' button until all required selections are made."
+        },
+        {
+          "id": "PRODUCT-007",
+          "description": "Verificar los márgenes de los botones en el overlay",
+          "component": "app/_components/store/product/overlay/OverlayProductEdit.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Need exact margin values from Figma"
+        },
+        {
+          "id": "PRODUCT-008",
+          "description": "Modificar el tamaño del título del overlay y cambiar de 'Editar' a 'Agregar al carrito'; parece un botón seleccionable",
+          "component": "app/_components/store/product/overlay/OverlayProductEdit.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Need exact font size from Figma. Also need context: when opened from product page = 'Agregar al carrito', when opened from cart = 'Editar'?"
+        },
+        {
+          "id": "PRODUCT-009",
+          "description": "En la screen de confirmación de que el producto fue agregado al carrito, el botón 'Volver a tienda' debería volver a la tienda y no a la página del producto nuevamente",
+          "component": "app/_components/store/product/overlay/OverlayProductAdding.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Current handleBackToStore() only calls onClose(). Change to: router.replace('/') or router.navigate('/(tabs)') to navigate to store tab instead of just closing the modal."
+        },
+        {
+          "id": "PRODUCT-010",
+          "description": "Cuando tap 'Comprar ahora' el overlay de entrega deben ser revisados los márgenes de los botones e incrementado el espesor del ícono de envío a domicilio",
+          "component": "app/_components/store/product/overlay/OverlayCheckoutShipping.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Need exact margin values and icon stroke width from Figma"
+        },
+        {
+          "id": "PRODUCT-011",
+          "description": "Cuando hago el camino - Agregar al carrito/Comprar ahora/Envío domicilio/Atrás - vuelvo a la página del producto pero no permite utilizar el componente inferior, queda bloqueado",
+          "component": "app/_components/store/product/swipeable/SwipeableEdge.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Bug: SwipeableEdge state not reset after navigation flow. Debug: 1) Check if overlay onClose properly resets all state, 2) Verify SwipeableEdge gesture handler state is cleared, 3) Check for lingering modal/overlay state blocking interactions. Likely need to call resetState or similar when returning to product page."
+        },
+        {
+          "id": "PRODUCT-012",
+          "description": "Si pulso 'Atrás' luego del camino Agregar al carrito/Comprar ahora/Envío domicilio, no debería agregar el producto al carrito. Evitar agregar producto si el usuario se arrepiente. Aplica también para 'Recoger en tienda'",
+          "component": "app/_components/store/product/swipeable/SwipeableEdge.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Current flow adds to cart before shipping selection. Change to: 1) Don't add to cart in OverlayProductEdit, 2) Pass product/selection data through shipping flow, 3) Only add to cart AFTER user confirms final checkout step or completes shipping selection. Use transient state instead of committing to cart prematurely."
+        }
+      ]
+    },
+    "CATALOGO": {
+      "description": "Catalog/Category page",
+      "tasks": [
+        {
+          "id": "CATALOGO-001",
+          "description": "Header del mismo color blanco (barra del título - barra de categorías)",
+          "component": "app/catalog/[slug].tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Need to confirm exact white tone. Check if category TabBar uses different background than main Header (#FBFBFB)."
+        },
+        {
+          "id": "CATALOGO-002",
+          "description": "Evitar que seleccionar una Sub-categoría modifique el título de la categoría principal en el Header",
+          "component": "app/catalog/[slug].tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "getDisplayTitle() currently combines category + model name. Change to return only the main category name, ignoring selected subcategory/model for header title purposes."
+        },
+        {
+          "id": "CATALOGO-003",
+          "description": "Quitar categoría 'Destacados - Homes'",
+          "component": "app/_data/categories.ts",
+          "needsMoreContext": true,
+          "needsFigma": false,
+          "status": "blocked",
+          "notes": "Need confirmation: Is this 'Destacados - Homes' or 'Destacados - Home'? Check mainCategories array for exact string to remove."
+        }
+      ]
+    },
+    "LOCALES": {
+      "description": "Store locations section",
+      "tasks": [
+        {
+          "id": "LOCALES-001",
+          "description": "Cuando se selecciona 'Montevideo', modificar los márgenes de los botones de selección de local",
+          "component": "app/locations/[cityId]/index.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Uses SelectionListScreen component. Need exact margin values from Figma."
+        },
+        {
+          "id": "LOCALES-002",
+          "description": "Cuando se selecciona 'Punta del Este' falta el botón 'Atrás' que aparece en la screen 'Montevideo'",
+          "component": "app/locations/[cityId]/index.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Punta del Este has only 1 store, so it may skip zone selection and go directly to store detail (which uses close button). Ensure consistent navigation: either always show back button on SelectionListScreen or add back button to store detail screen when accessed this way."
+        },
+        {
+          "id": "LOCALES-003",
+          "description": "Cuando se selecciona 'Centro' o 'Plaza Italia' también falta el botón 'Atrás'",
+          "component": "app/locations/[cityId]/[zoneId].tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Store detail screen [zoneId].tsx likely uses X/close button. Add back button (chevron-back + 'Volver') consistent with Header component pattern. May need to check if screen is presented as modal vs pushed."
+        },
+        {
+          "id": "LOCALES-004",
+          "description": "Modificar el título de la screen xq aparece muy grande, incluso si se agrega el botón 'Atrás' puede quitarse e incrementar el tamaño de la imagen",
+          "component": "app/locations/[cityId]/[zoneId].tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Design decision needed: Remove title completely, add back button, enlarge image. Need Figma for exact new image dimensions and layout."
+        },
+        {
+          "id": "LOCALES-005",
+          "description": "Revisar la distancia entre los textos debajo de la imágen para otorgar mayor jerarquía visual (líneas de horarios sin separación y el resto de las líneas de texto separadas 4px); si se quita el Header, agregar nombre del local debajo de la imagen. Entre texto e imagen la distancia es 8px",
+          "component": "app/locations/[cityId]/[zoneId].tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Create visual hierarchy: 1) 8px gap between image and text content, 2) Group hours lines together with 0 gap (wrap in View with no gap), 3) 4px gap between other text lines. If header removed per LOCALES-004, add store name as first text element below image."
+        }
+      ]
+    },
+    "FAVORITOS": {
+      "description": "Favorites screen",
+      "tasks": [
+        {
+          "id": "FAVORITOS-001",
+          "description": "Header mismo tono de blanco (barra dónde está alojado el título 'Favoritos')",
+          "component": "app/(tabs)/_layout.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Check if tab navigator header uses different background than #FBFBFB. Unify across app."
+        },
+        {
+          "id": "FAVORITOS-002",
+          "description": "Diferenciar/separar dos escenarios: A) Aún sin productos (motivar ir a Tienda), B) Aún no inició sesión (motivar iniciar sesión). Mantener una acción principal por página",
+          "component": "app/(tabs)/favorites.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "UX best practice: one primary CTA per screen. Current shows EmptyFavorites + AuthPrompt together. Change logic to: IF not logged in AND no local favorites -> show ONLY AuthPrompt ('Inicia sesión para ver tus favoritos'). IF logged in AND no favorites -> show ONLY EmptyFavorites ('Ir a Tienda'). IF has local favorites but not logged in -> show favorites + subtle auth prompt below."
+        },
+        {
+          "id": "FAVORITOS-003",
+          "description": "Revisar márgenes de los párrafos del texto informativo (16px a ambos lados). Distancia entre txt y button 16px",
+          "component": "app/_components/store/favorites/EmptyFavorites.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Current: messageContainer paddingHorizontal: spacing.lg (16px) - CORRECT. marginBottom: spacing.xl (24px) between text and button. Change marginBottom to spacing.lg (16px) for 16px gap between text and button."
+        }
+      ]
+    },
+    "CARRITO": {
+      "description": "Shopping cart screen",
+      "tasks": [
+        {
+          "id": "CARRITO-001",
+          "description": "Header mismo tono de blanco (barra dónde está alojado el título 'Carrito')",
+          "component": "app/(tabs)/_layout.tsx",
+          "needsMoreContext": true,
+          "needsFigma": true,
+          "status": "blocked",
+          "notes": "Same as FAVORITOS-001 - check tab navigator header background consistency"
+        },
+        {
+          "id": "CARRITO-002",
+          "description": "Diferenciar/separar dos escenarios: A) Carrito vacío (motivar ir a Tienda), B) No ha iniciado sesión (motivar iniciar sesión). Si el User agrega productos sin sesión, forzar inicio de sesión al tap 'Comprar ahora'",
+          "component": "app/(tabs)/cart.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "ready",
+          "implementation": "Same pattern as FAVORITOS-002: IF not logged in AND cart empty -> show ONLY AuthPrompt. IF logged in AND cart empty -> show ONLY EmptyCart. IF cart has items AND not logged in -> show cart items, on 'Comprar ahora' tap redirect to login with returnUrl to checkout. Guest checkout flow may already handle this - verify current behavior."
+        }
+      ]
+    },
+    "PERFIL": {
+      "description": "User profile screen",
+      "tasks": [
+        {
+          "id": "PERFIL-001",
+          "description": "Implementar nuevo diseño de perfil según Figma",
+          "component": "app/(tabs)/profile.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "figmaLink": "https://www.figma.com/design/kTSgctXNkWlhVGgBPaqhMd/tiffosi-app?node-id=2979-6985",
+          "decision": "Implement left option from Figma (designer's preferred design)",
+          "implementation": "Redesign profile screen following Figma specs at node-id=2979-6985. This is the left option which differs from current implementation.",
+          "completedAt": "2026-01-06",
+          "notes": "Also updated auth screens (login, signup, forgot-password) for design consistency with new Profile layout"
+        }
+      ]
+    },
+    "EXPLORAR": {
+      "description": "Explore screen",
+      "tasks": []
+    }
+  },
+  "summary": {
+    "totalTasks": 47,
+    "readyToImplement": 24,
+    "blockedNeedsFigma": 14,
+    "blockedNeedsDecision": 1,
+    "priorityOrder": [
+      "HOME - 2 simple tasks",
+      "TIENDA - 10 ready (cards, button colors, spacing)",
+      "PRODUCT - 4 ready (bugs and logic fixes)",
+      "FAVORITOS/CARRITO - 4 ready (empty states, margins)",
+      "CATALOGO - 1 ready (title fix)",
+      "LOCALES - 3 ready (back buttons, text hierarchy)",
+      "PERFIL - 1 ready (new design from Figma)",
+      "Blocked tasks - await Figma specs or design decisions"
+    ],
+    "implementationNotes": {
+      "spacingTokens": "xs: 4px, sm: 8px, md: 12px, lg: 16px, xl: 24px, xxl: 32px",
+      "headerBackground": "#FBFBFB",
+      "underlineWorkaround": "React Native textDecorationLine has no offset. Use borderBottom + paddingBottom instead."
+    }
+  }
+}

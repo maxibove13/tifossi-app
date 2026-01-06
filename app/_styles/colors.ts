@@ -1,7 +1,9 @@
 export const colors = {
   primary: '#0C0C0C',
   secondary: '#707070',
+  tertiary: '#5C5C5C',
   border: '#DCDCDC',
+  divider: '#CAC4D0',
   error: '#AD3026',
   errorBackground: '#FFEBEE',
   errorBorder: '#FFCDD2',
@@ -10,6 +12,8 @@ export const colors = {
   text: {
     primary: '#0C0C0C',
     secondary: '#707070',
+    tertiary: '#5C5C5C',
+    lightGray: '#E1E1E1',
   },
   button: {
     pressed: '#424242',
@@ -24,6 +28,7 @@ export const colors = {
     light: '#FFFFFF',
     dark: '#0C0C0C',
     medium: '#F5F5F5',
+    antiflash: '#FAFAFA',
     offWhite: '#FBFBFB',
     offWhite25: 'rgba(251, 251, 251, 0.25)',
   },

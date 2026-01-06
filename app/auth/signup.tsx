@@ -4,22 +4,26 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
   Platform,
+  Image,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, radius, components } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
-// Apple components removed - using custom button for consistency
 import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
 import { APPLE_AUTH_ERRORS_ES } from '../_types/auth';
 import { UnknownError } from '../_types/ui';
+
+const GoogleLogo = require('../../assets/icons/google-logo.png');
+const AppleLogo = require('../../assets/icons/apple-logo.png');
 
 // Helper function to extract error message from unknown error types
 function getErrorMessage(error: UnknownError): string {
@@ -31,6 +35,7 @@ function getErrorMessage(error: UnknownError): string {
 }
 
 export default function SignupScreen() {
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,8 +43,6 @@ export default function SignupScreen() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Apple Sign-In specific state
   const [appleError, setAppleError] = useState<string | null>(null);
 
   const register = useAuthStore((state) => state.register);
@@ -212,220 +215,215 @@ export default function SignupScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.mainContainer}>
-        {/* Custom Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Crear Cuenta</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-          </TouchableOpacity>
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Crear Cuenta</Text>
+        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
+          <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Form Inputs */}
+        <View style={styles.inputsContainer}>
+          <Input
+            placeholder="Nombre Completo"
+            value={name}
+            onChangeText={(text) => {
+              setName(text);
+              if (error) setError(null);
+            }}
+            error={error && error.includes('nombre') ? error : undefined}
+          />
+          <Input
+            placeholder="Correo Electrónico"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (error) setError(null);
+            }}
+            error={error && error.includes('correo') ? error : undefined}
+          />
+          <Input
+            placeholder="Contraseña"
+            secureTextEntry
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (error) setError(null);
+            }}
+            error={
+              error && error.includes('contraseña') && !error.includes('coinciden')
+                ? error
+                : undefined
+            }
+          />
+          <Input
+            placeholder="Confirmar Contraseña"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              if (error) setError(null);
+            }}
+            error={error && error.includes('contraseñas no coinciden') ? error : undefined}
+          />
         </View>
 
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.formContainer}>
-            {/* General error message - shown once at top, not under each input */}
-            {error && error.includes('Por favor, completa') && (
-              <Text style={styles.errorText}>{error}</Text>
-            )}
-
-            <Input
-              placeholder="Nombre Completo"
-              value={name}
-              onChangeText={(text) => {
-                setName(text);
-                if (error) setError(null);
-              }}
-              error={error && error.includes('nombre') ? error : undefined}
-              containerStyle={styles.inputSpacing}
-            />
-            <Input
-              placeholder="Correo Electrónico"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                if (error) setError(null);
-              }}
-              error={error && error.includes('correo') ? error : undefined}
-              containerStyle={styles.inputSpacing}
-            />
-            <Input
-              placeholder="Contraseña"
-              secureTextEntry
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                if (error) setError(null);
-              }}
-              error={
-                error && error.includes('contraseña') && !error.includes('coinciden')
-                  ? error
-                  : undefined
-              }
-              containerStyle={styles.inputSpacing}
-            />
-            <Input
-              placeholder="Confirmar Contraseña"
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={(text) => {
-                setConfirmPassword(text);
-                if (error) setError(null);
-              }}
-              error={error && error.includes('contraseñas no coinciden') ? error : undefined}
-              containerStyle={styles.inputSpacing}
-            />
-
-            {/* Terms and Conditions Checkbox */}
-            <View style={styles.termsContainer}>
-              <TouchableOpacity
-                style={styles.checkboxContainer}
-                onPress={() => setAcceptedTerms(!acceptedTerms)}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.checkbox, acceptedTerms ? styles.checkboxChecked : {}]}>
-                  {acceptedTerms && (
-                    <Feather name="check" size={14} color={colors.background.light} />
-                  )}
-                </View>
-              </TouchableOpacity>
-              <Text style={styles.termsText}>
-                He leído y acepto los{' '}
-                <Text style={styles.termsLink} onPress={() => router.push('/legal/terms')}>
-                  Términos y Condiciones
-                </Text>{' '}
-                y la{' '}
-                <Text style={styles.termsLink} onPress={() => router.push('/legal/privacy')}>
-                  Política de Privacidad
-                </Text>
-              </Text>
+        {/* Terms and Conditions Checkbox */}
+        <View style={styles.termsContainer}>
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setAcceptedTerms(!acceptedTerms)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.checkbox, acceptedTerms ? styles.checkboxChecked : {}]}>
+              {acceptedTerms && <Feather name="check" size={14} color={colors.background.light} />}
             </View>
+          </TouchableOpacity>
+          <Text style={styles.termsText}>
+            He leído y acepto los{' '}
+            <Text style={styles.termsLink} onPress={() => router.push('/legal/terms')}>
+              Términos y Condiciones
+            </Text>{' '}
+            y la{' '}
+            <Text style={styles.termsLink} onPress={() => router.push('/legal/privacy')}>
+              Política de Privacidad
+            </Text>
+          </Text>
+        </View>
 
-            {error &&
-            !error.includes('nombre') &&
-            !error.includes('correo') &&
-            !error.includes('contraseña') &&
-            !error.includes('coinciden') &&
-            !error.includes('Por favor, completa') &&
-            !error.includes('términos') ? (
-              <Text style={styles.errorText}>{error}</Text>
-            ) : null}
+        {/* General error message */}
+        {((error &&
+          !error.includes('nombre') &&
+          !error.includes('correo') &&
+          !error.includes('contraseña') &&
+          !error.includes('coinciden')) ||
+          appleError) && <Text style={styles.errorText}>{error || appleError}</Text>}
 
-            {error && error.includes('términos') ? (
-              <Text style={styles.errorText}>{error}</Text>
-            ) : null}
-
-            {appleError && <Text style={styles.errorText}>{appleError}</Text>}
-          </View>
-        </ScrollView>
-      </View>
-      <View style={styles.actionButtonsContainer}>
-        {/* Primary action: Email/Password signup */}
+        {/* Primary Button */}
         <TouchableOpacity
-          style={[styles.primaryButton, (isSubmitting || isLoading) && styles.disabledButton]}
           onPress={handleSignup}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
           disabled={isSubmitting || isLoading}
+          style={styles.primaryButtonWrapper}
         >
-          {isSubmitting || isLoading ? (
-            <ActivityIndicator size="small" color={colors.background.light} />
-          ) : (
-            <Text style={styles.primaryButtonText}>Crear Cuenta</Text>
-          )}
+          <LinearGradient
+            colors={
+              isSubmitting || isLoading
+                ? colors.button.disabledGradient
+                : colors.button.defaultGradient
+            }
+            style={styles.primaryButton}
+          >
+            {isSubmitting || isLoading ? (
+              <ActivityIndicator size="small" color={colors.background.offWhite} />
+            ) : (
+              <Text style={styles.primaryButtonText}>Crear Cuenta</Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
         {/* Divider */}
         <View style={styles.dividerContainer}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>o</Text>
-          <View style={styles.dividerLine} />
+          <View style={styles.divider} />
         </View>
 
-        {/* Social signups grouped together */}
-        {Platform.OS === 'ios' && (
+        {/* Social Login Buttons */}
+        <View style={styles.socialButtonsContainer}>
           <TouchableOpacity
             style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
-            onPress={handleAppleSignUp}
+            onPress={handleGoogleSignUp}
             activeOpacity={0.7}
             disabled={isSubmitting || isLoading}
           >
-            <Text style={styles.socialButtonText}>Continuar con Apple</Text>
+            <Text style={styles.socialButtonText}>Continuar con Google</Text>
+            <Image source={GoogleLogo} style={{ width: 20, height: 20 }} />
           </TouchableOpacity>
-        )}
-        <TouchableOpacity
-          style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
-          onPress={handleGoogleSignUp}
-          activeOpacity={0.7}
-          disabled={isSubmitting || isLoading}
-        >
-          <Text style={styles.socialButtonText}>Continuar con Google</Text>
-        </TouchableOpacity>
 
-        {/* Secondary link */}
-        <View style={styles.linksContainer}>
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              style={[styles.socialButton, (isSubmitting || isLoading) && styles.disabledButton]}
+              onPress={handleAppleSignUp}
+              activeOpacity={0.7}
+              disabled={isSubmitting || isLoading}
+            >
+              <Text style={styles.socialButtonText}>Continuar con Apple</Text>
+              <Image source={AppleLogo} style={{ width: 15, height: 20 }} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Login Link */}
+        <View style={styles.loginSection}>
+          <Text style={styles.loginPromptText}>¿Ya tienes cuenta?</Text>
           <TouchableOpacity
             onPress={() => router.push('/auth/login')}
             activeOpacity={0.7}
             disabled={isSubmitting || isLoading}
           >
-            <Text style={styles.linkText}>¿Ya tienes cuenta? Inicia Sesión</Text>
+            <Text style={styles.loginLinkText}>Inicia Sesión</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </SafeAreaView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeAreaContainer: {
+  container: {
     flex: 1,
-    backgroundColor: colors.background.light,
-    justifyContent: 'space-between',
-  },
-  mainContainer: {
-    flex: 1,
-    paddingTop: spacing.xl,
+    backgroundColor: colors.background.antiflash,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
+    paddingTop: spacing.xxxl + spacing.xl,
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.background.offWhite,
+    borderBottomWidth: 0.4,
+    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
+    fontSize: fontSizes.xxxl,
     fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
+    lineHeight: lineHeights.xxxl,
     color: colors.primary,
   },
   closeButton: {
     padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   scrollView: {
     flex: 1,
   },
-  formContainer: {
+  scrollContent: {
     paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xxxxl,
+    paddingBottom: spacing.xxl,
     gap: spacing.lg,
   },
-  inputSpacing: {
-    // marginBottom: spacing.sm, // Handled by gap in formContainer
+  inputsContainer: {
+    gap: spacing.sm,
   },
-  // Terms and Conditions styles
   termsContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginTop: spacing.sm,
   },
   checkboxContainer: {
     marginRight: spacing.sm,
-    marginTop: 2, // Align with first line of text
+    marginTop: 2,
   },
   checkbox: {
     width: 20,
@@ -456,76 +454,72 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.sm,
     fontFamily: fonts.secondary,
     textAlign: 'center',
-    marginBottom: spacing.md,
   },
-  actionButtonsContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.md,
+  primaryButtonWrapper: {
+    width: '100%',
   },
   primaryButton: {
-    width: '100%',
-    height: 48,
+    height: components.button.height,
     borderRadius: radius.xxl,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.dark,
     paddingHorizontal: spacing.xl,
-  },
-  disabledButton: {
-    opacity: 0.7,
-    backgroundColor: colors.background.medium,
   },
   primaryButtonText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
-    color: colors.background.light,
+    lineHeight: lineHeights.lg,
+    color: colors.background.offWhite,
   },
   dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
-  dividerLine: {
-    flex: 1,
+  divider: {
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: colors.divider,
   },
-  dividerText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.sm,
-    color: colors.secondary,
-    paddingHorizontal: spacing.md,
+  socialButtonsContainer: {
+    gap: spacing.sm,
   },
   socialButton: {
-    width: '100%',
-    height: 48,
-    borderRadius: radius.xxl,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.light,
+    height: components.button.height,
+    borderRadius: radius.xxl,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: spacing.xl,
+    gap: spacing.xs,
   },
   socialButtonText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
+    lineHeight: lineHeights.lg,
     color: colors.primary,
   },
-  linksContainer: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.md,
+  disabledButton: {
+    opacity: 0.7,
   },
-  linkText: {
+  loginSection: {
+    alignItems: 'center',
+  },
+  loginPromptText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
-    color: colors.secondary,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.sm,
+    color: colors.tertiary,
+  },
+  loginLinkText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.sm,
+    color: colors.tertiary,
     textDecorationLine: 'underline',
+    paddingVertical: spacing.sm,
   },
 });
