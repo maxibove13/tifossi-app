@@ -418,11 +418,20 @@ class FirebaseAuthService {
         fullError: JSON.stringify(error, Object.getOwnPropertyNames(error)),
       });
 
-      // Handle Apple Sign-In cancellation
-      if (error.code === 'ERR_CANCELLED' || error.code === 'ERR_REQUEST_CANCELED') {
+      // Handle Apple Sign-In cancellation (multiple possible codes/messages)
+      const errorCode = error?.code || '';
+      const errorMessage = error?.message || '';
+      const isCancelled =
+        errorCode === 'ERR_CANCELLED' ||
+        errorCode === 'ERR_CANCELED' ||
+        errorCode === 'ERR_REQUEST_CANCELED' ||
+        errorMessage.toLowerCase().includes('cancel') ||
+        errorMessage.toLowerCase().includes('unknown reason');
+
+      if (isCancelled) {
         return {
           success: false,
-          error: 'Apple Sign-In fue cancelado por el usuario',
+          error: 'cancelled', // Normalized cancel indicator
         };
       }
 

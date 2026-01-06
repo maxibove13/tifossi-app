@@ -406,27 +406,29 @@ For easier development and testing, the auth system includes:
 - Development-only toggle button in Profile screen
 - Mock user for testing authenticated state
 
-## Apple Sign-In Error Codes
+## Apple Sign-In Error Handling
 
-The system includes comprehensive Spanish error messages for Apple Sign-In:
+### Cancellation Handling
 
-```typescript
-export const APPLE_AUTH_ERRORS_ES = {
-  ERROR_CANCELED: 'Inicio de sesión cancelado',
-  ERROR_NOT_AVAILABLE: 'Apple Sign-In no está disponible en este dispositivo',
-  ERROR_INVALID_RESPONSE: 'Respuesta inválida de Apple',
-  ERROR_UNKNOWN: 'Error desconocido con Apple Sign-In',
-  ERROR_NETWORK: 'Error de conexión. Verifica tu conexión a internet',
-  ERROR_USER_NOT_FOUND: 'Usuario no encontrado',
-  ERROR_INVALID_CREDENTIALS: 'Credenciales inválidas',
-  ERROR_ACCOUNT_DISABLED: 'La cuenta está deshabilitada',
-  ERROR_TOO_MANY_REQUESTS: 'Demasiados intentos. Intenta más tarde',
-  ERROR_AUTHORIZATION_FAILED: 'La autorización con Apple falló',
-  ERROR_EMAIL_ALREADY_IN_USE: 'Este email ya está en uso con otra cuenta',
-};
-```
+When users cancel Apple Sign-In (dismiss the popup), the app handles it silently:
+- No error message is shown to the user
+- The app returns to idle state
+- This matches the behavior of Google Sign-In cancellation
 
-These error messages are automatically displayed to users when Apple Sign-In encounters issues, providing clear feedback in Spanish for the target audience.
+Cancellation is detected via multiple patterns:
+- Error codes: `ERR_CANCELLED`, `ERR_CANCELED`, `ERR_REQUEST_CANCELED`
+- Error messages containing "cancel" or "unknown reason" (case-insensitive)
+
+### Error Messages (Spanish)
+
+For actual errors (not cancellations), the system shows Spanish error messages:
+
+| Error Type | Message |
+|------------|---------|
+| Not available | Apple Sign-In no está disponible en este dispositivo |
+| Network error | Error de conexión. Verifica tu conexión a internet |
+| Invalid response | Respuesta inválida de Apple |
+| Generic failure | Inicio de sesión con Apple falló. Por favor intenta de nuevo. |
 
 ## Testing Authentication
 
