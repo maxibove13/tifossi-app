@@ -25,6 +25,7 @@ export const colors = {
   primary: '#0C0C0C',
   secondary: '#707070',
   tertiary: '#5C5C5C',          // Tertiary brand color
+  gray800: '#575757',           // GRAY/800 - address text, subtitles
   border: '#DCDCDC',
   divider: '#CAC4D0',           // Divider lines
   error: '#AD3026',

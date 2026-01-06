@@ -1,20 +1,14 @@
 import React, { useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
-import { Stack, useLocalSearchParams, router } from 'expo-router';
-import CloseIcon from '../../../assets/icons/close.svg';
+import { Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
+
 import { colors } from '../../_styles/colors';
-import { spacing, radius } from '../../_styles/spacing';
-import { fontWeights, fonts, fontSizes, lineHeights } from '../../_styles/typography';
+import { fontSizes } from '../../_styles/typography';
+import { spacing } from '../../_styles/spacing';
+
 import { StoreDetails } from '../../_types';
 import { storesData } from '../../_data/stores';
+import StoreDetailView from '../../_components/common/StoreDetailView';
 
 export default function LocationStoreInfoScreen() {
   const { cityId, zoneId } = useLocalSearchParams<{ cityId: string; zoneId: string }>();
@@ -25,114 +19,41 @@ export default function LocationStoreInfoScreen() {
   }, [cityId, zoneId]);
 
   const handleClose = () => {
+    router.navigate('/(tabs)');
+  };
+
+  const handleBack = () => {
     router.back();
   };
 
   if (!store) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.errorContainer}>
         <Text style={styles.errorText}>Tienda no encontrada.</Text>
-        <TouchableOpacity onPress={handleClose}>
+        <TouchableOpacity onPress={handleBack}>
           <Text>Volver</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.header}>
-        <Text style={styles.title}>{store.name}</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-          <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-        </TouchableOpacity>
-      </View>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContentContainer}>
-        <View style={styles.storeDetailsContainer}>
-          <Image source={store.image} style={styles.storeImage} resizeMode="cover" />
-          <View style={styles.storeTextContainer}>
-            <View style={styles.storeInfoRow}>
-              <Text style={styles.storeAddress}>{store.address}</Text>
-            </View>
-            <View style={styles.storeInfoRow}>
-              <Text style={styles.storeHours}>{store.hours}</Text>
-            </View>
-          </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
+  return <StoreDetailView store={store} onClose={handleClose} onBack={handleBack} />;
 }
 
 const styles = StyleSheet.create({
-  container: {
+  errorContainer: {
     flex: 1,
-    backgroundColor: colors.background.light,
+    backgroundColor: colors.background.antiflash,
     paddingTop: 54,
     paddingBottom: 34,
-  },
-  scrollView: {
-    flex: 1,
-    marginBottom: 40,
-    paddingHorizontal: spacing.lg,
-  },
-  scrollContentContainer: {
-    flexGrow: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 8,
-    marginBottom: 40,
     paddingHorizontal: spacing.lg,
-  },
-  title: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl * 1.4,
-    color: colors.primary,
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
-  },
-  storeDetailsContainer: {
-    backgroundColor: colors.background.light,
-    borderRadius: radius.xs,
-    overflow: 'hidden',
-    flex: 1,
-  },
-  storeImage: {
-    width: '100%',
-    height: 394,
-  },
-  storeTextContainer: {
-    paddingHorizontal: spacing.sm,
-    paddingBottom: spacing.sm,
-    gap: spacing.xs,
-  },
-  storeInfoRow: {},
-  storeAddress: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.sm,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.sm * 1.43,
-    color: colors.secondary,
-  },
-  storeHours: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.sm,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.sm * 1.43,
-    color: colors.secondary,
   },
   errorText: {
     color: colors.error,
     fontSize: fontSizes.md,
     textAlign: 'center',
-    marginTop: spacing.xl,
+    marginBottom: spacing.lg,
   },
 });

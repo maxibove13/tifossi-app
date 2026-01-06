@@ -266,6 +266,7 @@ _components/
 ├── common/             # Shared utility components
 │   ├── ErrorBoundary.tsx   # Error handler
 │   ├── ScreenHeader.tsx    # Screen header
+│   ├── StoreDetailView.tsx # Store details display (checkout & locations)
 │   ├── Subheader.tsx       # Subheader component
 │   ├── VideoBackground.tsx # Video background
 │   ├── animation/          # Animation components

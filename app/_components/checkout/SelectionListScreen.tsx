@@ -69,7 +69,7 @@ export default function SelectionListScreen({
                   activeOpacity={0.7}
                 >
                   <Text style={styles.itemText}>{item.name}</Text>
-                  <ChevronRightBlackIcon width={11} height={19} />
+                  <ChevronRightBlackIcon width={16} height={16} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -106,7 +106,7 @@ type Styles = {
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: colors.background.light,
+    backgroundColor: colors.background.antiflash,
     paddingTop: 54,
     paddingBottom: 34,
   },
@@ -125,8 +125,8 @@ const styles = StyleSheet.create<Styles>({
     fontFamily: fonts.primary,
     fontSize: fontSizes.xl,
     fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl * 1.4,
-    color: colors.primary,
+    lineHeight: lineHeights.xl,
+    color: colors.secondary,
   },
   closeButton: {
     padding: spacing.sm,
@@ -134,6 +134,7 @@ const styles = StyleSheet.create<Styles>({
   },
   content: {
     flex: 1,
+    paddingHorizontal: spacing.sm,
     paddingBottom: spacing.xxl,
   },
   itemsContainer: {
@@ -141,28 +142,27 @@ const styles = StyleSheet.create<Styles>({
   },
   sectionTitle: {
     fontFamily: fonts.primary,
-    fontSize: fontSizes.sm,
+    fontSize: fontSizes.md,
     fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.md * 1.57,
+    lineHeight: 22,
     color: colors.secondary,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.sm,
   },
   itemList: {},
   itemRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: spacing.lg,
+    height: 56,
     paddingHorizontal: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   itemText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.md * 1.5,
-    paddingHorizontal: spacing.lg,
+    lineHeight: lineHeights.lg,
     color: colors.primary,
     flex: 1,
   },
@@ -185,9 +185,9 @@ const styles = StyleSheet.create<Styles>({
   },
   secondaryButtonText: {
     fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md * 1.5,
+    lineHeight: lineHeights.lg,
     color: colors.primary,
   },
 });

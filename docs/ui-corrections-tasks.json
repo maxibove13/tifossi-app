@@ -303,20 +303,22 @@
         {
           "id": "LOCALES-001",
           "description": "Cuando se selecciona 'Montevideo', modificar los márgenes de los botones de selección de local",
-          "component": "app/locations/[cityId]/index.tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Uses SelectionListScreen component. Need exact margin values from Figma."
+          "component": "app/_components/checkout/SelectionListScreen.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Updated SelectionListScreen styles: item row height 56px, padding 16px, text fontSize 16px, chevron 16x16, background antiflash."
         },
         {
           "id": "LOCALES-002",
           "description": "Cuando se selecciona 'Punta del Este' falta el botón 'Atrás' que aparece en la screen 'Montevideo'",
-          "component": "app/locations/[cityId]/index.tsx",
+          "component": "app/checkout/store-selection.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Punta del Este has only 1 store, so it may skip zone selection and go directly to store detail (which uses close button). Ensure consistent navigation: either always show back button on SelectionListScreen or add back button to store detail screen when accessed this way."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Created shared StoreDetailView component with onBack prop. Both checkout and locations flows now use this component with back button."
         },
         {
           "id": "LOCALES-003",
@@ -324,26 +326,29 @@
           "component": "app/locations/[cityId]/[zoneId].tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Store detail screen [zoneId].tsx likely uses X/close button. Add back button (chevron-back + 'Volver') consistent with Header component pattern. May need to check if screen is presented as modal vs pushed."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Refactored to use shared StoreDetailView component with onBack={handleBack}. Back button now shows consistently."
         },
         {
           "id": "LOCALES-004",
           "description": "Modificar el título de la screen xq aparece muy grande, incluso si se agrega el botón 'Atrás' puede quitarse e incrementar el tamaño de la imagen",
-          "component": "app/locations/[cityId]/[zoneId].tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Design decision needed: Remove title completely, add back button, enlarge image. Need Figma for exact new image dimensions and layout."
+          "component": "app/_components/common/StoreDetailView.tsx",
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Title styled per Figma: Roboto 400 20px/28px, color secondary (#707070). Header kept with correct sizing."
         },
         {
           "id": "LOCALES-005",
           "description": "Revisar la distancia entre los textos debajo de la imágen para otorgar mayor jerarquía visual (líneas de horarios sin separación y el resto de las líneas de texto separadas 4px); si se quita el Header, agregar nombre del local debajo de la imagen. Entre texto e imagen la distancia es 8px",
-          "component": "app/locations/[cityId]/[zoneId].tsx",
+          "component": "app/_components/common/StoreDetailView.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Create visual hierarchy: 1) 8px gap between image and text content, 2) Group hours lines together with 0 gap (wrap in View with no gap), 3) 4px gap between other text lines. If header removed per LOCALES-004, add store name as first text element below image."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "StoreDetailView text hierarchy: 8px image-to-text gap (paddingTop), 4px between text lines (gap), hours as single Text element (0px between lines via lineHeight). Store name shown below image."
         }
       ]
     },
