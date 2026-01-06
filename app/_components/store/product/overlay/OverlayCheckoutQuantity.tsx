@@ -12,6 +12,7 @@ import {
   Animated,
   TouchableWithoutFeedback,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 // SVG components for quantity control
 // @ts-ignore - Import SVG components
 import MinusIcon from '../../../../../assets/icons/quantity/minus.svg';
@@ -29,7 +30,7 @@ const { height } = Dimensions.get('window');
 // Constants
 const MAX_QUANTITY = 16;
 const MIN_QUANTITY = 1;
-const ITEM_HEIGHT = 44; // Height of each number item in the wheel
+const ITEM_HEIGHT = 48; // Height of each number item in the wheel
 
 interface OverlayCheckoutQuantityProps {
   isVisible: boolean;
@@ -199,8 +200,14 @@ export default function OverlayCheckoutQuantity({
             </TouchableOpacity>
 
             {/* Save button */}
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave} activeOpacity={0.7}>
-              <Text style={styles.saveButtonText}>Guardar</Text>
+            <TouchableOpacity
+              onPress={handleSave}
+              activeOpacity={0.7}
+              style={styles.saveButtonWrapper}
+            >
+              <LinearGradient colors={['#373737', '#0C0C0C']} style={styles.saveButton}>
+                <Text style={styles.saveButtonText}>Guardar</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -229,6 +236,7 @@ type Styles = {
   actionButtons: ViewStyle;
   backButton: ViewStyle;
   backButtonText: TextStyle;
+  saveButtonWrapper: ViewStyle;
   saveButton: ViewStyle;
   saveButtonText: TextStyle;
 };
@@ -243,21 +251,22 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   container: {
-    backgroundColor: colors.background.light,
+    backgroundColor: colors.background.antiflash,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
-    padding: spacing.xxl,
-    paddingBottom: spacing.xxl + 2,
+    paddingTop: spacing.xxl,
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: 34,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: -4,
+      height: -16,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     elevation: 10,
     width: '100%',
-    gap: spacing.xxl + spacing.md,
+    gap: 40,
   },
   header: {
     flexDirection: 'row',
@@ -267,10 +276,10 @@ const styles = StyleSheet.create<Styles>({
   },
   title: {
     fontFamily: 'Roboto',
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.lg,
     fontWeight: '400',
-    lineHeight: lineHeights.md,
-    color: '#575757',
+    lineHeight: lineHeights.lg,
+    color: colors.secondary,
   },
   counterContainer: {
     width: '100%',
@@ -281,13 +290,11 @@ const styles = StyleSheet.create<Styles>({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.md,
+    gap: spacing.lg,
   },
   counterButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 0,
-    borderWidth: 0,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
@@ -300,10 +307,9 @@ const styles = StyleSheet.create<Styles>({
   },
   quantityDisplay: {
     width: 48,
-    height: ITEM_HEIGHT,
-    borderRadius: 0,
+    height: 48,
     borderWidth: 1,
-    borderColor: '#DCDCDC',
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(199, 199, 199, 0.1)',
@@ -343,40 +349,39 @@ const styles = StyleSheet.create<Styles>({
   },
   actionButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     gap: spacing.sm,
   },
   backButton: {
     flex: 1,
+    height: 44,
     borderWidth: 1,
-    borderColor: '#DCDCDC',
-    borderRadius: 22,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    borderColor: colors.border,
+    borderRadius: radius.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
   backButtonText: {
     fontFamily: 'Inter',
-    fontSize: 14,
+    fontSize: fontSizes.md,
     fontWeight: '500',
-    lineHeight: 20,
+    lineHeight: lineHeights.md,
     color: '#424242',
+  },
+  saveButtonWrapper: {
+    flex: 1,
+    height: 44,
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#0C0C0C',
-    borderRadius: 22,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    borderRadius: radius.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
   saveButtonText: {
     fontFamily: 'Inter',
-    fontSize: 14,
+    fontSize: fontSizes.md,
     fontWeight: '500',
-    lineHeight: 20,
-    color: '#FBFBFB',
+    lineHeight: lineHeights.md,
+    color: colors.background.offWhite,
   },
 });
