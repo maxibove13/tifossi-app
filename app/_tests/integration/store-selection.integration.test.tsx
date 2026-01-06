@@ -275,7 +275,7 @@ describe('Store Selection Flow - Integration', () => {
         </TestWrapper>
       );
 
-      const closeButton = getByTestId('store-selection-close-button');
+      const closeButton = getByTestId('store-detail-close-button');
       fireEvent.press(closeButton);
 
       await waitFor(() => {
