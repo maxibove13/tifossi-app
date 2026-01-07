@@ -294,6 +294,7 @@ The `AuthPrompt.tsx` component provides a reusable UI for prompting users to aut
 - Configurable login/signup button text
 - Background image with overlay
 - Customizable styling
+- Login action redirects to the Profile tab (which displays the inline login form for unauthenticated users)
 
 Usage:
 

@@ -109,8 +109,9 @@
           "component": "app/_components/store/product/featured/FeaturedCard.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Replace button gradient with solid backgroundColor: 'rgba(251, 251, 251, 0.25)'. Remove LinearGradient from ButtonGradient component, use simple View with this background color."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Removed LinearGradient from button, replaced with solid rgba(251, 251, 251, 0.25). Updated per Figma: height 32px, padding 8px/24px, borderRadius 16px, font Inter 500 12px/16px #FBFBFB."
         },
         {
           "id": "TIENDA-009",
@@ -118,8 +119,9 @@
           "component": "app/_components/store/product/featured/FeaturedCard.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Change price style from color: colors.secondary to color: '#B1B1B1'"
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Changed price color from colors.secondary (#707070) to #B1B1B1. Updated font to Inter 400 12px/16px. Fixed actionSection padding to 28px and height 32px per Figma."
         },
         {
           "id": "TIENDA-010",
@@ -127,26 +129,29 @@
           "component": "app/(tabs)/index.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Current: launchSection paddingVertical: spacing.xl (24px), gap: spacing.lg (16px). Increase gap to spacing.xl (24px) or spacing.xxl (32px) for more breathing room between header and cards."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Added paddingVertical: 8px to launchHeader. Gap between header and cards remains 16px (spacing.lg)."
         },
         {
           "id": "TIENDA-011",
           "description": "Retirar divider debajo de las cards locales (sección 'Encuentra más en nuestros locales')",
-          "component": "app/_components/store/layout/Locations.tsx",
+          "component": "app/_components/store/layout/Footer.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "No explicit divider in Locations.tsx. Check if divider comes from: 1) Parent container in index.tsx adding border/separator, 2) Footer.tsx borderTopWidth: 0.4 appearing as divider. Remove relevant border/separator style."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Removed borderTopWidth: 0.4 and borderTopColor from Footer.tsx container style."
         },
         {
           "id": "TIENDA-012",
           "description": "Logo Tiffosi debajo de todo no está centrado; verificar si el error es ese logo o el logo central en la barra del menú de navegación",
-          "component": "app/_components/store/layout/Footer.tsx",
+          "component": "app/_components/navigation/TabBar.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Footer logo IS centered (alignItems: 'center' on content and logoWrapper). Issue likely in TabBar.tsx logo. Compare both visually - if TabBar logo is off-center, that creates perception that Footer logo is misaligned. Fix whichever is actually off-center."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Issue was in TabBar centerTab, not Footer. Changed justifyContent from 'center' to 'flex-end' to align the Tiffosi logo to the bottom like other tab icons. Also updated Footer logoWrapper with Figma specs: flexDirection row, alignItems flex-end, 75x50px container, opacity 0.25."
         }
       ]
     },

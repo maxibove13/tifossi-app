@@ -104,7 +104,7 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 - New tag (optional)
 - Product name
 - Price
-- Buy button with gradient background
+- Buy button with translucent background
 - Customizable indicator
 - Large image placement (220px or 160px)
 - Full width container

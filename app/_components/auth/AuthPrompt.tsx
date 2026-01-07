@@ -45,7 +45,7 @@ const ReusableAuthPrompt: React.FC<ReusableAuthPromptProps> = ({
     if (onLoginPress) {
       onLoginPress();
     } else {
-      router.push('/auth/login');
+      router.push('/(tabs)/profile');
     }
   };
 

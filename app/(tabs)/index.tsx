@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    // Remove vertical padding, handled by parent gap
+    paddingVertical: 8,
   },
   launchTitle: {
     fontFamily: fonts.primary,
