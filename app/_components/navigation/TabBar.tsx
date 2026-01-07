@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     height: 50,
     paddingBottom: 2,
     opacity: 0.25,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
   },
   centerTabActive: {

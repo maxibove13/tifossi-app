@@ -28,8 +28,6 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     backgroundColor: colors.background.light,
-    borderTopWidth: 0.4,
-    borderTopColor: colors.border,
     paddingTop: 64,
     paddingBottom: 16,
     gap: spacing.md,
@@ -48,8 +46,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   logoWrapper: {
+    width: 75,
+    height: 50,
+    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    paddingBottom: 2,
+    opacity: 0.25,
   },
   logo: {
     width: 40,

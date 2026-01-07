@@ -536,8 +536,8 @@ describe('Product Detail Flow - Integration', () => {
         fireEvent.press(favoriteButton);
       });
 
-      // Should redirect to login
-      expect(mockPush).toHaveBeenCalledWith('/auth/login');
+      // Should redirect to profile (which shows login form when logged out)
+      expect(mockPush).toHaveBeenCalledWith('/(tabs)/profile');
 
       // Favorites should NOT be updated
       const favoritesState = useFavoritesStore.getState();

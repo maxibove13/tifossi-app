@@ -9,28 +9,6 @@ import { spacing, radius } from '../../../../_styles/spacing';
 import { colors } from '../../../../_styles/colors';
 import { ProductStatus, hasStatus } from '../../../../_types/product-status';
 
-// Helper component for the button gradient to handle state logic
-const ButtonGradient = ({ pressed, disabled }: { pressed: boolean; disabled: boolean }) => {
-  const gradientColors = disabled
-    ? colors.button.disabledGradient
-    : pressed
-      ? (['transparent', 'transparent'] as const) // Transparent when pressed (solid background shows)
-      : colors.button.defaultGradient;
-
-  return (
-    <LinearGradient
-      colors={gradientColors}
-      style={styles.buyButtonGradient}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-    >
-      <Text style={[styles.buyButtonText, disabled && styles.buyButtonTextDisabled]}>
-        {disabled ? 'No disponible' : 'Comprar'}
-      </Text>
-    </LinearGradient>
-  );
-};
-
 export default function FeaturedCard({ product, onBuyPress, size = 'small' }: FeaturedCardProps) {
   const cardData = mapProductToCardData(product);
   const dimensions = getCardDimensions('featured', size);
@@ -82,9 +60,9 @@ export default function FeaturedCard({ product, onBuyPress, size = 'small' }: Fe
           <Text style={styles.price}>{formatPrice(cardData.price)}</Text>
           <Pressable
             style={({ pressed }) => [
-              styles.buyButtonContainer,
+              styles.buyButton,
               isBuyDisabled && styles.buyButtonDisabled,
-              pressed && !isBuyDisabled && { backgroundColor: colors.button.pressed },
+              pressed && !isBuyDisabled && styles.buyButtonPressed,
             ]}
             onPress={(e) => {
               e.stopPropagation();
@@ -92,7 +70,9 @@ export default function FeaturedCard({ product, onBuyPress, size = 'small' }: Fe
             }}
             disabled={isBuyDisabled}
           >
-            {({ pressed }) => <ButtonGradient pressed={pressed} disabled={isBuyDisabled} />}
+            <Text style={[styles.buyButtonText, isBuyDisabled && styles.buyButtonTextDisabled]}>
+              {isBuyDisabled ? 'No disponible' : 'Comprar'}
+            </Text>
           </Pressable>
         </View>
       </View>
@@ -136,11 +116,12 @@ const styles = StyleSheet.create({
     right: 0,
   },
   actionSection: {
-    paddingHorizontal: spacing.xxl,
+    paddingHorizontal: 28,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     alignSelf: 'stretch',
+    height: 32,
   },
   label: {
     color: colors.tag.new,
@@ -168,31 +149,33 @@ const styles = StyleSheet.create({
   },
   price: {
     flex: 1,
-    color: colors.secondary,
-    fontSize: fontSizes.sm,
+    color: '#B1B1B1',
+    fontSize: 12,
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.sm,
+    lineHeight: 16,
   },
-  buyButtonContainer: {
-    borderRadius: radius.xxl,
-    overflow: 'hidden',
-  },
-  buyButtonGradient: {
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
+  buyButton: {
+    height: 32,
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: 'rgba(251, 251, 251, 0.25)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  buyButtonPressed: {
+    backgroundColor: 'rgba(251, 251, 251, 0.35)',
   },
   buyButtonDisabled: {
     opacity: 0.7,
   },
   buyButtonText: {
     color: '#FBFBFB',
-    fontSize: fontSizes.lg,
+    fontSize: 12,
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.lg,
+    lineHeight: 16,
   },
   buyButtonTextDisabled: {
     color: 'rgba(251, 251, 251, 0.7)',
