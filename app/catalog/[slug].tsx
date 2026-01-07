@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import DefaultLargeCard from '../_components/store/product/default/large';
-import CategoryData from '../_data/categories';
-import ModelsData from '../_data/models';
+import { useCategories } from '../../hooks/useCategories';
+import { useProductModels } from '../../hooks/useProductModels';
 import { Category } from '../_types/category';
 import { ProductModel } from '../_types/model';
 import { Product } from '../_types/product';
@@ -124,15 +124,24 @@ export default function CategoryDetailScreen() {
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
+  // Fetch categories and models from API (with local fallbacks)
+  const { mainCategories, isLoading: isLoadingCategories } = useCategories();
+  const { getModelsByCategory } = useProductModels();
+
   // Find category by slug or ID
-  const findCategoryBySlug = (slug: string): Category | undefined => {
-    return CategoryData.mainCategories.find(
-      (cat) => cat.id === slug || cat.name.toLowerCase().replace(/\s+/g, '-') === slug.toLowerCase()
-    );
-  };
+  const findCategoryBySlug = useCallback(
+    (slugParam: string): Category | undefined => {
+      return mainCategories.find(
+        (cat) =>
+          cat.id === slugParam ||
+          cat.name.toLowerCase().replace(/\s+/g, '-') === slugParam.toLowerCase()
+      );
+    },
+    [mainCategories]
+  );
 
   const targetCategory = findCategoryBySlug(slug);
-  const initialCategoryId = targetCategory?.id || CategoryData.mainCategories[0].id;
+  const initialCategoryId = targetCategory?.id || mainCategories[0]?.id || CATEGORY_IDS.ALL;
   const initialModelId = MODEL_IDS.ALL;
 
   const [activeCategoryId, setActiveCategoryId] = useState(initialCategoryId);
@@ -145,20 +154,30 @@ export default function CategoryDetailScreen() {
   const { data: allProducts, isLoading: isLoadingProducts, error: productsError } = useProducts();
   const [appliedFilters, setAppliedFilters] = useState<ProductFilters>({});
 
+  // Update active category when URL slug changes and categories are loaded
+  useEffect(() => {
+    if (!isLoadingCategories && mainCategories.length > 0) {
+      const category = findCategoryBySlug(slug);
+      if (category) {
+        setActiveCategoryId(category.id);
+      }
+    }
+  }, [slug, mainCategories, isLoadingCategories, findCategoryBySlug]);
+
   useEffect(() => {
     // This effect handles category changes: update available models
     setLoading(true);
 
     // Check if the selected category is a regular product category or a label-based category
-    const selectedCategory = CategoryData.mainCategories.find((cat) => cat.id === activeCategoryId);
+    const selectedCategory = mainCategories.find((cat) => cat.id === activeCategoryId);
     const isCategoryLabel = selectedCategory?.isLabel || activeCategoryId === CATEGORY_IDS.ALL;
 
     // Don't show secondary tabs for "Todo" or label-based categories
     if (isCategoryLabel) {
       setAvailableModels([]);
     } else {
-      // Get models for the selected category
-      const modelsForCategory = ModelsData.getModelsByCategory(activeCategoryId);
+      // Get models for the selected category (from API with fallback)
+      const modelsForCategory = getModelsByCategory(activeCategoryId);
       setAvailableModels(modelsForCategory);
     }
 
@@ -167,39 +186,46 @@ export default function CategoryDetailScreen() {
 
     // Reset applied filters when category changes
     setAppliedFilters({});
-  }, [activeCategoryId]);
+  }, [activeCategoryId, mainCategories, getModelsByCategory]);
 
   // Function to filter products by category and model using API data
-  const filterProductsByCategoryAndModel = (
-    products: Product[],
-    categoryId: string,
-    modelId: string
-  ) => {
-    let filteredProducts = products;
+  const filterProductsByCategoryAndModel = useCallback(
+    (products: Product[], categoryId: string, modelId: string) => {
+      let filteredProducts = products;
 
-    // Filter by category
-    if (categoryId !== CATEGORY_IDS.ALL) {
-      // Check if this is a label-based category (status-based)
-      const selectedCategory = CategoryData.mainCategories.find((cat) => cat.id === categoryId);
+      // Filter by category
+      if (categoryId !== CATEGORY_IDS.ALL) {
+        // Check if this is a label-based category (status-based)
+        const selectedCategory = mainCategories.find((cat) => cat.id === categoryId);
 
-      if (selectedCategory?.isLabel) {
-        // Filter by status for label categories
-        filteredProducts = products.filter((product) =>
-          hasStatus(product.statuses, categoryId as any)
-        );
-      } else {
-        // Regular category filtering
-        filteredProducts = products.filter((product) => product.categoryId === categoryId);
+        if (selectedCategory?.isLabel) {
+          // Special case for 'discounted' - filter by discountedPrice, not status
+          if (categoryId === CATEGORY_IDS.DISCOUNTED) {
+            filteredProducts = products.filter(
+              (product) =>
+                product.discountedPrice !== undefined && product.discountedPrice < product.price
+            );
+          } else {
+            // Filter by status for other label categories
+            filteredProducts = products.filter((product) =>
+              hasStatus(product.statuses, categoryId as any)
+            );
+          }
+        } else {
+          // Regular category filtering
+          filteredProducts = products.filter((product) => product.categoryId === categoryId);
+        }
       }
-    }
 
-    // Filter by model
-    if (modelId !== MODEL_IDS.ALL) {
-      filteredProducts = filteredProducts.filter((product) => product.modelId === modelId);
-    }
+      // Filter by model
+      if (modelId !== MODEL_IDS.ALL) {
+        filteredProducts = filteredProducts.filter((product) => product.modelId === modelId);
+      }
 
-    return filteredProducts;
-  };
+      return filteredProducts;
+    },
+    [mainCategories]
+  );
 
   useEffect(() => {
     // This effect processes products based on category/model when API data is available
@@ -221,7 +247,13 @@ export default function CategoryDetailScreen() {
       setCategoryModelProducts([]);
       setLoading(false);
     }
-  }, [allProducts, activeCategoryId, activeModelId, isLoadingProducts]);
+  }, [
+    allProducts,
+    activeCategoryId,
+    activeModelId,
+    isLoadingProducts,
+    filterProductsByCategoryAndModel,
+  ]);
 
   // Apply overlay filters using the custom hook
   const productsToDisplay = useProductFilters(categoryModelProducts, appliedFilters);
@@ -276,7 +308,7 @@ export default function CategoryDetailScreen() {
     setActiveModelId(MODEL_IDS.ALL);
 
     // Navigate to the new category
-    const newCategory = CategoryData.mainCategories.find((cat) => cat.id === categoryId);
+    const newCategory = mainCategories.find((cat) => cat.id === categoryId);
     if (newCategory) {
       const newSlug = newCategory.name.toLowerCase().replace(/\s+/g, '-');
       router.replace(`/catalog/${newSlug}` as any);
@@ -313,16 +345,10 @@ export default function CategoryDetailScreen() {
   // Function to get the display title based on context
   const getDisplayTitle = () => {
     // Get the current category info
-    const selectedCategory = CategoryData.mainCategories.find((c) => c.id === activeCategoryId);
+    const selectedCategory = mainCategories.find((c) => c.id === activeCategoryId);
 
-    // If we have a selected category, use its name
+    // Always show only the main category name, never the subcategory/model
     if (selectedCategory) {
-      if (activeModelId !== MODEL_IDS.ALL) {
-        const modelName = availableModels.find((m) => m.id === activeModelId)?.name;
-        if (modelName) {
-          return `${selectedCategory.name} - ${modelName}`;
-        }
-      }
       return selectedCategory.name;
     }
 
@@ -366,7 +392,7 @@ export default function CategoryDetailScreen() {
       />
 
       <TabBar<Category>
-        items={CategoryData.mainCategories}
+        items={mainCategories}
         activeItemId={activeCategoryId}
         onSelectItem={handleCategoryChange}
       />
@@ -387,7 +413,7 @@ export default function CategoryDetailScreen() {
         style={styles.productsContainer}
         contentContainerStyle={styles.scrollContentContainer}
       >
-        {loading || isLoadingProducts ? (
+        {loading || isLoadingProducts || isLoadingCategories ? (
           <SkeletonLoader type="productGrid" rows={3} />
         ) : productsError ? (
           <View style={styles.errorContainer}>
@@ -422,6 +448,7 @@ const styles = StyleSheet.create({
     flexGrow: 0,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    backgroundColor: colors.background.offWhite,
   },
   tabsContainer: {
     paddingHorizontal: spacing.lg,

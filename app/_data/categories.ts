@@ -26,22 +26,25 @@ function getPluralizedLabel(label: ProductLabel): string {
 /**
  * Generate label categories directly from ProductStatus
  * This ensures we use ProductStatus as the single source of truth
+ * Note: HIGHLIGHTED is excluded from tabs (it's for home screen featured cards only)
  */
-export const labelCategories: Category[] = Object.entries(ProductStatus).map(([_, status]) => {
-  const statusKey = status as ProductStatus;
-  const label = ProductLabel[statusKey.toUpperCase() as ProductStatusType];
+export const labelCategories: Category[] = Object.entries(ProductStatus)
+  .filter(([_, status]) => status !== ProductStatus.HIGHLIGHTED)
+  .map(([_, status]) => {
+    const statusKey = status as ProductStatus;
+    const label = ProductLabel[statusKey.toUpperCase() as ProductStatusType];
 
-  // Create a pluralized or modified version of the label name for tab display
-  const displayName = getPluralizedLabel(label);
+    // Create a pluralized or modified version of the label name for tab display
+    const displayName = getPluralizedLabel(label);
 
-  return {
-    id: statusKey,
-    name: displayName,
-    slug: statusKey.toLowerCase(),
-    isLabel: true,
-    labelType: label,
-  };
-});
+    return {
+      id: statusKey,
+      name: displayName,
+      slug: statusKey.toLowerCase(),
+      isLabel: true,
+      labelType: label,
+    };
+  });
 
 // Regular product categories
 // NOTE: These are hardcoded categories. When categories are fetched from API in the future,

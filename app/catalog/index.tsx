@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { StyleSheet, View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import DefaultLargeCard from '../_components/store/product/default/large';
-import CategoryData from '../_data/categories';
-import ModelsData from '../_data/models';
+import { useCategories } from '../../hooks/useCategories';
+import { useProductModels } from '../../hooks/useProductModels';
 import { Category } from '../_types/category';
 import { ProductModel } from '../_types/model';
 import { Product } from '../_types/product';
@@ -131,7 +131,12 @@ const SECTION_TO_TITLE_MAP: Record<string, string> = {
 export default function CatalogScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ category?: string; title?: string; model?: string }>();
-  const initialCategoryId = params.category || CategoryData.mainCategories[0].id;
+
+  // Fetch categories and models from API (with local fallbacks)
+  const { mainCategories, isLoading: isLoadingCategories } = useCategories();
+  const { getModelsByCategory } = useProductModels();
+
+  const initialCategoryId = params.category || mainCategories[0]?.id || CATEGORY_IDS.ALL;
   const initialModelId = params.model || MODEL_IDS.ALL;
 
   const [activeCategoryId, setActiveCategoryId] = useState(initialCategoryId);
@@ -168,15 +173,15 @@ export default function CatalogScreen() {
     setLoading(true);
 
     // Check if the selected category is a regular product category or a label-based category
-    const selectedCategory = CategoryData.mainCategories.find((cat) => cat.id === activeCategoryId);
+    const selectedCategory = mainCategories.find((cat) => cat.id === activeCategoryId);
     const isCategoryLabel = selectedCategory?.isLabel || activeCategoryId === CATEGORY_IDS.ALL;
 
     // Don't show secondary tabs for "Todo" or label-based categories
     if (isCategoryLabel) {
       setAvailableModels([]);
     } else {
-      // Get models for the selected category
-      const modelsForCategory = ModelsData.getModelsByCategory(activeCategoryId);
+      // Get models for the selected category (from API with fallback)
+      const modelsForCategory = getModelsByCategory(activeCategoryId);
       setAvailableModels(modelsForCategory);
     }
 
@@ -187,47 +192,46 @@ export default function CatalogScreen() {
 
     // Reset applied filters when category changes
     setAppliedFilters({});
-  }, [activeCategoryId, params.model]);
+  }, [activeCategoryId, params.model, mainCategories, getModelsByCategory]);
 
   // Function to filter products by category and model using API data
-  const filterProductsByCategoryAndModel = (
-    products: Product[],
-    categoryId: string,
-    modelId: string
-  ) => {
-    let filteredProducts = products;
+  const filterProductsByCategoryAndModel = useCallback(
+    (products: Product[], categoryId: string, modelId: string) => {
+      let filteredProducts = products;
 
-    // Filter by category
-    if (categoryId !== CATEGORY_IDS.ALL) {
-      // Check if this is a label-based category (status-based)
-      const selectedCategory = CategoryData.mainCategories.find((cat) => cat.id === categoryId);
+      // Filter by category
+      if (categoryId !== CATEGORY_IDS.ALL) {
+        // Check if this is a label-based category (status-based)
+        const selectedCategory = mainCategories.find((cat) => cat.id === categoryId);
 
-      if (selectedCategory?.isLabel) {
-        // Special case for 'discounted' - filter by discountedPrice
-        if (categoryId === CATEGORY_IDS.DISCOUNTED) {
-          filteredProducts = products.filter(
-            (product) =>
-              product.discountedPrice !== undefined && product.discountedPrice < product.price
-          );
+        if (selectedCategory?.isLabel) {
+          // Special case for 'discounted' - filter by discountedPrice
+          if (categoryId === CATEGORY_IDS.DISCOUNTED) {
+            filteredProducts = products.filter(
+              (product) =>
+                product.discountedPrice !== undefined && product.discountedPrice < product.price
+            );
+          } else {
+            // Filter by status for other label categories
+            filteredProducts = products.filter((product) =>
+              hasStatus(product.statuses, categoryId as any)
+            );
+          }
         } else {
-          // Filter by status for other label categories
-          filteredProducts = products.filter((product) =>
-            hasStatus(product.statuses, categoryId as any)
-          );
+          // Regular category filtering
+          filteredProducts = products.filter((product) => product.categoryId === categoryId);
         }
-      } else {
-        // Regular category filtering
-        filteredProducts = products.filter((product) => product.categoryId === categoryId);
       }
-    }
 
-    // Filter by model
-    if (modelId !== MODEL_IDS.ALL) {
-      filteredProducts = filteredProducts.filter((product) => product.modelId === modelId);
-    }
+      // Filter by model
+      if (modelId !== MODEL_IDS.ALL) {
+        filteredProducts = filteredProducts.filter((product) => product.modelId === modelId);
+      }
 
-    return filteredProducts;
-  };
+      return filteredProducts;
+    },
+    [mainCategories]
+  );
 
   useEffect(() => {
     // This effect processes products based on category/model when API data is available
@@ -249,7 +253,13 @@ export default function CatalogScreen() {
       setCategoryModelProducts([]);
       setLoading(false);
     }
-  }, [allProducts, activeCategoryId, activeModelId, isLoadingProducts]);
+  }, [
+    allProducts,
+    activeCategoryId,
+    activeModelId,
+    isLoadingProducts,
+    filterProductsByCategoryAndModel,
+  ]);
 
   // Apply overlay filters using the custom hook
   const productsToDisplay = useProductFilters(categoryModelProducts, appliedFilters);
@@ -385,7 +395,7 @@ export default function CatalogScreen() {
     }
 
     // Get the current category info
-    const selectedCategory = CategoryData.mainCategories.find((c) => c.id === activeCategoryId);
+    const selectedCategory = mainCategories.find((c) => c.id === activeCategoryId);
 
     // First priority: Label categories should just show their label name
     if (selectedCategory?.isLabel) {
@@ -445,7 +455,7 @@ export default function CatalogScreen() {
       />
 
       <TabBar<Category>
-        items={CategoryData.mainCategories}
+        items={mainCategories}
         activeItemId={activeCategoryId}
         onSelectItem={handleCategoryChange}
       />
@@ -473,7 +483,7 @@ export default function CatalogScreen() {
           />
         }
       >
-        {loading || isLoadingProducts ? (
+        {loading || isLoadingProducts || isLoadingCategories ? (
           <SkeletonLoader type="productGrid" rows={3} />
         ) : productsError ? (
           <View style={styles.errorContainer}>

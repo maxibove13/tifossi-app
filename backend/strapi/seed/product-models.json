@@ -89,7 +89,7 @@
   },
   {
     "name": "Regular",
-    "slug": "regular",
+    "slug": "regular_bag",
     "description": "Bolso regular",
     "displayOrder": 1,
     "isActive": true,
@@ -97,7 +97,7 @@
   },
   {
     "name": "Sport",
-    "slug": "sport",
+    "slug": "sport_bag",
     "description": "Bolso deportivo",
     "displayOrder": 2,
     "isActive": true,
@@ -105,7 +105,7 @@
   },
   {
     "name": "Oversize",
-    "slug": "oversize",
+    "slug": "oversize_buzo",
     "description": "Buzo oversize",
     "displayOrder": 1,
     "isActive": true,

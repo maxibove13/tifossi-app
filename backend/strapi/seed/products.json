@@ -209,7 +209,7 @@
     "slug": "regular-black",
     "price": 990,
     "categorySlug": "bolsos",
-    "modelSlug": "regular",
+    "modelSlug": "regular_bag",
     "statusNames": [
       "popular",
       "opportunity"
@@ -365,7 +365,7 @@
     "slug": "buzo-oversize",
     "price": 1590,
     "categorySlug": "buzos",
-    "modelSlug": "oversize",
+    "modelSlug": "oversize_buzo",
     "statusNames": [
       "opportunity"
     ],

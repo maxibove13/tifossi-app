@@ -8,6 +8,19 @@
  * - Deletes existing products (optional, with --clean flag)
  * - Uploads product images to Strapi media library
  * - Creates products with linked images
+ * - Updates existing entries with --update flag (Strapi v5 documentId support)
+ *
+ * ONE-TIME CLEANUP GUIDANCE (Step 1.3):
+ * Before running --update, manually deactivate in Strapi admin:
+ * 1. Any label categories that were previously created (todo, sale, new, featured, etc.)
+ *    - These should not exist in Strapi; they are app-side virtual categories
+ * 2. The "sale" product status if it exists
+ *    - Discounts are driven by discountedPrice field, not by status
+ *
+ * After cleanup, run: STRAPI_API_TOKEN=xxx node import-seed-to-render.js --update
+ * This will:
+ * - Update model slugs to match app MODEL_IDS (e.g., regular -> regular_bag for bolsos)
+ * - Remap product model relations to use the new canonical slugs
  */
 
 const fs = require('fs');
@@ -89,17 +102,20 @@ const COLOR_IMAGE_MAP = {
   },
 };
 
-if (!API_TOKEN) {
-  console.error('❌ STRAPI_API_TOKEN environment variable is required');
-  console.error('Get it from: Strapi Admin → Settings → API Tokens');
-  process.exit(1);
-}
-
-// Parse command line arguments
+// Parse command line arguments early (before API token check for --help)
 const args = process.argv.slice(2);
 const CLEAN_PRODUCTS = args.includes('--clean') || args.includes('-c');
 const UPLOAD_IMAGES = args.includes('--images') || args.includes('-i');
 const SKIP_EXISTING = args.includes('--skip-existing') || args.includes('-s');
+const UPDATE_MODE = args.includes('--update') || args.includes('-u');
+const CLEANUP_ORPHANS = args.includes('--cleanup');
+const SHOW_HELP = args.includes('--help') || args.includes('-h');
+
+if (!API_TOKEN && !SHOW_HELP) {
+  console.error('STRAPI_API_TOKEN environment variable is required');
+  console.error('Get it from: Strapi Admin → Settings → API Tokens');
+  process.exit(1);
+}
 
 // Helper to make API requests
 async function strapiRequest(endpoint, method = 'GET', data = null) {
@@ -291,7 +307,17 @@ async function importProductStatuses() {
       const existing = await strapiRequest(`/product-statuses?filters[name][$eq]=${status.name}`);
 
       if (existing.data && existing.data.length > 0) {
-        console.log(`  → Status already exists: ${status.name}`);
+        if (UPDATE_MODE) {
+          const existingStatus = existing.data[0];
+          await strapiRequest(`/product-statuses/${existingStatus.documentId}`, 'PUT', {
+            displayOrder: status.displayOrder,
+            description: status.description,
+            isActive: status.isActive,
+          });
+          console.log(`  ✓ Updated status: ${status.name}`);
+        } else {
+          console.log(`  → Status already exists: ${status.name}`);
+        }
       } else {
         await strapiRequest('/product-statuses', 'POST', {
           ...status,
@@ -300,7 +326,7 @@ async function importProductStatuses() {
         console.log(`  ✓ Created status: ${status.name}`);
       }
     } catch (error) {
-      console.error(`  ✗ Failed to create status ${status.name}:`, error.message);
+      console.error(`  ✗ Failed to create/update status ${status.name}:`, error.message);
     }
   }
 }
@@ -315,7 +341,18 @@ async function importCategories() {
       const existing = await strapiRequest(`/categories?filters[slug][$eq]=${category.slug}`);
 
       if (existing.data && existing.data.length > 0) {
-        console.log(`  → Category already exists: ${category.name}`);
+        if (UPDATE_MODE) {
+          const existingCat = existing.data[0];
+          await strapiRequest(`/categories/${existingCat.documentId}`, 'PUT', {
+            name: category.name,
+            displayOrder: category.displayOrder,
+            description: category.description,
+            isActive: category.isActive,
+          });
+          console.log(`  ✓ Updated category: ${category.name}`);
+        } else {
+          console.log(`  → Category already exists: ${category.name}`);
+        }
       } else {
         await strapiRequest('/categories', 'POST', {
           name: category.name,
@@ -328,8 +365,53 @@ async function importCategories() {
         console.log(`  ✓ Created category: ${category.name}`);
       }
     } catch (error) {
-      console.error(`  ✗ Failed to create category ${category.name}:`, error.message);
+      console.error(`  ✗ Failed to create/update category ${category.name}:`, error.message);
     }
+  }
+}
+
+// Cleanup orphaned categories and models not in seed files
+async function cleanupOrphans() {
+  console.log('\n🧹 Cleaning up orphaned entries...');
+
+  // Get seed data
+  const seedCategories = readSeedFile('categories.json');
+  const seedModels = readSeedFile('product-models.json');
+  const seedCategorySlugs = new Set(seedCategories.map((c) => c.slug));
+  const seedModelSlugs = new Set(seedModels.map((m) => m.slug));
+
+  // Cleanup orphaned categories
+  const strapiCategories = await strapiRequest('/categories?pagination[limit]=100');
+  const categoriesToDelete = (strapiCategories.data || []).filter((c) => !seedCategorySlugs.has(c.slug));
+
+  for (const cat of categoriesToDelete) {
+    try {
+      await strapiRequest(`/categories/${cat.documentId}`, 'DELETE');
+      console.log(`  ✓ Deleted category: ${cat.name} (${cat.slug})`);
+    } catch (error) {
+      console.error(`  ✗ Failed to delete category ${cat.name}:`, error.message);
+    }
+  }
+
+  if (categoriesToDelete.length === 0) {
+    console.log('  → No orphaned categories to delete');
+  }
+
+  // Cleanup orphaned models
+  const strapiModels = await strapiRequest('/product-models?pagination[limit]=100');
+  const modelsToDelete = (strapiModels.data || []).filter((m) => !seedModelSlugs.has(m.slug));
+
+  for (const model of modelsToDelete) {
+    try {
+      await strapiRequest(`/product-models/${model.documentId}`, 'DELETE');
+      console.log(`  ✓ Deleted model: ${model.name} (${model.slug})`);
+    } catch (error) {
+      console.error(`  ✗ Failed to delete model ${model.name}:`, error.message);
+    }
+  }
+
+  if (modelsToDelete.length === 0) {
+    console.log('  → No orphaned models to delete');
   }
 }
 
@@ -340,32 +422,61 @@ async function importProductModels() {
 
   const categoriesResponse = await strapiRequest('/categories?pagination[limit]=100');
   const categories = categoriesResponse.data || [];
+  // Strapi v5: use documentId for relations, not numeric id
   const categoryMap = {};
   categories.forEach((cat) => {
-    categoryMap[cat.slug] = cat.id;
+    categoryMap[cat.slug] = cat.documentId;
   });
 
   for (const model of models) {
     try {
-      const existing = await strapiRequest(`/product-models?filters[slug][$eq]=${model.slug}`);
+      // Check by slug first
+      let existing = await strapiRequest(`/product-models?filters[slug][$eq]=${model.slug}`);
+
+      // For update mode: if slug not found, try matching by (categorySlug + name)
+      if (UPDATE_MODE && (!existing.data || existing.data.length === 0)) {
+        const byName = await strapiRequest(
+          `/product-models?filters[name][$eq]=${encodeURIComponent(model.name)}&populate=category`
+        );
+        if (byName.data && byName.data.length > 0) {
+          // Find one with matching category
+          existing = {
+            data: byName.data.filter((m) => m.category?.slug === model.categorySlug),
+          };
+        }
+      }
 
       if (existing.data && existing.data.length > 0) {
-        console.log(`  → Model already exists: ${model.name}`);
+        if (UPDATE_MODE) {
+          const existingModel = existing.data[0];
+          const categoryDocId = categoryMap[model.categorySlug];
+          await strapiRequest(`/product-models/${existingModel.documentId}`, 'PUT', {
+            name: model.name,
+            slug: model.slug,
+            description: model.description,
+            displayOrder: model.displayOrder,
+            isActive: model.isActive,
+            category: categoryDocId,
+          });
+          console.log(`  ✓ Updated model: ${model.name} (slug: ${model.slug})`);
+        } else {
+          console.log(`  → Model already exists: ${model.name}`);
+        }
       } else {
-        const categoryId = categoryMap[model.categorySlug];
+        const categoryDocId = categoryMap[model.categorySlug];
         await strapiRequest('/product-models', 'POST', {
           name: model.name,
           slug: model.slug,
           description: model.description,
           displayOrder: model.displayOrder,
           isActive: model.isActive,
-          category: categoryId,
+          category: categoryDocId,
           publishedAt: new Date().toISOString(),
         });
         console.log(`  ✓ Created model: ${model.name}`);
       }
     } catch (error) {
-      console.error(`  ✗ Failed to create model ${model.name}:`, error.message);
+      console.error(`  ✗ Failed to create/update model ${model.name}:`, error.message);
     }
   }
 }
@@ -450,12 +561,13 @@ async function importProducts(uploadedImages = {}) {
 
   for (const product of products) {
     try {
-      if (SKIP_EXISTING) {
-        const existing = await strapiRequest(`/products?filters[slug][$eq]=${product.slug}`);
-        if (existing.data && existing.data.length > 0) {
-          console.log(`  → Product already exists: ${product.title}`);
-          continue;
-        }
+      // Check if product exists
+      const existingRes = await strapiRequest(`/products?filters[slug][$eq]=${product.slug}`);
+      const existingProduct = existingRes.data?.[0];
+
+      if (SKIP_EXISTING && existingProduct) {
+        console.log(`  → Product already exists: ${product.title}`);
+        continue;
       }
 
       const categoryId = categoryMap[product.categorySlug];
@@ -530,11 +642,10 @@ async function importProducts(uploadedImages = {}) {
         sizes: transformedSizes,
         category: categoryId,
         model: modelId,
-        statuses: statusIds.length > 0 ? { connect: statusIds.map(id => ({ documentId: id })) } : undefined,
+        statuses: statusIds.length > 0 ? { connect: statusIds.map((id) => ({ documentId: id })) } : undefined,
         totalStock: product.colors?.reduce((sum, c) => sum + (c.quantity || 0), 0) || 0,
         isActive: true,
         isCustomizable: product.isCustomizable || false,
-        publishedAt: new Date().toISOString(),
       };
 
       // Add front image if available
@@ -542,15 +653,33 @@ async function importProducts(uploadedImages = {}) {
         productData.frontImage = frontImageId;
       }
 
-      await strapiRequest('/products', 'POST', productData);
-      const hasColorImages = enrichedColors.some((c) => c.images?.main);
-      const imageInfo = [
-        frontImageId ? 'front' : null,
-        hasColorImages ? 'color gallery' : null,
-      ].filter(Boolean).join(' + ');
-      console.log(`  ✓ Created product: ${product.title}${imageInfo ? ` (${imageInfo})` : ''}`);
+      if (UPDATE_MODE && existingProduct) {
+        // Update existing product - remap model relation to use new slug
+        // Exclude media fields (frontImage, images in colors) since Strapi v5 doesn't accept them on PUT
+        const updateData = { ...productData };
+        delete updateData.frontImage;
+        if (updateData.colors) {
+          updateData.colors = updateData.colors.map((c) => {
+            const { images, ...colorWithoutImages } = c;
+            return colorWithoutImages;
+          });
+        }
+        await strapiRequest(`/products/${existingProduct.documentId}`, 'PUT', updateData);
+        console.log(`  ✓ Updated product: ${product.title} (model: ${product.modelSlug})`);
+      } else if (!existingProduct) {
+        // Create new product
+        productData.publishedAt = new Date().toISOString();
+        await strapiRequest('/products', 'POST', productData);
+        const hasColorImages = enrichedColors.some((c) => c.images?.main);
+        const imageInfo = [frontImageId ? 'front' : null, hasColorImages ? 'color gallery' : null]
+          .filter(Boolean)
+          .join(' + ');
+        console.log(`  ✓ Created product: ${product.title}${imageInfo ? ` (${imageInfo})` : ''}`);
+      } else {
+        console.log(`  → Product already exists: ${product.title}`);
+      }
     } catch (error) {
-      console.error(`  ✗ Failed to create product ${product.title}:`, error.message);
+      console.error(`  ✗ Failed to create/update product ${product.title}:`, error.message);
     }
   }
 }
@@ -559,7 +688,9 @@ async function importProducts(uploadedImages = {}) {
 async function importAll() {
   console.log('🌱 Starting seed data import to Render...');
   console.log(`📡 Target: ${STRAPI_URL}`);
-  console.log(`🔧 Options: clean=${CLEAN_PRODUCTS}, images=${UPLOAD_IMAGES}, skip-existing=${SKIP_EXISTING}`);
+  console.log(
+    `🔧 Options: clean=${CLEAN_PRODUCTS}, images=${UPLOAD_IMAGES}, skip-existing=${SKIP_EXISTING}, update=${UPDATE_MODE}, cleanup=${CLEANUP_ORPHANS}`
+  );
 
   try {
     // Delete existing products if --clean flag is set
@@ -580,6 +711,11 @@ async function importAll() {
     await importStoreLocations();
     await importProducts(uploadedImages);
 
+    // Cleanup orphaned entries if --cleanup flag is set
+    if (CLEANUP_ORPHANS) {
+      await cleanupOrphans();
+    }
+
     console.log('\n✅ Seed data import completed successfully!');
     console.log('\n📱 Your app should now display products from Render backend');
   } catch (error) {
@@ -594,13 +730,20 @@ function showHelp() {
 Usage: node import-seed-to-render.js [options]
 
 Options:
-  --clean, -c       Delete all existing products before importing
-  --images, -i      Upload product images to Strapi media library
+  --clean, -c          Delete all existing products before importing
+  --images, -i         Upload product images to Strapi media library
   --skip-existing, -s  Skip products that already exist
-  --help, -h        Show this help message
+  --update, -u         Update existing entries instead of skipping them
+                       - Categories: updates name, displayOrder, description, isActive by slug
+                       - Models: updates by slug; if slug not found, matches by (categorySlug + name)
+                         then sets the canonical slug from seed data
+                       - Products: remaps model relation to use new model slug mapping
+  --cleanup            Delete categories and models in Strapi that are not in seed files
+                       (removes orphaned/virtual entries like label categories)
+  --help, -h           Show this help message
 
 Environment Variables:
-  STRAPI_URL        Strapi backend URL (default: https://tifossi-strapi-backend.onrender.com)
+  STRAPI_URL           Strapi backend URL (default: https://tifossi-strapi-backend.onrender.com)
   STRAPI_API_TOKEN  API token for authentication (required)
 
 Examples:
@@ -612,12 +755,15 @@ Examples:
 
   # Full fresh import
   STRAPI_API_TOKEN=xxx node import-seed-to-render.js -c -i
+
+  # Update existing entries (fix model slugs, remap relations)
+  STRAPI_API_TOKEN=xxx node import-seed-to-render.js --update
 `);
 }
 
 // Run if called directly
 if (require.main === module) {
-  if (args.includes('--help') || args.includes('-h')) {
+  if (SHOW_HELP) {
     showHelp();
   } else {
     importAll();
