@@ -42,7 +42,6 @@ interface SizeableProductCardProps<T extends CardVariant> extends BaseProductCar
 // The actual CARD_DIMENSIONS constant structure
 const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensions>>> = {
   default: {
-    small: { width: 132, height: 196, imageSize: 132 },
     large: { width: 160, height: 272, imageSize: 160 },
   },
   featured: {
@@ -66,12 +65,12 @@ const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardDimensio
 
 #### 1. Default Card
 
-**Variants**: Small (132x196), Large (160x272)  
-**Props**: `DefaultCardProps extends SizeableProductCardProps<'default'>`  
-**Implementation**: `/app/_components/store/product/default/small.tsx` and `/app/_components/store/product/default/large.tsx`  
+**Variants**: Large (160x272)
+**Props**: `DefaultCardProps extends SizeableProductCardProps<'default'>`
+**Implementation**: `/app/_components/store/product/default/large.tsx`
 **Features**:
 
-- Product image (132x132 or 160x160)
+- Product image (160x160)
 - New tag (optional)
 - Product name
 - Price
@@ -187,8 +186,6 @@ app/_components/store/product/
 ├── types.ts                # Shared types
 ├── index.tsx              # Main export
 ├── default/               # Default card variants
-│   ├── index.tsx
-│   ├── small.tsx
 │   └── large.tsx
 ├── featured/              # Featured product cards
 │   └── FeaturedCard.tsx

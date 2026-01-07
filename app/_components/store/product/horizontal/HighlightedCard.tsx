@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: 119,
-    height: 119,
+    height: 142,
     borderTopLeftRadius: 8,
     borderBottomLeftRadius: 8,
     overflow: 'hidden',
@@ -99,11 +99,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontSize: fontSizes.sm,
+    fontSize: fontSizes.xs,
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.sm,
-    marginBottom: 4,
+    lineHeight: lineHeights.xs,
   },
   title: {
     color: colors.primary,
@@ -111,12 +110,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.md,
-    marginBottom: 8,
   },
   descriptionContainer: {
     flexDirection: 'column',
-    gap: 8,
     paddingVertical: 8,
+    gap: 8,
   },
   descriptionItem: {
     width: '100%',
@@ -133,6 +131,5 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: colors.border,
-    marginTop: 8,
   },
 });

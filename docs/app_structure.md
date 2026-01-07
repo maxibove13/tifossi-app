@@ -186,9 +186,7 @@ _components/
 │   │   ├── types.ts        # Product component types
 │   │   ├── ColorSlider.tsx # Color selection slider
 │   │   ├── default/        # Default product cards
-│   │   │   ├── small.tsx     # Small card variant
-│   │   │   ├── large.tsx     # Large card variant
-│   │   │   └── index.tsx     # Exports
+│   │   │   └── large.tsx     # Large card variant
 │   │   ├── featured/       # Featured product cards
 │   │   │   └── FeaturedCard.tsx # Featured card implementation
 │   │   ├── horizontal/     # Horizontal product cards
@@ -351,7 +349,7 @@ The app uses Expo Router with a tab-based navigation structure:
 ### Store Components
 
 1. **Product Cards**
-   - Default cards (small/large)
+   - Default cards (large)
    - Featured cards for highlights
    - Horizontal cards for lists
    - Promotion cards for discounts

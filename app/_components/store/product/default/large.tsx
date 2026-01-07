@@ -161,8 +161,8 @@ const styles = StyleSheet.create<Styles>({
     borderBottomLeftRadius: radius.xs,
   },
   content: {
-    paddingHorizontal: 0,
-    gap: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    gap: 0,
   },
   discountTag: {
     color: colors.error,
@@ -223,7 +223,7 @@ const styles = StyleSheet.create<Styles>({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    padding: 4,
+    paddingVertical: 6,
   },
   colorCircle: {
     width: 12,
