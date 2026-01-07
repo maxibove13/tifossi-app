@@ -305,18 +305,6 @@ Store layout components define the overall structure of the store screens.
    - Component for showcasing product categories.
    - Displays category information in a visually appealing format.
 
-#### Cart Components (`/store/cart/`)
-
-Components related to the shopping cart view.
-
-1. **EmptyCart (`/cart/EmptyCart.tsx`):** Placeholder shown when the cart is empty.
-
-#### Favorites Components (`/store/favorites/`)
-
-Components related to the user's favorite products.
-
-1. **EmptyFavorites (`/favorites/EmptyFavorites.tsx`):** Placeholder shown when no favorites exist.
-
 #### Orders Components (`/store/orders/`)
 
 Components related to order management.
@@ -332,6 +320,27 @@ Components for displaying product reviews.
 ### Common Components (`/app/components/common/`)
 
 Utility components used throughout the application.
+
+#### Empty State Component (`/common/EmptyState.tsx`)
+
+Shared component for displaying empty state UI across screens (favorites, cart).
+
+```tsx
+import EmptyState from '../_components/common/EmptyState';
+
+// Favorites screen - no favorites saved
+<EmptyState variant="noFavorites" onPress={handleGoToStore} />
+
+// Favorites screen - not logged in
+<EmptyState variant="notLoggedIn" onPress={handleLogin} />
+
+// Cart screen - empty cart
+<EmptyState variant="emptyCart" onPress={handleGoToStore} />
+```
+
+Props:
+- `variant`: 'noFavorites' | 'notLoggedIn' | 'emptyCart' - Determines content displayed
+- `onPress`: () => void - Handler for the action button
 
 #### Background Components
 

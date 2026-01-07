@@ -4,7 +4,7 @@ import { spacing } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes } from '../_styles/typography';
 import { router } from 'expo-router';
-import EmptyFavorites from '../_components/store/favorites/EmptyFavorites';
+import EmptyState from '../_components/common/EmptyState';
 import PromotionCard from '../_components/store/product/promotion/PromotionCard';
 import { Product } from '../_types/product';
 import DefaultLargeCard from '../_components/store/product/default/large';
@@ -14,7 +14,6 @@ import ProductData, { getProductById, products } from '../_data/products';
 import { SkeletonLoader } from '../_components/common/SkeletonLoader';
 import { hasStatus, ProductStatus } from '../_types/product-status';
 import { useAuthStore } from '../_stores/authStore';
-import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
 import ProductSections from '../_components/store/product/sections/ProductSections';
 
 // Function to get recommended products from API data
@@ -37,15 +36,12 @@ const fallbackRecommendedProducts: Product[] = [
 type Styles = {
   container: ViewStyle;
   scrollContent: ViewStyle;
-  scrollContentEmpty: ViewStyle;
   gridContainer: ViewStyle;
   columnWrapper: ViewStyle;
   cardWrapper: ViewStyle;
   centeredStatus: ViewStyle;
   errorText: TextStyle;
-  authPromptContainer: ViewStyle;
   loadingFavoritesText: TextStyle;
-  localFavoritesHeader: TextStyle;
 };
 
 export default function FavoritesScreen() {
@@ -90,6 +86,10 @@ export default function FavoritesScreen() {
     router.replace('/');
   };
 
+  const handleLogin = () => {
+    router.push('/(tabs)/profile');
+  };
+
   const handleProductPress = (productId: string) => {
     router.push(`/products/product?id=${productId}`);
   };
@@ -126,80 +126,42 @@ export default function FavoritesScreen() {
     );
   }
 
+  // Determine which state to show (one action per page rule)
+  const hasFavorites =
+    localOrSyncedFavorites.length > 0 || (favoriteIds.length > 0 && productsLoading);
+
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Section 1: Main Favorites Content (List or Empty State) */}
-        {isLoggedIn ? (
-          // LOGGED IN STATE
-          localOrSyncedFavorites.length === 0 && !productsLoading ? (
-            <EmptyFavorites onGoToStore={handleGoToStore} />
-          ) : (
-            <FlatList
-              data={localOrSyncedFavorites}
-              renderItem={renderFavoriteItem}
-              keyExtractor={(item) => item.id}
-              numColumns={2}
-              columnWrapperStyle={styles.columnWrapper}
-              contentContainerStyle={styles.gridContainer}
-              showsVerticalScrollIndicator={false}
-              scrollEnabled={false} // Important for ScrollView parent
-              ListEmptyComponent={
-                productsLoading ? (
-                  <Text style={styles.loadingFavoritesText}>Cargando tus favoritos...</Text>
-                ) : null
-              }
-            />
-          )
+        {/* Case A: Logged in with no favorites -> EmptyFavorites "Nada guardado" */}
+        {/* Case B: Logged out with no local favorites -> EmptyFavorites "No has iniciado sesión" */}
+        {/* Case C: Has favorites -> show favorites grid */}
+        {hasFavorites ? (
+          <FlatList
+            data={localOrSyncedFavorites}
+            renderItem={renderFavoriteItem}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.columnWrapper}
+            contentContainerStyle={styles.gridContainer}
+            showsVerticalScrollIndicator={false}
+            scrollEnabled={false}
+            ListEmptyComponent={
+              productsLoading ? (
+                <Text style={styles.loadingFavoritesText}>Cargando tus favoritos...</Text>
+              ) : null
+            }
+          />
+        ) : isLoggedIn ? (
+          // Case A: Logged in, no favorites
+          <EmptyState variant="noFavorites" onPress={handleGoToStore} />
         ) : (
-          // LOGGED OUT STATE
-          <>
-            {favoriteIds.length === 0 ? (
-              <EmptyFavorites onGoToStore={handleGoToStore} />
-            ) : (
-              <>
-                <FlatList
-                  data={localOrSyncedFavorites}
-                  renderItem={renderFavoriteItem}
-                  keyExtractor={(item) => item.id}
-                  numColumns={2}
-                  columnWrapperStyle={styles.columnWrapper}
-                  contentContainerStyle={styles.gridContainer}
-                  showsVerticalScrollIndicator={false}
-                  scrollEnabled={false} // Important for ScrollView parent
-                  ListEmptyComponent={
-                    productsLoading ? (
-                      <Text style={styles.loadingFavoritesText}>
-                        Cargando detalles de favoritos...
-                      </Text>
-                    ) : (
-                      // If not loading and list is still empty, it implies product details for some IDs were not found
-                      // This case might not need a message if favoriteIds.length > 0 implies we expect *some* items.
-                      // Or, it could be an error state for specific items not found.
-                      <Text style={styles.loadingFavoritesText}>
-                        Algunos favoritos no pudieron ser cargados.
-                      </Text>
-                    )
-                  }
-                />
-              </>
-            )}
-          </>
+          // Case B: Not logged in, no local favorites
+          <EmptyState variant="notLoggedIn" onPress={handleLogin} />
         )}
 
-        {/* Section 2: Auth Prompt for Logged OUT users */}
-        {!isLoggedIn && (
-          <View style={styles.authPromptContainer}>
-            {favoriteIds.length === 0 ? (
-              <ReusableAuthPrompt message="Crea una cuenta para guardar y sincronizar tus productos favoritos en todos tus dispositivos." />
-            ) : (
-              <ReusableAuthPrompt message="¡Tus favoritos se guardan aquí! Inicia sesión para verlos en todos tus dispositivos y mantenerlos seguros." />
-            )}
-          </View>
-        )}
-
-        {/* Section 3: Recommended Products */}
-        {localOrSyncedFavorites.length === 0 && recommendedProductsData.length > 0 && (
+        {/* Recommended Products - only show when no favorites */}
+        {!hasFavorites && recommendedProductsData.length > 0 && (
           <ProductSections
             title="Recomendados"
             products={recommendedProductsData}
@@ -223,10 +185,6 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: colors.background.light,
     paddingBottom: spacing.xxl,
   },
-  scrollContentEmpty: {
-    // Styles for when the cart is empty - might make sense to center EmptyFavorites
-    // justifyContent: 'center', // Example: if EmptyFavorites should be centered
-  },
   gridContainer: {
     padding: spacing.md,
   },
@@ -249,24 +207,11 @@ const styles = StyleSheet.create<Styles>({
     fontSize: fontSizes.md,
     fontFamily: fonts.primary,
   },
-  authPromptContainer: {
-    paddingVertical: spacing.lg,
-    marginTop: spacing.md,
-  },
   loadingFavoritesText: {
     textAlign: 'center',
     paddingVertical: spacing.xl,
     fontFamily: fonts.secondary,
     fontSize: fontSizes.md,
     color: colors.secondary,
-  },
-  localFavoritesHeader: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.lg,
-    fontWeight: '500',
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.sm,
-    color: colors.primary,
   },
 });

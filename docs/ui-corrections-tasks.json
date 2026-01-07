@@ -376,28 +376,31 @@
           "id": "FAVORITOS-001",
           "description": "Header mismo tono de blanco (barra dónde está alojado el título 'Favoritos')",
           "component": "app/(tabs)/_layout.tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Check if tab navigator header uses different background than #FBFBFB. Unify across app."
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Already implemented - _layout.tsx wraps header components with backgroundColor: colors.background.offWhite (#FBFBFB). ScreenHeader also uses same background color."
         },
         {
           "id": "FAVORITOS-002",
           "description": "Diferenciar/separar dos escenarios: A) Aún sin productos (motivar ir a Tienda), B) Aún no inició sesión (motivar iniciar sesión). Mantener una acción principal por página",
-          "component": "app/(tabs)/favorites.tsx",
+          "component": "app/(tabs)/favorites.tsx, app/_components/common/EmptyState.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "UX best practice: one primary CTA per screen. Current shows EmptyFavorites + AuthPrompt together. Change logic to: IF not logged in AND no local favorites -> show ONLY AuthPrompt ('Inicia sesión para ver tus favoritos'). IF logged in AND no favorites -> show ONLY EmptyFavorites ('Ir a Tienda'). IF has local favorites but not logged in -> show favorites + subtle auth prompt below."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Created shared EmptyState component with variants: 'noFavorites' (title: 'Nada guardado aún', button: 'Ir a Tienda' with arrow), 'notLoggedIn' (title: 'No has iniciado sesión', button: 'Iniciar sesión' centered, no arrow), 'emptyCart' (title: 'Tu carrito está vacío'). Consolidated EmptyFavorites and EmptyCart into single component. One action per page rule enforced."
         },
         {
           "id": "FAVORITOS-003",
           "description": "Revisar márgenes de los párrafos del texto informativo (16px a ambos lados). Distancia entre txt y button 16px",
-          "component": "app/_components/store/favorites/EmptyFavorites.tsx",
+          "component": "app/_components/common/EmptyState.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Current: messageContainer paddingHorizontal: spacing.lg (16px) - CORRECT. marginBottom: spacing.xl (24px) between text and button. Change marginBottom to spacing.lg (16px) for 16px gap between text and button."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Per Figma CSS: container has 16px horizontal padding, messageContainer has additional 16px padding (32px total for text), 16px gap between text block and button. Button is 343px wide (full width minus container padding)."
         }
       ]
     },
@@ -408,10 +411,11 @@
           "id": "CARRITO-001",
           "description": "Header mismo tono de blanco (barra dónde está alojado el título 'Carrito')",
           "component": "app/(tabs)/_layout.tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Same as FAVORITOS-001 - check tab navigator header background consistency"
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Already implemented - _layout.tsx wraps cart header components with backgroundColor: colors.background.offWhite (#FBFBFB). Same as FAVORITOS-001."
         },
         {
           "id": "CARRITO-002",
