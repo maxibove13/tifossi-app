@@ -251,10 +251,11 @@
           "id": "PRODUCT-010",
           "description": "Cuando tap 'Comprar ahora' el overlay de entrega deben ser revisados los márgenes de los botones e incrementado el espesor del ícono de envío a domicilio",
           "component": "app/_components/store/product/overlay/OverlayShippingSelection.tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "in-progress",
-          "notes": "Button margins fixed in parent overlays. Icon stroke width in OverlayShippingSelection still needs Figma specs."
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Aligned with Figma CSS: container gap 40px + background antiflash, header 40px height, close icon 24x24, house icon 44x44 with 1.6px stroke, tiffosi logo 44x44, option rows paddingVertical 16px + gap 16px."
         },
         {
           "id": "PRODUCT-011",
@@ -285,10 +286,11 @@
           "id": "CATALOGO-001",
           "description": "Header del mismo color blanco (barra del título - barra de categorías)",
           "component": "app/catalog/[slug].tsx",
-          "needsMoreContext": true,
-          "needsFigma": true,
-          "status": "blocked",
-          "notes": "Need to confirm exact white tone. Check if category TabBar uses different background than main Header (#FBFBFB)."
+          "needsMoreContext": false,
+          "needsFigma": false,
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Added backgroundColor: colors.background.offWhite (#FBFBFB) to tabsScrollView style to match Header."
         },
         {
           "id": "CATALOGO-002",
@@ -296,17 +298,19 @@
           "component": "app/catalog/[slug].tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "getDisplayTitle() currently combines category + model name. Change to return only the main category name, ignoring selected subcategory/model for header title purposes."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Simplified getDisplayTitle() to always return selectedCategory.name without appending model name."
         },
         {
           "id": "CATALOGO-003",
           "description": "Quitar categoría 'Destacados - Homes'",
           "component": "app/_data/categories.ts",
-          "needsMoreContext": true,
+          "needsMoreContext": false,
           "needsFigma": false,
-          "status": "blocked",
-          "notes": "Need confirmation: Is this 'Destacados - Homes' or 'Destacados - Home'? Check mainCategories array for exact string to remove."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Filtered out ProductStatus.HIGHLIGHTED from labelCategories generation. This category (Destacado Homes) is now excluded from catalog tabs but still usable for home screen featured cards."
         }
       ]
     },

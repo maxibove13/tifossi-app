@@ -86,7 +86,7 @@ export default function OverlayShippingSelection({
           <View style={styles.header}>
             <Text style={styles.title}>Seleccionar entrega</Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-              <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
+              <CloseIcon width={24} height={24} stroke={colors.secondary} strokeWidth={1.2} />
             </TouchableOpacity>
           </View>
 
@@ -102,7 +102,7 @@ export default function OverlayShippingSelection({
                 <Text style={styles.optionTitle}>Envío a domicilio</Text>
                 <Text style={styles.optionDescription}>Recibe en la dirección que indiques.</Text>
               </View>
-              <HouseIcon width={24} height={24} stroke={colors.primary} strokeWidth={1.6} />
+              <HouseIcon width={44} height={44} stroke={colors.primary} strokeWidth={1.6} />
             </TouchableOpacity>
 
             {/* Store Pickup Option */}
@@ -152,11 +152,12 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   container: {
-    backgroundColor: colors.background.light,
+    backgroundColor: colors.background.antiflash,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     padding: spacing.xxl,
     paddingBottom: spacing.xxl + 2,
+    gap: 40,
     shadowColor: colors.primary,
     shadowOffset: {
       width: 0,
@@ -171,7 +172,7 @@ const styles = StyleSheet.create<Styles>({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    height: 40,
     width: '100%',
   },
   title: {
@@ -182,8 +183,12 @@ const styles = StyleSheet.create<Styles>({
     color: colors.secondary,
   },
   closeButton: {
+    width: 40,
+    height: 40,
     padding: spacing.sm,
     borderRadius: radius.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     paddingHorizontal: spacing.sm,
@@ -191,11 +196,11 @@ const styles = StyleSheet.create<Styles>({
   },
   option: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.lg,
   },
   optionTextContainer: {
     flex: 1,
@@ -216,8 +221,8 @@ const styles = StyleSheet.create<Styles>({
     color: colors.secondary,
   },
   logoImage: {
-    width: 24,
-    height: 24,
+    width: 44,
+    height: 44,
     resizeMode: 'contain',
   },
 });
