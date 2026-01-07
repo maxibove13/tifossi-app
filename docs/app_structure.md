@@ -245,10 +245,6 @@ _components/
 │   │   ├── CategoryShowcase.tsx # Category showcase
 │   │   ├── Locations.tsx    # Store locations
 │   │   └── index.tsx        # Layout exports
-│   ├── cart/           # Cart components
-│   │   └── EmptyCart.tsx    # Empty cart state
-│   ├── favorites/      # Favorites components
-│   │   └── EmptyFavorites.tsx # Empty favorites state
 │   ├── orders/         # Order components
 │   │   └── EmptyOrders.tsx  # Empty orders state
 │   └── review/          # Product review components
@@ -264,6 +260,7 @@ _components/
 ├── checkout/           # Checkout components
 │   └── SelectionListScreen.tsx # Selection list for checkout
 ├── common/             # Shared utility components
+│   ├── EmptyState.tsx      # Shared empty state (favorites, cart)
 │   ├── ErrorBoundary.tsx   # Error handler
 │   ├── ScreenHeader.tsx    # Screen header
 │   ├── StoreDetailView.tsx # Store details display (checkout & locations)

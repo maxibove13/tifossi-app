@@ -4,7 +4,7 @@ import { spacing, radius } from '../_styles/spacing';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights } from '../_styles/typography';
 import { router } from 'expo-router';
-import EmptyCart from '../_components/store/cart/EmptyCart';
+import EmptyState from '../_components/common/EmptyState';
 import { Product } from '../_types/product';
 import PromotionCard from '../_components/store/product/promotion/PromotionCard';
 import CartProductCard from '../_components/store/product/cart/CartProductCard';
@@ -218,7 +218,7 @@ export default function CartScreen() {
         ]}
       >
         {isEmpty ? (
-          <EmptyCart onGoToStore={handleGoToStore} />
+          <EmptyState variant="emptyCart" onPress={handleGoToStore} />
         ) : (
           <>
             {/* Cart Items Section */}
