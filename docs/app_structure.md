@@ -25,7 +25,9 @@ Tifossi is a mobile-first iOS e-commerce application built with React Native and
 │   ├── useSearch.ts    # Search functionality hook
 │   ├── useFavoriteStatus.ts # Favorite status hooks
 │   ├── useProductFilters.ts # Product filtering hooks
-│   └── useThemeColor.ts # Theme color selection
+│   ├── useThemeColor.ts # Theme color selection
+│   ├── useCategories.ts # API-based category fetching with local fallback
+│   └── useProductModels.ts # API-based product model fetching with local fallback
 ├── scripts/            # Project utility scripts
 ├── ios/                # iOS specific configuration
 ├── android/            # Android specific configuration

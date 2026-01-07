@@ -14,10 +14,12 @@ source .env && export STRAPI_API_TOKEN && node scripts/import-seed-to-render.js 
 node scripts/import-seed-to-render.js [options]
 
 Options:
-  --clean, -c        Delete ALL existing products before importing
-  --images, -i       Upload product images to Cloudinary via Strapi
+  --clean, -c          Delete ALL existing products before importing
+  --images, -i         Upload product images to Cloudinary via Strapi
   --skip-existing, -s  Skip products that already exist (don't overwrite)
-  --help, -h         Show help
+  --update, -u         Update existing entries instead of skipping them
+  --cleanup            Delete categories/models in Strapi not in seed files
+  --help, -h           Show help
 ```
 
 ### Common Usage Patterns
@@ -31,6 +33,9 @@ source .env && export STRAPI_API_TOKEN && node scripts/import-seed-to-render.js 
 
 # Re-sync products without images (faster)
 source .env && export STRAPI_API_TOKEN && node scripts/import-seed-to-render.js -c
+
+# Update existing entries (categories, models, products)
+source .env && export STRAPI_API_TOKEN && node scripts/import-seed-to-render.js --update
 ```
 
 ## Environment Setup

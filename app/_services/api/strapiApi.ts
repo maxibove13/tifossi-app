@@ -3,7 +3,11 @@ import { transformStrapiProduct, StrapiResponse, StrapiProduct } from '../../_ut
 import { handleApiError, ApiErrorType } from './errorHandler';
 import { Product } from '../../_types/product';
 import { StoreDetails } from '../../_types';
+import { Category } from '../../_types/category';
+import { ProductModel } from '../../_types/model';
 import { storesData } from '../../_data/stores';
+import { productCategories } from '../../_data/categories';
+import { productModels as localProductModels } from '../../_data/models';
 
 // Additional types needed
 export interface StrapiAuthResponse {
@@ -21,6 +25,28 @@ export interface StrapiUser {
   blocked?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+// Strapi types for categories and models
+export interface StrapiCategory {
+  id: number;
+  documentId: string;
+  name: string;
+  slug: string;
+  displayOrder?: number;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface StrapiProductModel {
+  id: number;
+  documentId: string;
+  name: string;
+  slug: string;
+  displayOrder?: number;
+  description?: string;
+  isActive: boolean;
+  category?: StrapiCategory;
 }
 
 // Re-export types from mockApi for compatibility
@@ -91,6 +117,41 @@ function createCacheKey(prefix: string, params?: Record<string, any>): string {
   }
 }
 
+/**
+ * Recursively builds Strapi filter query parameters
+ * Handles nested operators like { isActive: { $eq: true } } -> filters[isActive][$eq]=true
+ */
+function buildFilterParams(
+  params: URLSearchParams,
+  obj: Record<string, any>,
+  prefix: string
+): void {
+  Object.entries(obj).forEach(([key, value]) => {
+    const paramKey = prefix ? `${prefix}[${key}]` : `filters[${key}]`;
+
+    if (value !== undefined && value !== null) {
+      if (Array.isArray(value)) {
+        // Handle arrays - could be primitives ($in) or objects ($or)
+        value.forEach((item, index) => {
+          if (typeof item === 'object' && item !== null) {
+            // Array of objects (e.g., $or with multiple conditions)
+            buildFilterParams(params, item, `${paramKey}[${index}]`);
+          } else {
+            // Array of primitives (e.g., $in)
+            params.append(`${paramKey}[${index}]`, String(item));
+          }
+        });
+      } else if (typeof value === 'object') {
+        // Recurse for nested objects (operators like $eq, $in, etc.)
+        buildFilterParams(params, value, paramKey);
+      } else {
+        // Primitive value
+        params.append(paramKey, String(value));
+      }
+    }
+  });
+}
+
 function buildStrapiQuery(options: {
   populate?: string[];
   filters?: Record<string, any>;
@@ -104,11 +165,7 @@ function buildStrapiQuery(options: {
   }
 
   if (options.filters) {
-    Object.entries(options.filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(`filters[${key}]`, JSON.stringify(value));
-      }
-    });
+    buildFilterParams(params, options.filters, '');
   }
 
   if (options.sort) {
@@ -253,7 +310,7 @@ class StrapiApiService {
             { shortDescription: { line2: { $containsi: query } } },
             { longDescription: { $containsi: query } },
           ],
-          ...(filters?.category && { categoryId: { $eq: filters.category } }),
+          ...(filters?.category && { category: { slug: { $eq: filters.category } } }),
           ...(filters?.minPrice && { price: { $gte: filters.minPrice } }),
           ...(filters?.maxPrice && { price: { $lte: filters.maxPrice } }),
         },
@@ -655,6 +712,131 @@ class StrapiApiService {
     }
   }
 
+  // --- Category and Model Methods ---
+
+  /**
+   * Fetches product categories from Strapi
+   * Filters to only product categories (not labels/special categories)
+   * Falls back to local data on error
+   */
+  async fetchCategories(): Promise<Category[]> {
+    const cacheKey = createCacheKey('categories');
+
+    // Check cache first
+    if (this.cacheEnabled) {
+      const cached = cache.get<Category[]>(cacheKey);
+      if (cached) return cached;
+    }
+
+    try {
+      // Build query: isActive=true, sort by displayOrder
+      const queryParams = buildStrapiQuery({
+        filters: {
+          isActive: { $eq: true },
+        },
+        sort: ['displayOrder:asc'],
+        pagination: { pageSize: 100 },
+      });
+
+      const response = await httpClient.get<StrapiResponse<StrapiCategory[]>>(
+        `/categories${queryParams}`
+      );
+      const validatedResponse = validateStrapiResponse<StrapiCategory[]>(response);
+
+      // Get the set of valid product category slugs from local data
+      const productCategorySlugs = new Set(productCategories.map((c) => c.slug));
+
+      // Filter to only product categories and transform to app format
+      const apiCategories: Category[] = validatedResponse.data
+        .filter((cat) => productCategorySlugs.has(cat.slug))
+        .map((cat) => ({
+          id: cat.slug, // Use slug as id to match app convention
+          name: cat.name,
+          slug: cat.slug,
+          displayOrder: cat.displayOrder,
+        }));
+
+      // Merge with local data: API categories take precedence, missing ones fall back to local
+      const apiCategorySlugs = new Set(apiCategories.map((c) => c.slug));
+      const mergedCategories = [
+        ...apiCategories,
+        ...productCategories.filter((local) => !apiCategorySlugs.has(local.slug)),
+      ];
+
+      // Sort by displayOrder (API categories have it, local ones don't so they go last)
+      mergedCategories.sort((a, b) => {
+        const orderA = a.displayOrder ?? 999;
+        const orderB = b.displayOrder ?? 999;
+        return orderA - orderB;
+      });
+
+      // Cache the result
+      if (this.cacheEnabled) {
+        cache.set(cacheKey, mergedCategories, CACHE_TTL.CATEGORIES);
+      }
+
+      return mergedCategories;
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('Failed to fetch categories from Strapi, using local data:', error);
+      }
+      // Fall back to local product categories
+      return productCategories;
+    }
+  }
+
+  /**
+   * Fetches product models from Strapi
+   * Falls back to local data on error
+   */
+  async fetchProductModels(): Promise<ProductModel[]> {
+    const cacheKey = createCacheKey('product-models');
+
+    // Check cache first
+    if (this.cacheEnabled) {
+      const cached = cache.get<ProductModel[]>(cacheKey);
+      if (cached) return cached;
+    }
+
+    try {
+      // Build query: isActive=true, populate category, sort by displayOrder
+      const queryParams = buildStrapiQuery({
+        populate: ['category'],
+        filters: {
+          isActive: { $eq: true },
+        },
+        sort: ['displayOrder:asc'],
+        pagination: { pageSize: 100 },
+      });
+
+      const response = await httpClient.get<StrapiResponse<StrapiProductModel[]>>(
+        `/product-models${queryParams}`
+      );
+      const validatedResponse = validateStrapiResponse<StrapiProductModel[]>(response);
+
+      // Transform to app format: id = slug, categoryId = category.slug
+      const models: ProductModel[] = validatedResponse.data.map((model) => ({
+        id: model.slug, // Use slug as id to match app MODEL_IDS
+        name: model.name,
+        slug: model.slug,
+        categoryId: model.category?.slug || '',
+      }));
+
+      // Cache the result
+      if (this.cacheEnabled) {
+        cache.set(cacheKey, models, CACHE_TTL.CATEGORIES);
+      }
+
+      return models;
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('Failed to fetch product models from Strapi, using local data:', error);
+      }
+      // Fall back to local product models
+      return localProductModels;
+    }
+  }
+
   // --- App Settings Methods ---
 
   /**
@@ -771,6 +953,8 @@ const strapiApiExport = {
   syncFavorites: strapiApi.syncFavorites.bind(strapiApi),
   fetchStores: strapiApi.fetchStores.bind(strapiApi),
   fetchAppSettings: strapiApi.fetchAppSettings.bind(strapiApi),
+  fetchCategories: strapiApi.fetchCategories.bind(strapiApi),
+  fetchProductModels: strapiApi.fetchProductModels.bind(strapiApi),
   login: strapiApi.login.bind(strapiApi),
   register: strapiApi.register.bind(strapiApi),
   validateToken: strapiApi.validateToken.bind(strapiApi),

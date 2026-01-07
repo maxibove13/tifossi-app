@@ -29,6 +29,10 @@ export interface ApiInterface {
   // App settings methods
   fetchAppSettings(): Promise<AppSettings>;
 
+  // Category and model methods
+  fetchCategories(): Promise<import('../../_types/category').Category[]>;
+  fetchProductModels(): Promise<import('../../_types/model').ProductModel[]>;
+
   // Authentication methods
   login(credentials: {
     email: string;

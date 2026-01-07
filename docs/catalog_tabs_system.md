@@ -16,19 +16,20 @@ The catalog screen implements a horizontal scrolling tab bar for the main produc
 
 This primary navigation system has the following characteristics:
 
-- **Data Source**: `CategoryData.mainCategories` which combines:
+- **Data Source**: `useCategories()` hook which fetches from Strapi API with local fallback. Combines:
   - Regular product categories from `productCategories`
-  - Product label categories from `labelCategories`
+  - Product label categories from `labelCategories` (excludes HIGHLIGHTED - home screen only)
   - The "Todo" category at the beginning
 - **Default Selection**: First category ("Todo") or the category specified in URL parameters
 - **Behavior**: Selecting a category or label filters products and updates the available models
+- **Loading State**: Shows loading indicator while categories are being fetched via `isLoadingCategories`
 - **UI Implementation**: Custom `TabBar` component with automatic scrolling to center the active tab
 
 ### 2. Secondary Navigation (Models)
 
 Below the primary tabs is another horizontal scrolling tab bar for models specific to the selected regular category:
 
-- **Data Source**: Models filtered from `ModelsData.productModels` using `ModelsData.getModelsByCategory`
+- **Data Source**: `useProductModels()` hook which fetches from Strapi API with local fallback via `getModelsByCategory()`
 - **Default Selection**: "Todos" (all) model or the model specified in URL parameters
 - **Behavior**: Only displayed when:
   - The selected category is a regular product category (not a label-based category)
@@ -304,18 +305,18 @@ The availability of models is controlled by the category change effect:
 ```typescript
 useEffect(() => {
   // Check if the selected category is a regular product category or a label-based category
-  const selectedCategory = CategoryData.mainCategories.find((cat) => cat.id === activeCategoryId);
+  const selectedCategory = mainCategories.find((cat) => cat.id === activeCategoryId);
   const isLabelCategory = selectedCategory?.isLabel || activeCategoryId === 'todo';
 
   // Don't show secondary tabs for "Todo" or label-based categories
   if (isLabelCategory) {
     setAvailableModels([]);
   } else {
-    // Get models for the selected category
-    const modelsForCategory = ModelsData.getModelsByCategory(activeCategoryId);
+    // Get models for the selected category (from useProductModels hook)
+    const modelsForCategory = getModelsByCategory(activeCategoryId);
     setAvailableModels(modelsForCategory);
   }
-}, [activeCategoryId, params.model]);
+}, [activeCategoryId, params.model, mainCategories, getModelsByCategory]);
 ```
 
 This ensures that:
@@ -389,3 +390,29 @@ categories.forEach((categoryId) => {
   categoryModelMap[categoryId] = ModelsData.getModelsByCategory(categoryId);
 });
 ```
+
+## API Integration
+
+The catalog system fetches categories and models from the Strapi API with automatic fallback to local data.
+
+### useCategories Hook
+
+```typescript
+const { mainCategories, labelCategories, productCategories, isLoadingCategories } = useCategories();
+```
+
+- Fetches categories from `strapiApi.fetchCategories()`
+- Falls back to local `CategoryData` if API fails
+- Caches results to avoid repeated API calls
+- Excludes HIGHLIGHTED label from `labelCategories` (used only on home screen)
+
+### useProductModels Hook
+
+```typescript
+const { productModels, getModelsByCategory, isLoadingModels } = useProductModels();
+```
+
+- Fetches models from `strapiApi.fetchProductModels()`
+- Falls back to local `ModelsData` if API fails
+- Provides `getModelsByCategory(categoryId)` for filtered model lists
+- Caches results to avoid repeated API calls
