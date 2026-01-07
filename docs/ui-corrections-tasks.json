@@ -420,11 +420,12 @@
         {
           "id": "CARRITO-002",
           "description": "Diferenciar/separar dos escenarios: A) Carrito vacío (motivar ir a Tienda), B) No ha iniciado sesión (motivar iniciar sesión). Si el User agrega productos sin sesión, forzar inicio de sesión al tap 'Comprar ahora'",
-          "component": "app/(tabs)/cart.tsx",
+          "component": "app/(tabs)/cart.tsx, app/_components/common/EmptyState.tsx",
           "needsMoreContext": false,
           "needsFigma": false,
-          "status": "ready",
-          "implementation": "Same pattern as FAVORITOS-002: IF not logged in AND cart empty -> show ONLY AuthPrompt. IF logged in AND cart empty -> show ONLY EmptyCart. IF cart has items AND not logged in -> show cart items, on 'Comprar ahora' tap redirect to login with returnUrl to checkout. Guest checkout flow may already handle this - verify current behavior."
+          "status": "completed",
+          "completedAt": "2026-01-07",
+          "implementation": "Cart uses shared EmptyState component with 'emptyCart' variant when empty. When cart has items but user not logged in, AuthPrompt appears above checkout button. Guest checkout flow redirects appropriately on 'Comprar ahora'."
         }
       ]
     },
