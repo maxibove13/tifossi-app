@@ -60,12 +60,14 @@ const styles = StyleSheet.create({
     color: colors.background.light,
   },
   buttonText: {
-    color: colors.secondary,
+    color: '#909090',
     fontSize: fontSizes.sm,
     fontFamily: fonts.secondary,
     fontWeight: '400',
-    lineHeight: (lineHeights.sm * 1.333) / ((fontSizes.sm * 1.333) / 12),
-    textDecorationLine: 'underline',
+    lineHeight: 16,
+    paddingBottom: 0.5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#909090',
   },
   buttonTextDark: {
     color: colors.background.light,

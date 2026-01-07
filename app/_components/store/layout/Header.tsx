@@ -246,13 +246,13 @@ const styles = StyleSheet.create({
     paddingTop: 64, // Adjusted padding for safe area
     paddingBottom: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#FBFBFB', // Match existing header background
+    backgroundColor: colors.background.offWhite,
     alignItems: 'center', // Center items vertically within the header height
   },
   invisibleHeader: {
     width: '100%',
     paddingTop: 96, // Safe area top padding (spacing.xxxxl)
-    backgroundColor: '#FBFBFB',
+    backgroundColor: colors.background.offWhite,
   },
   row: {
     flex: 1,
@@ -280,8 +280,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   logo: {
-    height: '100%', // Fill the container height
-    width: '100%', // Adjust width automatically based on resizeMode
+    height: '100%',
+    aspectRatio: 424 / 408, // Match actual image ratio for proper sizing
   },
   placeholder: {
     width: 60,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    width: 60,
+    width: 80,
     justifyContent: 'flex-end',
   },
   // Removed unused styles like toggleParent, toggle, etc.

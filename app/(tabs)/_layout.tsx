@@ -5,6 +5,7 @@ import TabBar from '../_components/navigation/TabBar';
 import type { TabRoute } from '../_components/navigation/TabBar'; // Keep this type if used by TabBar or internal logic
 import Header from '../_components/store/layout/Header';
 import ScreenHeader from '../_components/common/ScreenHeader';
+import { colors } from '../_styles/colors';
 
 // Placeholder for actual icon components if TabBar needs them passed this way,
 // or if they are used in screenOptions. The original diff didn't show them in Tabs.Screen options directly.
@@ -76,7 +77,7 @@ export default function TabLayout() {
             title: 'Tienda', // Title for the tab, accessibility
             headerShown: true,
             header: () => (
-              <View>
+              <View style={{ backgroundColor: colors.background.offWhite }}>
                 <Header title="Tienda" variant="store" />
                 <ScreenHeader title="Tienda" />
               </View>
@@ -90,7 +91,7 @@ export default function TabLayout() {
             title: 'Favoritos',
             headerShown: true,
             header: () => (
-              <View>
+              <View style={{ backgroundColor: colors.background.offWhite }}>
                 <Header title="Favoritos" variant="store" invisible={true} />
                 <ScreenHeader title="Favoritos" />
               </View>
@@ -112,7 +113,7 @@ export default function TabLayout() {
             title: 'Carrito',
             headerShown: true,
             header: () => (
-              <View>
+              <View style={{ backgroundColor: colors.background.offWhite }}>
                 <Header title="Carrito" variant="store" invisible={true} />
                 <ScreenHeader title="Carrito" />
               </View>
@@ -126,7 +127,7 @@ export default function TabLayout() {
             title: 'Perfil',
             headerShown: true,
             header: () => (
-              <View>
+              <View style={{ backgroundColor: colors.background.offWhite }}>
                 <Header title="Perfil" variant="store" invisible={true} />
                 <ScreenHeader title="Perfil" />
               </View>
