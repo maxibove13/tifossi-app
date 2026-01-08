@@ -106,6 +106,21 @@ async function initializeDefaultData(strapi: any) {
 
       strapi.log.info('Default product statuses created');
     }
+
+    // Ensure app settings single type exists to avoid 404 on /app-settings
+    const appSettings = await strapi.db
+      .query('api::app-setting.app-setting')
+      .findMany({ limit: 1 });
+
+    if (appSettings.length === 0) {
+      await strapi.db.query('api::app-setting.app-setting').create({
+        data: {
+          supportPhoneNumber: '+59899000000',
+          businessName: 'Tifossi',
+        },
+      });
+      strapi.log.info('Default app settings created');
+    }
   } catch (error) {
     strapi.log.error('Error initializing default data:', error);
   }

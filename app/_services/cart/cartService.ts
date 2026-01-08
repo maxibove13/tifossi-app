@@ -45,7 +45,7 @@ class CartService {
       }
 
       // httpClient handles auth token via interceptors
-      const response = await httpClient.get('/users/me?populate=cart');
+      const response = await httpClient.get('/users/me');
 
       // Handle different response formats - cart is a JSON field on user
       const userData = response?.data || response;

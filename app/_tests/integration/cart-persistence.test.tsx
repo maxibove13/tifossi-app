@@ -366,7 +366,7 @@ describe('Cart Persistence', () => {
 
       // Mock the specific calls for migration flow
       // The actual implementation:
-      // 1. Fetches user's existing cart via GET /users/me?populate=cart
+      // 1. Fetches user's existing cart via GET /users/me
       // 2. Merges locally
       // 3. Saves via PUT /user-profile/me
       const httpClient = require('../../_services/api/httpClient').default;
@@ -500,7 +500,7 @@ describe('Cart Persistence', () => {
 
       // Mock user has same item on server
       // The implementation:
-      // 1. Fetches server cart via GET /users/me?populate=cart
+      // 1. Fetches server cart via GET /users/me
       // 2. Merges locally (adds quantities for matching items)
       // 3. Saves via PUT /user-profile/me
       const httpClient = require('../../_services/api/httpClient').default;

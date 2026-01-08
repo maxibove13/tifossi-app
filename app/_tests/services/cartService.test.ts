@@ -38,7 +38,7 @@ describe('CartService', () => {
       const result = await cartService.fetchUserCart();
 
       expect(result).toEqual(mockCartItems);
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/users/me?populate=cart');
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/users/me');
     });
 
     it('should handle different response formats', async () => {

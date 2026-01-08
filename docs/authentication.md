@@ -538,6 +538,9 @@ Current security measures:
 
    This system prevents common issues where expired/invalid tokens would cause 401 errors on public endpoints that should work without authentication.
 
+   **Intelligent 401 Response Handling:**
+   The HTTP client only clears the auth token on 401 responses when an Authorization header was actually sent with the request. This prevents false token invalidation for unauthenticated requests to endpoints that require authentication.
+
 5. **URL Validation**:
    The HTTP client validates all URLs before making requests to prevent common mistakes:
    - Rejects absolute URLs (must use relative paths)
