@@ -47,7 +47,7 @@ function createStrapiMock({ user = null, orders = [] } = {}) {
   };
 
   const orderQuery = {
-    updateMany: jest.fn(async () => ({ count: orders.length })),
+    findMany: jest.fn(async () => orders),
   };
 
   const jwtService = {
@@ -83,6 +83,9 @@ function createStrapiMock({ user = null, orders = [] } = {}) {
       }
       return { service: jest.fn(() => ({})) };
     }),
+    entityService: {
+      update: jest.fn(async () => ({})),
+    },
     log: {
       info: jest.fn(),
       warn: jest.fn(),
@@ -90,7 +93,7 @@ function createStrapiMock({ user = null, orders = [] } = {}) {
     },
   };
 
-  return { userQuery, orderQuery, jwtService, uploadService };
+  return { userQuery, orderQuery, jwtService, uploadService, entityService: global.strapi.entityService };
 }
 
 describe('deleteAccount', () => {
@@ -140,24 +143,30 @@ describe('deleteAccount', () => {
       firebaseUid: 'firebase-uid-123',
       profilePicture: null,
     };
+    const orders = [{ id: 101 }, { id: 102 }];
     const ctx = createCtx({ authHeader: 'Bearer valid-token' });
-    const { userQuery, orderQuery } = createStrapiMock({ user: mockUser });
+    const { userQuery, orderQuery, entityService } = createStrapiMock({ user: mockUser, orders });
 
     await controller.deleteAccount(ctx);
 
     // Verify orders were anonymized
-    expect(orderQuery.updateMany).toHaveBeenCalledWith({
+    expect(orderQuery.findMany).toHaveBeenCalledWith({
       where: { user: 1 },
-      data: expect.objectContaining({
-        user: null,
-        shippingAddress: null,
-        customerNotes: null,
-        notes: null,
-      }),
+      select: ['id'],
     });
-    expect(orderQuery.updateMany.mock.calls[0][0].data.guestEmail).toMatch(
-      /^deleted_\d+@deleted\.tifossi\.app$/
-    );
+    expect(entityService.update).toHaveBeenCalledTimes(orders.length);
+    for (const call of entityService.update.mock.calls) {
+      expect(call[0]).toBe('api::order.order');
+      expect(call[2].data).toEqual(
+        expect.objectContaining({
+          user: null,
+          shippingAddress: null,
+          customerNotes: null,
+          notes: null,
+        })
+      );
+      expect(call[2].data.guestEmail).toMatch(/^deleted_\d+_\d+@deleted\.tifossi\.app$/);
+    }
 
     // Verify user was deleted
     expect(userQuery.delete).toHaveBeenCalledWith({ where: { id: 1 } });
