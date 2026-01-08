@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-end',
     paddingBottom: 2,
-    opacity: 0.25,
   },
   logo: {
     width: 40,
