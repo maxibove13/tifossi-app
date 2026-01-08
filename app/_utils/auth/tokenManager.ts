@@ -14,6 +14,7 @@ const firebaseAuth = firebaseAuthExport.service;
 const FIREBASE_TOKEN_KEY = 'tifossi_firebase_token';
 const STRAPI_TOKEN_KEY = 'tifossi_strapi_token';
 const TOKEN_METADATA_KEY = 'tifossi_token_metadata';
+const AUTH_TOKEN_KEY = 'tifossi_auth_token';
 
 // Token metadata interface
 interface TokenMetadata {
@@ -95,6 +96,7 @@ class TokenManager {
         SecureStore.setItemAsync(FIREBASE_TOKEN_KEY, firebaseToken),
         SecureStore.setItemAsync(STRAPI_TOKEN_KEY, strapiToken),
         SecureStore.setItemAsync(TOKEN_METADATA_KEY, JSON.stringify(metadata)),
+        SecureStore.setItemAsync(AUTH_TOKEN_KEY, strapiToken),
       ]);
     } catch {
       throw new Error('Failed to store authentication tokens');
