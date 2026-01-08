@@ -70,16 +70,19 @@ function createStrapiMock({ user = null, orders = [] } = {}) {
         return {};
       }),
     },
-    plugin: jest.fn(() => ({
-      service: jest.fn(() => jwtService),
-    })),
-    plugins: {
-      upload: {
-        services: {
-          upload: uploadService,
-        },
-      },
-    },
+    plugin: jest.fn((name) => {
+      if (name === 'users-permissions') {
+        return {
+          service: jest.fn((serviceName) => (serviceName === 'jwt' ? jwtService : {})),
+        };
+      }
+      if (name === 'upload') {
+        return {
+          service: jest.fn((serviceName) => (serviceName === 'upload' ? uploadService : {})),
+        };
+      }
+      return { service: jest.fn(() => ({})) };
+    }),
     log: {
       info: jest.fn(),
       warn: jest.fn(),

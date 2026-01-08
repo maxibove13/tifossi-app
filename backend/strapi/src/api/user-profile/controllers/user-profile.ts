@@ -614,7 +614,7 @@ export default {
       // 2. Delete profile picture from media library
       if (user.profilePicture) {
         try {
-          await strapi.plugins.upload.services.upload.remove(user.profilePicture);
+          await strapi.plugin('upload').service('upload').remove(user.profilePicture);
         } catch (uploadError) {
           // Log but don't fail deletion - user PII still removed
           strapi.log.error('[deleteAccount] Failed to remove profile picture:', uploadError);
