@@ -607,14 +607,18 @@ export default {
 
       const deletionEmailPrefix = `deleted_${Date.now()}`;
       for (const order of orders) {
+        const orderUpdate: Record<string, any> = {
+          user: null,
+          guestEmail: `${deletionEmailPrefix}_${order.id}@deleted.tifossi.app`,
+          shippingAddress: null,
+          customerNotes: null,
+          notes: null, // Staff may have entered customer info
+          internalNotes: null,
+          metadata: null,
+        };
+
         await strapi.entityService.update('api::order.order', order.id, {
-          data: {
-            user: null,
-            guestEmail: `${deletionEmailPrefix}_${order.id}@deleted.tifossi.app`,
-            shippingAddress: null,
-            customerNotes: null,
-            notes: null, // Staff may have entered customer info
-          },
+          data: orderUpdate,
         });
       }
 
