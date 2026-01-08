@@ -66,6 +66,8 @@ jest.mock('../_services/auth/authService', () => {
     isAppleSignInAvailable: jest.fn(),
     getAppleCredentialState: jest.fn(),
     cleanup: jest.fn(),
+    reportPendingOrphan: jest.fn().mockResolvedValue(undefined),
+    deleteAccount: jest.fn().mockResolvedValue({ success: true }),
   };
 
   return {

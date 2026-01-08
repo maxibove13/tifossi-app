@@ -60,5 +60,24 @@ export default {
         middlewares: ['global::jwt-auth'],
       },
     },
+    // Account deletion routes
+    {
+      method: 'POST',
+      path: '/user-profile/me/delete',
+      handler: 'user-profile.deleteAccount',
+      config: {
+        // Custom auth handling in controller for explicit idempotency
+        auth: false,
+      },
+    },
+    {
+      method: 'POST',
+      path: '/user-profile/report-orphan',
+      handler: 'user-profile.reportOrphan',
+      config: {
+        // Uses signed deletionReceipt - no auth needed
+        auth: false,
+      },
+    },
   ],
 };

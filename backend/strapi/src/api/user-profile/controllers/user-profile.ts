@@ -1,9 +1,16 @@
 /**
  * User Profile Controller
- * Handles authenticated user profile operations including cart and favorites
+ * Handles authenticated user profile operations including cart, favorites, and account deletion
  */
 
 import { Context } from 'koa';
+import jwt from 'jsonwebtoken';
+
+// Fail fast if DELETION_SECRET not configured in production
+const DELETION_SECRET = process.env.DELETION_SECRET;
+if (process.env.NODE_ENV === 'production' && !DELETION_SECRET) {
+  throw new Error('DELETION_SECRET env var is required in production');
+}
 
 interface CartItem {
   productId: string;
@@ -549,4 +556,177 @@ export default {
       ctx.internalServerError('Failed to set default address');
     }
   },
+
+  /**
+   * Delete user account
+   * POST /api/user-profile/me/delete
+   *
+   * Deletes all user data and anonymizes orders for legal compliance.
+   * Returns a signed deletion receipt for orphan reporting if Firebase deletion fails.
+   */
+  async deleteAccount(ctx: Context): Promise<void> {
+    // Manual JWT validation for explicit idempotency handling
+    const authHeader = ctx.request.header?.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      ctx.unauthorized('Missing authorization');
+      return;
+    }
+
+    const token = authHeader.substring(7);
+    const jwtService = strapi.plugin('users-permissions').service('jwt');
+    let userId: number;
+    try {
+      const decoded = await jwtService.verify(token);
+      userId = decoded.id;
+    } catch {
+      ctx.unauthorized('Invalid token');
+      return;
+    }
+
+    // Check if user exists (explicit idempotency)
+    const user = await strapi.db.query('plugin::users-permissions.user').findOne({
+      where: { id: userId },
+      populate: ['profilePicture'],
+    });
+
+    if (!user) {
+      // User already deleted - return success with alreadyDeleted flag
+      ctx.body = { success: true, alreadyDeleted: true };
+      return;
+    }
+
+    const { appleAuthorizationCode } = (ctx.request.body as any) || {};
+    const firebaseUid = user.firebaseUid;
+
+    try {
+      // 1. Anonymize orders (scrub ALL potential PII fields)
+      await strapi.db.query('api::order.order').updateMany({
+        where: { user: user.id },
+        data: {
+          user: null,
+          guestEmail: `deleted_${Date.now()}@deleted.tifossi.app`,
+          shippingAddress: null,
+          customerNotes: null,
+          notes: null, // Staff may have entered customer info
+        },
+      });
+
+      // 2. Delete profile picture from media library
+      if (user.profilePicture) {
+        try {
+          await strapi.plugins.upload.services.upload.remove(user.profilePicture);
+        } catch (uploadError) {
+          // Log but don't fail deletion - user PII still removed
+          strapi.log.error('[deleteAccount] Failed to remove profile picture:', uploadError);
+        }
+      }
+
+      // 3. Delete user record
+      await strapi.db.query('plugin::users-permissions.user').delete({
+        where: { id: user.id },
+      });
+
+      // 4. Apple token revocation (if applicable)
+      if (appleAuthorizationCode) {
+        await revokeAppleTokens(appleAuthorizationCode);
+      }
+
+      // 5. Create signed deletion receipt for orphan reporting
+      // Use a fallback secret for development/testing
+      const secret = DELETION_SECRET || 'dev-deletion-secret-do-not-use-in-prod';
+      const deletionReceipt = jwt.sign({ uid: firebaseUid }, secret, { expiresIn: '1h' });
+
+      strapi.log.info(`[deleteAccount] User deleted: ${user.id}, firebaseUid: ${firebaseUid}`);
+      ctx.body = { success: true, deletionReceipt };
+    } catch (error) {
+      strapi.log.error('[deleteAccount] Failed:', error);
+      ctx.internalServerError('Failed to delete account');
+    }
+  },
+
+  /**
+   * Report orphan Firebase UID
+   * POST /api/user-profile/report-orphan
+   *
+   * Called by client when Firebase deletion fails after Strapi deletion succeeds.
+   * Validates the signed deletion receipt and logs the orphan for manual cleanup.
+   */
+  async reportOrphan(ctx: Context): Promise<void> {
+    const { deletionReceipt } = (ctx.request.body as any) || {};
+    if (!deletionReceipt) {
+      ctx.badRequest('Missing deletionReceipt');
+      return;
+    }
+
+    try {
+      // Use a fallback secret for development/testing
+      const secret = DELETION_SECRET || 'dev-deletion-secret-do-not-use-in-prod';
+      const decoded = jwt.verify(deletionReceipt, secret) as { uid: string };
+      const firebaseUid = decoded.uid;
+      strapi.log.warn(`[orphan] Firebase UID: ${firebaseUid}`);
+      ctx.body = { success: true };
+    } catch {
+      ctx.badRequest('Invalid or expired deletionReceipt');
+    }
+  },
 };
+
+/**
+ * Revoke Apple tokens for account deletion compliance
+ */
+async function revokeAppleTokens(authorizationCode: string): Promise<void> {
+  const clientId = process.env.APPLE_CLIENT_ID;
+  const clientSecret = process.env.APPLE_CLIENT_SECRET; // Pre-generated JWT or generate dynamically
+
+  if (!clientId || !clientSecret) {
+    strapi.log.warn(
+      '[Apple] Missing APPLE_CLIENT_ID or APPLE_CLIENT_SECRET - skipping token revocation'
+    );
+    return;
+  }
+
+  try {
+    // 1. Exchange code for tokens
+    const tokenResponse = await fetch('https://appleid.apple.com/auth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code: authorizationCode,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      strapi.log.warn('[Apple] Token exchange failed - code may be expired or already used');
+      return;
+    }
+
+    const tokenData = await tokenResponse.json();
+    const { refresh_token, access_token } = tokenData;
+
+    // Apple may not return refresh_token if app isn't configured for it
+    const tokenToRevoke = refresh_token || access_token;
+    if (!tokenToRevoke) {
+      strapi.log.warn('[Apple] No revocable token received');
+      return;
+    }
+
+    // 2. Revoke using available token
+    await fetch('https://appleid.apple.com/auth/revoke', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        token: tokenToRevoke,
+        token_type_hint: refresh_token ? 'refresh_token' : 'access_token',
+      }),
+    });
+
+    strapi.log.info('[Apple] Token revoked');
+  } catch (error) {
+    strapi.log.error('[Apple] Token revocation failed:', error);
+  }
+}

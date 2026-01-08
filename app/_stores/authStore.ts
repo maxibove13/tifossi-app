@@ -33,6 +33,7 @@ const AUTH_TOKEN_KEY = 'tifossi_auth_token';
 type ExtendedAuthState = AuthStateFromTypes & {
   sendPasswordReset: (email: string) => Promise<void>;
   clearAuthData: () => void;
+  deleteAccount: (password?: string) => Promise<{ success: boolean; error?: string }>;
 };
 
 // Use type assertion to resolve Zustand type issues
@@ -59,6 +60,11 @@ export const useAuthStore = create<ExtendedAuthState>()(
           try {
             // Initialize authentication services and deep linking
             await Promise.all([authService.initialize(), initializeDeepLinking()]);
+
+            // Report any pending orphan Firebase UIDs (crash recovery)
+            authService.reportPendingOrphan().catch(() => {
+              // Silently ignore - will retry on next startup
+            });
 
             // Set up Firebase auth state listener for automatic state synchronization
             authService.onAuthStateChanged((firebaseUser) => {
@@ -525,6 +531,28 @@ export const useAuthStore = create<ExtendedAuthState>()(
             isChangingPassword: false,
             isVerifyingEmail: false,
           });
+        },
+
+        // Delete user account
+        deleteAccount: async (password?: string) => {
+          set({ isLoading: true, error: null });
+
+          const result = await authService.deleteAccount(password);
+
+          if (!result.success) {
+            set({ isLoading: false, error: result.error });
+            return result;
+          }
+
+          // Clear local auth state
+          const currentState = get();
+          if (currentState.clearAuthData && typeof currentState.clearAuthData === 'function') {
+            currentState.clearAuthData();
+          }
+          await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+          set({ isInitialized: true, isLoading: false });
+
+          return { success: true };
         },
 
         // Apple Sign-In utility methods
