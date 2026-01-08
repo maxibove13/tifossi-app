@@ -474,7 +474,7 @@ class AuthService {
    */
   async getApiToken(): Promise<string | null> {
     await this.ensureInitialized();
-    return await tokenManager.getApiToken();
+    return await tokenManager.getStrapiToken();
   }
 
   /**

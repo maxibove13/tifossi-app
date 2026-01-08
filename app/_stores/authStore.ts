@@ -92,6 +92,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
                     .getApiToken()
                     .then((apiToken) => {
                       if (apiToken) {
+                        SecureStore.setItemAsync(AUTH_TOKEN_KEY, apiToken).catch(() => {});
                         set({
                           user: firebaseUser,
                           token: apiToken,

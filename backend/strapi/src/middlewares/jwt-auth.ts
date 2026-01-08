@@ -10,9 +10,22 @@
 
 export default (_config: unknown, { strapi }: { strapi: any }) => {
   return async (ctx: any, next: () => Promise<void>) => {
+    const logUnauthorized = (reason: string, errorMessage?: string) => {
+      const requestId = ctx.request.header?.['x-request-id'] || ctx.request.header?.['x-requestid'];
+      const method = ctx.request.method;
+      const path = ctx.request.path;
+      const requestInfo = requestId ? ` requestId=${requestId}` : '';
+      const errorInfo = errorMessage ? ` error=${errorMessage}` : '';
+
+      strapi.log.warn(
+        `[jwt-auth] Unauthorized (${reason}) ${method} ${path}${requestInfo}${errorInfo}`
+      );
+    };
+
     const authHeader = ctx.request.header?.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      logUnauthorized('missing-auth-header');
       return ctx.unauthorized('Missing or invalid Authorization header');
     }
 
@@ -24,6 +37,7 @@ export default (_config: unknown, { strapi }: { strapi: any }) => {
       const { id } = await jwtService.verify(token);
 
       if (!id) {
+        logUnauthorized('invalid-token-payload');
         return ctx.unauthorized('Invalid token payload');
       }
 
@@ -33,6 +47,7 @@ export default (_config: unknown, { strapi }: { strapi: any }) => {
       });
 
       if (!user) {
+        logUnauthorized('user-not-found');
         return ctx.unauthorized('User not found');
       }
 
@@ -41,7 +56,7 @@ export default (_config: unknown, { strapi }: { strapi: any }) => {
 
       await next();
     } catch (error: any) {
-      strapi.log.error('[jwt-auth] Token verification failed:', error.message);
+      logUnauthorized('token-verification-failed', error?.message);
       return ctx.unauthorized('Invalid or expired token');
     }
   };
