@@ -1,4 +1,5 @@
-import { StyleSheet, View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
+import { StyleSheet, View, Text, Pressable, ViewStyle, TextStyle } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, typography, radius } from './styles';
 
 interface ProductInfoHeaderProps {
@@ -24,23 +25,22 @@ export default function ProductInfoHeader({
 }: ProductInfoHeaderProps) {
   return (
     <View style={styles.container}>
-      {/* Discount Label - Top Row (always reserve space for consistent height) */}
-      <Text style={[styles.discountLabel, !isDiscounted && styles.hidden]}>Descuento</Text>
-
-      {/* Product Name and Current Price - Middle Row */}
-      <View style={styles.titleRow}>
-        <Text style={styles.productName}>{productName}</Text>
-        <Text style={styles.currentPrice}>{currentPrice}</Text>
-      </View>
-
-      {/* Personalizable and Original Price - Bottom Row (always reserve space) */}
-      <View style={styles.detailsRow}>
+      {/* Main info row: left column (3 text items) + right column (2 prices) */}
+      <View style={styles.infoRow}>
+        {/* Left column: Discount, Product Name, Personalizable */}
         <View style={styles.leftColumn}>
+          <Text style={[styles.discountLabel, !isDiscounted && styles.hidden]}>Descuento</Text>
+          <Text style={styles.productName} numberOfLines={1}>
+            {productName}
+          </Text>
           <Text style={[styles.featureLabel, !isCustomizable && styles.hidden]}>
             Personalizable
           </Text>
         </View>
+
+        {/* Right column: Current Price, Original Price */}
         <View style={styles.rightColumn}>
+          <Text style={styles.currentPrice}>{currentPrice}</Text>
           <Text style={[styles.originalPrice, !originalPrice && styles.hidden]}>
             {originalPrice || '$0'}
           </Text>
@@ -48,34 +48,40 @@ export default function ProductInfoHeader({
       </View>
 
       {/* Add to Cart Button */}
-      <TouchableOpacity
-        style={[styles.addToCartButton, disabled && styles.addToCartButtonDisabled]}
+      <Pressable
         onPress={onAddToCart}
-        activeOpacity={0.8}
         disabled={disabled}
         testID="add-to-cart-button"
+        style={({ pressed }) => [
+          styles.addToCartButton,
+          disabled && styles.addToCartButtonDisabled,
+          pressed && styles.addToCartButtonPressed,
+        ]}
       >
-        <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
-          {addToCartLabel}
-        </Text>
-      </TouchableOpacity>
+        <LinearGradient colors={[...colors.secondary.gradient]} style={styles.buttonGradient}>
+          <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
+            {addToCartLabel}
+          </Text>
+        </LinearGradient>
+      </Pressable>
     </View>
   );
 }
 
 type Styles = {
   container: ViewStyle;
-  discountLabel: TextStyle;
-  titleRow: ViewStyle;
-  detailsRow: ViewStyle;
+  infoRow: ViewStyle;
   leftColumn: ViewStyle;
   rightColumn: ViewStyle;
+  discountLabel: TextStyle;
   productName: TextStyle;
   featureLabel: TextStyle;
   currentPrice: TextStyle;
   originalPrice: TextStyle;
   addToCartButton: ViewStyle;
   addToCartButtonDisabled: ViewStyle;
+  addToCartButtonPressed: ViewStyle;
+  buttonGradient: ViewStyle;
   buttonText: TextStyle;
   buttonTextDisabled: TextStyle;
   hidden: TextStyle;
@@ -83,54 +89,51 @@ type Styles = {
 
 const styles = StyleSheet.create<Styles>({
   container: {
-    paddingHorizontal: spacing.lg,
     marginTop: spacing.md,
-    gap: 0,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    gap: spacing.xxl,
+  },
+  leftColumn: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  rightColumn: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
   },
   discountLabel: {
     fontFamily: typography.body.fontFamily,
     fontWeight: '400',
     fontSize: typography.body.fontSize,
+    lineHeight: 16,
     color: colors.accent.discount,
-    marginBottom: 0,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 0,
-  },
-  detailsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-  },
-  leftColumn: {
-    flex: 1,
-    justifyContent: 'flex-start',
-  },
-  rightColumn: {
-    flex: 1,
-    alignItems: 'flex-end',
   },
   productName: {
     fontFamily: typography.productTitle.fontFamily,
     fontWeight: '500',
     fontSize: typography.productTitle.fontSize,
+    lineHeight: 20,
     color: colors.primary.text,
   },
   featureLabel: {
     fontFamily: typography.body.fontFamily,
     fontWeight: '400',
     fontSize: typography.body.fontSize,
+    lineHeight: 16,
     color: colors.secondary.textDisabled,
   },
   currentPrice: {
     fontFamily: typography.productTitle.fontFamily,
     fontWeight: '500',
     fontSize: typography.productTitle.fontSize,
+    lineHeight: 20,
     color: colors.primary.text,
     textAlign: 'right',
   },
@@ -138,6 +141,7 @@ const styles = StyleSheet.create<Styles>({
     fontFamily: typography.body.fontFamily,
     fontWeight: '400',
     fontSize: typography.body.fontSize,
+    lineHeight: 16,
     color: colors.secondary.textDisabled,
     textAlign: 'right',
     textDecorationLine: 'line-through',
@@ -147,20 +151,29 @@ const styles = StyleSheet.create<Styles>({
     height: 48,
     borderRadius: radius.xxl,
     marginTop: spacing.md,
+    overflow: 'hidden',
+  },
+  addToCartButtonDisabled: {
+    opacity: 0.5,
+  },
+  addToCartButtonPressed: {
+    opacity: 0.8,
+  },
+  buttonGradient: {
+    flex: 1,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
-    backgroundColor: colors.background.overlay,
-  },
-  addToCartButtonDisabled: {
-    opacity: 0.5,
+    gap: 10,
   },
   buttonText: {
     fontFamily: typography.button.fontFamily,
     fontWeight: '500',
     fontSize: typography.button.fontSize,
-    color: colors.primary.text,
+    lineHeight: 24,
+    color: colors.primary.background,
     textAlign: 'center',
   },
   buttonTextDisabled: {

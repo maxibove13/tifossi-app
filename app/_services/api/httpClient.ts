@@ -13,6 +13,25 @@ import { isPublicPath, validateHttpClientPath } from './publicPaths';
 // Configuration constants
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 const AUTH_TOKEN_KEY = 'tifossi_auth_token';
+let cachedAuthToken: string | null = null;
+
+const logAuthTokenEvent = (event: string, source?: string) => {
+  const suffix = source ? ` source=${source}` : '';
+  const message = `[AuthToken] ${event}${suffix}`;
+
+  console.info(message);
+};
+
+export const setHttpClientAuthToken = (token: string | null, source?: string) => {
+  const normalizedToken = token ?? null;
+  const previousToken = cachedAuthToken;
+  cachedAuthToken = normalizedToken;
+
+  if (previousToken !== normalizedToken) {
+    const event = normalizedToken ? (previousToken ? 'cache-rotate' : 'cache-set') : 'cache-clear';
+    logAuthTokenEvent(event, source);
+  }
+};
 
 /**
  * Custom params serializer for Strapi API compatibility
@@ -62,9 +81,26 @@ class HttpClient {
         // Add auth token if available (skip for public endpoints)
         if (!isPublicPath(config.url)) {
           try {
-            const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-            if (token) {
-              config.headers.Authorization = `Bearer ${token}`;
+            const configHeaders = config.headers as any;
+            const existingAuthHeader =
+              (typeof configHeaders?.get === 'function' && configHeaders.get('Authorization')) ||
+              configHeaders?.Authorization ||
+              configHeaders?.authorization;
+            let token = cachedAuthToken;
+
+            if (!token) {
+              token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+              if (token) {
+                setHttpClientAuthToken(token, 'securestore-cache');
+              }
+            }
+
+            if (!existingAuthHeader && token) {
+              if (typeof configHeaders?.set === 'function') {
+                configHeaders.set('Authorization', `Bearer ${token}`);
+              } else {
+                config.headers.Authorization = `Bearer ${token}`;
+              }
             }
           } catch {}
         }
@@ -104,6 +140,7 @@ class HttpClient {
 
           if (authHeader) {
             await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+            setHttpClientAuthToken(null, 'response-401');
           }
         }
 

@@ -394,37 +394,10 @@ export default function CatalogScreen() {
       return 'Tienda';
     }
 
-    // Get the current category info
+    // Always show only the main category name, never the subcategory/model
     const selectedCategory = mainCategories.find((c) => c.id === activeCategoryId);
-
-    // First priority: Label categories should just show their label name
-    if (selectedCategory?.isLabel) {
+    if (selectedCategory) {
       return selectedCategory.name;
-    }
-
-    // When the activeModelId is the ALL model, we should show category title or default title
-    if (activeModelId === MODEL_IDS.ALL) {
-      // If it's a regular category, show category name
-      if (activeCategoryId && activeCategoryId !== CATEGORY_IDS.ALL) {
-        const categoryName = selectedCategory?.name;
-        if (categoryName) {
-          return categoryName;
-        }
-      }
-
-      // Default title without model suffix
-      return rawPageTitle;
-    }
-
-    // If regular category and model selected, show "Category - Model"
-    if (!selectedCategory?.isLabel && activeModelId !== MODEL_IDS.ALL) {
-      const categoryName = selectedCategory?.name;
-
-      const modelName = availableModels.find((m) => m.id === activeModelId)?.name;
-
-      if (categoryName && modelName) {
-        return `${categoryName} - ${modelName}`;
-      }
     }
 
     // For section titles, use the mapping
