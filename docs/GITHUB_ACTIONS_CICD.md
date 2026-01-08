@@ -18,6 +18,7 @@ The Tifossi project uses a unified CI/CD pipeline (`.github/workflows/cicd.yml`)
 #### 1. Quality Checks (Always runs)
 
 - Frontend linting and type checking
+- Backend type checking
 - Unit test execution
 - Backend linting
 - Code coverage reporting
@@ -33,6 +34,7 @@ The Tifossi project uses a unified CI/CD pipeline (`.github/workflows/cicd.yml`)
 #### 3. Build Backend
 
 - Strapi production build verification
+- Backend type checking
 - Dependency installation
 - Build artifact verification
 - **Runs when**: Push to main or manual trigger
@@ -101,6 +103,7 @@ Build Profile:
 - `STRAPI_ADMIN_JWT_SECRET`: Admin JWT secret
 - `STRAPI_TRANSFER_TOKEN_SALT`: Transfer token salt
 - `STRAPI_JWT_SECRET`: JWT secret
+- `DELETION_SECRET`: Secret for account deletion operations
 
 ### Cloudinary
 

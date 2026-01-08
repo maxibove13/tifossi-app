@@ -139,7 +139,7 @@ interface MockOrder {
 
 ### Cart Endpoints
 
-- `GET /api/users/me?populate=cart` - Get cart (via user profile, built-in Strapi endpoint)
+- `GET /api/users/me` - Get cart (cart is a JSON field on user)
 - `PUT /api/user-profile/me` - Sync cart (send `{ cart: [...] }`) - custom endpoint
 
 ### Order Endpoints

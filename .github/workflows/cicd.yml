@@ -104,6 +104,10 @@ jobs:
         working-directory: backend/strapi
         run: npm ci
 
+      - name: Run backend type checking
+        working-directory: backend/strapi
+        run: npm run typecheck
+
       - name: Run frontend linting
         run: npm run lint
 
@@ -239,6 +243,7 @@ jobs:
           API_TOKEN_SALT: build-api-token-salt
           ADMIN_JWT_SECRET: build-admin-jwt-secret
           TRANSFER_TOKEN_SALT: build-transfer-token-salt
+          DELETION_SECRET: build-deletion-secret
 
       - name: Verify build
         working-directory: backend/strapi

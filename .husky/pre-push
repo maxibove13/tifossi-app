@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
 
-echo "Running full type check before push..."
+set -e
+
+echo "Running full type checks before push..."
 npm run typecheck
+npm run typecheck --prefix backend/strapi

@@ -102,7 +102,7 @@ export const useCartStore = create<CartState>()(
         try {
           set({ isLoading: true, error: null });
           // Use Strapi's built-in /users/me endpoint
-          const response = await httpClient.get('/users/me?populate=cart');
+          const response = await httpClient.get('/users/me');
 
           // Extract cart from user response (cart is a JSON field on user)
           const userData = response?.data || response;
@@ -285,7 +285,7 @@ export const useCartStore = create<CartState>()(
           set({ isLoading: true, error: null });
 
           // Fetch current server cart to merge with guest items
-          const response = await httpClient.get('/users/me?populate=cart');
+          const response = await httpClient.get('/users/me');
           const userData = response?.data || response;
           const serverCart: CartItem[] = Array.isArray(userData?.cart) ? userData.cart : [];
 

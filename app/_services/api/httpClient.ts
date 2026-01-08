@@ -94,9 +94,17 @@ class HttpClient {
         if (__DEV__) {
         }
 
-        // Handle 401 Unauthorized - clear token
+        // Handle 401 Unauthorized - clear token only when it was sent
         if (error.response?.status === 401) {
-          await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+          const configHeaders = error.config?.headers as any;
+          const authHeader =
+            (typeof configHeaders?.get === 'function' && configHeaders.get('Authorization')) ||
+            configHeaders?.Authorization ||
+            configHeaders?.authorization;
+
+          if (authHeader) {
+            await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+          }
         }
 
         return Promise.reject(error);
