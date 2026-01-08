@@ -81,7 +81,10 @@ class HttpClient {
         // Add auth token if available (skip for public endpoints)
         if (!isPublicPath(config.url)) {
           try {
-            const configHeaders = config.headers as any;
+            const configHeaders = (config.headers ?? {}) as any;
+            if (!config.headers) {
+              config.headers = configHeaders;
+            }
             const existingAuthHeader =
               (typeof configHeaders?.get === 'function' && configHeaders.get('Authorization')) ||
               configHeaders?.Authorization ||
@@ -101,6 +104,10 @@ class HttpClient {
               } else {
                 config.headers.Authorization = `Bearer ${token}`;
               }
+            }
+
+            if (!existingAuthHeader && !token) {
+              logAuthTokenEvent('missing', `request:${config.url ?? 'unknown'}`);
             }
           } catch {}
         }

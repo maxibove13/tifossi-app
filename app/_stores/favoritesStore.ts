@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { MMKV } from 'react-native-mmkv';
 import apiManager from '../_services/api';
+import { useAuthStore } from './authStore';
 
 // Lazy-initialize MMKV to prevent crashes on real devices
 // Native modules can't be instantiated during bundle evaluation
@@ -59,11 +60,22 @@ const createStoreContent = (set: any, get: any): FavoritesState => ({
     set({ productIds: updatedIds, items: updatedIds });
 
     try {
+      const authState = useAuthStore.getState();
+      if (!authState.isLoggedIn || !authState.token) {
+        set((state: FavoritesState) => ({
+          pendingOperations: state.pendingOperations.includes('sync')
+            ? state.pendingOperations
+            : [...state.pendingOperations, 'sync'],
+          error: null,
+        }));
+        return;
+      }
+
       set({ isLoading: true, error: null });
 
       const success = await apiManager.syncFavorites(get().productIds);
       if (success) {
-        set({ isLoading: false });
+        set({ isLoading: false, pendingOperations: [] });
       } else {
         throw new Error('Failed to sync favorites');
       }
@@ -86,11 +98,22 @@ const createStoreContent = (set: any, get: any): FavoritesState => ({
     set({ productIds: updatedIds, items: updatedIds });
 
     try {
+      const authState = useAuthStore.getState();
+      if (!authState.isLoggedIn || !authState.token) {
+        set((state: FavoritesState) => ({
+          pendingOperations: state.pendingOperations.includes('sync')
+            ? state.pendingOperations
+            : [...state.pendingOperations, 'sync'],
+          error: null,
+        }));
+        return;
+      }
+
       set({ isLoading: true, error: null });
 
       const success = await apiManager.syncFavorites(get().productIds);
       if (success) {
-        set({ isLoading: false });
+        set({ isLoading: false, pendingOperations: [] });
       } else {
         throw new Error('Failed to sync favorites');
       }
@@ -120,12 +143,23 @@ const createStoreContent = (set: any, get: any): FavoritesState => ({
 
   syncWithServer: async () => {
     try {
+      const authState = useAuthStore.getState();
+      if (!authState.isLoggedIn || !authState.token) {
+        set((state: FavoritesState) => ({
+          pendingOperations: state.pendingOperations.includes('sync')
+            ? state.pendingOperations
+            : [...state.pendingOperations, 'sync'],
+          error: null,
+        }));
+        return;
+      }
+
       set({ isLoading: true, error: null });
 
       // Sync current favorites with server
       const success = await apiManager.syncFavorites(get().productIds);
       if (success) {
-        set({ isLoading: false });
+        set({ isLoading: false, pendingOperations: [] });
       } else {
         throw new Error('Failed to sync favorites with server');
       }

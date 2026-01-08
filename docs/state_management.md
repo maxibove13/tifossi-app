@@ -90,8 +90,9 @@ const profile = await httpClient.get('/users/me');
   - Simple productId tracking
   - Toggle/add/remove operations
   - Optimistic updates with error handling
-  - Guest users: Local-only persistence (MMKV), no server sync
+  - Guest users: Local-only persistence (MMKV), deferred sync via `pendingOperations`
   - Authenticated users: Server sync via `PUT /user-profile/me` with `{ favorites: { set: productIds } }` (Strapi relation format)
+  - **Deferred sync pattern:** When user is not authenticated, sync operations add `'sync'` to `pendingOperations` instead of failing. The `storeSynchronizer` triggers pending syncs when the user logs in.
 
 #### Auth Store (`authStore.ts`)
 
@@ -121,6 +122,17 @@ const profile = await httpClient.get('/users/me');
     - Cleared automatically via `clearPaymentState()` when leaving checkout
   - Loading and error state for payment processing UI
 
+### 3.3 Store Synchronization (`storeSynchronizer.ts`)
+
+The store synchronizer coordinates cross-store operations on authentication events.
+
+- **Purpose:** Triggers deferred sync operations when user authentication state changes
+- **Key Features:**
+  - Subscribes to auth store token changes
+  - When a token is set (user logs in), checks if favorites store has pending operations
+  - Automatically triggers `syncWithServer()` on favorites store if `'sync'` is in `pendingOperations`
+  - Enables offline-first behavior: users can modify favorites while logged out, and changes sync automatically upon login
+
 ## 4. Search Implementation
 
 **Current Implementation:** Basic filtering via `useSearch` hook in `hooks/useSearch.ts`
@@ -136,7 +148,7 @@ const profile = await httpClient.get('/users/me');
 | Product Catalogue  | Local Data        | None (static data) | Imported from `app/_data/products.ts`                                         |
 | Search / Filtering | Local React State | None               | Client-side filtering via `useSearch` and `useProductFilters` hooks           |
 | Shopping Cart      | Zustand           | MMKV               | Guest: local-only. Auth: syncs via `PUT /user-profile/me` (cart is JSON field)       |
-| Favorites          | Zustand           | MMKV               | Guest: local-only. Auth: syncs via `PUT /user-profile/me` (favorites is relation)    |
+| Favorites          | Zustand           | MMKV               | Guest: local-only with deferred sync. Auth: syncs via `PUT /user-profile/me`. Pending syncs trigger on login via storeSynchronizer |
 | Auth Tokens        | Zustand           | SecureStore        | Managed by `useAuthStore`, login triggers cart/favorites sync                 |
 | Payment UI         | Zustand           | None               | Transient checkout state: guest data, pending buy-now items, order tracking   |
 | UI Interactions    | Local React State | None               | Component-local state using useState/useReducer                               |
@@ -154,7 +166,8 @@ app/
 │   ├── authStore.ts       # Authentication state
 │   ├── cartStore.ts       # Shopping cart state
 │   ├── favoritesStore.ts  # Favorites state
-│   └── paymentStore.ts    # Payment/checkout UI state
+│   ├── paymentStore.ts    # Payment/checkout UI state
+│   └── storeSynchronizer.ts # Cross-store coordination on auth events
 hooks/                     # Custom hooks for state access
     ├── useFavoriteStatus.ts    # Favorites status hook
     ├── useProductFilters.ts    # Product filtering hook
