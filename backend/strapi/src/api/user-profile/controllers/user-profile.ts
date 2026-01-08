@@ -600,16 +600,23 @@ export default {
 
     try {
       // 1. Anonymize orders (scrub ALL potential PII fields)
-      await strapi.db.query('api::order.order').updateMany({
+      const orders = await strapi.db.query('api::order.order').findMany({
         where: { user: user.id },
-        data: {
-          user: null,
-          guestEmail: `deleted_${Date.now()}@deleted.tifossi.app`,
-          shippingAddress: null,
-          customerNotes: null,
-          notes: null, // Staff may have entered customer info
-        },
+        select: ['id'],
       });
+
+      const deletionEmailPrefix = `deleted_${Date.now()}`;
+      for (const order of orders) {
+        await strapi.entityService.update('api::order.order', order.id, {
+          data: {
+            user: null,
+            guestEmail: `${deletionEmailPrefix}_${order.id}@deleted.tifossi.app`,
+            shippingAddress: null,
+            customerNotes: null,
+            notes: null, // Staff may have entered customer info
+          },
+        });
+      }
 
       // 2. Delete profile picture from media library
       if (user.profilePicture) {

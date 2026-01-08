@@ -322,6 +322,23 @@ GET    /api/orders/:id            # Get order details (authenticated, own orders
 
 **Authentication**: All order endpoints require JWT authentication via the `jwt-auth` middleware. Users can only access their own orders.
 
+#### User Profile
+
+```
+GET    /api/user-profile/me       # Get current user profile (authenticated)
+PUT    /api/user-profile/me       # Update user profile (authenticated)
+POST   /api/user-profile/me/delete    # Delete account and anonymize data (authenticated)
+POST   /api/user-profile/report-orphan # Report orphaned Firebase UID for cleanup
+```
+
+**Account Deletion**: The delete endpoint anonymizes user data for GDPR/App Store compliance:
+- Orders are preserved with anonymized data (guest email, nulled addresses/notes)
+- Profile picture is deleted from Cloudinary
+- Apple Sign In tokens are revoked
+- Returns a signed deletion receipt for orphan reporting
+
+**Strapi v5 Note**: Order anonymization uses `entityService.update()` per order rather than `updateMany()` because Strapi v5's query engine doesn't support null values for relations/components in bulk updates.
+
 **Order Creation**: Include `storeLocationId` field when shipping method is 'pickup'.
 
 #### Payment
