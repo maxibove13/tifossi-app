@@ -703,11 +703,17 @@ async function revokeAppleTokens(authorizationCode: string): Promise<void> {
       return;
     }
 
-    const tokenData = await tokenResponse.json();
-    const { refresh_token, access_token } = tokenData;
+    const tokenData = (await tokenResponse.json()) as {
+      refresh_token?: unknown;
+      access_token?: unknown;
+    };
+    const refreshToken =
+      typeof tokenData.refresh_token === 'string' ? tokenData.refresh_token : undefined;
+    const accessToken =
+      typeof tokenData.access_token === 'string' ? tokenData.access_token : undefined;
 
     // Apple may not return refresh_token if app isn't configured for it
-    const tokenToRevoke = refresh_token || access_token;
+    const tokenToRevoke = refreshToken || accessToken;
     if (!tokenToRevoke) {
       strapi.log.warn('[Apple] No revocable token received');
       return;
@@ -721,7 +727,7 @@ async function revokeAppleTokens(authorizationCode: string): Promise<void> {
         client_id: clientId,
         client_secret: clientSecret,
         token: tokenToRevoke,
-        token_type_hint: refresh_token ? 'refresh_token' : 'access_token',
+        token_type_hint: refreshToken ? 'refresh_token' : 'access_token',
       }),
     });
 
