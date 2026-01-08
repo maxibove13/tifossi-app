@@ -82,6 +82,13 @@ class StoreSynchronizer implements StoreSyncActions {
     try {
       // Update cart auth token
       useCartStore.getState().setAuthToken(token);
+
+      if (token) {
+        const favoritesState = useFavoritesStore.getState();
+        if (favoritesState.pendingOperations.includes('sync')) {
+          favoritesState.syncWithServer();
+        }
+      }
     } catch {}
   }
 }

@@ -7,6 +7,7 @@
 
 import { renderHook, act, cleanup } from '@testing-library/react-native';
 import { useFavoritesStore } from '../../_stores/favoritesStore';
+import { useAuthStore } from '../../_stores/authStore';
 import httpClient from '../../_services/api/httpClient';
 
 // Get the mocked httpClient
@@ -23,6 +24,12 @@ describe('favoritesStore', () => {
       lastSyncTimestamp: null,
       actionStatus: 'idle',
       pendingOperations: [],
+    });
+
+    // Set auth store to logged-in state so favorites sync works
+    useAuthStore.setState({
+      isLoggedIn: true,
+      token: 'mock-token',
     });
 
     // Reset mocks
