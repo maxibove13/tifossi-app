@@ -21,6 +21,7 @@ The authentication system is **implemented** with the following components:
 | Logout UI              | ✅ Implemented | Explicit logout with confirmation dialog                  |
 | Email Verification     | ✅ Implemented | Email verification flow with resend option                |
 | Terms & Privacy        | ✅ Implemented | Legal screens and signup integration                      |
+| Account Deletion       | ✅ Implemented | Full deletion with reauthentication and data anonymization |
 | Backend Integration    | 🚧 Pending     | Currently using mock API implementation                   |
 | Token Refresh          | 🚧 Pending     | Not yet implemented                                       |
 | Session Persistence    | ✅ Implemented | Token stored in SecureStore                               |
@@ -119,6 +120,7 @@ interface AuthState {
   updateProfilePicture: (imageUri: string) => Promise<void>;
   resendVerificationEmail: () => Promise<void>;
   verifyEmail: (code: string) => Promise<void>;
+  deleteAccount: (password?: string) => Promise<{ success: boolean; error?: string }>;
 
   // Apple Sign-In utility methods
   isAppleSignInAvailable: () => Promise<boolean>;
@@ -265,6 +267,38 @@ On application startup:
    - Auth state is reset to non-authenticated values
    - UI updates to reflect logged-out state
 4. If cancelled, dialog dismisses with no changes
+
+### Account Deletion Flow
+
+The account deletion feature allows users to permanently delete their account, complying with app store requirements (Apple App Store and Google Play). The implementation includes:
+
+1. **User Initiation**:
+   - User taps "Eliminar cuenta" button in profile screen
+   - Confirmation modal appears explaining consequences
+
+2. **Reauthentication**:
+   - For email/password users: Password confirmation required
+   - For Google users: Google re-authentication flow triggered
+   - For Apple users: Apple Sign-In re-authentication with token revocation
+
+3. **Backend Processing** (Strapi):
+   - User data anonymization (orders scrubbed, no cascade delete)
+   - Profile picture deletion from storage
+   - Signed deletion receipt generated (JWT) for idempotency
+   - Apple token revocation for App Store compliance
+
+4. **Firebase Account Deletion**:
+   - Firebase account deleted after Strapi data is handled
+   - Retry mechanism for Firebase deletion failures
+   - Orphan reporting system for crash recovery
+
+5. **Local Cleanup**:
+   - All auth tokens cleared
+   - Cart and favorites data cleared
+   - User signed out and returned to logged-out state
+
+**Orphan Handling**:
+If the app crashes or Firebase deletion fails after Strapi data is deleted, the deletion receipt is persisted locally. On next app startup, `reportPendingOrphan()` is called to notify the server about the orphaned Firebase UID for manual cleanup.
 
 ## Integration with Backend
 
@@ -544,7 +578,6 @@ Planned improvements to the authentication system:
    - Social profile synchronization
 
 4. **Additional User Management**:
-   - Account deletion workflow with confirmation
    - Multi-device session management and device list
    - User preferences storage
    - Remember Me functionality for persistent sessions

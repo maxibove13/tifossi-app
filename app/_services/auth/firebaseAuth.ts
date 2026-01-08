@@ -608,6 +608,166 @@ class FirebaseAuthService {
   }
 
   /**
+   * Delete the current Firebase user account
+   */
+  async deleteCurrentUser(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { deleteUser } = getFirebaseAuthModule();
+      const currentUser = getAuthSafe().currentUser;
+      if (!currentUser) {
+        return { success: false, error: 'No hay usuario autenticado' };
+      }
+
+      await deleteUser(currentUser);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: this.handleAuthError(error),
+      };
+    }
+  }
+
+  /**
+   * Reauthenticate current user with email/password
+   */
+  async reauthenticateWithEmail(password: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { EmailAuthProvider, reauthenticateWithCredential } = getFirebaseAuthModule();
+      const currentUser = getAuthSafe().currentUser;
+      if (!currentUser || !currentUser.email) {
+        return { success: false, error: 'No hay usuario autenticado' };
+      }
+
+      const credential = EmailAuthProvider.credential(currentUser.email, password);
+      await reauthenticateWithCredential(currentUser, credential);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: this.handleAuthError(error),
+      };
+    }
+  }
+
+  /**
+   * Reauthenticate current user with Google
+   */
+  async reauthenticateWithGoogle(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { GoogleSignin } = getGoogleSigninModule();
+      const { reauthenticateWithCredential, GoogleAuthProvider } = getFirebaseAuthModule();
+
+      const currentUser = getAuthSafe().currentUser;
+      if (!currentUser) {
+        return { success: false, error: 'No hay usuario autenticado' };
+      }
+
+      // Configure Google Sign-In
+      GoogleSignin.configure({
+        webClientId: 'REDACTED_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+        offlineAccess: false,
+      });
+
+      // Check if Google Play Services is available (Android only)
+      if (Platform.OS === 'android') {
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      }
+
+      // Get Google credentials
+      const userInfo = await GoogleSignin.signIn();
+
+      if (userInfo.type === 'cancelled') {
+        return { success: false, error: 'cancelled' };
+      }
+
+      if (!userInfo.data.idToken) {
+        return { success: false, error: 'No se recibió token de Google' };
+      }
+
+      const googleCredential = GoogleAuthProvider.credential(userInfo.data.idToken);
+      await reauthenticateWithCredential(currentUser, googleCredential);
+
+      return { success: true };
+    } catch (error: any) {
+      const { statusCodes: GoogleSigninStatusCodes } = getGoogleSigninModule();
+
+      if (error.code === GoogleSigninStatusCodes.SIGN_IN_CANCELLED) {
+        return { success: false, error: 'cancelled' };
+      }
+
+      return {
+        success: false,
+        error: this.handleAuthError(error),
+      };
+    }
+  }
+
+  /**
+   * Reauthenticate current user with Apple
+   * Returns authorizationCode for token revocation
+   */
+  async reauthenticateWithApple(): Promise<{
+    success: boolean;
+    error?: string;
+    authorizationCode?: string;
+  }> {
+    try {
+      const AppleAuthentication = getAppleAuthModule();
+      const { reauthenticateWithCredential, AppleAuthProvider } = getFirebaseAuthModule();
+
+      const currentUser = getAuthSafe().currentUser;
+      if (!currentUser) {
+        return { success: false, error: 'No hay usuario autenticado' };
+      }
+
+      const isAppleAvailable = await AppleAuthentication.isAvailableAsync();
+      if (!isAppleAvailable) {
+        return { success: false, error: 'Apple Sign-In no está disponible en este dispositivo' };
+      }
+
+      const appleAuthRequestResponse = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      const { identityToken, authorizationCode } = appleAuthRequestResponse;
+
+      if (!identityToken) {
+        return { success: false, error: 'No se recibió token de Apple' };
+      }
+
+      const appleCredential = AppleAuthProvider.credential(identityToken);
+      await reauthenticateWithCredential(currentUser, appleCredential);
+
+      return {
+        success: true,
+        authorizationCode: authorizationCode || undefined,
+      };
+    } catch (error: any) {
+      const errorCode = error?.code || '';
+      const errorMessage = error?.message || '';
+      const isCancelled =
+        errorCode === 'ERR_CANCELLED' ||
+        errorCode === 'ERR_CANCELED' ||
+        errorCode === 'ERR_REQUEST_CANCELED' ||
+        errorMessage.toLowerCase().includes('cancel') ||
+        errorMessage.toLowerCase().includes('unknown reason');
+
+      if (isCancelled) {
+        return { success: false, error: 'cancelled' };
+      }
+
+      return {
+        success: false,
+        error: this.handleAuthError(error),
+      };
+    }
+  }
+
+  /**
    * Check if service is initialized
    */
   isServiceInitialized(): boolean {

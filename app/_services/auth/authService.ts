@@ -8,10 +8,15 @@
 
 import firebaseAuthExport from './firebaseAuth';
 import { tokenManager } from '../../_utils/auth/tokenManager';
+import { buildUrl } from '../../_config/endpoints';
+import * as SecureStore from 'expo-secure-store';
 import type { User as AppUser, PasswordChangeCredentials } from '../../_types/auth';
 
 // Extract the service from the export
 const firebaseAuth = firebaseAuthExport.service;
+
+// Key for storing pending orphan deletion receipt
+const PENDING_ORPHAN_KEY = 'tifossi_pending_orphan';
 
 // Define AuthResult and RegistrationData locally since they're not exported
 interface AuthResult {
@@ -542,6 +547,166 @@ class AuthService {
   }
 
   /**
+   * Report pending orphan Firebase UID to server
+   * Called on app startup and after Firebase deletion fails
+   */
+  async reportPendingOrphan(): Promise<void> {
+    try {
+      const receipt = await SecureStore.getItemAsync(PENDING_ORPHAN_KEY);
+      if (!receipt) return;
+
+      const response = await fetch(buildUrl('/api/user-profile/report-orphan'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deletionReceipt: receipt }),
+      });
+
+      if (response.ok || response.status === 400) {
+        // Clear on success OR on 400 (expired/invalid receipt - no point retrying)
+        await SecureStore.deleteItemAsync(PENDING_ORPHAN_KEY);
+      }
+      // On network/5xx errors, leave receipt for next attempt
+    } catch {
+      // Network error - leave receipt for next attempt
+    }
+  }
+
+  /**
+   * Delete user account
+   * Handles reauthentication, Strapi data deletion, and Firebase account deletion
+   */
+  async deleteAccount(password?: string): Promise<{ success: boolean; error?: string }> {
+    await this.ensureInitialized();
+
+    const currentUser = firebaseAuth.getCurrentAppUser();
+    if (!currentUser) {
+      return { success: false, error: 'No hay usuario autenticado' };
+    }
+
+    // Get provider from metadata, or fallback to Firebase providerData at runtime
+    let provider = currentUser.metadata?.provider;
+    if (!provider) {
+      // Stale user object - check Firebase directly
+      const firebaseAuthModule = require('@react-native-firebase/auth');
+      const firebaseUser = firebaseAuthModule.getAuth().currentUser;
+      const providerData = firebaseUser?.providerData || [];
+      if (providerData.some((p: any) => p.providerId === 'google.com')) {
+        provider = 'google';
+      } else if (providerData.some((p: any) => p.providerId === 'apple.com')) {
+        provider = 'apple';
+      } else {
+        provider = 'email';
+      }
+    }
+
+    // 1. Reauthenticate based on provider
+    let reauthResult: { success: boolean; error?: string; authorizationCode?: string };
+
+    switch (provider) {
+      case 'email':
+        if (!password) {
+          return { success: false, error: 'Se requiere la contraseña' };
+        }
+        reauthResult = await firebaseAuth.reauthenticateWithEmail(password);
+        break;
+      case 'google':
+        reauthResult = await firebaseAuth.reauthenticateWithGoogle();
+        break;
+      case 'apple':
+        reauthResult = await firebaseAuth.reauthenticateWithApple();
+        break;
+      default:
+        return { success: false, error: 'Método de autenticación no soportado' };
+    }
+
+    if (!reauthResult.success) {
+      return reauthResult;
+    }
+
+    // 2. Delete Strapi data FIRST (use POST to avoid body issues with DELETE)
+    try {
+      const strapiToken = await tokenManager.getStrapiToken();
+      const response = await fetch(buildUrl('/api/user-profile/me/delete'), {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${strapiToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...(provider === 'apple' &&
+            reauthResult.authorizationCode && {
+              appleAuthorizationCode: reauthResult.authorizationCode,
+            }),
+        }),
+      });
+
+      if (!response.ok) {
+        return { success: false, error: 'Error al eliminar datos del servidor' };
+      }
+
+      const data = await response.json();
+      // Server returns { success: true, deletionReceipt: '...', alreadyDeleted?: true }
+      if (!data.success && !data.alreadyDeleted) {
+        return { success: false, error: 'Error al eliminar datos del servidor' };
+      }
+
+      // Persist receipt immediately so we can report orphan even after crash
+      const deletionReceipt = data.deletionReceipt;
+      if (deletionReceipt) {
+        await SecureStore.setItemAsync(PENDING_ORPHAN_KEY, deletionReceipt);
+      }
+    } catch {
+      return { success: false, error: 'Error de conexión. Intenta nuevamente.' };
+    }
+
+    // 3. Delete Firebase account LAST (with retry)
+    let deleteResult = await firebaseAuth.deleteCurrentUser();
+    if (!deleteResult.success) {
+      // Retry once
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      deleteResult = await firebaseAuth.deleteCurrentUser();
+    }
+
+    if (deleteResult.success) {
+      // Firebase deleted - clear pending receipt (no orphan)
+      await SecureStore.deleteItemAsync(PENDING_ORPHAN_KEY);
+    } else {
+      // Firebase deletion failed - report orphan
+      await this.reportPendingOrphan();
+    }
+
+    // 4. Sign out from Firebase (critical: prevents orphan from auto-recreating via firebase-auth)
+    // Do this regardless of whether deletion succeeded
+    try {
+      await firebaseAuth.signOutUser();
+    } catch {
+      // Ignore signOut errors
+    }
+
+    // 5. Clear ALL local storage (centralized here, not in UI)
+    await tokenManager.clearTokens();
+
+    // Clear cart and favorites stores
+    try {
+      const { useCartStore } = require('../../_stores/cartStore');
+      const { useFavoritesStore } = require('../../_stores/favoritesStore');
+
+      // Clear cart - use the store's clearCart method but skip server sync
+      const cartStore = useCartStore.getState();
+      cartStore.setItems([]); // Direct set to avoid server sync
+
+      // Clear favorites storage
+      if (useFavoritesStore.persist?.clearStorage) {
+        useFavoritesStore.persist.clearStorage();
+      }
+    } catch {
+      // Store cleanup is best-effort
+    }
+
+    return { success: true };
+  }
+
+  /**
    * Clean up resources
    */
   cleanup(): void {
@@ -580,5 +745,7 @@ export const onAuthStateChanged = (callback: (user: AppUser | null) => void) =>
 export const isAppleSignInAvailable = () => authService.isAppleSignInAvailable();
 export const getAppleCredentialState = (userId: string) =>
   authService.getAppleCredentialState(userId);
+export const deleteAccount = (password?: string) => authService.deleteAccount(password);
+export const reportPendingOrphan = () => authService.reportPendingOrphan();
 
 export default authService;

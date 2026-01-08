@@ -376,7 +376,7 @@ After comprehensive audit of GUIA_USUARIO_STRAPI.md vs actual implementation (se
 | Product Catalog | Full browse/search/filter  | ✅ Complete with Strapi integration    | -                        |
 | Shopping Cart   | Persistent, synced         | ✅ Working                             | -                        |
 | Favorites       | Synced across devices      | ✅ Working                             | -                        |
-| User Profile    | Complete management        | ✅ Functional                          | -                        |
+| User Profile    | Complete management        | ✅ Functional with account deletion    | -                        |
 | Checkout Flow   | Complete with payment      | ✅ Complete with store selection       | Payment untested         |
 | Store Locator   | Find physical stores       | ✅ Complete with API integration       | -                        |
 | Strapi Backend  | Deployed & operational     | ✅ Live in production                  | -                        |
