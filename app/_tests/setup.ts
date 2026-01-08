@@ -620,6 +620,7 @@ jest.mock('../_services/api/httpClient', () => {
     __esModule: true,
     default: defaultExport,
     httpClient: secondaryExport,
+    setHttpClientAuthToken: jest.fn(),
   };
 });
 

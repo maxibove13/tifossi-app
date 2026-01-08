@@ -8,6 +8,7 @@
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import firebaseAuthExport from '../../_services/auth/firebaseAuth';
+import { setHttpClientAuthToken } from '../../_services/api/httpClient';
 import { tokenManager } from './tokenManager';
 const firebaseAuth = firebaseAuthExport.service;
 
@@ -126,6 +127,7 @@ class DeepLinkingService {
           if (tokens.strapiToken) {
             // Persist token for httpClient
             await SecureStore.setItemAsync(AUTH_TOKEN_KEY, tokens.strapiToken);
+            setHttpClientAuthToken(tokens.strapiToken, 'verify-email');
 
             // Update auth store state (lazy import to avoid circular dependency)
             getAuthStore().setState({

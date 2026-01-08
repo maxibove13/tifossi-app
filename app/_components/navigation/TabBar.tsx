@@ -120,9 +120,8 @@ const styles = StyleSheet.create({
     paddingBottom: 34,
     backgroundColor: '#FBFBFB',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
     alignItems: 'flex-start',
-    paddingHorizontal: 12,
   },
   containerDark: {
     backgroundColor: '#0C0C0C',

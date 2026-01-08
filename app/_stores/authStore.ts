@@ -4,6 +4,7 @@ import { MMKV } from 'react-native-mmkv';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import authService from '../_services/auth/authService';
+import { setHttpClientAuthToken } from '../_services/api/httpClient';
 import { initializeDeepLinkRouter as initializeDeepLinking } from '../_services/navigation/deepLinkRouter';
 // Store imports removed to prevent circular dependencies
 import {
@@ -74,6 +75,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
                 // Don't treat unverified Firebase sessions as logged-in
                 if (!firebaseUser.isEmailVerified) {
                   SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+                  setHttpClientAuthToken(null, 'auth-unverified');
                   set({
                     user: firebaseUser as UserFromTypes,
                     token: null,
@@ -92,6 +94,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
                     .getApiToken()
                     .then((apiToken) => {
                       if (apiToken) {
+                        setHttpClientAuthToken(apiToken, 'auth-state-sync');
                         SecureStore.setItemAsync(AUTH_TOKEN_KEY, apiToken).catch(() => {});
                         set({
                           user: firebaseUser,
@@ -115,6 +118,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
                 // User is signed out from Firebase
                 if (currentState.isLoggedIn) {
                   SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+                  setHttpClientAuthToken(null, 'auth-state-signed-out');
                   set({
                     user: null,
                     token: null,
@@ -131,6 +135,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
 
             if (storedToken) {
               try {
+                setHttpClientAuthToken(storedToken, 'startup-restore');
                 // Validate token with the unified API service
                 const user = await authService.validateToken(storedToken);
 
@@ -149,10 +154,12 @@ export const useAuthStore = create<ExtendedAuthState>()(
               } catch (tokenError) {
                 // Clear invalid token and continue as logged out
                 await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+                setHttpClientAuthToken(null, 'startup-invalid-token');
                 throw tokenError;
               }
             } else {
               // No token found, set logged out state
+              setHttpClientAuthToken(null, 'startup-no-token');
               set({
                 user: null,
                 token: null,
@@ -171,6 +178,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
                 message.toLowerCase().includes('expired'))
             ) {
               await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+              setHttpClientAuthToken(null, 'startup-auth-failure');
             }
 
             set({
@@ -206,6 +214,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
 
             // Verified - persist token (result.token is guaranteed when !needsEmailVerification)
             await SecureStore.setItemAsync(AUTH_TOKEN_KEY, result.token!);
+            setHttpClientAuthToken(result.token!, 'login');
             set({
               user: result.user,
               token: result.token!,
@@ -249,6 +258,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
 
             // Verified - persist token (result.token is guaranteed when !needsEmailVerification)
             await SecureStore.setItemAsync(AUTH_TOKEN_KEY, result.token!);
+            setHttpClientAuthToken(result.token!, 'register');
             set({
               user: result.user,
               token: result.token!,
@@ -293,6 +303,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
 
             // Verified - persist token (result.token is guaranteed when !needsEmailVerification)
             await SecureStore.setItemAsync(AUTH_TOKEN_KEY, result.token!);
+            setHttpClientAuthToken(result.token!, 'login-google');
             set({
               user: result.user,
               token: result.token!,
@@ -345,6 +356,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
 
             // Verified - persist token (result.token is guaranteed when !needsEmailVerification)
             await SecureStore.setItemAsync(AUTH_TOKEN_KEY, result.token!);
+            setHttpClientAuthToken(result.token!, 'login-apple');
             set({
               user: result.user,
               token: result.token!,
@@ -413,6 +425,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
             authService.cleanup();
 
             await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+            setHttpClientAuthToken(null, 'logout');
             const currentState = get();
             if (currentState.clearAuthData && typeof currentState.clearAuthData === 'function') {
               currentState.clearAuthData();
@@ -522,6 +535,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
 
         // Clear all authentication data (for logout and error recovery)
         clearAuthData: () => {
+          setHttpClientAuthToken(null, 'clear-auth-data');
           set({
             user: null,
             token: null,
@@ -551,6 +565,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
             currentState.clearAuthData();
           }
           await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+          setHttpClientAuthToken(null, 'delete-account');
           set({ isInitialized: true, isLoading: false });
 
           return { success: true };
@@ -585,6 +600,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
         },
 
         setToken: (token: string | null) => {
+          setHttpClientAuthToken(token, 'set-token');
           set({ token });
         },
       }) as ExtendedAuthState,

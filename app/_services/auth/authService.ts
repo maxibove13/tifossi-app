@@ -306,7 +306,7 @@ class AuthService {
         throw new Error('Token validation failed');
       }
 
-      // Best-effort sync tokenManager (not critical - httpClient uses SecureStore directly)
+      // Best-effort sync tokenManager (not critical - httpClient uses SecureStore/cache)
       try {
         const currentFirebaseUser = firebaseAuth.getCurrentAppUser();
         if (currentFirebaseUser) {
@@ -316,7 +316,7 @@ class AuthService {
           }
         }
       } catch {
-        // Ignore sync errors - API calls use SecureStore, not tokenManager
+        // Ignore sync errors - API calls use SecureStore/cache, not tokenManager
       }
 
       return data.user as AppUser;
