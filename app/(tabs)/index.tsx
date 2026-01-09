@@ -8,6 +8,7 @@ import FeaturedCard from '../_components/store/product/featured/FeaturedCard';
 import Button from '../_components/ui/buttons/Button';
 import StoreLocations from '../_components/store/layout/Locations';
 import Footer from '../_components/store/layout/Footer';
+import Header from '../_components/store/layout/Header';
 import { Product } from '../_types/product';
 import { SkeletonLoader } from '../_components/common/SkeletonLoader';
 import ProgressiveLoadingSection, {
@@ -243,6 +244,7 @@ function HomeScreen() {
   // We're showing a hybrid view where some sections may still be loading
   return (
     <View style={styles.container}>
+      <Header title="Tienda" variant="store" />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}

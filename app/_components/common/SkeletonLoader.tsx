@@ -187,13 +187,13 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
             >
-              {/* Header with toggle pill and search icon - Figma spec */}
+              {/* Header matching real Header component: logo left, search right, title below */}
               <View style={styles.homeHeader}>
-                <SkeletonPlaceholder style={styles.headerToggle} animationType={animationType} />
+                <SkeletonPlaceholder style={styles.headerLogo} animationType={animationType} />
                 <SkeletonPlaceholder style={styles.headerSearch} animationType={animationType} />
               </View>
 
-              {/* Title bone */}
+              {/* "Tienda" title */}
               <View style={styles.homeTitleContainer}>
                 <SkeletonPlaceholder style={styles.homeTitle} animationType={animationType} />
               </View>
@@ -479,35 +479,36 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
   },
-  // Home screen styles
+  // Home screen styles - matching real Header component
   homeHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xxxl,
-    paddingBottom: spacing.sm,
+    paddingHorizontal: 16,
+    paddingTop: 59, // Match Header paddingTop
+    height: 32 + 59, // row height + paddingTop
   },
-  headerToggle: {
-    // Figma: 89px x 32px, rounded pill
-    width: 89,
-    height: 32,
-    borderRadius: 100,
+  headerLogo: {
+    // Match Tifossi logo: height 24, aspect ratio 424/408
+    width: 24 * (424 / 408),
+    height: 24,
+    borderRadius: radius.xs,
   },
   headerSearch: {
-    // Figma: 24px x 24px search icon bone
+    // 24x24 search icon
     width: 24,
     height: 24,
     borderRadius: radius.xs,
   },
   homeTitleContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
+    paddingHorizontal: 16,
+    paddingTop: 24, // gap from header row
+    paddingBottom: 8, // Match Header paddingBottom
   },
   homeTitle: {
-    // Figma: Title 343px x 44px
-    width: '60%',
-    height: 44,
+    // Match "Tienda" title width (roughly)
+    width: 100,
+    height: 36, // Match fontSizes.xxxl roughly
     borderRadius: radius.xs,
   },
   highlightedSection: {
