@@ -20,7 +20,7 @@ export const CARD_DIMENSIONS: Record<CardVariant, Partial<Record<CardSize, CardD
       imageSize: 132,
     },
     large: {
-      width: 180,
+      width: 'full',
       height: 244,
       imageSize: 160,
     },

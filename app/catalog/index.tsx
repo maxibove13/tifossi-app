@@ -543,8 +543,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    gap: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
   },
   gridItem: {
     flex: 1,

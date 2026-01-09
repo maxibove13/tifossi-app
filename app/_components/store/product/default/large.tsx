@@ -79,12 +79,7 @@ function DefaultLargeCard({ product, onPress }: DefaultLargeCardProps) {
       ]}
       onPress={onPress}
     >
-      <View
-        style={[
-          styles.imageContainer,
-          { width: dimensions.imageSize, height: dimensions.imageSize },
-        ]}
-      >
+      <View style={[styles.imageContainer, { height: dimensions.imageSize }]}>
         <ProductImage source={cardData.image} size={dimensions.imageSize} />
         <Pressable
           style={styles.wishlistButton}
@@ -138,6 +133,7 @@ const styles = StyleSheet.create<Styles>({
     gap: spacing.sm,
   },
   imageContainer: {
+    width: '100%',
     borderRadius: radius.xs,
     overflow: 'hidden',
     position: 'relative',
