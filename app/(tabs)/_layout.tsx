@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import TabBar from '../_components/navigation/TabBar';
 import type { TabRoute } from '../_components/navigation/TabBar'; // Keep this type if used by TabBar or internal logic
-import Header from '../_components/store/layout/Header';
 import ScreenHeader from '../_components/common/ScreenHeader';
 
 // Placeholder for actual icon components if TabBar needs them passed this way,
@@ -74,8 +73,7 @@ export default function TabLayout() {
           options={{
             // href: '/', // Original option, keep if necessary for deep linking or TabBar behavior
             title: 'Tienda', // Title for the tab, accessibility
-            headerShown: true,
-            header: () => <Header title="Tienda" variant="store" />,
+            headerShown: false, // Header is rendered inside HomeScreen to support skeleton loading
           }}
         />
         <Tabs.Screen
