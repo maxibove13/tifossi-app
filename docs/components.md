@@ -124,6 +124,7 @@ Props:
 - `loading`: boolean - Shows loading indicator
 - `icon`: ReactNode - Optional icon
 - `style`: StyleProp<ViewStyle> - Additional styling
+- `textStyle`: StyleProp<TextStyle> - Custom text styling (fontSize, fontWeight, etc.)
 
 #### Layout Components (`/_components/ui/layout/`)
 

@@ -69,24 +69,26 @@ export default function StoreLocations() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
     gap: spacing.md,
   },
   header: {
-    paddingHorizontal: spacing.lg,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: spacing.sm,
-    marginBottom: spacing.md,
-    alignItems: 'flex-start',
+    gap: spacing.lg,
+    height: spacing.xxxl,
   },
   title: {
     fontSize: fontSizes.xl,
     lineHeight: lineHeights.xl,
+    fontWeight: '400',
     color: colors.primary,
     fontFamily: fonts.primary,
-    textAlign: 'center',
+    flex: 1,
   },
   locationsGrid: {
-    paddingHorizontal: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -95,15 +97,17 @@ const styles = StyleSheet.create({
   },
   locationCard: {
     flex: 1,
+    height: 280,
     gap: spacing.sm,
   },
   locationImage: {
     width: '100%',
-    height: '100%',
+    height: 252,
     borderRadius: 2,
   },
   locationTextWrapper: {
     paddingHorizontal: spacing.xs,
+    height: 20,
   },
   locationText: {
     fontSize: fontSizes.md,
