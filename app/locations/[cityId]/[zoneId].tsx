@@ -10,6 +10,12 @@ import { StoreDetails } from '../../_types';
 import { storesData } from '../../_data/stores';
 import StoreDetailView from '../../_components/common/StoreDetailView';
 
+const getCityDisplayName = (cityId: string): string => {
+  if (cityId === 'mvd') return 'Montevideo';
+  if (cityId === 'pde') return 'Punta del Este';
+  return cityId;
+};
+
 export default function LocationStoreInfoScreen() {
   const { cityId, zoneId } = useLocalSearchParams<{ cityId: string; zoneId: string }>();
 
@@ -37,7 +43,14 @@ export default function LocationStoreInfoScreen() {
     );
   }
 
-  return <StoreDetailView store={store} onClose={handleClose} onBack={handleBack} />;
+  return (
+    <StoreDetailView
+      store={store}
+      title={getCityDisplayName(cityId!)}
+      onClose={handleClose}
+      onBack={handleBack}
+    />
+  );
 }
 
 const styles = StyleSheet.create({

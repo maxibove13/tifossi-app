@@ -164,14 +164,14 @@ function Header({
           <View style={styles.placeholder} /> // Placeholder for other variants without back button
         )}
 
-        {/* Title (Conditional) */}
-        <View style={styles.titleContainer}>
-          {variant !== 'store' && (
+        {/* Title in row (for non-store variants) */}
+        {variant !== 'store' && (
+          <View style={styles.titleContainer}>
             <Text style={[styles.title, variant === 'auth' && styles.authTitle]} numberOfLines={1}>
               {title}
             </Text>
-          )}
-        </View>
+          </View>
+        )}
 
         {/* Action Icons (Conditional) */}
         <View style={styles.actions}>
@@ -221,6 +221,9 @@ function Header({
         </View>
       </View>
 
+      {/* Title below row (for store variant) */}
+      {variant === 'store' && <Text style={styles.storeTitle}>{title}</Text>}
+
       {/* Render the search overlay */}
       <OverlayProductSearch isVisible={isSearchOverlayVisible} onClose={handleCloseSearch} />
 
@@ -242,12 +245,13 @@ function Header({
 const styles = StyleSheet.create({
   header: {
     width: '100%',
-    height: 104, // Standard height from ProductHeader
-    paddingTop: 64, // Adjusted padding for safe area
+    paddingTop: 59,
     paddingBottom: 8,
     paddingHorizontal: 16,
+    gap: 24,
     backgroundColor: colors.background.offWhite,
-    alignItems: 'center', // Center items vertically within the header height
+    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
   },
   invisibleHeader: {
     width: '100%',
@@ -255,11 +259,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.offWhite,
   },
   row: {
-    flex: 1,
-    width: '100%', // Ensure row takes full width
+    width: '100%',
+    height: 32,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between', // Adjust justification for logo variant
+    justifyContent: 'space-between',
   },
   backButton: {
     flexDirection: 'row',
@@ -274,8 +278,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.secondary,
   },
   logoContainer: {
-    width: 80, // Match backButton width for alignment
-    height: 24, // Fixed height for the logo
+    height: 24,
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
@@ -309,10 +312,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    width: 80,
-    justifyContent: 'flex-end',
   },
-  // Removed unused styles like toggleParent, toggle, etc.
+  storeTitle: {
+    fontSize: fontSizes.xxxl,
+    lineHeight: lineHeights.xxxl,
+    color: colors.primary,
+    fontFamily: fonts.primary,
+    alignSelf: 'stretch',
+  },
 });
 
 // Ensure this component is not treated as a route

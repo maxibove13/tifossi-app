@@ -41,7 +41,7 @@ export default function LocationZoneSelectionScreen() {
   };
 
   const pageTitle = useMemo(() => {
-    return cityId ? `Seleccionar tienda en ${getCityDisplayName(cityId)}` : 'Seleccionar tienda';
+    return cityId ? getCityDisplayName(cityId) : 'Tienda';
   }, [cityId]);
 
   // Check based on cityId
@@ -50,7 +50,7 @@ export default function LocationZoneSelectionScreen() {
   return (
     <SelectionListScreen
       pageTitle={pageTitle}
-      sectionTitle="Tienda" // Changed section title to Tienda
+      sectionTitle="Seleccionar tienda"
       items={zones}
       onItemSelect={handleZoneSelect}
     />

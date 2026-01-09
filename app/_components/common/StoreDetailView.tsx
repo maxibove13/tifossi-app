@@ -181,6 +181,7 @@ const styles = StyleSheet.create<Styles>({
   },
   actionButtons: {
     gap: spacing.sm,
+    alignItems: 'center',
     paddingHorizontal: spacing.lg,
   },
   primaryButton: {

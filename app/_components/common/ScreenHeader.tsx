@@ -28,10 +28,9 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({ title }) => {
 const styles = StyleSheet.create<Styles>({
   header: {
     backgroundColor: colors.background.offWhite,
+    paddingTop: 96,
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
-    borderBottomWidth: 0.4,
-    borderBottomColor: colors.border,
     alignItems: 'flex-start',
   },
   title: {

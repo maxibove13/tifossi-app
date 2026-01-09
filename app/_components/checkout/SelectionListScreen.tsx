@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import CloseIcon from '../../../assets/icons/close.svg';
-import ChevronRightBlackIcon from '../../../assets/icons/chevron_right_black.svg';
+import ChevronRightGrayIcon from '../../../assets/icons/chevron_right_gray.svg';
 
 import { colors } from '../../_styles/colors';
 import { spacing, radius } from '../../_styles/spacing';
@@ -69,7 +69,7 @@ export default function SelectionListScreen({
                   activeOpacity={0.7}
                 >
                   <Text style={styles.itemText}>{item.name}</Text>
-                  <ChevronRightBlackIcon width={16} height={16} />
+                  <ChevronRightGrayIcon width={16} height={16} />
                 </TouchableOpacity>
               ))}
             </View>

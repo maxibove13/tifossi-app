@@ -440,7 +440,7 @@ const SwipeableEdge = ({
   if (isTestEnv) {
     return (
       <View style={styles.testContainer}>
-        <View style={[styles.paddedHorizontal, styles.testHeaderBlock]}>
+        <View style={styles.testHeaderBlock}>
           <ProductInfoHeader
             productName={product.name}
             isCustomizable={product.isCustomizable}
@@ -550,9 +550,7 @@ const SwipeableEdge = ({
           android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : undefined}
         >
           {/* Wrapper View inside BottomSheet for header + padding */}
-          <BottomSheetView
-            style={[styles.paddedHorizontal, { paddingBottom: COLLAPSED_EXTRA_PADDING }]} // Apply padding here
-          >
+          <BottomSheetView style={{ paddingBottom: COLLAPSED_EXTRA_PADDING }}>
             <ProductInfoHeader
               productName={product.name}
               isCustomizable={product.isCustomizable}
@@ -718,7 +716,6 @@ const styles = StyleSheet.create({
     left: 0,
     opacity: 0,
     zIndex: -1,
-    paddingHorizontal: spacing.lg,
     width: '100%',
   },
 });
