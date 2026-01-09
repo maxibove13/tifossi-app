@@ -278,7 +278,7 @@ const SwipeableEdge = ({
       )}
       {recommendedProducts.length > 0 && (
         <ProductSections
-          title="Recomendados para ti"
+          title="Recomendados"
           products={recommendedProducts}
           CardComponent={PromotionCard}
           onProductPress={onProductPress}

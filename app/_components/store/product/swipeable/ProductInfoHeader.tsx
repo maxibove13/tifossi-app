@@ -90,6 +90,7 @@ type Styles = {
 const styles = StyleSheet.create<Styles>({
   container: {
     marginTop: spacing.md,
+    marginHorizontal: spacing.lg,
   },
   infoRow: {
     flexDirection: 'row',
@@ -148,7 +149,6 @@ const styles = StyleSheet.create<Styles>({
     textDecorationLine: 'line-through',
   },
   addToCartButton: {
-    width: '100%',
     height: 48,
     borderRadius: radius.xxl,
     marginTop: spacing.xl,
