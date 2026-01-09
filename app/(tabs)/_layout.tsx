@@ -5,7 +5,6 @@ import TabBar from '../_components/navigation/TabBar';
 import type { TabRoute } from '../_components/navigation/TabBar'; // Keep this type if used by TabBar or internal logic
 import Header from '../_components/store/layout/Header';
 import ScreenHeader from '../_components/common/ScreenHeader';
-import { colors } from '../_styles/colors';
 
 // Placeholder for actual icon components if TabBar needs them passed this way,
 // or if they are used in screenOptions. The original diff didn't show them in Tabs.Screen options directly.
@@ -76,12 +75,7 @@ export default function TabLayout() {
             // href: '/', // Original option, keep if necessary for deep linking or TabBar behavior
             title: 'Tienda', // Title for the tab, accessibility
             headerShown: true,
-            header: () => (
-              <View style={{ backgroundColor: colors.background.offWhite }}>
-                <Header title="Tienda" variant="store" />
-                <ScreenHeader title="Tienda" />
-              </View>
-            ),
+            header: () => <Header title="Tienda" variant="store" />,
           }}
         />
         <Tabs.Screen
@@ -90,12 +84,7 @@ export default function TabLayout() {
             // href: '/favorites', // Original option
             title: 'Favoritos',
             headerShown: true,
-            header: () => (
-              <View style={{ backgroundColor: colors.background.offWhite }}>
-                <Header title="Favoritos" variant="store" invisible={true} />
-                <ScreenHeader title="Favoritos" />
-              </View>
-            ),
+            header: () => <ScreenHeader title="Favoritos" />,
           }}
         />
         <Tabs.Screen
@@ -112,12 +101,7 @@ export default function TabLayout() {
             // href: '/cart', // Original option
             title: 'Carrito',
             headerShown: true,
-            header: () => (
-              <View style={{ backgroundColor: colors.background.offWhite }}>
-                <Header title="Carrito" variant="store" invisible={true} />
-                <ScreenHeader title="Carrito" />
-              </View>
-            ),
+            header: () => <ScreenHeader title="Carrito" />,
           }}
         />
         <Tabs.Screen
@@ -126,12 +110,7 @@ export default function TabLayout() {
             // href: '/profile', // Original option
             title: 'Perfil',
             headerShown: true,
-            header: () => (
-              <View style={{ backgroundColor: colors.background.offWhite }}>
-                <Header title="Perfil" variant="store" invisible={true} />
-                <ScreenHeader title="Perfil" />
-              </View>
-            ),
+            header: () => <ScreenHeader title="Perfil" />,
           }}
         />
       </Tabs>

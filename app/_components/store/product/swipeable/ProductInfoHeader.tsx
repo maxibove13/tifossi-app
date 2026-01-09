@@ -95,6 +95,7 @@ const styles = StyleSheet.create<Styles>({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
+    paddingHorizontal: spacing.lg,
     gap: spacing.xxl,
   },
   leftColumn: {
@@ -150,7 +151,7 @@ const styles = StyleSheet.create<Styles>({
     width: '100%',
     height: 48,
     borderRadius: radius.xxl,
-    marginTop: spacing.md,
+    marginTop: spacing.xl,
     overflow: 'hidden',
   },
   addToCartButtonDisabled: {

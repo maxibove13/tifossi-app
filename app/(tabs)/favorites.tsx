@@ -42,6 +42,7 @@ type Styles = {
   centeredStatus: ViewStyle;
   errorText: TextStyle;
   loadingFavoritesText: TextStyle;
+  recommendedSection: ViewStyle;
 };
 
 export default function FavoritesScreen() {
@@ -162,13 +163,15 @@ export default function FavoritesScreen() {
 
         {/* Recommended Products - only show when no favorites */}
         {!hasFavorites && recommendedProductsData.length > 0 && (
-          <ProductSections
-            title="Recomendados"
-            products={recommendedProductsData}
-            CardComponent={PromotionCard}
-            onProductPress={handleProductPress}
-            onViewMore={() => handleViewMore('Recomendados')}
-          />
+          <View style={styles.recommendedSection}>
+            <ProductSections
+              title="Recomendados"
+              products={recommendedProductsData}
+              CardComponent={PromotionCard}
+              onProductPress={handleProductPress}
+              onViewMore={() => handleViewMore('Recomendados')}
+            />
+          </View>
         )}
       </ScrollView>
     </View>
@@ -178,11 +181,10 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: colors.background.light,
+    backgroundColor: colors.background.offWhite,
   },
   scrollContent: {
     flexGrow: 1,
-    backgroundColor: colors.background.light,
     paddingBottom: spacing.xxl,
   },
   gridContainer: {
@@ -213,5 +215,8 @@ const styles = StyleSheet.create<Styles>({
     fontFamily: fonts.secondary,
     fontSize: fontSizes.md,
     color: colors.secondary,
+  },
+  recommendedSection: {
+    marginTop: 64,
   },
 });

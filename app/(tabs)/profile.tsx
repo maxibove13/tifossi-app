@@ -656,7 +656,7 @@ type Styles = {
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: colors.background.antiflash,
+    backgroundColor: colors.background.offWhite,
   },
   loginScrollView: {
     flex: 1,

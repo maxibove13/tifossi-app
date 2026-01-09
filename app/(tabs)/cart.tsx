@@ -292,13 +292,15 @@ export default function CartScreen() {
 
         {/* Recently viewed products section - Show only when cart IS empty */}
         {isEmpty && recommendedProductsData.length > 0 && (
-          <ProductSections
-            title="Recomendados"
-            products={recommendedProductsData}
-            CardComponent={PromotionCard}
-            onProductPress={handleProductPress}
-            onViewMore={() => handleViewMore('Recomendados')}
-          />
+          <View style={styles.recommendedSection}>
+            <ProductSections
+              title="Recomendados"
+              products={recommendedProductsData}
+              CardComponent={PromotionCard}
+              onProductPress={handleProductPress}
+              onViewMore={() => handleViewMore('Recomendados')}
+            />
+          </View>
         )}
       </ScrollView>
 
@@ -353,16 +355,13 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.medium, // Adjusted background for Cart
+    backgroundColor: colors.background.offWhite,
   },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 100, // Adjusted padding for checkout button
-    backgroundColor: colors.background.medium, // Default background for non-empty cart
   },
-  scrollContentEmpty: {
-    backgroundColor: colors.background.light,
-  },
+  scrollContentEmpty: {},
   scrollContentWithAuthPrompt: {
     paddingBottom: 320, // Extra padding to account for auth prompt height
   },
@@ -485,5 +484,8 @@ const styles = StyleSheet.create({
   buyButton: {
     width: '100%',
     borderRadius: radius.xxl,
+  },
+  recommendedSection: {
+    marginTop: 64,
   },
 });
