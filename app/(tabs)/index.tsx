@@ -499,7 +499,6 @@ const styles = StyleSheet.create({
   },
   launchSection: {
     paddingVertical: spacing.xl, // Use token for 24px approx
-    paddingHorizontal: spacing.lg,
     gap: spacing.lg,
     alignItems: 'center',
   },
@@ -509,6 +508,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingVertical: 8,
+    paddingHorizontal: spacing.lg,
   },
   launchTitle: {
     fontFamily: fonts.primary,
