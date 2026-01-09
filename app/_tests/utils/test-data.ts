@@ -156,6 +156,11 @@ export const productFactory = {
       available: Math.random() < 0.8, // 80% chance of being available
     }));
 
+    // Ensure at least one size is available (unless explicitly creating unavailable product)
+    if (productSizes.every((size) => !size.available)) {
+      productSizes[0].available = true;
+    }
+
     // Generate statuses for this product
     const statuses: ProductStatus[] = [];
     if (Math.random() < 0.3) statuses.push(ProductStatus.NEW);
