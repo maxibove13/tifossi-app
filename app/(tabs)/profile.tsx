@@ -476,7 +476,10 @@ const LoggedOutLoginForm = () => {
               activeOpacity={0.7}
               disabled={isSubmitting || isLoading}
             >
-              <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+              <View style={styles.underlinedTextContainer}>
+                <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+                <View style={styles.textUnderline} />
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -519,8 +522,12 @@ const LoggedOutLoginForm = () => {
           onPress={() => router.push('/auth/signup')}
           activeOpacity={0.7}
           disabled={isSubmitting || isLoading}
+          style={{ marginTop: spacing.sm }}
         >
-          <Text style={styles.registerLinkText}>Regístrate</Text>
+          <View style={styles.underlinedTextContainer}>
+            <Text style={styles.registerLinkText}>Regístrate</Text>
+            <View style={styles.textUnderline} />
+          </View>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -607,6 +614,8 @@ type Styles = {
   primaryButtonText: TextStyle;
   forgotPasswordButton: ViewStyle;
   forgotPasswordText: TextStyle;
+  underlinedTextContainer: ViewStyle;
+  textUnderline: ViewStyle;
   dividerContainer: ViewStyle;
   divider: ViewStyle;
   socialButtonsContainer: ViewStyle;
@@ -701,10 +710,17 @@ const styles = StyleSheet.create<Styles>({
   forgotPasswordText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.sm,
+    fontWeight: '400',
+    lineHeight: 16,
     color: colors.tertiary,
-    textDecorationLine: 'underline',
+  },
+  underlinedTextContainer: {
+    alignSelf: 'center',
+  },
+  textUnderline: {
+    height: 1,
+    backgroundColor: colors.tertiary,
+    marginTop: 0,
   },
   dividerContainer: {
     paddingHorizontal: spacing.lg, // Inner padding for divider (total 16+16=32px horizontal inset)
@@ -750,11 +766,9 @@ const styles = StyleSheet.create<Styles>({
   registerLinkText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.sm,
+    fontWeight: '400',
+    lineHeight: 16,
     color: colors.tertiary,
-    textDecorationLine: 'underline',
-    paddingVertical: spacing.sm,
   },
   profileCardBackground: {
     paddingVertical: spacing.lg,

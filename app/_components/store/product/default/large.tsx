@@ -154,11 +154,9 @@ const styles = StyleSheet.create<Styles>({
   },
   discountBadge: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
+    bottom: spacing.sm,
+    left: spacing.lg,
     zIndex: 1,
-    borderTopRightRadius: radius.xs,
-    borderBottomLeftRadius: radius.xs,
   },
   content: {
     paddingHorizontal: spacing.lg,
@@ -172,7 +170,7 @@ const styles = StyleSheet.create<Styles>({
     lineHeight: lineHeights.sm,
   },
   newTag: {
-    color: colors.success,
+    color: colors.error,
     fontSize: fontSizes.sm,
     fontFamily: fonts.secondary,
     fontWeight: '400',
@@ -186,7 +184,7 @@ const styles = StyleSheet.create<Styles>({
     lineHeight: lineHeights.md,
   },
   description: {
-    color: colors.secondary,
+    color: colors.gray800,
     fontSize: fontSizes.md,
     fontFamily: fonts.secondary,
     fontWeight: '400',
@@ -222,8 +220,8 @@ const styles = StyleSheet.create<Styles>({
   colorPaletteContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: 6,
+    gap: spacing.xs,
+    paddingVertical: spacing.xs,
   },
   colorCircle: {
     width: 12,

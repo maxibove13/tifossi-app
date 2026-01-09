@@ -24,7 +24,7 @@ import { Product } from '../../../../_types/product';
 
 // Import style tokens
 import { colors } from '../../../../_styles/colors';
-import { spacing, radius } from '../../../../_styles/spacing';
+import { spacing, radius, components } from '../../../../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../_styles/typography';
 
 // Get screen dimensions
@@ -382,9 +382,9 @@ const styles = StyleSheet.create<Styles>({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    height: components.selectionRow.height,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
   },
   selectionTitle: {
@@ -412,12 +412,12 @@ const styles = StyleSheet.create<Styles>({
   actionButtons: {
     flexDirection: 'column',
     width: '100%',
-    gap: spacing.sm,
+    gap: spacing.lg,
   },
   primaryButton: {
     width: '100%',
-    height: 48,
-    borderRadius: 24,
+    height: components.button.heightLarge,
+    borderRadius: radius.buttonLarge,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
@@ -431,8 +431,8 @@ const styles = StyleSheet.create<Styles>({
   },
   secondaryButton: {
     width: '100%',
-    height: 48,
-    borderRadius: 24,
+    height: components.button.heightLarge,
+    borderRadius: radius.buttonLarge,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,

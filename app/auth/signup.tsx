@@ -370,8 +370,12 @@ export default function SignupScreen() {
             onPress={() => router.push('/auth/login')}
             activeOpacity={0.7}
             disabled={isSubmitting || isLoading}
+            style={{ marginTop: spacing.sm }}
           >
-            <Text style={styles.loginLinkText}>Inicia Sesión</Text>
+            <View style={styles.underlinedTextContainer}>
+              <Text style={styles.loginLinkText}>Inicia Sesión</Text>
+              <View style={styles.textUnderline} />
+            </View>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -516,10 +520,16 @@ const styles = StyleSheet.create({
   loginLinkText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.sm,
+    fontWeight: '400',
+    lineHeight: 16,
     color: colors.tertiary,
-    textDecorationLine: 'underline',
-    paddingVertical: spacing.sm,
+  },
+  underlinedTextContainer: {
+    alignSelf: 'center',
+  },
+  textUnderline: {
+    height: 1,
+    backgroundColor: colors.tertiary,
+    marginTop: 2,
   },
 });
