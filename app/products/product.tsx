@@ -126,8 +126,15 @@ export default function ProductScreen() {
     }
   };
 
-  const handleViewMore = (_section: string) => {
-    // Navigate to section view
+  const handleViewMore = (section: string) => {
+    if (section === 'Productos Relacionados' && product?.categoryId) {
+      // Navigate to the product's actual category
+      router.push(`/catalog?category=${product.categoryId}`);
+    } else if (section === 'Recomendados') {
+      router.push('/catalog?title=Recomendados&category=recommended');
+    } else if (section === 'Tendencias') {
+      router.push('/catalog?title=Tendencias&category=popular');
+    }
   };
 
   // Loading state
