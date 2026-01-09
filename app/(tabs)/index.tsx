@@ -447,6 +447,7 @@ function HomeScreen() {
           <Button
             variant="primary"
             text="Ver Todo"
+            textStyle={{ fontSize: 12 }}
             onPress={() => router.push('/catalog?title=Todos los Productos')}
           />
         </View>
@@ -487,6 +488,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl,
     alignItems: 'center',
     marginTop: 20,
+    marginBottom: spacing.xl,
   },
   featuredCardContainer: {
     height: 400,

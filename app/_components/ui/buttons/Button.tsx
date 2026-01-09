@@ -1,5 +1,5 @@
 import React, { useState, forwardRef } from 'react';
-import { StyleSheet, Text, Pressable, ViewStyle, AccessibilityRole } from 'react-native';
+import { StyleSheet, Text, Pressable, ViewStyle, TextStyle, AccessibilityRole } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -12,6 +12,7 @@ type ButtonProps = {
   icon?: keyof typeof Ionicons.glyphMap;
   disabled?: boolean;
   style?: ViewStyle;
+  textStyle?: TextStyle;
   // Testing props
   testID?: string;
   // Accessibility props
@@ -35,6 +36,7 @@ const Button = forwardRef<React.ComponentRef<typeof Pressable>, ButtonProps>(
       icon,
       disabled = false,
       style,
+      textStyle,
       testID,
       accessibilityLabel,
       accessibilityHint,
@@ -79,7 +81,9 @@ const Button = forwardRef<React.ComponentRef<typeof Pressable>, ButtonProps>(
             style={StyleSheet.absoluteFill}
           />
           {icon && <Ionicons name={icon} size={24} color={disabled ? '#B1B1B1' : '#FBFBFB'} />}
-          {text && <Text style={[styles.text, disabled && styles.textDisabled]}>{text}</Text>}
+          {text && (
+            <Text style={[styles.text, disabled && styles.textDisabled, textStyle]}>{text}</Text>
+          )}
         </Pressable>
       );
     }
@@ -103,7 +107,9 @@ const Button = forwardRef<React.ComponentRef<typeof Pressable>, ButtonProps>(
         ]}
       >
         {icon && <Ionicons name={icon} size={24} color={disabled ? '#B1B1B1' : '#0C0C0C'} />}
-        {text && <Text style={[styles.text, disabled && styles.textDisabled]}>{text}</Text>}
+        {text && (
+          <Text style={[styles.text, disabled && styles.textDisabled, textStyle]}>{text}</Text>
+        )}
       </Pressable>
     );
   }
