@@ -307,7 +307,10 @@ export default function LoginScreen() {
           activeOpacity={0.7}
           disabled={isSubmitting || isLoading}
         >
-          <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+          <View style={styles.underlinedTextContainer}>
+            <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+            <View style={styles.textUnderline} />
+          </View>
         </TouchableOpacity>
 
         {/* Divider */}
@@ -347,8 +350,12 @@ export default function LoginScreen() {
             onPress={() => router.push('/auth/signup')}
             activeOpacity={0.7}
             disabled={isSubmitting || isLoading}
+            style={{ marginTop: spacing.sm }}
           >
-            <Text style={styles.registerLinkText}>Regístrate</Text>
+            <View style={styles.underlinedTextContainer}>
+              <Text style={styles.registerLinkText}>Regístrate</Text>
+              <View style={styles.textUnderline} />
+            </View>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -460,10 +467,17 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.sm,
+    fontWeight: '400',
+    lineHeight: 16,
     color: colors.tertiary,
-    textDecorationLine: 'underline',
+  },
+  underlinedTextContainer: {
+    alignSelf: 'center',
+  },
+  textUnderline: {
+    height: 1,
+    backgroundColor: colors.tertiary,
+    marginTop: 2,
   },
   dividerContainer: {
     paddingHorizontal: spacing.lg,
@@ -509,10 +523,8 @@ const styles = StyleSheet.create({
   registerLinkText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.sm,
+    fontWeight: '400',
+    lineHeight: 16,
     color: colors.tertiary,
-    textDecorationLine: 'underline',
-    paddingVertical: spacing.sm,
   },
 });

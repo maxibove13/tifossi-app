@@ -707,6 +707,7 @@ const styles = StyleSheet.create<Styles>({
   actionButtons: {
     paddingHorizontal: spacing.lg,
     gap: spacing.sm,
+    marginTop: spacing.lg,
     marginBottom: 34,
   },
   primaryButton: {

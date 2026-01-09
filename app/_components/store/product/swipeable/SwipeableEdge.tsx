@@ -707,8 +707,10 @@ const styles = StyleSheet.create({
   callText: {
     fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,
-    color: colors.secondary.textDisabled,
-    textDecorationLine: 'underline',
+    color: '#909090',
+    paddingBottom: 0.5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#909090',
   },
   measureHeaderContainer: {
     position: 'absolute',

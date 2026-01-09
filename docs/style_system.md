@@ -92,6 +92,7 @@ export const radius = {
   lg: 16,
   xl: 20,
   button: 22,
+  buttonLarge: 28,
   xxl: 24,
   circle: 100,
 };
@@ -112,6 +113,10 @@ export const layout = {
 export const components = {
   button: {
     height: 48,
+    heightLarge: 56,
+  },
+  selectionRow: {
+    height: 56,
   },
   closeButton: {
     width: 40,

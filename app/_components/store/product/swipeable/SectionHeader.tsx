@@ -22,14 +22,12 @@ export default function SectionHeader({
     color: invertTitleColor ? colors.background.light : colors.primary,
   };
 
-  const actionTextColor = invertTitleColor ? colors.secondary : colors.secondary;
-
   return (
     <View style={[styles.container, style]}>
       <Text style={[styles.title, titleColorStyle]}>{title}</Text>
       {actionText && onActionPress && (
         <Pressable onPress={onActionPress}>
-          <Text style={[styles.actionText, { color: actionTextColor }]}>{actionText}</Text>
+          <Text style={styles.actionText}>{actionText}</Text>
         </Pressable>
       )}
     </View>
@@ -53,7 +51,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
     fontWeight: '400',
-    lineHeight: (lineHeights.sm * 1.333) / ((fontSizes.sm * 1.333) / 12),
-    textDecorationLine: 'underline',
+    lineHeight: 16,
+    color: '#909090',
+    paddingBottom: 0.5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#909090',
   },
 });
