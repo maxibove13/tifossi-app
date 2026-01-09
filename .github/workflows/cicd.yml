@@ -502,6 +502,7 @@ jobs:
           echo "Building iOS app..."
           eas build --platform ios \
             --profile ${{ steps.build-config.outputs.profile }} \
+            --auto-submit \
             --non-interactive \
             --no-wait || {
               echo "Note: EAS build submitted. Check Expo dashboard for status."
@@ -530,14 +531,13 @@ jobs:
           echo "Profile: ${{ steps.build-config.outputs.profile }}"
           echo ""
           echo "Builds are submitted to EAS Build (Expo cloud)."
-          echo "App Store submission is MANUAL by design."
+          echo "iOS: Auto-submit to TestFlight enabled"
+          echo "Android: Manual submission required"
           echo ""
           echo "Next steps:"
           echo "1. Check build status: https://expo.dev"
-          echo "2. Download .ipa/.aab when build completes"
-          echo "3. Upload to TestFlight/Play Console manually"
-          echo "   - iOS: Use Transporter app or 'eas submit --platform ios'"
-          echo "   - Android: Upload via Play Console or 'eas submit --platform android'"
+          echo "2. iOS will auto-submit to TestFlight after build"
+          echo "3. Android: Upload .aab via Play Console or 'eas submit --platform android'"
           echo "======================================"
 
   # ============================
