@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { fonts } from '../../_styles/typography';
 import { spacing } from '../../_styles/spacing';
 
-type EmptyStateVariant = 'noFavorites' | 'notLoggedIn' | 'emptyCart';
+type EmptyStateVariant = 'noFavorites' | 'notLoggedIn' | 'emptyCart' | 'noOrders';
 
 interface EmptyStateProps {
   variant: EmptyStateVariant;
@@ -29,6 +29,12 @@ const CONTENT = {
   emptyCart: {
     title: 'Tu carrito está vacío.',
     description: 'Puedes agregar y quitar ítems de tu carrito cuantas veces desees.',
+    buttonText: 'Ir a Tienda',
+    showArrow: true,
+  },
+  noOrders: {
+    title: 'No tienes pedidos.',
+    description: 'Cuando realices una compra, tus pedidos aparecerán aquí.',
     buttonText: 'Ir a Tienda',
     showArrow: true,
   },

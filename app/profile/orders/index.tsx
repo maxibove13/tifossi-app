@@ -17,7 +17,7 @@ import { spacing, radius, components } from '../../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../_styles/typography';
 import { useAuthStore } from '../../_stores/authStore';
 import orderService, { Order } from '../../_services/order/orderService';
-import EmptyOrders from '../../_components/store/orders/EmptyOrders';
+import EmptyState from '../../_components/common/EmptyState';
 import ReusableAuthPrompt from '../../_components/auth/AuthPrompt';
 import { getStatusColor, formatDate, formatCurrency } from '../../_utils/orderUtils';
 
@@ -186,7 +186,7 @@ export default function OrdersListScreen() {
           </TouchableOpacity>
         </View>
       ) : orders.length === 0 ? (
-        <EmptyOrders onGoToStore={handleGoToStore} />
+        <EmptyState variant="noOrders" onPress={handleGoToStore} />
       ) : (
         <FlatList
           data={orders}
