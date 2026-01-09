@@ -95,6 +95,7 @@ const profile = await httpClient.get('/users/me');
   - Authenticated users: Server sync via `PUT /user-profile/me` with `{ favorites: { set: productIds } }` (Strapi relation format)
   - **Deferred sync pattern:** When user is not authenticated, sync operations add `'sync'` to `pendingOperations` instead of failing. The `storeSynchronizer` triggers pending syncs when the user logs in.
   - **Server initialization:** `fetchFromServer()` fetches favorites via `GET /user-profile/me` and replaces local state with server state on login
+  - **Duplicate prevention:** Product IDs are normalized (deduplicated via `Set`) at multiple points: when adding/removing locally, before syncing with server (with automatic drift detection and correction), when fetching from server, and when hydrating from local storage. The backend also deduplicates IDs before persistence.
 
 #### Auth Store (`authStore.ts`)
 

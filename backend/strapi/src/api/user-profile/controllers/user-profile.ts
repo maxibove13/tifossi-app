@@ -100,10 +100,14 @@ export default {
       }
 
       const favorites = Array.isArray(currentUser.favorites) ? currentUser.favorites : [];
-      const favoriteIds = favorites
-        .map((favorite: any) => favorite.documentId ?? favorite.id)
-        .filter((id: string | number | undefined) => id !== undefined && id !== null)
-        .map((id: string | number) => String(id));
+      const favoriteIds = Array.from(
+        new Set(
+          favorites
+            .map((favorite: any) => favorite.documentId ?? favorite.id)
+            .filter((id: string | number | undefined) => id !== undefined && id !== null)
+            .map((id: string | number) => String(id))
+        )
+      );
 
       ctx.body = {
         id: currentUser.id,
@@ -203,6 +207,7 @@ export default {
             ...numericResults.map((p: { id: number }) => p.id),
             ...docIdResults.map((p: { id: number }) => p.id),
           ];
+          const uniqueResolvedIds = Array.from(new Set(resolvedIds));
 
           // Find unresolved IDs for logging
           const foundNumericIds = new Set(numericResults.map((p: { id: number }) => p.id));
@@ -218,13 +223,13 @@ export default {
             strapi.log.warn(`[user-profile] Products not found: ${unresolvedIds.join(', ')}`);
           }
 
-          if (resolvedIds.length === 0) {
+          if (uniqueResolvedIds.length === 0) {
             ctx.badRequest('None of the provided product IDs could be resolved');
             return;
           }
 
           // strapi.db.query expects plain ID array for relations
-          updateData.favorites = { set: resolvedIds };
+          updateData.favorites = { set: uniqueResolvedIds };
         }
       }
     }

@@ -353,6 +353,7 @@ export const usePaymentStore = create((set, get) => ({
 **Cart & Favorites via `/user-profile/me`:**
 - Cart: `PUT /user-profile/me` with `{ cart: CartItem[] }` - cart is a JSON field on user
 - Favorites: `PUT /user-profile/me` with `{ favorites: { set: [productIds] } }` - uses Strapi relation format
+- **Favorites deduplication:** Both GET and PUT operations deduplicate product IDs server-side using `Set`. Invalid IDs are logged but don't block the operation.
 
 **Address Management via `/user-profile/me/addresses`:**
 Addresses are stored as a repeatable component on the user profile. Each address has an index (0-based) used for updates/deletes.

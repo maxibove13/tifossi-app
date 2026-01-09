@@ -42,6 +42,7 @@ interface FavoritesState {
 
 // Disable persistence in test environment to avoid async issues
 const isTestEnvironment = typeof jest !== 'undefined';
+const normalizeFavoriteIds = (ids: string[]) => Array.from(new Set(ids));
 
 const createStoreContent = (set: any, get: any): FavoritesState => ({
   productIds: [],
@@ -57,7 +58,7 @@ const createStoreContent = (set: any, get: any): FavoritesState => ({
     if (previousIds.includes(productId)) return; // Already favorite
 
     // Optimistic update
-    const updatedIds = [...previousIds, productId];
+    const updatedIds = normalizeFavoriteIds([...previousIds, productId]);
     set({ productIds: updatedIds, items: updatedIds });
 
     try {
@@ -95,7 +96,7 @@ const createStoreContent = (set: any, get: any): FavoritesState => ({
     if (!previousIds.includes(productId)) return; // Not a favorite
 
     // Optimistic update
-    const updatedIds = previousIds.filter((id: string) => id !== productId);
+    const updatedIds = normalizeFavoriteIds(previousIds.filter((id: string) => id !== productId));
     set({ productIds: updatedIds, items: updatedIds });
 
     try {
@@ -155,10 +156,15 @@ const createStoreContent = (set: any, get: any): FavoritesState => ({
         return;
       }
 
+      const normalizedIds = normalizeFavoriteIds(get().productIds);
+      if (normalizedIds.length !== get().productIds.length) {
+        set({ productIds: normalizedIds, items: normalizedIds });
+      }
+
       set({ isLoading: true, error: null });
 
       // Sync current favorites with server
-      const success = await apiManager.syncFavorites(get().productIds);
+      const success = await apiManager.syncFavorites(normalizedIds);
       if (success) {
         set({ isLoading: false, pendingOperations: [] });
       } else {
@@ -188,9 +194,10 @@ const createStoreContent = (set: any, get: any): FavoritesState => ({
       set({ isLoading: true, error: null });
 
       const serverFavorites = await apiManager.fetchFavorites();
+      const normalizedIds = normalizeFavoriteIds(serverFavorites);
       set({
-        productIds: serverFavorites,
-        items: serverFavorites,
+        productIds: normalizedIds,
+        items: normalizedIds,
         isLoading: false,
         pendingOperations: [],
         lastSyncTimestamp: Date.now(),
@@ -237,6 +244,7 @@ export const useFavoritesStore = create<FavoritesState>()(
         onRehydrateStorage: () => (state) => {
           // Reset transient state after hydration
           if (state) {
+            state.productIds = normalizeFavoriteIds(state.productIds || []);
             state.isLoading = false;
             state.error = null;
             state.items = state.productIds;
