@@ -35,6 +35,7 @@ interface FavoritesState {
   toggleFavorite: (productId: string) => Promise<void>;
   isFavorite: (productId: string) => boolean;
   syncWithServer: () => Promise<void>;
+  fetchFromServer: () => Promise<void>;
   clearError: () => void;
   retryFailedOperations: () => Promise<void>;
 }
@@ -167,6 +168,37 @@ const createStoreContent = (set: any, get: any): FavoritesState => ({
       set({
         isLoading: false,
         error: 'Failed to sync favorites with server.',
+      });
+    }
+  },
+
+  fetchFromServer: async () => {
+    try {
+      const authState = useAuthStore.getState();
+      if (!authState.isLoggedIn || !authState.token) {
+        set((state: FavoritesState) => ({
+          pendingOperations: state.pendingOperations.includes('sync')
+            ? state.pendingOperations
+            : [...state.pendingOperations, 'sync'],
+          error: null,
+        }));
+        return;
+      }
+
+      set({ isLoading: true, error: null });
+
+      const serverFavorites = await apiManager.fetchFavorites();
+      set({
+        productIds: serverFavorites,
+        items: serverFavorites,
+        isLoading: false,
+        pendingOperations: [],
+        lastSyncTimestamp: Date.now(),
+      });
+    } catch {
+      set({
+        isLoading: false,
+        error: 'Failed to fetch favorites from server.',
       });
     }
   },

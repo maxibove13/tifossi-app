@@ -25,6 +25,7 @@ Key implementation patterns:
   - `fetchProductById`: Returns a single product by ID
   - `syncCart`: Simulates cart synchronization with backend
   - `syncFavorites`: Simulates favorites synchronization
+  - `fetchFavorites`: Fetches user favorites from server
   - `login/register/validateToken`: Auth-related mock methods
 
 **Note:** The application is prepared for future migration to TanStack Query when a real backend becomes available.
@@ -93,6 +94,7 @@ const profile = await httpClient.get('/users/me');
   - Guest users: Local-only persistence (MMKV), deferred sync via `pendingOperations`
   - Authenticated users: Server sync via `PUT /user-profile/me` with `{ favorites: { set: productIds } }` (Strapi relation format)
   - **Deferred sync pattern:** When user is not authenticated, sync operations add `'sync'` to `pendingOperations` instead of failing. The `storeSynchronizer` triggers pending syncs when the user logs in.
+  - **Server initialization:** `fetchFromServer()` fetches favorites via `GET /user-profile/me` and replaces local state with server state on login
 
 #### Auth Store (`authStore.ts`)
 
@@ -129,8 +131,10 @@ The store synchronizer coordinates cross-store operations on authentication even
 - **Purpose:** Triggers deferred sync operations when user authentication state changes
 - **Key Features:**
   - Subscribes to auth store token changes
-  - When a token is set (user logs in), checks if favorites store has pending operations
-  - Automatically triggers `syncWithServer()` on favorites store if `'sync'` is in `pendingOperations`
+  - When a token is set (user logs in):
+    1. Calls `fetchFromServer()` on favorites store to initialize with server state
+    2. Checks if favorites store has pending operations
+    3. Automatically triggers `syncWithServer()` on favorites store if `'sync'` is in `pendingOperations`
   - Enables offline-first behavior: users can modify favorites while logged out, and changes sync automatically upon login
 
 ## 4. Search Implementation
@@ -192,6 +196,7 @@ Key types currently implemented:
 - ✅ Cart item variant management (size, color)
 - ✅ Cart operations (add, update, remove)
 - ✅ Favorites state with MMKV persistence
+- ✅ Favorites fetch from server on login
 - ✅ Authentication state with SecureStore token storage
 - ✅ Auth session restoration
 - ✅ Cross-store coordination (auth triggers other stores)

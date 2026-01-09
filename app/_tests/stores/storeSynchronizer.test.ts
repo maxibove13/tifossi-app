@@ -166,7 +166,7 @@ describe('StoreSynchronizer', () => {
       migrateCartSpy.mockRestore();
     });
 
-    it('should sync favorites with server on login', async () => {
+    it('should fetch favorites from server on login', async () => {
       const mockToken = 'sync-token';
       const mockUser = {
         id: 'user-sync',
@@ -175,8 +175,8 @@ describe('StoreSynchronizer', () => {
         profilePicture: null,
       };
 
-      // Spy on syncWithServer
-      const syncFavoritesSpy = jest.spyOn(useFavoritesStore.getState(), 'syncWithServer');
+      // Spy on fetchFromServer
+      const fetchFavoritesSpy = jest.spyOn(useFavoritesStore.getState(), 'fetchFromServer');
 
       // Trigger login
       act(() => {
@@ -188,10 +188,10 @@ describe('StoreSynchronizer', () => {
       });
 
       await waitFor(() => {
-        expect(syncFavoritesSpy).toHaveBeenCalled();
+        expect(fetchFavoritesSpy).toHaveBeenCalled();
       });
 
-      syncFavoritesSpy.mockRestore();
+      fetchFavoritesSpy.mockRestore();
     });
   });
 
@@ -427,9 +427,9 @@ describe('StoreSynchronizer', () => {
         profilePicture: null,
       };
 
-      // Make syncWithServer throw an error
+      // Make fetchFromServer throw an error
       const syncSpy = jest
-        .spyOn(useFavoritesStore.getState(), 'syncWithServer')
+        .spyOn(useFavoritesStore.getState(), 'fetchFromServer')
         .mockRejectedValue(new Error('Sync failed'));
 
       // Trigger login (should not throw despite sync error)

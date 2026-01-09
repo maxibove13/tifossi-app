@@ -52,13 +52,16 @@ class StoreSynchronizer implements StoreSyncActions {
       // Clear favorites errors
       useFavoritesStore.getState().clearError();
 
-      // Sync favorites with server
-      await useFavoritesStore.getState().syncWithServer();
+      // Fetch favorites from server
+      await useFavoritesStore.getState().fetchFromServer();
     } catch {}
   }
 
   async onLogout(): Promise<void> {
     try {
+      // Ensure cart behaves as guest before clearing to avoid auth requests
+      useCartStore.getState().setAuthToken(null);
+
       // Clear cart
       await useCartStore.getState().clearCart();
 

@@ -494,7 +494,8 @@ The authentication system has integration points with:
    - Potential for clearing cart on logout
 
 2. **Favorites Store** (`favoritesStore.ts`):
-   - Sync method called after successful login
+   - `fetchFromServer()` called on login to initialize favorites from server state
+   - `syncWithServer()` called to sync any pending changes made while logged out
    - Potential for clearing favorites on logout
 
 ## Security Considerations

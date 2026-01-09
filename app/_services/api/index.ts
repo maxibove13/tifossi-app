@@ -22,6 +22,7 @@ export interface ApiInterface {
 
   // Favorites methods
   syncFavorites(productIds: string[]): Promise<boolean>;
+  fetchFavorites(): Promise<string[]>;
 
   // Store methods
   fetchStores(): Promise<import('../../_types').StoreDetails[]>;
