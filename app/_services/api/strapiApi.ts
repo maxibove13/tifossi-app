@@ -65,6 +65,11 @@ export interface User {
   isEmailVerified?: boolean;
 }
 
+interface UserProfileResponse {
+  favorites?: Array<{ id?: number; documentId?: string }>;
+  favoriteIds?: string[];
+}
+
 // Cache TTL constants (in minutes)
 const CACHE_TTL = {
   PRODUCTS: 30,
@@ -457,6 +462,28 @@ class StrapiApiService {
       return true;
     } catch (error) {
       const apiError = handleApiError(error, 'syncFavorites');
+      throw apiError;
+    }
+  }
+
+  /**
+   * Fetches favorite product IDs from the server
+   */
+  async fetchFavorites(): Promise<string[]> {
+    try {
+      const response = await httpClient.get<UserProfileResponse>('/user-profile/me');
+
+      if (Array.isArray(response?.favoriteIds)) {
+        return response.favoriteIds.map(String);
+      }
+
+      const favorites = Array.isArray(response?.favorites) ? response.favorites : [];
+      return favorites
+        .map((favorite: { id?: number; documentId?: string }) => favorite.documentId ?? favorite.id)
+        .filter((id): id is string | number => id !== undefined && id !== null)
+        .map(String);
+    } catch (error) {
+      const apiError = handleApiError(error, 'fetchFavorites');
       throw apiError;
     }
   }
@@ -951,6 +978,7 @@ const strapiApiExport = {
   searchProducts: strapiApi.searchProducts.bind(strapiApi),
   syncCart: strapiApi.syncCart.bind(strapiApi),
   syncFavorites: strapiApi.syncFavorites.bind(strapiApi),
+  fetchFavorites: strapiApi.fetchFavorites.bind(strapiApi),
   fetchStores: strapiApi.fetchStores.bind(strapiApi),
   fetchAppSettings: strapiApi.fetchAppSettings.bind(strapiApi),
   fetchCategories: strapiApi.fetchCategories.bind(strapiApi),

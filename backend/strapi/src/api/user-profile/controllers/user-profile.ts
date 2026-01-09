@@ -77,6 +77,51 @@ function cleanAddress(addr: any, overrides: Partial<CleanAddress> = {}): CleanAd
 
 export default {
   /**
+   * Get authenticated user's profile data
+   * GET /api/user-profile/me
+   */
+  async getMe(ctx: Context): Promise<void> {
+    const user = ctx.state.user;
+
+    if (!user) {
+      ctx.unauthorized('You must be logged in to view your profile');
+      return;
+    }
+
+    try {
+      const currentUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+        where: { id: user.id },
+        populate: ['favorites'],
+      });
+
+      if (!currentUser) {
+        ctx.notFound('User not found');
+        return;
+      }
+
+      const favorites = Array.isArray(currentUser.favorites) ? currentUser.favorites : [];
+      const favoriteIds = favorites
+        .map((favorite: any) => favorite.documentId ?? favorite.id)
+        .filter((id: string | number | undefined) => id !== undefined && id !== null)
+        .map((id: string | number) => String(id));
+
+      ctx.body = {
+        id: currentUser.id,
+        email: currentUser.email,
+        username: currentUser.username,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        cart: currentUser.cart,
+        favorites,
+        favoriteIds,
+      };
+    } catch (error: any) {
+      strapi.log.error('[user-profile] Fetch failed:', error);
+      ctx.internalServerError('Failed to fetch profile');
+    }
+  },
+
+  /**
    * Update authenticated user's own data
    * PUT /api/user-profile/me
    */

@@ -6,6 +6,15 @@
 export default {
   routes: [
     {
+      method: 'GET',
+      path: '/user-profile/me',
+      handler: 'user-profile.getMe',
+      config: {
+        auth: false,
+        middlewares: ['global::jwt-auth'],
+      },
+    },
+    {
       method: 'PUT',
       path: '/user-profile/me',
       handler: 'user-profile.updateMe',

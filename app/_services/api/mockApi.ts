@@ -92,6 +92,13 @@ export const mockSyncFavorites = async (productIds: string[]): Promise<boolean> 
   return true;
 };
 
+export const mockFetchFavorites = async (): Promise<string[]> => {
+  await simulateNetworkConditions();
+  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY));
+  safeLog('[Mock API] Fetching favorites');
+  return [];
+};
+
 // --- Store Mocks ---
 export const mockFetchStores = async (): Promise<import('../../_types').StoreDetails[]> => {
   await simulateNetworkConditions();
@@ -267,6 +274,7 @@ const mockApi = {
   fetchProductById: mockFetchProductById,
   syncCart: mockSyncCart,
   syncFavorites: mockSyncFavorites,
+  fetchFavorites: mockFetchFavorites,
   fetchStores: mockFetchStores,
   fetchAppSettings: mockFetchAppSettings,
 
