@@ -1,15 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import strapiApi from '../app/_services/api/strapiApi';
 import { Category } from '../app/_types/category';
-import {
-  allCategory,
-  discountedCategory,
-  labelCategories,
-  productCategories,
-} from '../app/_data/categories';
+import { allCategory, discountedCategory, labelCategories } from '../app/_data/categories';
 
 export interface CategoriesResult {
-  /** Product categories fetched from API (or local fallback) */
+  /** Product categories fetched from API */
   productCategories: Category[];
   /** Full main categories list: [todo, discounted, ...labels, ...productCategories] */
   mainCategories: Category[];
@@ -21,11 +16,9 @@ export interface CategoriesResult {
 /**
  * Hook to fetch product categories from Strapi
  * Maintains the tab order: Todo -> Discounted -> labels -> product categories
- * Falls back to local data on error
  */
 export function useCategories(): CategoriesResult {
-  const [fetchedProductCategories, setFetchedProductCategories] =
-    useState<Category[]>(productCategories);
+  const [fetchedProductCategories, setFetchedProductCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +30,6 @@ export function useCategories(): CategoriesResult {
       setFetchedProductCategories(categories);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch categories');
-      // Keep using local data on error (already set as default)
     } finally {
       setIsLoading(false);
     }

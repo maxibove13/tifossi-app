@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView, Animated, Easing, ViewStyle } from 'react-native';
 import { colors } from '../../_styles/colors';
 import { spacing, radius } from '../../_styles/spacing';
+import { CARD_DIMENSIONS } from '../../_types/product-card';
 
 interface SkeletonPlaceholderProps {
   style?: ViewStyle | ViewStyle[];
@@ -427,8 +428,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    gap: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
   },
   gridItem: {
     flex: 1,
@@ -444,13 +444,12 @@ const styles = StyleSheet.create({
   },
   imagePlaceholder: {
     width: '100%',
-    aspectRatio: 1,
-    borderRadius: radius.sm,
+    height: CARD_DIMENSIONS.default!.large!.imageSize,
+    borderRadius: radius.xs,
   },
   textContainer: {
-    paddingHorizontal: 0,
+    paddingHorizontal: spacing.lg, // Match card content padding
     gap: spacing.xs + 2,
-    flex: 1,
   },
   textLineShort: {
     height: 10,

@@ -15,19 +15,14 @@ import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights } from '../_styles/typography';
 import VideoBackground from '../_components/common/VideoBackground';
 import { Product } from '../_types/product';
-import { getTiffosiExploreProducts } from '../_data/products';
-import preloadService from '../_services/preload/service';
 import { getPrimaryLabelFromStatuses, hasStatus, ProductStatus } from '../_types/product-status';
-import { useState, useEffect, memo, useCallback, useMemo } from 'react';
-import { useProducts } from '../_services/api/queryHooks';
+import { memo, useCallback, useMemo } from 'react';
+import { useProductStore } from '../_stores/productStore';
 
 // Function to get app-exclusive products from API data
 const getAppExclusiveProducts = (allProducts: Product[]): Product[] => {
   return allProducts.filter((product) => hasStatus(product.statuses, ProductStatus.APP_EXCLUSIVE));
 };
-
-// Fallback products from static data
-const fallbackExploreProducts: Product[] = getTiffosiExploreProducts();
 
 // Placeholder Icon - Replace with actual SVG Icon component if available
 const ArrowUpRightIcon = () => <Text style={styles.iconText}>↗</Text>;
@@ -111,10 +106,9 @@ const ExploreProductCard = memo(({ product }: { product: Product }) => {
       {product.videoSource ? (
         <VideoBackground
           source={product.videoSource}
-          fallbackImage={product.frontImage}
           style={styles.videoBackground}
           overlayOpacity={0.3}
-          preloadPriority="high"
+          fallbackImage={imageSource}
         >
           {cardContent}
         </VideoBackground>
@@ -129,71 +123,21 @@ const ExploreProductCard = memo(({ product }: { product: Product }) => {
 
 ExploreProductCard.displayName = 'ExploreProductCard';
 
-// Enhanced TiffosiExploreScreen with strategic preloading
 export default function TiffosiExploreScreen() {
-  const [preloaded, setPreloaded] = useState(false);
+  // Fetch products using Zustand store (single source of truth)
+  const {
+    products: allProducts,
+    isLoading: productsLoading,
+    error: productsError,
+  } = useProductStore();
 
-  // Fetch products using TanStack Query
-  const { data: allProducts, isLoading: productsLoading, error: productsError } = useProducts();
-
-  // Get explore products from API data or use fallback
+  // Get explore products from store data
   const exploreProducts = useMemo(() => {
-    if (allProducts && allProducts.length > 0) {
-      return getAppExclusiveProducts(allProducts);
-    }
-    return fallbackExploreProducts;
+    return getAppExclusiveProducts(allProducts);
   }, [allProducts]);
 
-  // Preload all explore products when the screen is accessed (but only once)
-  useEffect(() => {
-    if (preloaded) return;
-
-    // This function preloads all assets for products in TiffosiExplore
-    async function preloadExploreProducts() {
-      try {
-        // First, preload all video sources with high priority
-        const videoProducts = exploreProducts.filter((p) => p.videoSource);
-
-        if (videoProducts.length > 0) {
-          // Create preload assets array for videos with high priority
-          const videoAssets = videoProducts.map((product) => ({
-            key: `video_${product.id}`,
-            asset: product.videoSource,
-            type: 'video' as const,
-            priority: 'high' as const,
-          }));
-
-          // Update preload service with these assets
-          preloadService.updateAssetList(videoAssets);
-        }
-
-        // Then, preload all product images (medium priority)
-        const imageAssets = exploreProducts.map((product) => ({
-          key: `image_${product.id}`,
-          asset: product.frontImage,
-          type: 'image' as const,
-          priority: 'medium' as const,
-        }));
-
-        // Update preload service with image assets
-        preloadService.updateAssetList(imageAssets);
-
-        // Trigger preload in background - don't await, let it happen in bg
-        preloadService.preloadSecondary();
-
-        // Mark as preloaded so we don't try to preload again
-        setPreloaded(true);
-      } catch {
-        // Failed to preload explore assets
-      }
-    }
-
-    // Execute the preload function
-    preloadExploreProducts();
-  }, [preloaded, exploreProducts]);
-
-  // Show loading state while fetching products
-  if (productsLoading && exploreProducts.length === 0) {
+  // Show loading state only if no products AND loading
+  if (productsLoading && allProducts.length === 0) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
         <Text style={styles.loadingText}>Cargando productos exclusivos...</Text>
@@ -201,8 +145,8 @@ export default function TiffosiExploreScreen() {
     );
   }
 
-  // Show error state if products failed to load and no fallback
-  if (productsError && exploreProducts.length === 0) {
+  // Show error state if products failed to load and we have no data
+  if (productsError && allProducts.length === 0) {
     return (
       <View style={[styles.container, styles.errorContainer]}>
         <Text style={styles.errorText}>Error al cargar productos</Text>
@@ -211,10 +155,17 @@ export default function TiffosiExploreScreen() {
     );
   }
 
+  // Show empty state if no APP_EXCLUSIVE products
+  if (exploreProducts.length === 0) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <Text style={styles.loadingText}>No hay productos exclusivos disponibles</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* We don't block rendering with a loading indicator, 
-          instead we let the VideoBackground components handle their fallbacks */}
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {exploreProducts.map((product) => (
           <ExploreProductCard key={product.id} product={product} />

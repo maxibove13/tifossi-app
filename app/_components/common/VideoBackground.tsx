@@ -1,116 +1,111 @@
-import { View, StyleSheet, Image, useWindowDimensions, ImageSourcePropType } from 'react-native';
-import { useVideoPlayer, VideoView } from 'expo-video';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import {
+  View,
+  StyleSheet,
+  useWindowDimensions,
+  ImageBackground,
+  ImageSourcePropType,
+} from 'react-native';
+import { VideoView, VideoPlayer, createVideoPlayer } from 'expo-video';
+import { useRef, useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import preloadService from '../../_services/preload';
 import { Asset } from 'expo-asset';
+import { videoCache } from '../../_services/videoCache';
 import React from 'react';
 
 interface VideoBackgroundProps {
   source: number | string;
-  fallbackImage?: string | ImageSourcePropType;
   children?: React.ReactNode;
   overlayOpacity?: number;
   style?: any;
   shouldLoop?: boolean;
   shouldMute?: boolean;
   shouldAutoPlay?: boolean;
-  preloadPriority?: 'high' | 'medium' | 'low';
+  /** Fallback image to show if video fails to load */
+  fallbackImage?: ImageSourcePropType;
 }
 
 export const VideoBackground = ({
   source,
-  fallbackImage,
   children,
   overlayOpacity = 0.4,
   style,
   shouldLoop = true,
   shouldMute = true,
   shouldAutoPlay = true,
-  preloadPriority = 'medium',
+  fallbackImage,
 }: VideoBackgroundProps) => {
-  const [isError, setIsError] = useState(false);
-  const [isPreloaded, setIsPreloaded] = useState(false);
   const { width, height } = useWindowDimensions();
   const videoRef = useRef(null);
+  const [player, setPlayer] = useState<VideoPlayer | null>(null);
+  const [hasError, setHasError] = useState(false);
+  const isOwnedPlayer = useRef(false);
 
-  const memoSource = useMemo(() => {
-    if (typeof source === 'number') {
-      const asset = Asset.fromModule(source);
-      if (!asset.localUri) {
-        asset.downloadAsync().catch(() => {
-          setIsError(true);
-        });
+  useEffect(() => {
+    let videoPlayer: VideoPlayer | null = null;
+    setHasError(false);
+
+    try {
+      // Resolve the source URI
+      let sourceUri: string;
+      if (typeof source === 'number') {
+        const asset = Asset.fromModule(source);
+        sourceUri = asset.localUri ?? asset.uri;
+      } else {
+        sourceUri = source;
       }
-      return { uri: asset.localUri ?? asset.uri };
+
+      // Check cache for pre-buffered player
+      const cached = videoCache.get(sourceUri);
+      if (cached) {
+        videoPlayer = cached;
+        isOwnedPlayer.current = false;
+      } else {
+        videoPlayer = createVideoPlayer(sourceUri);
+        isOwnedPlayer.current = true;
+      }
+
+      // Configure player
+      videoPlayer.loop = shouldLoop;
+      videoPlayer.muted = shouldMute;
+      videoPlayer.staysActiveInBackground = false;
+
+      if (shouldAutoPlay) {
+        videoPlayer.play();
+      }
+
+      setPlayer(videoPlayer);
+    } catch {
+      setHasError(true);
     }
-    return { uri: source as string };
-  }, [source]);
 
-  useEffect(() => {
-    if (source && !isPreloaded) {
-      const assetKey =
-        typeof source === 'number'
-          ? `video_${source}`
-          : `video_${source.toString().split('/').pop()}`;
+    // Cleanup: only release if we created it (not cached)
+    return () => {
+      if (isOwnedPlayer.current && videoPlayer) {
+        videoPlayer.release();
+      }
+    };
+  }, [source, shouldLoop, shouldMute, shouldAutoPlay]);
 
-      preloadService.updateAssetList([
-        {
-          key: assetKey,
-          asset: source,
-          type: 'video',
-          priority: preloadPriority,
-        },
-      ]);
-
-      setIsPreloaded(true);
-    }
-
-    if (fallbackImage && !isPreloaded) {
-      const imageKey =
-        typeof fallbackImage === 'number'
-          ? `image_${fallbackImage}`
-          : `image_fallback_${Math.random().toString(36).substring(7)}`;
-
-      preloadService.updateAssetList([
-        {
-          key: imageKey,
-          asset: fallbackImage,
-          type: 'image',
-          priority: preloadPriority,
-        },
-      ]);
-    }
-  }, [source, fallbackImage, isPreloaded, preloadPriority]);
-
-  const hasValidSource = !!memoSource?.uri && memoSource.uri !== '';
-
-  const player = useVideoPlayer(memoSource, (player) => {
-    if (!player) return;
-    player.loop = shouldLoop;
-    player.muted = shouldMute;
-    player.staysActiveInBackground = false;
-
-    if (shouldAutoPlay) {
-      player.play();
-    }
-  });
-
-  useEffect(() => {
-    if (!hasValidSource) {
-      setIsError(true);
-    }
-  }, [hasValidSource]);
+  // Show fallback image if video failed to load
+  if (hasError && fallbackImage) {
+    return (
+      <ImageBackground
+        source={fallbackImage}
+        style={[styles.container, style, { width, height }]}
+        resizeMode="cover"
+      >
+        <LinearGradient
+          colors={['rgba(12, 12, 12, 0)', `rgba(12, 12, 12, ${overlayOpacity})`]}
+          style={styles.overlay}
+        />
+        <View style={styles.content}>{children}</View>
+      </ImageBackground>
+    );
+  }
 
   return (
     <View style={[styles.container, style, { width, height }]}>
-      {(isError || !hasValidSource) && fallbackImage ? (
-        <Image
-          source={typeof fallbackImage === 'string' ? { uri: fallbackImage } : fallbackImage}
-          style={styles.fallback}
-          resizeMode="cover"
-        />
-      ) : hasValidSource && player && !isError ? (
+      {player && (
         <VideoView
           ref={videoRef}
           player={player}
@@ -118,7 +113,7 @@ export const VideoBackground = ({
           contentFit="cover"
           nativeControls={false}
         />
-      ) : null}
+      )}
 
       <LinearGradient
         colors={['rgba(12, 12, 12, 0)', `rgba(12, 12, 12, ${overlayOpacity})`]}
@@ -141,14 +136,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-  },
-  fallback: {
-    ...StyleSheet.absoluteFillObject,
-    width: '100%',
-    height: '100%',
-  },
-  loadingFallback: {
-    zIndex: 1,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

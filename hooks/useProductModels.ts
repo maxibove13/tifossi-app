@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import strapiApi from '../app/_services/api/strapiApi';
 import { ProductModel } from '../app/_types/model';
-import { productModels as localProductModels } from '../app/_data/models';
 import { CATEGORY_IDS, MODEL_IDS } from '../app/_types/constants';
 
 export interface ProductModelsResult {
@@ -16,10 +15,9 @@ export interface ProductModelsResult {
 
 /**
  * Hook to fetch product models from Strapi
- * Falls back to local data on error
  */
 export function useProductModels(): ProductModelsResult {
-  const [models, setModels] = useState<ProductModel[]>(localProductModels);
+  const [models, setModels] = useState<ProductModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +29,6 @@ export function useProductModels(): ProductModelsResult {
       setModels(fetchedModels);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch product models');
-      // Keep using local data on error (already set as default)
     } finally {
       setIsLoading(false);
     }

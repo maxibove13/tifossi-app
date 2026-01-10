@@ -13,6 +13,7 @@
 // Public endpoints that should NOT receive auth tokens
 const PUBLIC_PATHS = [
   '/products',
+  '/product-models',
   '/categories',
   '/store-locations',
   '/app-settings',

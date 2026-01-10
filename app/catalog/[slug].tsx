@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import DefaultLargeCard from '../_components/store/product/default/large';
 import { useCategories } from '../../hooks/useCategories';
@@ -9,7 +9,7 @@ import { ProductModel } from '../_types/model';
 import { Product } from '../_types/product';
 import { ProductFilters } from '../_components/store/product/overlay/OverlayProductFilters';
 import { useProductFilters } from '../../hooks/useProductFilters';
-import { useProducts } from '../_services/api/queryHooks';
+import { useProductStore } from '../_stores/productStore';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import { spacing } from '../_styles/spacing';
@@ -124,7 +124,7 @@ export default function CategoryDetailScreen() {
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
-  // Fetch categories and models from API (with local fallbacks)
+  // Fetch categories and models from API
   const { mainCategories, isLoading: isLoadingCategories } = useCategories();
   const { getModelsByCategory } = useProductModels();
 
@@ -148,11 +148,33 @@ export default function CategoryDetailScreen() {
   const [activeModelId, setActiveModelId] = useState(initialModelId);
   const [availableModels, setAvailableModels] = useState<ProductModel[]>([]);
   const [categoryModelProducts, setCategoryModelProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Fetch products using TanStack Query
-  const { data: allProducts, isLoading: isLoadingProducts, error: productsError } = useProducts();
+  // Fetch products using Zustand store (single source of truth)
+  const {
+    products: allProducts,
+    isLoading: isLoadingProducts,
+    error: productsError,
+    fetchProducts,
+    refreshProducts,
+  } = useProductStore();
   const [appliedFilters, setAppliedFilters] = useState<ProductFilters>({});
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Ensure products are fetched if store is empty (e.g., direct navigation, preload failed)
+  useEffect(() => {
+    if (allProducts.length === 0 && !isLoadingProducts) {
+      fetchProducts();
+    }
+  }, [allProducts.length, isLoadingProducts, fetchProducts]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshProducts();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshProducts]);
 
   // Update active category when URL slug changes and categories are loaded
   useEffect(() => {
@@ -166,8 +188,6 @@ export default function CategoryDetailScreen() {
 
   useEffect(() => {
     // This effect handles category changes: update available models
-    setLoading(true);
-
     // Check if the selected category is a regular product category or a label-based category
     const selectedCategory = mainCategories.find((cat) => cat.id === activeCategoryId);
     const isCategoryLabel = selectedCategory?.isLabel || activeCategoryId === CATEGORY_IDS.ALL;
@@ -203,7 +223,8 @@ export default function CategoryDetailScreen() {
           if (categoryId === CATEGORY_IDS.DISCOUNTED) {
             filteredProducts = products.filter(
               (product) =>
-                product.discountedPrice !== undefined && product.discountedPrice < product.price
+                typeof product.discountedPrice === 'number' &&
+                product.discountedPrice < product.price
             );
           } else {
             // Filter by status for other label categories
@@ -228,32 +249,10 @@ export default function CategoryDetailScreen() {
   );
 
   useEffect(() => {
-    // This effect processes products based on category/model when API data is available
-    if (allProducts) {
-      setLoading(true);
-
-      // Use a small delay to show loading states
-      setTimeout(() => {
-        const products = filterProductsByCategoryAndModel(
-          allProducts,
-          activeCategoryId,
-          activeModelId
-        );
-        setCategoryModelProducts(products);
-        setLoading(false);
-      }, 150);
-    } else if (!isLoadingProducts && !allProducts) {
-      // If no products and not loading, set empty state
-      setCategoryModelProducts([]);
-      setLoading(false);
-    }
-  }, [
-    allProducts,
-    activeCategoryId,
-    activeModelId,
-    isLoadingProducts,
-    filterProductsByCategoryAndModel,
-  ]);
+    // This effect processes products based on category/model when data is available
+    const products = filterProductsByCategoryAndModel(allProducts, activeCategoryId, activeModelId);
+    setCategoryModelProducts(products);
+  }, [allProducts, activeCategoryId, activeModelId, filterProductsByCategoryAndModel]);
 
   // Apply overlay filters using the custom hook
   const productsToDisplay = useProductFilters(categoryModelProducts, appliedFilters);
@@ -412,8 +411,15 @@ export default function CategoryDetailScreen() {
       <ScrollView
         style={styles.productsContainer}
         contentContainerStyle={styles.scrollContentContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
       >
-        {loading || isLoadingProducts || isLoadingCategories ? (
+        {(isLoadingProducts && allProducts.length === 0) || isLoadingCategories || refreshing ? (
           <SkeletonLoader type="productGrid" rows={3} />
         ) : productsError ? (
           <View style={styles.errorContainer}>
@@ -429,7 +435,7 @@ export default function CategoryDetailScreen() {
               }
               return acc;
             }, [] as JSX.Element[])}
-            {productsToDisplay.length === 0 && !loading && !isLoadingProducts && (
+            {productsToDisplay.length === 0 && !isLoadingProducts && (
               <Text style={styles.noResultsText}>No hay productos en esta categoría.</Text>
             )}
           </View>
