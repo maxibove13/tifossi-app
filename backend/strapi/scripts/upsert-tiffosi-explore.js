@@ -12,6 +12,7 @@ const path = require('path');
 const STRAPI_URL = process.env.STRAPI_URL || 'https://tifossi-strapi-backend.onrender.com';
 const API_TOKEN = process.env.STRAPI_API_TOKEN;
 const ASSETS_DIR = path.join(__dirname, '..', '..', '..', 'assets', 'images', 'products');
+const VIDEOS_DIR = path.join(__dirname, '..', '..', '..', 'assets', 'videos');
 
 if (!API_TOKEN) {
   console.error('STRAPI_API_TOKEN required');
@@ -24,6 +25,7 @@ const PRODUCTS_TO_UPSERT = [
     slug: 'mochila-gold',
     updates: { price: 1590 },
     image: 'mochila-gold.png',
+    video: 'mochila-gold.mov',
   },
   {
     slug: 'campera-deportiva',
@@ -41,6 +43,7 @@ const PRODUCTS_TO_UPSERT = [
     updates: { price: 1890 },
     statusNames: ['app_exclusive', 'new'],
     image: 'mochila-black.png',
+    video: 'mochila-black.mov',
   },
   {
     slug: 'tiffosi-fast',
@@ -135,11 +138,11 @@ async function strapiRequest(endpoint, method = 'GET', data = null) {
   return result;
 }
 
-async function uploadFile(filePath) {
+async function uploadFile(filePath, mimeType = 'image/png') {
   const url = `${STRAPI_URL}/api/upload`;
   const fileName = path.basename(filePath);
   const fileBuffer = fs.readFileSync(filePath);
-  const blob = new Blob([fileBuffer], { type: 'image/png' });
+  const blob = new Blob([fileBuffer], { type: mimeType });
 
   const form = new FormData();
   form.append('files', blob, fileName);
@@ -204,8 +207,22 @@ async function main() {
 
       console.log(`  Uploading image: ${product.image}`);
       const uploadedImage = await uploadFile(imagePath);
-      console.log(`  Uploaded: ID ${uploadedImage.id}`);
+      console.log(`  Uploaded image: ID ${uploadedImage.id}`);
       await delay(2000);
+
+      // Upload video if specified
+      let uploadedVideo = null;
+      if (product.video) {
+        const videoPath = path.join(VIDEOS_DIR, product.video);
+        if (fs.existsSync(videoPath)) {
+          console.log(`  Uploading video: ${product.video}`);
+          uploadedVideo = await uploadFile(videoPath, 'video/quicktime');
+          console.log(`  Uploaded video: ID ${uploadedVideo.id}`);
+          await delay(2000);
+        } else {
+          console.log(`  Video not found: ${product.video}`);
+        }
+      }
 
       const existing = await getProduct(product.slug);
 
@@ -215,6 +232,10 @@ async function main() {
           ...product.updates,
           frontImage: uploadedImage.id,
         };
+
+        if (uploadedVideo) {
+          updateData.videoSource = uploadedVideo.id;
+        }
 
         if (product.statusNames) {
           const statusIds = product.statusNames.map((n) => statusMap[n]).filter(Boolean);

@@ -1,6 +1,10 @@
 import { PreloadAsset, ProgressCallback, CriticalData } from './types';
 import { loadAssets } from './assetLoader';
 import { loadCriticalData } from './dataLoader';
+import { videoCache } from '../videoCache';
+import strapiApi from '../api/strapiApi';
+import { hasStatus, ProductStatus } from '../../_types/product-status';
+import { useProductStore } from '../../_stores/productStore';
 
 /**
  * Service for preloading assets and data
@@ -65,29 +69,29 @@ class PreloadService {
       // Step 1: Initial notification
       callback({ progress: 0, stage: 'INIT', isComplete: false });
 
-      // Step 2: Load high priority video assets (30% of total progress)
-      await this.loadVideoAssets((videoProgress) => {
-        callback({
-          progress: videoProgress * 0.3,
-          stage: 'LOADING_VIDEOS',
-          isComplete: false,
-        });
-      });
-
-      // Step 3: Load high priority image assets (20% of total progress)
+      // Step 2: Load high priority image assets (20% of total progress)
       await this.loadImageAssets((imageProgress) => {
         callback({
-          progress: 30 + imageProgress * 0.2,
+          progress: imageProgress * 0.2,
           stage: 'LOADING_IMAGES',
           isComplete: false,
         });
       });
 
-      // Step 4: Load critical data (50% of total progress)
+      // Step 3: Load critical data (30% of total progress)
       await this.loadData((dataProgress) => {
         callback({
-          progress: 50 + dataProgress * 0.5,
+          progress: 20 + dataProgress * 0.3,
           stage: 'LOADING_DATA',
+          isComplete: false,
+        });
+      });
+
+      // Step 4: Preload explore videos (50% of total progress)
+      await this.preloadExploreVideos((videoProgress) => {
+        callback({
+          progress: 50 + videoProgress * 0.5,
+          stage: 'LOADING_VIDEOS',
           isComplete: false,
         });
       });
@@ -140,11 +144,44 @@ class PreloadService {
   }
 
   /**
-   * Load video assets with progress tracking
+   * Preload explore videos by fetching products and creating buffered players
    */
-  private async loadVideoAssets(progressCallback: (progress: number) => void): Promise<void> {
-    const videoAssets = this.highPriorityAssets.filter((a) => a.type === 'video');
-    await loadAssets(videoAssets, progressCallback);
+  private async preloadExploreVideos(progressCallback: (progress: number) => void): Promise<void> {
+    try {
+      progressCallback(5);
+
+      // Fetch products via store (handles caching) and categories in parallel
+      await Promise.all([
+        useProductStore.getState().fetchProducts(),
+        strapiApi.fetchCategories(), // Pre-populate strapiApi cache for Catalog screen
+        strapiApi.fetchProductModels(), // Pre-populate strapiApi cache for Catalog screen
+      ]);
+
+      progressCallback(50);
+
+      // Get products from store for video preloading
+      const products = useProductStore.getState().products;
+
+      // Filter for APP_EXCLUSIVE products with video sources
+      const exploreVideos = products
+        .filter(
+          (p) =>
+            hasStatus(p.statuses, ProductStatus.APP_EXCLUSIVE) &&
+            p.videoSource &&
+            typeof p.videoSource === 'string'
+        )
+        .map((p) => p.videoSource as string);
+
+      // Preload videos (creates players that start buffering)
+      if (exploreVideos.length > 0) {
+        videoCache.preload(exploreVideos);
+      }
+
+      progressCallback(100);
+    } catch {
+      // If fetching fails, continue - videos will load on-demand
+      progressCallback(100);
+    }
   }
 
   /**

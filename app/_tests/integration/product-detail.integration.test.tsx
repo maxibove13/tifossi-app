@@ -151,17 +151,15 @@ const relatedProducts: Product[] = [
   },
 ];
 
-// Note: We don't mock queryHooks - they use the mocked httpClient (boundary mocking)
-// However, since these are React Query hooks, we may need to mock them for simplicity in tests
-// This is an exception because React Query adds complexity beyond simple HTTP calls
-
+// Mock app settings from queryHooks (still needed for support phone number)
 jest.mock('../../_services/api/queryHooks', () => ({
-  useProduct: jest.fn(),
-  useProducts: jest.fn(),
   useAppSettings: jest.fn(),
 }));
 
-const { useProduct, useProducts, useAppSettings } = require('../../_services/api/queryHooks');
+const { useAppSettings } = require('../../_services/api/queryHooks');
+
+// Import the product store for direct state manipulation in tests
+import { useProductStore } from '../../_stores/productStore';
 
 describe('Product Detail Flow - Integration', () => {
   // Simple wrapper for tests - no need for full navigation setup
@@ -187,17 +185,23 @@ describe('Product Detail Flow - Integration', () => {
     mockPush.mockClear();
     mockBack.mockClear();
 
-    // Setup default mock implementations
-    useProduct.mockReturnValue({
-      data: mockProduct,
+    // Setup productStore with mock data (this is the source of truth for the component)
+    useProductStore.setState({
+      products: [...relatedProducts, mockProduct],
+      productCache: {
+        'prod-1': mockProduct,
+        'prod-2': relatedProducts[0],
+        'prod-3': relatedProducts[1],
+      },
       isLoading: false,
       error: null,
-    });
-
-    useProducts.mockReturnValue({
-      data: [...relatedProducts, mockProduct],
-      isLoading: false,
-      error: null,
+      lastFetchTimestamp: Date.now(),
+      cacheExpiryTime: 30 * 60 * 1000,
+      actionStatus: {
+        fetchProducts: 'success',
+        fetchProductById: 'success',
+        refresh: 'idle',
+      },
     });
 
     useAppSettings.mockReturnValue({
@@ -273,10 +277,18 @@ describe('Product Detail Flow - Integration', () => {
 
   describe('Loading and Error States', () => {
     it('should show loading state while fetching product', async () => {
-      useProduct.mockReturnValue({
-        data: null,
+      useProductStore.setState({
+        products: [],
+        productCache: {},
         isLoading: true,
         error: null,
+        lastFetchTimestamp: null,
+        cacheExpiryTime: 30 * 60 * 1000,
+        actionStatus: {
+          fetchProducts: 'loading',
+          fetchProductById: 'loading',
+          refresh: 'idle',
+        },
       });
 
       const { getByText } = render(
@@ -289,10 +301,18 @@ describe('Product Detail Flow - Integration', () => {
     });
 
     it('should show error state when product fails to load', async () => {
-      useProduct.mockReturnValue({
-        data: null,
+      useProductStore.setState({
+        products: [],
+        productCache: {},
         isLoading: false,
         error: 'Network error',
+        lastFetchTimestamp: null,
+        cacheExpiryTime: 30 * 60 * 1000,
+        actionStatus: {
+          fetchProducts: 'error',
+          fetchProductById: 'error',
+          refresh: 'idle',
+        },
       });
 
       const { getByText } = render(
@@ -306,10 +326,18 @@ describe('Product Detail Flow - Integration', () => {
     });
 
     it('should show not found state for invalid product', async () => {
-      useProduct.mockReturnValue({
-        data: null,
+      useProductStore.setState({
+        products: [],
+        productCache: {},
         isLoading: false,
         error: null,
+        lastFetchTimestamp: Date.now(),
+        cacheExpiryTime: 30 * 60 * 1000,
+        actionStatus: {
+          fetchProducts: 'success',
+          fetchProductById: 'success',
+          refresh: 'idle',
+        },
       });
 
       const { getByText } = render(
@@ -400,10 +428,23 @@ describe('Product Detail Flow - Integration', () => {
     });
 
     it('should handle out of stock products', async () => {
-      useProduct.mockReturnValue({
-        data: { ...mockProduct, inStock: false, stockCount: 0 },
+      const outOfStockProduct = { ...mockProduct, inStock: false, stockCount: 0 };
+      useProductStore.setState({
+        products: [outOfStockProduct, ...relatedProducts],
+        productCache: {
+          'prod-1': outOfStockProduct,
+          'prod-2': relatedProducts[0],
+          'prod-3': relatedProducts[1],
+        },
         isLoading: false,
         error: null,
+        lastFetchTimestamp: Date.now(),
+        cacheExpiryTime: 30 * 60 * 1000,
+        actionStatus: {
+          fetchProducts: 'success',
+          fetchProductById: 'success',
+          refresh: 'idle',
+        },
       });
 
       const { getAllByText, getByTestId } = render(

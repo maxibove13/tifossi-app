@@ -5,9 +5,6 @@ import { Product } from '../../_types/product';
 import { StoreDetails } from '../../_types';
 import { Category } from '../../_types/category';
 import { ProductModel } from '../../_types/model';
-import { storesData } from '../../_data/stores';
-import { productCategories } from '../../_data/categories';
-import { productModels as localProductModels } from '../../_data/models';
 
 // Additional types needed
 export interface StrapiAuthResponse {
@@ -227,6 +224,12 @@ class StrapiApiService {
    */
   async fetchProducts(): Promise<Product[]> {
     const cacheKey = createCacheKey('products');
+
+    // Check cache first
+    if (this.cacheEnabled) {
+      const cached = cache.get<Product[]>(cacheKey);
+      if (cached) return cached;
+    }
 
     try {
       const queryParams = buildStrapiQuery({
@@ -698,53 +701,47 @@ class StrapiApiService {
   async fetchStores(): Promise<StoreDetails[]> {
     const cacheKey = createCacheKey('stores');
 
-    try {
-      const queryParams = buildStrapiQuery({
-        populate: ['image'],
-        filters: {
-          isActive: { $eq: true },
-        },
-      });
-      const response = await httpClient.get<StrapiResponse<any[]>>(
-        `/store-locations${queryParams}`
-      );
-      const validatedResponse = validateStrapiResponse<any[]>(response);
-
-      // Transform Strapi v5 store data to app format (flat structure, no .attributes)
-      const stores: StoreDetails[] = validatedResponse.data.map((store: any) => ({
-        id: store.id || store.slug,
-        cityId: store.cityId || 'mvd',
-        zoneId: store.zoneId || 'centro',
-        name: store.name || 'Tienda',
-        address: store.address || '',
-        hours: store.hours || '',
-        phone: store.phone,
-        image: store.image?.url
-          ? { uri: store.image.url }
-          : require('../../../assets/images/locations/montevideo.png'),
-      }));
-
-      // Cache the result
-      if (this.cacheEnabled && stores.length > 0) {
-        cache.set(cacheKey, stores, DEFAULT_CACHE_DURATION);
-      }
-
-      return stores;
-    } catch {
-      if (__DEV__) {
-        console.warn('⚠️ Failed to fetch stores from Strapi, using local data');
-      }
-      // Fall back to local store data if API fails
-      return storesData;
+    // Check cache first
+    if (this.cacheEnabled) {
+      const cached = cache.get<StoreDetails[]>(cacheKey);
+      if (cached) return cached;
     }
+
+    const queryParams = buildStrapiQuery({
+      populate: ['image'],
+      filters: {
+        isActive: { $eq: true },
+      },
+    });
+    const response = await httpClient.get<StrapiResponse<any[]>>(`/store-locations${queryParams}`);
+    const validatedResponse = validateStrapiResponse<any[]>(response);
+
+    // Transform Strapi v5 store data to app format (flat structure, no .attributes)
+    const stores: StoreDetails[] = validatedResponse.data.map((store: any) => ({
+      id: store.id || store.slug,
+      cityId: store.cityId || 'mvd',
+      zoneId: store.zoneId || 'centro',
+      name: store.name || 'Tienda',
+      address: store.address || '',
+      hours: store.hours || '',
+      phone: store.phone,
+      image: store.image?.url
+        ? { uri: store.image.url }
+        : require('../../../assets/images/locations/montevideo.png'),
+    }));
+
+    // Cache the result
+    if (this.cacheEnabled && stores.length > 0) {
+      cache.set(cacheKey, stores, DEFAULT_CACHE_DURATION);
+    }
+
+    return stores;
   }
 
   // --- Category and Model Methods ---
 
   /**
    * Fetches product categories from Strapi
-   * Filters to only product categories (not labels/special categories)
-   * Falls back to local data on error
    */
   async fetchCategories(): Promise<Category[]> {
     const cacheKey = createCacheKey('categories');
@@ -755,66 +752,38 @@ class StrapiApiService {
       if (cached) return cached;
     }
 
-    try {
-      // Build query: isActive=true, sort by displayOrder
-      const queryParams = buildStrapiQuery({
-        filters: {
-          isActive: { $eq: true },
-        },
-        sort: ['displayOrder:asc'],
-        pagination: { pageSize: 100 },
-      });
+    // Build query: isActive=true, sort by displayOrder
+    const queryParams = buildStrapiQuery({
+      filters: {
+        isActive: { $eq: true },
+      },
+      sort: ['displayOrder:asc'],
+      pagination: { pageSize: 100 },
+    });
 
-      const response = await httpClient.get<StrapiResponse<StrapiCategory[]>>(
-        `/categories${queryParams}`
-      );
-      const validatedResponse = validateStrapiResponse<StrapiCategory[]>(response);
+    const response = await httpClient.get<StrapiResponse<StrapiCategory[]>>(
+      `/categories${queryParams}`
+    );
+    const validatedResponse = validateStrapiResponse<StrapiCategory[]>(response);
 
-      // Get the set of valid product category slugs from local data
-      const productCategorySlugs = new Set(productCategories.map((c) => c.slug));
+    // Transform to app format
+    const categories: Category[] = validatedResponse.data.map((cat) => ({
+      id: cat.slug,
+      name: cat.name,
+      slug: cat.slug,
+      displayOrder: cat.displayOrder,
+    }));
 
-      // Filter to only product categories and transform to app format
-      const apiCategories: Category[] = validatedResponse.data
-        .filter((cat) => productCategorySlugs.has(cat.slug))
-        .map((cat) => ({
-          id: cat.slug, // Use slug as id to match app convention
-          name: cat.name,
-          slug: cat.slug,
-          displayOrder: cat.displayOrder,
-        }));
-
-      // Merge with local data: API categories take precedence, missing ones fall back to local
-      const apiCategorySlugs = new Set(apiCategories.map((c) => c.slug));
-      const mergedCategories = [
-        ...apiCategories,
-        ...productCategories.filter((local) => !apiCategorySlugs.has(local.slug)),
-      ];
-
-      // Sort by displayOrder (API categories have it, local ones don't so they go last)
-      mergedCategories.sort((a, b) => {
-        const orderA = a.displayOrder ?? 999;
-        const orderB = b.displayOrder ?? 999;
-        return orderA - orderB;
-      });
-
-      // Cache the result
-      if (this.cacheEnabled) {
-        cache.set(cacheKey, mergedCategories, CACHE_TTL.CATEGORIES);
-      }
-
-      return mergedCategories;
-    } catch (error) {
-      if (__DEV__) {
-        console.warn('Failed to fetch categories from Strapi, using local data:', error);
-      }
-      // Fall back to local product categories
-      return productCategories;
+    // Cache the result
+    if (this.cacheEnabled) {
+      cache.set(cacheKey, categories, CACHE_TTL.CATEGORIES);
     }
+
+    return categories;
   }
 
   /**
    * Fetches product models from Strapi
-   * Falls back to local data on error
    */
   async fetchProductModels(): Promise<ProductModel[]> {
     const cacheKey = createCacheKey('product-models');
@@ -825,43 +794,35 @@ class StrapiApiService {
       if (cached) return cached;
     }
 
-    try {
-      // Build query: isActive=true, populate category, sort by displayOrder
-      const queryParams = buildStrapiQuery({
-        populate: ['category'],
-        filters: {
-          isActive: { $eq: true },
-        },
-        sort: ['displayOrder:asc'],
-        pagination: { pageSize: 100 },
-      });
+    // Build query: isActive=true, populate category, sort by displayOrder
+    const queryParams = buildStrapiQuery({
+      populate: ['category'],
+      filters: {
+        isActive: { $eq: true },
+      },
+      sort: ['displayOrder:asc'],
+      pagination: { pageSize: 100 },
+    });
 
-      const response = await httpClient.get<StrapiResponse<StrapiProductModel[]>>(
-        `/product-models${queryParams}`
-      );
-      const validatedResponse = validateStrapiResponse<StrapiProductModel[]>(response);
+    const response = await httpClient.get<StrapiResponse<StrapiProductModel[]>>(
+      `/product-models${queryParams}`
+    );
+    const validatedResponse = validateStrapiResponse<StrapiProductModel[]>(response);
 
-      // Transform to app format: id = slug, categoryId = category.slug
-      const models: ProductModel[] = validatedResponse.data.map((model) => ({
-        id: model.slug, // Use slug as id to match app MODEL_IDS
-        name: model.name,
-        slug: model.slug,
-        categoryId: model.category?.slug || '',
-      }));
+    // Transform to app format: id = slug, categoryId = category.slug
+    const models: ProductModel[] = validatedResponse.data.map((model) => ({
+      id: model.slug, // Use slug as id to match app MODEL_IDS
+      name: model.name,
+      slug: model.slug,
+      categoryId: model.category?.slug || '',
+    }));
 
-      // Cache the result
-      if (this.cacheEnabled) {
-        cache.set(cacheKey, models, CACHE_TTL.CATEGORIES);
-      }
-
-      return models;
-    } catch (error) {
-      if (__DEV__) {
-        console.warn('Failed to fetch product models from Strapi, using local data:', error);
-      }
-      // Fall back to local product models
-      return localProductModels;
+    // Cache the result
+    if (this.cacheEnabled) {
+      cache.set(cacheKey, models, CACHE_TTL.CATEGORIES);
     }
+
+    return models;
   }
 
   // --- App Settings Methods ---
@@ -996,6 +957,9 @@ const strapiApiExport = {
   setCacheEnabled: strapiApi.setCacheEnabled.bind(strapiApi),
   clearCache: strapiApi.clearCache.bind(strapiApi),
   getCacheInfo: strapiApi.getCacheInfo.bind(strapiApi),
+
+  // Synchronous cache access for instant initialization
+  getCachedProducts: (): Product[] | null => cache.get<Product[]>(createCacheKey('products')),
 };
 
 export default strapiApiExport;

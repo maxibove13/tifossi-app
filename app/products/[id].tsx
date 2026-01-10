@@ -10,7 +10,8 @@ import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useCartStore } from '../_stores/cartStore';
 import { useFavoritesStore } from '../_stores/favoritesStore';
-import { useProduct, useProducts, useAppSettings } from '../_services/api/queryHooks';
+import { useAppSettings } from '../_services/api/queryHooks';
+import { useProductStore } from '../_stores/productStore';
 import { SkeletonLoader } from '../_components/common/SkeletonLoader';
 
 export default function ProductDetailScreen() {
@@ -18,11 +19,14 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const productId = id as string;
 
-  // Use TanStack Query to fetch product data
-  const { data: product, isLoading: isLoadingProduct, error: productError } = useProduct(productId);
-
-  // Also fetch all products for related/recommended products
-  const { data: allProducts } = useProducts();
+  // Use Zustand store for product data (single source of truth)
+  const {
+    products: allProducts,
+    isLoading: isLoadingProduct,
+    error: productError,
+    getProductById,
+  } = useProductStore();
+  const product = getProductById(productId);
   // Fetch app settings for support phone number
   const { data: appSettings } = useAppSettings();
 

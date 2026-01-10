@@ -1,6 +1,7 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState, useCallback } from 'react';
 import { StyleSheet, View, ImageSourcePropType } from 'react-native';
 import { Image, ImageLoadEventData } from 'expo-image';
+import { colors } from '../../../../_styles/colors';
 
 const blurhash =
   '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
@@ -30,6 +31,22 @@ function ProductImage({
   onLoad,
   onError,
 }: ProductImageProps) {
+  const [hasError, setHasError] = useState(false);
+
+  // Check if source is empty/invalid upfront
+  const isEmptySource = useMemo(() => {
+    if (!source) return true;
+    if (typeof source === 'string' && source.trim() === '') return true;
+    return false;
+  }, [source]);
+
+  const handleError = useCallback(
+    (error: Error) => {
+      setHasError(true);
+      onError?.(error);
+    },
+    [onError]
+  );
   // Memoize image source configuration
   const imageSource = useMemo(() => {
     if (typeof source === 'string') {
@@ -72,7 +89,7 @@ function ProductImage({
       transition: priority === 'high' ? 100 : 200,
       cachePolicy,
       onLoad,
-      onError,
+      onError: handleError,
     };
 
     // Add priority loading for important images
@@ -91,12 +108,15 @@ function ProductImage({
     }
 
     return props;
-  }, [imageSource, cachePolicy, priority, lazy, onLoad, onError]);
+  }, [imageSource, cachePolicy, priority, lazy, onLoad, handleError]);
+
+  // Show error state if source is empty or image failed to load
+  const showErrorState = isEmptySource || hasError;
 
   return (
     <View style={containerStyle}>
       <View style={styles.imageWrapper}>
-        <Image {...imageProps} />
+        {showErrorState ? <View style={styles.errorState} /> : <Image {...imageProps} />}
       </View>
       {overlay && <View style={overlayStyle} />}
     </View>
@@ -119,6 +139,11 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
+  },
+  errorState: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.border,
   },
 });
 

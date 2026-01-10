@@ -35,7 +35,6 @@ interface HomeScreenData {
 
 function HomeScreen() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   // Fetch products using Zustand store
@@ -46,6 +45,9 @@ function HomeScreen() {
     fetchProducts,
     refreshProducts,
   } = useProductStore();
+
+  // Only show loading if we truly have no products yet
+  const [isLoading, setIsLoading] = useState(() => allProducts.length === 0);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -109,90 +111,39 @@ function HomeScreen() {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Load home assets while showing the skeleton - NOT in splash screen
+  // Load home assets - skip artificial delays if products already exist
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Start with everything in loading state (shows skeleton)
-        setIsLoading(true);
-
         // Wait for products to be available before proceeding
-        // Don't proceed if:
-        // 1. Products are still loading from API
-        // 2. Products array is empty AND there's no error (store might still be initializing/hydrating)
+        // Don't proceed if products are still loading or store is hydrating
         if (productsLoading || (!allProducts?.length && !productsError)) {
           return;
         }
 
-        // Load assets while skeleton is displayed (not preloaded during splash)
-        // Pass API products to the preloader, fallback to static data if needed
+        // Load assets (categorizes products by status, preloads images)
         const loadedAssets = await homeAssetLoader.preloadHomeAssets(allProducts || undefined);
 
-        // Staggered update approach - update each section sequentially with small delays
-        // This creates a natural "wave" of content appearing on screen
+        // Update all data at once - no artificial delays
+        setData({
+          highlightedProducts: loadedAssets.highlightedProducts,
+          featuredProduct: loadedAssets.featuredProduct,
+          recommendedProducts: loadedAssets.recommendedProducts,
+          trendingProducts: loadedAssets.trendingProducts,
+          newReleases: loadedAssets.newReleases,
+          launchAndOpportunityProducts: loadedAssets.launchAndOpportunityProducts,
+        });
 
-        // First wave: Above the fold content (highlighted products & featured)
-        if (loadedAssets.highlightedProducts.length > 0) {
-          setData((current) => ({
-            ...current,
-            highlightedProducts: loadedAssets.highlightedProducts,
-          }));
-        }
-        setSectionLoadingState((current) => ({ ...current, highlighted: false }));
+        setSectionLoadingState({
+          highlighted: false,
+          featured: false,
+          recommended: false,
+          trending: false,
+          newReleases: false,
+          launchOpportunity: false,
+        });
 
-        // Short delay before showing featured product (feels more natural)
-        setTimeout(() => {
-          if (loadedAssets.featuredProduct) {
-            setData((current) => ({
-              ...current,
-              featuredProduct: loadedAssets.featuredProduct,
-            }));
-          }
-          setSectionLoadingState((current) => ({ ...current, featured: false }));
-        }, 100);
-
-        // Second wave: Recommended products (mid-priority)
-        setTimeout(() => {
-          if (loadedAssets.recommendedProducts.length > 0) {
-            setData((current) => ({
-              ...current,
-              recommendedProducts: loadedAssets.recommendedProducts,
-            }));
-          }
-          setSectionLoadingState((current) => ({ ...current, recommended: false }));
-        }, 200);
-
-        // Third wave: Lower priority content with staggered updates
-        setTimeout(() => {
-          if (loadedAssets.trendingProducts.length > 0) {
-            setData((current) => ({
-              ...current,
-              trendingProducts: loadedAssets.trendingProducts,
-            }));
-          }
-          setSectionLoadingState((current) => ({ ...current, trending: false }));
-        }, 300);
-
-        setTimeout(() => {
-          if (loadedAssets.newReleases.length > 0) {
-            setData((current) => ({
-              ...current,
-              newReleases: loadedAssets.newReleases,
-            }));
-          }
-          setSectionLoadingState((current) => ({ ...current, newReleases: false }));
-        }, 400);
-
-        setTimeout(() => {
-          if (loadedAssets.launchAndOpportunityProducts.length > 0) {
-            setData((current) => ({
-              ...current,
-              launchAndOpportunityProducts: loadedAssets.launchAndOpportunityProducts,
-            }));
-          }
-          setSectionLoadingState((current) => ({ ...current, launchOpportunity: false }));
-          setIsLoading(false);
-        }, 500);
+        setIsLoading(false);
       } catch {
         // Ensure we exit all loading states even if data fails to load
         setSectionLoadingState({
@@ -210,8 +161,8 @@ function HomeScreen() {
     loadData();
   }, [allProducts, productsLoading, productsError]); // Re-run when products data or error state changes
 
-  // Show loading state while fetching products or while processing data
-  if (isLoading || productsLoading) {
+  // Show skeleton when loading (no data) or during pull-to-refresh
+  if ((isLoading && allProducts.length === 0) || refreshing) {
     return <SkeletonLoader type="homeScreen" animationType="shimmer" />;
   }
 

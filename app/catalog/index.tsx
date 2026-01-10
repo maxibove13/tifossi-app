@@ -9,7 +9,7 @@ import { ProductModel } from '../_types/model';
 import { Product } from '../_types/product';
 import { ProductFilters } from '../_components/store/product/overlay/OverlayProductFilters';
 import { useProductFilters } from '../../hooks/useProductFilters';
-import { useProducts } from '../_services/api/queryHooks';
+import { useProductStore } from '../_stores/productStore';
 import { colors } from '../_styles/colors';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import { spacing } from '../_styles/spacing';
@@ -132,7 +132,7 @@ export default function CatalogScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ category?: string; title?: string; model?: string }>();
 
-  // Fetch categories and models from API (with local fallbacks)
+  // Fetch categories and models from API
   const { mainCategories, isLoading: isLoadingCategories } = useCategories();
   const { getModelsByCategory } = useProductModels();
 
@@ -144,34 +144,39 @@ export default function CatalogScreen() {
   const [activeModelId, setActiveModelId] = useState(initialModelId);
   const [availableModels, setAvailableModels] = useState<ProductModel[]>([]);
   const [categoryModelProducts, setCategoryModelProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Fetch products using TanStack Query
+  // Fetch products using Zustand store (single source of truth)
   const {
-    data: allProducts,
+    products: allProducts,
     isLoading: isLoadingProducts,
     error: productsError,
-    refetch,
-  } = useProducts();
+    fetchProducts,
+    refreshProducts,
+  } = useProductStore();
   const [appliedFilters, setAppliedFilters] = useState<ProductFilters>({});
   const [refreshing, setRefreshing] = useState(false);
+
+  // Ensure products are fetched if store is empty (e.g., direct navigation, preload failed)
+  useEffect(() => {
+    if (allProducts.length === 0 && !isLoadingProducts) {
+      fetchProducts();
+    }
+  }, [allProducts.length, isLoadingProducts, fetchProducts]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await refetch();
+      await refreshProducts();
     } finally {
       setRefreshing(false);
     }
-  }, [refetch]);
+  }, [refreshProducts]);
 
   // Use the original title or default to 'Tienda'
   const rawPageTitle = params.title || 'Tienda';
 
   useEffect(() => {
     // This effect handles category changes: update available models
-    setLoading(true);
-
     // Check if the selected category is a regular product category or a label-based category
     const selectedCategory = mainCategories.find((cat) => cat.id === activeCategoryId);
     const isCategoryLabel = selectedCategory?.isLabel || activeCategoryId === CATEGORY_IDS.ALL;
@@ -209,7 +214,8 @@ export default function CatalogScreen() {
           if (categoryId === CATEGORY_IDS.DISCOUNTED) {
             filteredProducts = products.filter(
               (product) =>
-                product.discountedPrice !== undefined && product.discountedPrice < product.price
+                typeof product.discountedPrice === 'number' &&
+                product.discountedPrice < product.price
             );
           } else {
             // Filter by status for other label categories
@@ -234,32 +240,10 @@ export default function CatalogScreen() {
   );
 
   useEffect(() => {
-    // This effect processes products based on category/model when API data is available
-    if (allProducts) {
-      setLoading(true);
-
-      // Use a small delay to show loading states
-      setTimeout(() => {
-        const products = filterProductsByCategoryAndModel(
-          allProducts,
-          activeCategoryId,
-          activeModelId
-        );
-        setCategoryModelProducts(products);
-        setLoading(false);
-      }, 150);
-    } else if (!isLoadingProducts && !allProducts) {
-      // If no products and not loading, set empty state
-      setCategoryModelProducts([]);
-      setLoading(false);
-    }
-  }, [
-    allProducts,
-    activeCategoryId,
-    activeModelId,
-    isLoadingProducts,
-    filterProductsByCategoryAndModel,
-  ]);
+    // This effect processes products based on category/model when data is available
+    const products = filterProductsByCategoryAndModel(allProducts, activeCategoryId, activeModelId);
+    setCategoryModelProducts(products);
+  }, [allProducts, activeCategoryId, activeModelId, filterProductsByCategoryAndModel]);
 
   // Apply overlay filters using the custom hook
   const productsToDisplay = useProductFilters(categoryModelProducts, appliedFilters);
@@ -383,6 +367,7 @@ export default function CatalogScreen() {
             <DefaultLargeCard product={product} onPress={() => handleProductPress(product.id)} />
           </View>
         ))}
+        {products.length === 1 && <View style={styles.gridItem} />}
       </View>
     );
   }
@@ -456,7 +441,7 @@ export default function CatalogScreen() {
           />
         }
       >
-        {loading || isLoadingProducts || isLoadingCategories ? (
+        {(isLoadingProducts && allProducts.length === 0) || isLoadingCategories || refreshing ? (
           <SkeletonLoader type="productGrid" rows={3} />
         ) : productsError ? (
           <View style={styles.errorContainer}>
@@ -472,7 +457,7 @@ export default function CatalogScreen() {
               }
               return acc;
             }, [] as JSX.Element[])}
-            {productsToDisplay.length === 0 && !loading && !isLoadingProducts && (
+            {productsToDisplay.length === 0 && !isLoadingProducts && (
               <Text style={styles.noResultsText}>
                 No hay productos que coincidan con los filtros seleccionados.
               </Text>
