@@ -230,7 +230,7 @@ export default function AddressesListScreen() {
                   activeOpacity={0.7}
                 >
                   <PlusCircle width={20} height={20} stroke={colors.primary} strokeWidth={1.6} />
-                  <Text style={styles.addAddressText}>Adicionar direccion nueva</Text>
+                  <Text style={styles.addAddressText}>Adicionar dirección nueva</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -238,10 +238,10 @@ export default function AddressesListScreen() {
             <>
               <View style={styles.noAddressContainer}>
                 <Text style={styles.noAddressTitle}>
-                  Parece que no tienes ninguna direccion guardada.
+                  Parece que no tienes ninguna dirección guardada.
                 </Text>
                 <Text style={styles.noAddressSubtitle}>
-                  Adiciona tu direccion de envio preferida para facilitar tus futuras compras.
+                  Adiciona tu dirección de envío preferida para facilitar tus futuras compras.
                 </Text>
               </View>
 
@@ -252,7 +252,7 @@ export default function AddressesListScreen() {
                   activeOpacity={0.7}
                 >
                   <PlusCircle width={20} height={20} stroke={colors.primary} strokeWidth={1.6} />
-                  <Text style={styles.addAddressText}>Adicionar direccion nueva</Text>
+                  <Text style={styles.addAddressText}>Adicionar dirección nueva</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -336,6 +336,7 @@ const styles = StyleSheet.create<Styles>({
   content: {
     flex: 1,
     gap: spacing.xxl,
+    paddingTop: spacing.xxxxl,
     paddingBottom: spacing.xxl,
   },
   loadingContainer: {

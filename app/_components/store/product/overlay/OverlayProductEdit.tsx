@@ -11,8 +11,8 @@ import {
   Animated,
   TouchableWithoutFeedback,
 } from 'react-native';
-import CloseIcon from '../../../../../assets/icons/close.svg';
 import TrashIcon from '../../../../../assets/icons/trash_icon.svg';
+import CloseIcon from '../../../../../assets/icons/close_md.svg';
 import ChevronRightBlue from '../../../../../assets/icons/chevron_right_blue.svg';
 import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.svg';
 import OverlayCheckoutQuantity from './OverlayCheckoutQuantity';
@@ -190,7 +190,7 @@ function OverlayProductEdit({
             <View style={styles.header}>
               <Text style={styles.title}>Editar</Text>
               <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-                <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
+                <CloseIcon width={24} height={24} />
               </TouchableOpacity>
             </View>
 
@@ -352,8 +352,12 @@ const styles = StyleSheet.create<Styles>({
     color: colors.secondary,
   },
   closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
+    width: 40,
+    height: 24,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     gap: spacing.lg,

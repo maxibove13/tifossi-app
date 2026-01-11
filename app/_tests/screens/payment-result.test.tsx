@@ -24,9 +24,10 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-// Mock Ionicons
+// Mock vector icons
 jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'Ionicons',
+  Feather: 'Feather',
 }));
 
 // Import mocked router after mocking

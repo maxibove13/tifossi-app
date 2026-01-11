@@ -226,49 +226,77 @@ class MercadoPagoService {
   }
 
   /**
-   * Open payment flow using WebBrowser
+   * Open payment flow using WebBrowser.openAuthSessionAsync
    *
-   * NOTE: The WebBrowser result type only indicates HOW the browser was closed,
-   * NOT whether the payment succeeded. When a user presses "Done" after paying,
-   * it returns 'cancel' even though payment was successful.
+   * Uses ASWebAuthenticationSession (iOS) / Custom Tabs (Android) which properly
+   * handles redirects back to the app via custom URL schemes.
    *
    * Payment success is determined by:
-   * 1. Deep link callback (if JS redirect works)
-   * 2. MercadoPago webhook notifications
-   * 3. Polling the order status via API
+   * 1. Redirect URL parameters (primary - from openAuthSessionAsync result)
+   * 2. MercadoPago webhook notifications (backup)
+   * 3. Polling the order status via API (fallback)
    */
   async initiatePayment(preference: PaymentPreference): Promise<PaymentResult> {
     try {
-      // Configure WebBrowser for better UX
-      await WebBrowser.warmUpAsync();
+      // Define the redirect URL scheme that the auth session will listen for
+      const redirectScheme = 'tifossi';
 
-      // Open MercadoPago payment page
-      const result = await WebBrowser.openBrowserAsync(preference.initPoint, {
-        // iOS options
-        presentationStyle: WebBrowser.WebBrowserPresentationStyle.FORM_SHEET,
-        controlsColor: '#0C0C0C',
+      // Open MercadoPago payment page using auth session
+      // This properly handles the redirect back to the app
+      const result = await WebBrowser.openAuthSessionAsync(preference.initPoint, redirectScheme);
 
-        // Android options
-        showTitle: true,
-        enableBarCollapsing: false,
+      // Handle the result
+      if (result.type === 'success' && result.url) {
+        // Parse the redirect URL to extract payment status
+        try {
+          const url = new URL(result.url);
+          const params = url.searchParams;
 
-        // Common options
-        toolbarColor: '#FFFFFF',
-        showInRecents: false,
-      });
+          // Check for payment status flags from our redirect endpoint
+          if (params.get('paymentSuccess') === 'true') {
+            return {
+              success: true,
+              orderId: preference.externalReference,
+              paymentId: params.get('payment_id') || undefined,
+              status: 'approved',
+            };
+          } else if (params.get('paymentFailure') === 'true') {
+            return {
+              success: false,
+              orderId: preference.externalReference,
+              status: 'rejected',
+              error: 'Payment was rejected',
+            };
+          } else if (params.get('paymentPending') === 'true') {
+            return {
+              success: true,
+              orderId: preference.externalReference,
+              status: 'pending',
+            };
+          }
 
-      // Cool down WebBrowser
-      await WebBrowser.coolDownAsync();
+          // If no explicit status, return pending for verification
+          return {
+            success: true,
+            orderId: params.get('external_reference') || preference.externalReference,
+            status: 'pending',
+          };
+        } catch {
+          // URL parsing failed, return pending for verification
+          return {
+            success: true,
+            orderId: preference.externalReference,
+            status: 'pending',
+          };
+        }
+      }
 
-      // IMPORTANT: WebBrowser result.type only indicates how browser was closed,
-      // NOT payment outcome. 'cancel' means user pressed "Done" button which
-      // happens AFTER successful payment when they see the redirect page.
-      // Always return success=true to let the caller check actual payment status.
+      // User cancelled or dismissed - still return success to check actual payment status
+      // They might have completed payment before dismissing
       if (result.type === 'cancel' || result.type === 'dismiss') {
         return {
           success: true,
           orderId: preference.externalReference,
-          // Signal that we need to verify payment status
           status: 'pending',
         };
       }
@@ -276,6 +304,7 @@ class MercadoPagoService {
       return {
         success: true,
         orderId: preference.externalReference,
+        status: 'pending',
       };
     } catch (error) {
       return {

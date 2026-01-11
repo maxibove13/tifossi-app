@@ -4,16 +4,18 @@ import { useLocalSearchParams, router } from 'expo-router';
 
 import { colors } from '../_styles/colors';
 import { fontSizes } from '../_styles/typography';
-import { spacing } from '../_styles/spacing';
+import { spacing, layout } from '../_styles/spacing';
 
 import { StoreDetails } from '../_types';
 import { storesData } from '../_data/stores';
 import { usePaymentStore } from '../_stores/paymentStore';
+import { useAuthStore } from '../_stores/authStore';
 import StoreDetailView from '../_components/common/StoreDetailView';
 
 export default function StoreSelectionScreen() {
   const { cityId, zoneId } = useLocalSearchParams<{ cityId: string; zoneId?: string }>();
   const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   const store = useMemo(() => {
     return storesData.find((s: StoreDetails) => s.cityId === cityId && s.zoneId === zoneId);
@@ -29,7 +31,12 @@ export default function StoreSelectionScreen() {
         address: store.address,
       });
     }
-    router.push('/checkout/payment-selection');
+    // Guests need to provide contact info after store selection
+    if (isLoggedIn) {
+      router.push('/checkout/payment-selection');
+    } else {
+      router.push('/checkout/guest-contact-info');
+    }
   };
 
   const handleBack = () => {
@@ -58,6 +65,7 @@ export default function StoreSelectionScreen() {
       onClose={handleClose}
       onConfirm={handleConfirm}
       onBack={handleBack}
+      closeTestID="store-detail-close-button"
     />
   );
 }
@@ -66,8 +74,8 @@ const styles = StyleSheet.create({
   errorContainer: {
     flex: 1,
     backgroundColor: colors.background.antiflash,
-    paddingTop: 54,
-    paddingBottom: 34,
+    paddingTop: layout.subheaderScreenTop,
+    paddingBottom: layout.safeAreaBottom,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,

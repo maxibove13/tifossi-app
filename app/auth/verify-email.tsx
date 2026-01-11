@@ -10,10 +10,10 @@ import {
 } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, radius, layout } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
-import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
+import SubheaderClose from '../_components/common/SubheaderClose';
 import { UnknownError } from '../_types/ui';
 
 // Helper function to extract error message from unknown error types
@@ -62,12 +62,7 @@ export default function VerifyEmailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.mainContainer}>
         {/* Custom Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Verificar Email</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-          </TouchableOpacity>
-        </View>
+        <SubheaderClose title="Verificar Email" onClose={handleClose} />
 
         <View style={styles.contentContainer}>
           <View style={styles.emailIconContainer}>
@@ -130,25 +125,8 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    paddingTop: spacing.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingTop: layout.subheaderScreenTop,
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
-  },
-  headerTitle: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
-    color: colors.primary,
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   contentContainer: {
     flex: 1,

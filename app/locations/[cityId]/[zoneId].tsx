@@ -4,7 +4,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 
 import { colors } from '../../_styles/colors';
 import { fontSizes } from '../../_styles/typography';
-import { spacing } from '../../_styles/spacing';
+import { spacing, layout } from '../../_styles/spacing';
 
 import { StoreDetails } from '../../_types';
 import { storesData } from '../../_data/stores';
@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
   errorContainer: {
     flex: 1,
     backgroundColor: colors.background.antiflash,
-    paddingTop: 54,
-    paddingBottom: 34,
+    paddingTop: layout.subheaderScreenTop,
+    paddingBottom: layout.safeAreaBottom,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,

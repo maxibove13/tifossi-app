@@ -26,9 +26,7 @@ import {
 
 // We never want to open a real browser during automated tests
 jest.mock('expo-web-browser', () => ({
-  warmUpAsync: jest.fn().mockResolvedValue(undefined),
-  coolDownAsync: jest.fn().mockResolvedValue(undefined),
-  openBrowserAsync: jest.fn().mockResolvedValue({ type: 'dismiss' }),
+  openAuthSessionAsync: jest.fn().mockResolvedValue({ type: 'dismiss' }),
   WebBrowserPresentationStyle: {
     FORM_SHEET: 'FORM_SHEET',
   },

@@ -15,13 +15,13 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import CloseIcon from '../../assets/icons/close.svg';
 import RadioButton from '../_components/ui/form/RadioButton';
+import SubheaderClose from '../_components/common/SubheaderClose';
 import CartProductCard from '../_components/store/product/cart/CartProductCard';
 
 // Import style tokens
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, layout } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 
 // Import stores and services
@@ -89,15 +89,32 @@ export default function PaymentSelectionScreen() {
     }
 
     // Add pending buy now item if present (for "Comprar ahora" flow)
+    // Merge with existing cart item if same product/color/size to avoid duplicate keys
     if (pendingBuyNowItem) {
-      const product = allProducts?.find((p) => p.id === pendingBuyNowItem.productId);
-      if (product) {
-        result.push({
-          ...product,
-          quantity: pendingBuyNowItem.quantity,
-          selectedSize: pendingBuyNowItem.size,
-          color: pendingBuyNowItem.color,
-        });
+      const existingIndex = result.findIndex(
+        (item) =>
+          item.id === pendingBuyNowItem.productId &&
+          item.color === pendingBuyNowItem.color &&
+          item.selectedSize === pendingBuyNowItem.size
+      );
+
+      if (existingIndex > -1) {
+        // Merge quantities with existing cart item
+        result[existingIndex] = {
+          ...result[existingIndex],
+          quantity: result[existingIndex].quantity + pendingBuyNowItem.quantity,
+        };
+      } else {
+        // Add as new item
+        const product = allProducts?.find((p) => p.id === pendingBuyNowItem.productId);
+        if (product) {
+          result.push({
+            ...product,
+            quantity: pendingBuyNowItem.quantity,
+            selectedSize: pendingBuyNowItem.size,
+            color: pendingBuyNowItem.color,
+          });
+        }
       }
     }
 
@@ -410,149 +427,137 @@ export default function PaymentSelectionScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen
         options={{
           headerShown: false,
         }}
       />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Resumen y pago</Text>
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={handleClose}
-          activeOpacity={0.7}
-          testID="close-button"
-          accessibilityRole="button"
-          accessibilityLabel="Cerrar"
-        >
-          <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-        </TouchableOpacity>
-      </View>
+      <View style={styles.container}>
+        {/* Header */}
+        <SubheaderClose title="Resumen y pago" onClose={handleClose} closeTestID="close-button" />
 
-      {/* Content */}
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.content}>
-          {/* Order Summary - Cart Items */}
-          <View style={styles.orderSummaryContainer}>
-            <Text style={[styles.sectionTitle, styles.orderSummaryTitle]}>Tu pedido</Text>
-            <View style={styles.cartItemsList}>
-              {cartDisplayItems.map((item) => (
-                <CartProductCard
-                  key={`${item.id}-${item.color}-${item.selectedSize}`}
-                  product={item}
-                  quantity={item.quantity}
-                />
-              ))}
+        {/* Content */}
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.content}>
+            {/* Order Summary - Cart Items */}
+            <View style={styles.orderSummaryContainer}>
+              <Text style={[styles.sectionTitle, styles.orderSummaryTitle]}>Tu pedido</Text>
+              <View style={styles.cartItemsList}>
+                {cartDisplayItems.map((item) => (
+                  <CartProductCard
+                    key={`${item.id}-${item.color}-${item.selectedSize}`}
+                    product={item}
+                    quantity={item.quantity}
+                  />
+                ))}
+              </View>
             </View>
-          </View>
 
-          {/* Shipping Info */}
-          <View style={styles.shippingInfoContainer}>
-            <Text style={styles.sectionTitle}>
-              {shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'}
-            </Text>
-            <View style={styles.shippingInfoContent}>
-              {shippingMethod === 'pickup' && selectedStore ? (
-                <Text style={styles.shippingInfoText}>{selectedStore.name}</Text>
-              ) : selectedAddress ? (
-                <Text style={styles.shippingInfoText}>
-                  {addressService.formatAddressDisplay(selectedAddress)}
-                </Text>
-              ) : guestAddress ? (
-                <Text style={styles.shippingInfoText}>
-                  {`${guestAddress.addressLine1}, ${guestAddress.city}`}
-                </Text>
-              ) : null}
-            </View>
-          </View>
-
-          {/* Order Totals */}
-          <View style={styles.totalsContainer}>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Subtotal</Text>
-              <Text style={styles.totalValue}>${subtotal.toFixed(2)}</Text>
-            </View>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Envío</Text>
-              <Text style={styles.totalValue}>
-                {shippingCost === 0 ? 'Gratis' : `$${shippingCost.toFixed(2)}`}
+            {/* Shipping Info */}
+            <View style={styles.shippingInfoContainer}>
+              <Text style={styles.sectionTitle}>
+                {shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'}
               </Text>
+              <View style={styles.shippingInfoContent}>
+                {shippingMethod === 'pickup' && selectedStore ? (
+                  <Text style={styles.shippingInfoText}>{selectedStore.name}</Text>
+                ) : selectedAddress ? (
+                  <Text style={styles.shippingInfoText}>
+                    {addressService.formatAddressDisplay(selectedAddress)}
+                  </Text>
+                ) : guestAddress ? (
+                  <Text style={styles.shippingInfoText}>
+                    {`${guestAddress.addressLine1}, ${guestAddress.city}`}
+                  </Text>
+                ) : null}
+              </View>
             </View>
-            <View style={[styles.totalRow, styles.finalTotalRow]}>
-              <Text style={styles.finalTotalLabel}>Total</Text>
-              <Text style={styles.finalTotalValue}>${total.toFixed(2)}</Text>
+
+            {/* Order Totals */}
+            <View style={styles.totalsContainer}>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Subtotal</Text>
+                <Text style={styles.totalValue}>${subtotal.toFixed(2)}</Text>
+              </View>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Envío</Text>
+                <Text style={styles.totalValue}>
+                  {shippingCost === 0 ? 'Gratis' : `$${shippingCost.toFixed(2)}`}
+                </Text>
+              </View>
+              <View style={[styles.totalRow, styles.finalTotalRow]}>
+                <Text style={styles.finalTotalLabel}>Total</Text>
+                <Text style={styles.finalTotalValue}>${total.toFixed(2)}</Text>
+              </View>
+            </View>
+
+            {/* Default Payment Methods */}
+            <View style={styles.paymentMethodsContainer}>
+              <Text style={styles.sectionTitle}>Método de pago</Text>
+
+              <View style={styles.paymentMethodsList}>
+                {defaultPaymentMethods
+                  .filter((method) => method.enabled !== false)
+                  .map(renderPaymentMethod)}
+              </View>
+            </View>
+
+            {/* Other Payment Methods */}
+            <View style={styles.paymentMethodsContainer}>
+              <Text style={styles.sectionTitle}>Otros métodos</Text>
+
+              <View style={styles.paymentMethodsList}>
+                {otherPaymentMethods
+                  .filter((method) => method.enabled !== false)
+                  .map(renderPaymentMethod)}
+              </View>
             </View>
           </View>
+        </ScrollView>
 
-          {/* Default Payment Methods */}
-          <View style={styles.paymentMethodsContainer}>
-            <Text style={styles.sectionTitle}>Método de pago</Text>
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={[
+              styles.primaryButton,
+              (!selectedPaymentMethod || isProcessingPayment || isLoading) && styles.disabledButton,
+            ]}
+            onPress={handleSave}
+            activeOpacity={0.7}
+            disabled={!selectedPaymentMethod || isProcessingPayment || isLoading}
+            testID="continue-button"
+            accessibilityRole="button"
+            accessibilityState={{
+              disabled: !selectedPaymentMethod || isProcessingPayment || isLoading,
+            }}
+          >
+            <Text style={styles.primaryButtonText}>
+              {isProcessingPayment || isLoading ? 'Procesando...' : 'Continuar con el pago'}
+            </Text>
+          </TouchableOpacity>
 
-            <View style={styles.paymentMethodsList}>
-              {defaultPaymentMethods
-                .filter((method) => method.enabled !== false)
-                .map(renderPaymentMethod)}
-            </View>
-          </View>
-
-          {/* Other Payment Methods */}
-          <View style={styles.paymentMethodsContainer}>
-            <Text style={styles.sectionTitle}>Otros métodos</Text>
-
-            <View style={styles.paymentMethodsList}>
-              {otherPaymentMethods
-                .filter((method) => method.enabled !== false)
-                .map(renderPaymentMethod)}
-            </View>
-          </View>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleBack}
+            activeOpacity={0.7}
+            testID="back-button"
+            accessibilityRole="button"
+            accessibilityLabel="Volver"
+          >
+            <Text style={styles.secondaryButtonText}>Atrás</Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            (!selectedPaymentMethod || isProcessingPayment || isLoading) && styles.disabledButton,
-          ]}
-          onPress={handleSave}
-          activeOpacity={0.7}
-          disabled={!selectedPaymentMethod || isProcessingPayment || isLoading}
-          testID="continue-button"
-          accessibilityRole="button"
-          accessibilityState={{
-            disabled: !selectedPaymentMethod || isProcessingPayment || isLoading,
-          }}
-        >
-          <Text style={styles.primaryButtonText}>
-            {isProcessingPayment || isLoading ? 'Procesando...' : 'Continuar con el pago'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={handleBack}
-          activeOpacity={0.7}
-          testID="back-button"
-          accessibilityRole="button"
-          accessibilityLabel="Volver"
-        >
-          <Text style={styles.secondaryButtonText}>Atrás</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
 type Styles = {
+  safeArea: ViewStyle;
   container: ViewStyle;
   scrollView: ViewStyle;
-  header: ViewStyle;
-  title: TextStyle;
-  closeButton: ViewStyle;
   content: ViewStyle;
   orderSummaryContainer: ViewStyle;
   orderSummaryTitle: TextStyle;
@@ -584,35 +589,22 @@ type Styles = {
 };
 
 const styles = StyleSheet.create<Styles>({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#FAFAFA',
+  },
+  container: {
+    flex: 1,
+    paddingTop: layout.subheaderScreenTop,
+    paddingHorizontal: spacing.lg,
   },
   scrollView: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 54,
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.lg,
-  },
-  title: {
-    fontFamily: 'Roboto',
-    fontSize: 20,
-    fontWeight: fontWeights.regular,
-    lineHeight: 28,
-    color: '#424242',
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
-  },
   content: {
     flex: 1,
     gap: spacing.lg,
+    paddingTop: spacing.xxxxl,
     paddingBottom: spacing.xxl,
   },
   orderSummaryContainer: {
@@ -727,9 +719,7 @@ const styles = StyleSheet.create<Styles>({
     color: '#0C0C0C',
   },
   actionButtons: {
-    paddingHorizontal: spacing.lg,
     gap: spacing.sm,
-    marginBottom: 34,
   },
   primaryButton: {
     width: '100%',

@@ -15,6 +15,7 @@ app/_components/
 │   ├── ErrorBoundary.tsx
 │   ├── ScreenHeader.tsx
 │   ├── Subheader.tsx
+│   ├── SubheaderClose.tsx
 │   ├── VideoBackground.tsx
 │   └── share/        # Sharing functionality
 ├── home/             # Home screen components
@@ -321,6 +322,27 @@ Components for displaying product reviews.
 ### Common Components (`/app/components/common/`)
 
 Utility components used throughout the application.
+
+#### SubheaderClose (`/common/SubheaderClose.tsx`)
+
+Reusable subheader with title and close button for modal-like screens (auth, checkout, legal, locations).
+
+```tsx
+import SubheaderClose from '../_components/common/SubheaderClose';
+
+<SubheaderClose
+  title="Direcciones de envío"
+  onClose={() => router.navigate('/(tabs)')}
+  closeTestID="address-close-button"
+/>
+```
+
+Props:
+- `title`: string - The header title text
+- `onClose`: () => void - Close button handler
+- `closeTestID`: string (optional) - Test ID for the close button
+
+Used in: Auth screens, checkout screens, legal screens, locations, store detail views.
 
 #### Empty State Component (`/common/EmptyState.tsx`)
 

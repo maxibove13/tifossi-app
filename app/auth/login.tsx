@@ -11,13 +11,13 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../_styles/colors';
-import { spacing, radius, components } from '../_styles/spacing';
+import { spacing, radius, components, layout } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
 import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
+import SubheaderClose from '../_components/common/SubheaderClose';
 import { APPLE_AUTH_ERRORS_ES } from '../_types/auth';
 import { UnknownError } from '../_types/ui';
 
@@ -33,7 +33,6 @@ function getErrorMessage(error: UnknownError): string {
 }
 
 export default function LoginScreen() {
-  const insets = useSafeAreaInsets();
   const { emailVerified, verificationError } = useLocalSearchParams<{
     emailVerified?: string;
     verificationError?: string;
@@ -183,16 +182,11 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Iniciar Sesión</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-          <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-        </TouchableOpacity>
-      </View>
+      <SubheaderClose title="Iniciar Sesión" onClose={handleClose} />
 
       <ScrollView
         style={styles.scrollView}
@@ -367,34 +361,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background.antiflash,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    paddingTop: layout.subheaderScreenTop,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xxl,
-    paddingBottom: spacing.sm,
-    backgroundColor: colors.background.offWhite,
-    borderBottomWidth: 0.4,
-    borderBottomColor: colors.border,
-  },
-  headerTitle: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xxxl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xxxl,
-    color: colors.primary,
-  },
-  closeButton: {
-    padding: spacing.sm,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xxl,
+    paddingTop: 139,
     paddingBottom: spacing.xxl,
     gap: spacing.lg,
   },

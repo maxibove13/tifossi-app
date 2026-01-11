@@ -18,6 +18,7 @@ import { hasStatus, ProductStatus } from '../_types/product-status';
 import OverlayProductEdit from '../_components/store/product/overlay/OverlayProductEdit';
 import OverlayShippingSelection from '../_components/store/product/overlay/OverlayShippingSelection';
 import { useAuthStore } from '../_stores/authStore';
+import { usePaymentStore } from '../_stores/paymentStore';
 import ProductSections from '../_components/store/product/sections/ProductSections';
 import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
 
@@ -55,6 +56,11 @@ export default function CartScreen() {
 
   // Get auth state
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+
+  // Payment store for clearing checkout state
+  const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
+  const setGuestContactInfo = usePaymentStore((state) => state.setGuestContactInfo);
+  const setGuestAddress = usePaymentStore((state) => state.setGuestAddress);
 
   // Get recommended products from API data or use fallback
   const recommendedProductsData = useMemo(() => {
@@ -180,6 +186,12 @@ export default function CartScreen() {
 
   const handleShippingMethodSelect = (method: 'delivery' | 'pickup' | '') => {
     if (!method) return;
+
+    // Clear previous checkout state so each checkout starts fresh
+    setSelectedStore(null);
+    setGuestContactInfo(null);
+    setGuestAddress(null);
+
     setShowShippingOverlay(false);
     if (method === 'delivery') {
       if (isLoggedIn) {
@@ -188,13 +200,8 @@ export default function CartScreen() {
         router.push('/checkout/new-address?guest=true');
       }
     } else {
-      // Pickup flow
-      if (isLoggedIn) {
-        router.push('/checkout/shipping-pickup');
-      } else {
-        // Guest pickup needs contact info first
-        router.push('/checkout/guest-contact-info?returnTo=shipping-pickup');
-      }
+      // Pickup flow - store selection first, then contact info for guests
+      router.push('/checkout/shipping-pickup');
     }
   };
 

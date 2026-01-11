@@ -10,9 +10,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
-import CloseIcon from '../../assets/icons/close.svg';
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import SubheaderClose from '../_components/common/SubheaderClose';
+import { spacing, radius, layout } from '../_styles/spacing';
 import { fontWeights, fonts, fontSizes, lineHeights } from '../_styles/typography';
 import { StoreDetails } from '../_types';
 import apiManager from '../_services/api';
@@ -80,12 +80,7 @@ export default function StoreListScreen() {
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={styles.header}>
-        <Text style={styles.title}>Nuestras Tiendas</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-          <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-        </TouchableOpacity>
-      </View>
+      <SubheaderClose title="Nuestras Tiendas" onClose={handleClose} />
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -136,32 +131,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background.light,
-    paddingTop: 54,
+    paddingTop: layout.subheaderScreenTop,
   },
   scrollView: {
     flex: 1,
   },
   scrollContentContainer: {
     paddingBottom: spacing.xxl,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    marginBottom: spacing.lg,
-    paddingHorizontal: spacing.lg,
-  },
-  title: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl * 1.4,
-    color: colors.primary,
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   citySection: {
     marginBottom: spacing.xl,

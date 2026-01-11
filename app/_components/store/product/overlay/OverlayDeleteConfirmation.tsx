@@ -10,8 +10,8 @@ import {
   Animated,
   TouchableWithoutFeedback,
 } from 'react-native';
-import CloseIcon from '../../../../../assets/icons/close.svg';
 import { colors } from '../../../../_styles/colors';
+import CloseIcon from '../../../../../assets/icons/close_md.svg';
 import { spacing, radius } from '../../../../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../_styles/typography';
 
@@ -83,7 +83,7 @@ function OverlayDeleteConfirmation({
           <View style={styles.header}>
             <Text style={styles.title}>¿Eliminar producto?</Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-              <CloseIcon width={20} height={20} stroke={colors.primary} strokeWidth={1.2} />
+              <CloseIcon width={24} height={24} />
             </TouchableOpacity>
           </View>
 
@@ -168,8 +168,12 @@ const styles = StyleSheet.create<Styles>({
     color: colors.primary,
   },
   closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
+    width: 40,
+    height: 24,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     marginBottom: spacing.lg,

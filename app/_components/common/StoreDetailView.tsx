@@ -13,10 +13,10 @@ import {
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import CloseIcon from '../../../assets/icons/close.svg';
+import SubheaderClose from './SubheaderClose';
 
 import { colors } from '../../_styles/colors';
-import { spacing, radius } from '../../_styles/spacing';
+import { spacing, radius, layout } from '../../_styles/spacing';
 import { fontWeights, fonts, fontSizes, lineHeights } from '../../_styles/typography';
 import { StoreDetails } from '../../_types';
 
@@ -28,6 +28,7 @@ interface StoreDetailViewProps {
   onBack?: () => void;
   confirmLabel?: string;
   backLabel?: string;
+  closeTestID?: string;
 }
 
 export default function StoreDetailView({
@@ -38,64 +39,62 @@ export default function StoreDetailView({
   onBack,
   confirmLabel = 'Confirmar',
   backLabel = 'Atrás',
+  closeTestID,
 }: StoreDetailViewProps) {
   const showActions = onConfirm || onBack;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.container}>
+        <SubheaderClose title={title || store.name} onClose={onClose} closeTestID={closeTestID} />
 
-      <View style={styles.header}>
-        <Text style={styles.title}>{title || store.name}</Text>
-        <TouchableOpacity
-          testID="store-detail-close-button"
-          style={styles.closeButton}
-          onPress={onClose}
-          activeOpacity={0.7}
-        >
-          <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContentContainer}>
-        <View style={styles.storeDetailsContainer}>
-          <Image source={store.image} style={styles.storeImage} resizeMode="cover" />
-          <View style={styles.storeTextContainer}>
-            <Text style={styles.storeName}>{store.name}</Text>
-            <Text style={styles.storeAddress}>{store.address}</Text>
-            <Text style={styles.storeHours}>{store.hours}</Text>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContentContainer}>
+          <View style={styles.storeDetailsContainer}>
+            <Image source={store.image} style={styles.storeImage} resizeMode="cover" />
+            <View style={styles.storeTextContainer}>
+              <Text style={styles.storeName}>{store.name}</Text>
+              <Text style={styles.storeAddress}>{store.address}</Text>
+              <Text style={styles.storeHours}>{store.hours}</Text>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
 
-      {showActions && (
-        <View style={styles.actionButtons}>
-          {onConfirm && (
-            <TouchableOpacity onPress={onConfirm} activeOpacity={0.8}>
-              <LinearGradient colors={colors.button.defaultGradient} style={styles.primaryButton}>
-                <Text style={styles.primaryButtonText}>{confirmLabel}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          )}
+        {showActions && (
+          <View style={[styles.actionButtons, !onConfirm && styles.actionButtonsCentered]}>
+            {onConfirm && (
+              <TouchableOpacity
+                onPress={onConfirm}
+                activeOpacity={0.8}
+                style={styles.buttonTouchable}
+              >
+                <LinearGradient colors={colors.button.defaultGradient} style={styles.primaryButton}>
+                  <Text style={styles.primaryButtonText}>{confirmLabel}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            )}
 
-          {onBack && (
-            <TouchableOpacity style={styles.secondaryButton} onPress={onBack} activeOpacity={0.7}>
-              <Text style={styles.secondaryButtonText}>{backLabel}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
+            {onBack && (
+              <TouchableOpacity
+                style={[styles.secondaryButton, onConfirm && styles.buttonTouchable]}
+                onPress={onBack}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.secondaryButtonText}>{backLabel}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+      </View>
     </SafeAreaView>
   );
 }
 
 type Styles = {
+  safeArea: ViewStyle;
   container: ViewStyle;
   scrollView: ViewStyle;
   scrollContentContainer: ViewStyle;
-  header: ViewStyle;
-  title: TextStyle;
-  closeButton: ViewStyle;
   storeDetailsContainer: ViewStyle;
   storeImage: ImageStyle;
   storeTextContainer: ViewStyle;
@@ -103,6 +102,8 @@ type Styles = {
   storeAddress: TextStyle;
   storeHours: TextStyle;
   actionButtons: ViewStyle;
+  actionButtonsCentered: ViewStyle;
+  buttonTouchable: ViewStyle;
   primaryButton: ViewStyle;
   primaryButtonText: TextStyle;
   secondaryButton: ViewStyle;
@@ -110,52 +111,35 @@ type Styles = {
 };
 
 const styles = StyleSheet.create<Styles>({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background.antiflash,
-    paddingTop: 54,
-    paddingBottom: 34,
+  },
+  container: {
+    flex: 1,
+    paddingTop: layout.subheaderScreenTop,
+    paddingBottom: layout.safeAreaBottom,
+    paddingHorizontal: spacing.lg,
+    gap: 40,
   },
   scrollView: {
     flex: 1,
-    marginBottom: 40,
-    paddingHorizontal: spacing.lg,
   },
   scrollContentContainer: {
     flexGrow: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    marginBottom: 40,
-    paddingHorizontal: spacing.lg,
-  },
-  title: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
-    color: colors.secondary,
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   storeDetailsContainer: {
     borderRadius: radius.xs,
     overflow: 'hidden',
     flex: 1,
+    gap: spacing.sm,
   },
   storeImage: {
     width: '100%',
     height: 394,
   },
   storeTextContainer: {
-    paddingTop: spacing.sm,
     paddingHorizontal: spacing.xs,
-    paddingBottom: spacing.sm,
     gap: spacing.xs,
   },
   storeName: {
@@ -181,11 +165,15 @@ const styles = StyleSheet.create<Styles>({
   },
   actionButtons: {
     gap: spacing.sm,
+  },
+  actionButtonsCentered: {
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
+  },
+  buttonTouchable: {
+    alignSelf: 'stretch',
   },
   primaryButton: {
-    borderRadius: radius.circle,
+    borderRadius: radius.xxl,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     alignItems: 'center',
@@ -200,7 +188,7 @@ const styles = StyleSheet.create<Styles>({
     color: colors.background.offWhite,
   },
   secondaryButton: {
-    borderRadius: radius.circle,
+    borderRadius: radius.xxl,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,

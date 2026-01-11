@@ -486,14 +486,15 @@ export default {
   /**
    * Redirect from MercadoPago back to app
    * GET /api/payment/redirect
-   * Serves an HTML page that redirects to the app scheme
+   * Uses HTTP 302 redirect to the app's custom URL scheme
+   * This works with ASWebAuthenticationSession (expo-web-browser openAuthSessionAsync)
    */
   async redirect(ctx: any) {
     const { status, order_id, external_reference, payment_id, collection_id } = ctx.query;
 
     const appScheme = process.env.APP_SCHEME || 'tifossi';
 
-    // Sanitize inputs to prevent XSS - only allow alphanumeric, dash, underscore
+    // Sanitize inputs to prevent injection - only allow alphanumeric, dash, underscore
     const sanitize = (val: string | undefined): string => {
       if (!val) return '';
       return String(val).replace(/[^a-zA-Z0-9_-]/g, '');
@@ -532,67 +533,10 @@ export default {
 
     const deepLink = `${appScheme}://checkout/payment-result?${params.toString()}`;
 
-    // HTML-encode for safe embedding in HTML attributes and script
-    const htmlEncode = (str: string): string => {
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    };
-
-    const safeDeepLink = htmlEncode(deepLink);
-
-    // Serve HTML page that redirects to app scheme
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Redirecting to Tifossi...</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      background: #f5f5f5;
-      text-align: center;
-      padding: 20px;
-    }
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #e0e0e0;
-      border-top-color: #0C0C0C;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    h1 { font-size: 18px; color: #333; margin: 0 0 10px; }
-    p { color: #666; font-size: 14px; margin: 0; }
-    a { color: #0C0C0C; margin-top: 20px; display: inline-block; }
-  </style>
-</head>
-<body>
-  <div class="spinner"></div>
-  <h1>Regresando a Tifossi...</h1>
-  <p>Si no eres redirigido automaticamente, <a href="${safeDeepLink}">toca aqui</a></p>
-  <script>
-    window.location.href = "${safeDeepLink}";
-  </script>
-</body>
-</html>`;
-
-    ctx.type = 'text/html';
-    ctx.body = html;
+    // Use HTTP 302 redirect to the app's custom URL scheme
+    // This is intercepted by ASWebAuthenticationSession (iOS) and Custom Tabs (Android)
+    // and returns control to the app with the redirect URL
+    ctx.redirect(deepLink);
   },
 
   /**
