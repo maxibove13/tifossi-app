@@ -357,6 +357,9 @@ const SwipeableEdge = ({
 
   // Payment store for "buy now" flow (PRODUCT-012)
   const setPendingBuyNowItem = usePaymentStore((state) => state.setPendingBuyNowItem);
+  const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
+  const setGuestContactInfo = usePaymentStore((state) => state.setGuestContactInfo);
+  const setGuestAddress = usePaymentStore((state) => state.setGuestAddress);
 
   const handleAddToCartPress = useCallback(() => {
     if (isOutOfStock) return;
@@ -388,6 +391,11 @@ const SwipeableEdge = ({
   // PRODUCT-012: Handle "buy now" flow - sets pending item without adding to cart
   const handleOverlayBuyNow = useCallback(
     (size: string, qty: number) => {
+      // Clear previous checkout state so each "buy now" starts fresh
+      setSelectedStore(null);
+      setGuestContactInfo(null);
+      setGuestAddress(null);
+
       // Parse price from string (e.g., "$1,500" -> 1500)
       const parsePrice = (priceStr: string | undefined): number => {
         if (!priceStr) return 0;
@@ -412,6 +420,9 @@ const SwipeableEdge = ({
       product.isDiscounted,
       selectedColor,
       setPendingBuyNowItem,
+      setSelectedStore,
+      setGuestContactInfo,
+      setGuestAddress,
     ]
   );
 

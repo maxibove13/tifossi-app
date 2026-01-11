@@ -19,7 +19,7 @@ import {
 import { router } from 'expo-router';
 import { useSearch } from '../../../../../hooks/useSearch';
 import { Product } from '../../../../_types/product';
-import CloseIcon from '../../../../../assets/icons/close.svg';
+import CloseIcon from '../../../../../assets/icons/close_md.svg';
 
 // Import style tokens
 import { colors } from '../../../../_styles/colors';
@@ -139,7 +139,7 @@ export default function OverlayProductSearch({ isVisible, onClose }: OverlayProd
           <View style={styles.header}>
             <Text style={styles.title}>Buscar productos</Text>
             <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-              <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
+              <CloseIcon width={24} height={24} />
             </TouchableOpacity>
           </View>
 
@@ -260,8 +260,12 @@ const styles = StyleSheet.create<Styles>({
     color: '#424242',
   },
   closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
+    width: 40,
+    height: 24,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   searchInputContainer: {
     paddingHorizontal: spacing.xl,

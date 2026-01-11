@@ -8,16 +8,20 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
 import { colors } from '../../_styles/colors';
-import { spacing, radius } from '../../_styles/spacing';
+import { spacing, radius, layout } from '../../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../_styles/typography';
 import { useAuthStore } from '../../_stores/authStore';
 import orderService, { Order } from '../../_services/order/orderService';
 import ReusableAuthPrompt from '../../_components/auth/AuthPrompt';
+import SubheaderClose from '../../_components/common/SubheaderClose';
 import { getStatusColor, formatDate, formatCurrency } from '../../_utils/orderUtils';
 
 export default function OrderDetailScreen() {
@@ -64,7 +68,7 @@ export default function OrderDetailScreen() {
     fetchOrder();
   }, [id, token, isLoggedIn]);
 
-  const handleBack = () => {
+  const handleClose = () => {
     if (router.canGoBack()) {
       router.back();
     } else {
@@ -75,33 +79,25 @@ export default function OrderDetailScreen() {
   // Auth guard - show login prompt if not logged in
   if (!isLoggedIn) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
         <Stack.Screen options={{ headerShown: false }} />
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
-            <Feather name="arrow-left" size={20} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Detalle del Pedido</Text>
-          <View style={styles.headerPlaceholder} />
+        <View style={styles.container}>
+          <SubheaderClose title="Detalle del Pedido" onClose={handleClose} />
+          <ReusableAuthPrompt message="Inicia sesión para ver tus pedidos." />
         </View>
-        <ReusableAuthPrompt message="Inicia sesión para ver tus pedidos." />
       </SafeAreaView>
     );
   }
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
         <Stack.Screen options={{ headerShown: false }} />
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
-            <Feather name="arrow-left" size={20} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Detalle del Pedido</Text>
-          <View style={styles.headerPlaceholder} />
-        </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+        <View style={styles.container}>
+          <SubheaderClose title="Detalle del Pedido" onClose={handleClose} />
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -109,21 +105,17 @@ export default function OrderDetailScreen() {
 
   if (error || !order) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
         <Stack.Screen options={{ headerShown: false }} />
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
-            <Feather name="arrow-left" size={20} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Detalle del Pedido</Text>
-          <View style={styles.headerPlaceholder} />
-        </View>
-        <View style={styles.errorContainer}>
-          <Feather name="alert-circle" size={48} color={colors.error} />
-          <Text style={styles.errorText}>{error || 'No se encontró el pedido'}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={handleBack}>
-            <Text style={styles.retryButtonText}>Volver</Text>
-          </TouchableOpacity>
+        <View style={styles.container}>
+          <SubheaderClose title="Detalle del Pedido" onClose={handleClose} />
+          <View style={styles.errorContainer}>
+            <Feather name="alert-circle" size={48} color={colors.error} />
+            <Text style={styles.errorText}>{error || 'No se encontró el pedido'}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={handleClose}>
+              <Text style={styles.retryButtonText}>Volver</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -133,165 +125,200 @@ export default function OrderDetailScreen() {
   const statusColor = getStatusColor(order.status);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={20} color={colors.primary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Detalle del Pedido</Text>
-        <View style={styles.headerPlaceholder} />
-      </View>
+      <View style={styles.container}>
+        <SubheaderClose title="Detalle del Pedido" onClose={handleClose} />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Order Summary */}
-        <View style={styles.section}>
-          <View style={styles.orderSummaryHeader}>
-            <Text style={styles.orderNumber}>{order.orderNumber}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
-              <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
-            </View>
-          </View>
-          <Text style={styles.orderDate}>{formatDate(order.createdAt, true)}</Text>
-        </View>
-
-        {/* Items */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Productos</Text>
-          {(order.items ?? []).map((item, index) => (
-            <View key={index} style={styles.itemCard}>
-              {item.imageUrl && <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />}
-              <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item.productName}</Text>
-                {item.size && <Text style={styles.itemVariant}>Talle: {item.size}</Text>}
-                {item.color && <Text style={styles.itemVariant}>Color: {item.color}</Text>}
-                <View style={styles.itemPriceRow}>
-                  <Text style={styles.itemQuantity}>x{item.quantity}</Text>
-                  <Text style={styles.itemPrice}>
-                    {formatCurrency(item.discountedPrice || item.price)}
-                  </Text>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            {/* Order Summary */}
+            <View style={styles.section}>
+              <View style={styles.orderSummaryHeader}>
+                <Text style={styles.orderNumber}>{order.orderNumber}</Text>
+                <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
+                  <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
                 </View>
               </View>
+              <Text style={styles.orderDate}>{formatDate(order.createdAt, true)}</Text>
             </View>
-          ))}
-        </View>
 
-        {/* Totals */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Resumen</Text>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Subtotal</Text>
-            <Text style={styles.totalValue}>{formatCurrency(order.subtotal)}</Text>
-          </View>
-          {order.discount > 0 && (
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Descuento</Text>
-              <Text style={[styles.totalValue, { color: colors.success }]}>
-                -{formatCurrency(order.discount)}
-              </Text>
+            {/* Items */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Productos</Text>
+              {(order.items ?? []).map((item, index) => (
+                <View key={index} style={styles.itemCard}>
+                  {item.imageUrl && (
+                    <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />
+                  )}
+                  <View style={styles.itemDetails}>
+                    <Text style={styles.itemName}>{item.productName}</Text>
+                    {item.size && <Text style={styles.itemVariant}>Talle: {item.size}</Text>}
+                    {item.color && <Text style={styles.itemVariant}>Color: {item.color}</Text>}
+                    <View style={styles.itemPriceRow}>
+                      <Text style={styles.itemQuantity}>x{item.quantity}</Text>
+                      <Text style={styles.itemPrice}>
+                        {formatCurrency(item.discountedPrice || item.price)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
             </View>
-          )}
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Envío</Text>
-            <Text style={styles.totalValue}>
-              {order.shippingCost > 0 ? formatCurrency(order.shippingCost) : 'Gratis'}
-            </Text>
-          </View>
-          <View style={[styles.totalRow, styles.grandTotalRow]}>
-            <Text style={styles.grandTotalLabel}>Total</Text>
-            <Text style={styles.grandTotalValue}>{formatCurrency(order.total)}</Text>
-          </View>
-        </View>
 
-        {/* Shipping Info */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Envío</Text>
-          <View style={styles.shippingInfo}>
-            <Text style={styles.shippingMethod}>
-              {order.shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'}
-            </Text>
-            {order.shippingMethod === 'delivery' && order.shippingAddress && (
-              <View style={styles.addressContainer}>
-                <Text style={styles.addressLine}>{order.shippingAddress.addressLine1}</Text>
-                {order.shippingAddress.addressLine2 && (
-                  <Text style={styles.addressLine}>{order.shippingAddress.addressLine2}</Text>
-                )}
-                <Text style={styles.addressLine}>
-                  {order.shippingAddress.city}, {order.shippingAddress.state}
+            {/* Totals */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Resumen</Text>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Subtotal</Text>
+                <Text style={styles.totalValue}>{formatCurrency(order.subtotal)}</Text>
+              </View>
+              {order.discount > 0 && (
+                <View style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>Descuento</Text>
+                  <Text style={[styles.totalValue, { color: colors.success }]}>
+                    -{formatCurrency(order.discount)}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Envío</Text>
+                <Text style={styles.totalValue}>
+                  {order.shippingCost > 0 ? formatCurrency(order.shippingCost) : 'Gratis'}
                 </Text>
-                {order.shippingAddress.postalCode && (
-                  <Text style={styles.addressLine}>CP: {order.shippingAddress.postalCode}</Text>
+              </View>
+              <View style={[styles.totalRow, styles.grandTotalRow]}>
+                <Text style={styles.grandTotalLabel}>Total</Text>
+                <Text style={styles.grandTotalValue}>{formatCurrency(order.total)}</Text>
+              </View>
+            </View>
+
+            {/* Shipping Info */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Envío</Text>
+              <View style={styles.shippingInfo}>
+                <Text style={styles.shippingMethod}>
+                  {order.shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'}
+                </Text>
+                {order.shippingMethod === 'delivery' && order.shippingAddress && (
+                  <View style={styles.addressContainer}>
+                    <Text style={styles.addressLine}>{order.shippingAddress.addressLine1}</Text>
+                    {order.shippingAddress.addressLine2 && (
+                      <Text style={styles.addressLine}>{order.shippingAddress.addressLine2}</Text>
+                    )}
+                    <Text style={styles.addressLine}>
+                      {order.shippingAddress.city}, {order.shippingAddress.state}
+                    </Text>
+                    {order.shippingAddress.postalCode && (
+                      <Text style={styles.addressLine}>CP: {order.shippingAddress.postalCode}</Text>
+                    )}
+                  </View>
+                )}
+                {order.trackingNumber && (
+                  <View style={styles.trackingContainer}>
+                    <Text style={styles.trackingLabel}>Tracking:</Text>
+                    <Text style={styles.trackingNumber}>{order.trackingNumber}</Text>
+                  </View>
                 )}
               </View>
-            )}
-            {order.trackingNumber && (
-              <View style={styles.trackingContainer}>
-                <Text style={styles.trackingLabel}>Tracking:</Text>
-                <Text style={styles.trackingNumber}>{order.trackingNumber}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* Payment Info */}
-        <View style={[styles.section, styles.lastSection]}>
-          <Text style={styles.sectionTitle}>Pago</Text>
-          <View style={styles.paymentInfo}>
-            <View style={styles.paymentRow}>
-              <Text style={styles.paymentLabel}>Estado</Text>
-              <Text
-                style={[
-                  styles.paymentValue,
-                  {
-                    color: ['paid', 'processing', 'shipped', 'delivered'].includes(order.status)
-                      ? colors.success
-                      : colors.secondary,
-                  },
-                ]}
-              >
-                {orderService.getPaymentStatusFromOrder(order.status)}
-              </Text>
             </View>
-            {order.paymentMethod && (
-              <View style={styles.paymentRow}>
-                <Text style={styles.paymentLabel}>Método</Text>
-                <Text style={styles.paymentValue}>{order.paymentMethod}</Text>
+
+            {/* Payment Info */}
+            <View style={[styles.section, styles.lastSection]}>
+              <Text style={styles.sectionTitle}>Pago</Text>
+              <View style={styles.paymentInfo}>
+                <View style={styles.paymentRow}>
+                  <Text style={styles.paymentLabel}>Estado</Text>
+                  <Text
+                    style={[
+                      styles.paymentValue,
+                      {
+                        color: ['paid', 'processing', 'shipped', 'delivered'].includes(order.status)
+                          ? colors.success
+                          : colors.secondary,
+                      },
+                    ]}
+                  >
+                    {orderService.getPaymentStatusFromOrder(order.status)}
+                  </Text>
+                </View>
+                {order.paymentMethod && (
+                  <View style={styles.paymentRow}>
+                    <Text style={styles.paymentLabel}>Método</Text>
+                    <Text style={styles.paymentValue}>{order.paymentMethod}</Text>
+                  </View>
+                )}
               </View>
-            )}
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
+type Styles = {
+  safeArea: ViewStyle;
+  container: ViewStyle;
+  scrollView: ViewStyle;
+  content: ViewStyle;
+  loadingContainer: ViewStyle;
+  errorContainer: ViewStyle;
+  errorText: TextStyle;
+  retryButton: ViewStyle;
+  retryButtonText: TextStyle;
+  section: ViewStyle;
+  lastSection: ViewStyle;
+  orderSummaryHeader: ViewStyle;
+  orderNumber: TextStyle;
+  statusBadge: ViewStyle;
+  statusText: TextStyle;
+  orderDate: TextStyle;
+  sectionTitle: TextStyle;
+  itemCard: ViewStyle;
+  itemImage: ImageStyle;
+  itemDetails: ViewStyle;
+  itemName: TextStyle;
+  itemVariant: TextStyle;
+  itemPriceRow: ViewStyle;
+  itemQuantity: TextStyle;
+  itemPrice: TextStyle;
+  totalRow: ViewStyle;
+  totalLabel: TextStyle;
+  totalValue: TextStyle;
+  grandTotalRow: ViewStyle;
+  grandTotalLabel: TextStyle;
+  grandTotalValue: TextStyle;
+  shippingInfo: ViewStyle;
+  shippingMethod: TextStyle;
+  addressContainer: ViewStyle;
+  addressLine: TextStyle;
+  trackingContainer: ViewStyle;
+  trackingLabel: TextStyle;
+  trackingNumber: TextStyle;
+  paymentInfo: ViewStyle;
+  paymentRow: ViewStyle;
+  paymentLabel: TextStyle;
+  paymentValue: TextStyle;
+};
+
+const styles = StyleSheet.create<Styles>({
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background.light,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  container: {
+    flex: 1,
+    paddingTop: layout.subheaderScreenTop,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
   },
-  backButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
-    marginLeft: -spacing.sm,
+  scrollView: {
+    flex: 1,
   },
-  headerTitle: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.lg,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.lg,
-    color: colors.primary,
-  },
-  headerPlaceholder: {
-    width: 36,
+  content: {
+    paddingTop: spacing.xxxxl,
+    paddingBottom: spacing.xxl,
   },
   loadingContainer: {
     flex: 1,
@@ -324,11 +351,7 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.medium,
     color: colors.background.light,
   },
-  content: {
-    flex: 1,
-  },
   section: {
-    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,

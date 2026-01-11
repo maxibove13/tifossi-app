@@ -14,8 +14,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import CloseIcon from '../../assets/icons/close.svg';
 import Input from '../_components/ui/form/Input';
+import SubheaderClose from '../_components/common/SubheaderClose';
 import Svg, { Path } from 'react-native-svg';
 import addressService from '../_services/address/addressService';
 import { useAuthStore } from '../_stores/authStore';
@@ -23,7 +23,7 @@ import { usePaymentStore } from '../_stores/paymentStore';
 
 // Import style tokens
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, radius, layout } from '../_styles/spacing';
 import { fontWeights, fontSizes, lineHeights } from '../_styles/typography';
 
 // Define country code type locally
@@ -369,12 +369,7 @@ function NewAddressScreen() {
 
       <View style={styles.mainContent}>
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Añadir dirección de envío</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-          </TouchableOpacity>
-        </View>
+        <SubheaderClose title="Añadir dirección de envío" onClose={handleClose} />
 
         {/* Form Content */}
         <ScrollView style={styles.scrollView}>
@@ -608,9 +603,6 @@ type Styles = {
   container: ViewStyle;
   mainContent: ViewStyle;
   scrollView: ViewStyle;
-  header: ViewStyle;
-  title: TextStyle;
-  closeButton: ViewStyle;
   content: ViewStyle;
   errorBanner: ViewStyle;
   errorBannerText: TextStyle;
@@ -636,28 +628,10 @@ const styles = StyleSheet.create<Styles>({
   },
   mainContent: {
     flex: 1,
-    paddingTop: 54,
+    paddingTop: layout.subheaderScreenTop,
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.lg,
-  },
-  title: {
-    fontFamily: 'Roboto',
-    fontSize: 20,
-    fontWeight: fontWeights.regular,
-    lineHeight: 28,
-    color: '#424242',
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   content: {
     flex: 1,

@@ -265,6 +265,7 @@ _components/
 │   ├── ScreenHeader.tsx    # Screen header
 │   ├── StoreDetailView.tsx # Store details display (checkout & locations)
 │   ├── Subheader.tsx       # Subheader component
+│   ├── SubheaderClose.tsx  # Subheader with close button for modal-like screens
 │   ├── VideoBackground.tsx # Video background
 │   ├── animation/          # Animation components
 │   └── share/              # Sharing functionality

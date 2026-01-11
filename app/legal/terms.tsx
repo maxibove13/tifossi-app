@@ -4,7 +4,7 @@ import { router, Stack } from 'expo-router';
 import { colors } from '../_styles/colors';
 import { spacing, radius } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
-import CloseIcon from '../../assets/icons/close.svg';
+import SubheaderClose from '../_components/common/SubheaderClose';
 
 export default function TermsScreen() {
   const handleClose = () => {
@@ -19,13 +19,7 @@ export default function TermsScreen() {
     <SafeAreaView style={styles.safeAreaContainer}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.mainContainer}>
-        {/* Custom Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Términos y Condiciones</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-          </TouchableOpacity>
-        </View>
+        <SubheaderClose title="Términos y Condiciones" onClose={handleClose} />
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.contentContainer}>
@@ -115,24 +109,6 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     paddingTop: spacing.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
-  },
-  headerTitle: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
-    color: colors.primary,
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   scrollView: {
     flex: 1,

@@ -100,6 +100,7 @@ export const radius = {
 export const layout = {
   screenPadding: spacing.lg,
   headerTopPadding: spacing.xxxl,
+  subheaderScreenTop: 54,  // Top padding for screens using SubheaderClose
   sectionPadding: spacing.lg,
   gridGap: spacing.lg,
   buttonPadding: {

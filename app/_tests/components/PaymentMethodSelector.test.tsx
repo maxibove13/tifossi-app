@@ -38,9 +38,10 @@ jest.mock('expo-router', () => ({
 // Mock Expo WebBrowser used by MercadoPago service to avoid opening UI
 jest.mock('expo-web-browser', () => ({
   __esModule: true,
-  warmUpAsync: jest.fn().mockResolvedValue(undefined),
-  openBrowserAsync: jest.fn().mockResolvedValue({ type: 'success' }),
-  coolDownAsync: jest.fn().mockResolvedValue(undefined),
+  openAuthSessionAsync: jest.fn().mockResolvedValue({
+    type: 'success',
+    url: 'tifossi://checkout/payment-result?paymentSuccess=true&external_reference=ORD-TEST',
+  }),
   WebBrowserPresentationStyle: {
     FORM_SHEET: 'FORM_SHEET',
   },
@@ -168,9 +169,10 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
 
     (globalThis as unknown as { fetch: typeof fetch }).fetch = fetchMock as unknown as typeof fetch;
 
-    (webBrowserMock.openBrowserAsync as jest.Mock).mockResolvedValue({ type: 'success' });
-    (webBrowserMock.warmUpAsync as jest.Mock).mockResolvedValue(undefined);
-    (webBrowserMock.coolDownAsync as jest.Mock).mockResolvedValue(undefined);
+    (webBrowserMock.openAuthSessionAsync as jest.Mock).mockResolvedValue({
+      type: 'success',
+      url: 'tifossi://checkout/payment-result?paymentSuccess=true&external_reference=ORD-TEST',
+    });
 
     renderStoreUtils.auth.setState({
       user: {

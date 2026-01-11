@@ -20,6 +20,7 @@ import StoreSelectionScreen from '../../checkout/store-selection';
 // Stores and data
 import { useCartStore } from '../../_stores/cartStore';
 import { usePaymentStore } from '../../_stores/paymentStore';
+import { useAuthStore } from '../../_stores/authStore';
 import { storesData } from '../../_data/stores';
 
 // Get the mocked expo-router functions from the global mock
@@ -75,6 +76,20 @@ describe('Store Selection Flow - Integration', () => {
       currentOrderId: null,
       isLoading: false,
       error: null,
+    });
+
+    // Set up logged in user (store selection tests assume logged in user)
+    useAuthStore.setState({
+      isLoggedIn: true,
+      token: 'test-token',
+      user: {
+        id: 'user-1',
+        email: 'test@example.com',
+        name: 'Test User',
+        profilePicture: null,
+        firstName: 'Test',
+        lastName: 'User',
+      },
     });
 
     // Clear mock calls

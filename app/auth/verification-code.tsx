@@ -11,10 +11,10 @@ import {
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, radius, layout } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
-import CloseIcon from '../../assets/icons/close.svg';
 import { useAuthStore } from '../_stores/authStore';
+import SubheaderClose from '../_components/common/SubheaderClose';
 import { UnknownError } from '../_types/ui';
 
 function getErrorMessage(error: UnknownError): string {
@@ -63,12 +63,7 @@ export default function VerificationCodeScreen() {
     <SafeAreaView style={styles.safeAreaContainer}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.mainContainer}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Verificar Email</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-          </TouchableOpacity>
-        </View>
+        <SubheaderClose title="Verificar Email" onClose={handleClose} />
 
         <View style={styles.contentContainer}>
           <View style={styles.iconContainer}>
@@ -116,25 +111,7 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    paddingTop: spacing.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
-  },
-  headerTitle: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
-    color: colors.primary,
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
+    paddingTop: layout.subheaderScreenTop,
   },
   contentContainer: {
     flex: 1,

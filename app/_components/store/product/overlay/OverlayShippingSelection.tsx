@@ -13,8 +13,8 @@ import {
   Image,
   ImageStyle,
 } from 'react-native';
-import CloseIcon from '../../../../../assets/icons/close.svg';
 import HouseIcon from '../../../../../assets/icons/house.svg';
+import CloseIcon from '../../../../../assets/icons/close_md.svg';
 
 // Import style tokens
 import { colors } from '../../../../_styles/colors';
@@ -86,7 +86,7 @@ export default function OverlayShippingSelection({
           <View style={styles.header}>
             <Text style={styles.title}>Seleccionar entrega</Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-              <CloseIcon width={24} height={24} stroke={colors.secondary} strokeWidth={1.2} />
+              <CloseIcon width={24} height={24} />
             </TouchableOpacity>
           </View>
 
@@ -184,9 +184,9 @@ const styles = StyleSheet.create<Styles>({
   },
   closeButton: {
     width: 40,
-    height: 40,
-    padding: spacing.sm,
-    borderRadius: radius.sm,
+    height: 24,
+    paddingHorizontal: 8,
+    borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
   },

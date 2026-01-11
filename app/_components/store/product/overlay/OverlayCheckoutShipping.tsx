@@ -14,8 +14,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../../../_stores/authStore';
-import CloseIcon from '../../../../../assets/icons/close.svg';
 import ChevronRight from '../../../../../assets/icons/chevron_right.svg';
+import CloseIcon from '../../../../../assets/icons/close_md.svg';
 import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.svg';
 import OverlayCheckoutQuantity from './OverlayCheckoutQuantity';
 import OverlayProductEditSize from './OverlayProductEditSize';
@@ -163,13 +163,8 @@ export default function OverlayCheckoutShipping({
         router.navigate('/checkout/new-address?guest=true');
       }
     } else {
-      // Pickup flow
-      if (isLoggedIn) {
-        router.navigate('/checkout/shipping-pickup');
-      } else {
-        // Guest pickup needs contact info first
-        router.navigate('/checkout/guest-contact-info?returnTo=shipping-pickup');
-      }
+      // Pickup flow - store selection first, then contact info for guests
+      router.navigate('/checkout/shipping-pickup');
     }
   };
 
@@ -204,7 +199,7 @@ export default function OverlayCheckoutShipping({
                     : 'Editar'}
                 </Text>
                 <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-                  <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
+                  <CloseIcon width={24} height={24} />
                 </TouchableOpacity>
               </View>
 
@@ -368,8 +363,12 @@ const styles = StyleSheet.create<Styles>({
     color: colors.secondary,
   },
   closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
+    width: 40,
+    height: 24,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   contentWrapper: {
     paddingHorizontal: spacing.lg,

@@ -9,14 +9,14 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import CloseIcon from '../../assets/icons/close.svg';
+import { router, Stack } from 'expo-router';
 import Input from '../_components/ui/form/Input';
+import SubheaderClose from '../_components/common/SubheaderClose';
 import { usePaymentStore } from '../_stores/paymentStore';
 
 // Import style tokens
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, layout } from '../_styles/spacing';
 import { fontWeights, fontSizes, lineHeights } from '../_styles/typography';
 
 // Define form data interface
@@ -36,7 +36,6 @@ interface ValidationErrors {
 }
 
 function GuestContactInfoScreen() {
-  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const setGuestContactInfo = usePaymentStore((state) => state.setGuestContactInfo);
 
   // Form state
@@ -124,12 +123,8 @@ function GuestContactInfoScreen() {
       phoneNumber: formData.phone,
     });
 
-    // Navigate to the next screen
-    if (returnTo === 'shipping-pickup') {
-      router.push('/checkout/shipping-pickup');
-    } else {
-      router.push('/checkout/payment-selection');
-    }
+    // Navigate to payment
+    router.push('/checkout/payment-selection');
   };
 
   return (
@@ -142,12 +137,7 @@ function GuestContactInfoScreen() {
 
       <View style={styles.mainContent}>
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Datos de contacto</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-          </TouchableOpacity>
-        </View>
+        <SubheaderClose title="Datos de contacto" onClose={handleClose} />
 
         {/* Form Content */}
         <ScrollView style={styles.scrollView}>
@@ -215,9 +205,6 @@ type Styles = {
   container: ViewStyle;
   mainContent: ViewStyle;
   scrollView: ViewStyle;
-  header: ViewStyle;
-  title: TextStyle;
-  closeButton: ViewStyle;
   content: ViewStyle;
   description: TextStyle;
   formSection: ViewStyle;
@@ -238,28 +225,10 @@ const styles = StyleSheet.create<Styles>({
   },
   mainContent: {
     flex: 1,
-    paddingTop: 54,
+    paddingTop: layout.subheaderScreenTop,
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.lg,
-  },
-  title: {
-    fontFamily: 'Roboto',
-    fontSize: 20,
-    fontWeight: fontWeights.regular,
-    lineHeight: 28,
-    color: '#424242',
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   content: {
     flex: 1,

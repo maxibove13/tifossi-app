@@ -33,32 +33,36 @@ function OrderCard({ order, onPress }: OrderCardProps) {
 
   return (
     <TouchableOpacity style={styles.orderCard} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.orderHeader}>
-        <Text style={styles.orderNumber}>{order.orderNumber}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
-          <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
-        </View>
-      </View>
+      <View style={styles.orderCardContent}>
+        <View style={styles.orderCardLeft}>
+          <View style={styles.orderHeader}>
+            <Text style={styles.orderNumber}>{order.orderNumber}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
+              <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
+            </View>
+          </View>
 
-      <View style={styles.orderDetails}>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Fecha</Text>
-          <Text style={styles.detailValue}>{formatDate(order.createdAt)}</Text>
+          <View style={styles.orderDetails}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Fecha</Text>
+              <Text style={styles.detailValue}>{formatDate(order.createdAt)}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Items</Text>
+              <Text style={styles.detailValue}>
+                {itemCount} {itemCount === 1 ? 'producto' : 'productos'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Total</Text>
+              <Text style={styles.detailValueBold}>{formatCurrency(order.total)}</Text>
+            </View>
+          </View>
         </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Items</Text>
-          <Text style={styles.detailValue}>
-            {itemCount} {itemCount === 1 ? 'producto' : 'productos'}
-          </Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Total</Text>
-          <Text style={styles.detailValueBold}>{formatCurrency(order.total)}</Text>
-        </View>
-      </View>
 
-      <View style={styles.chevronContainer}>
-        <Feather name="chevron-right" size={20} color={colors.secondary} />
+        <View style={styles.chevronContainer}>
+          <Feather name="chevron-right" size={20} color={colors.secondary} />
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -279,6 +283,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  orderCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  orderCardLeft: {
+    flex: 1,
+  },
   orderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -326,9 +337,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   chevronContainer: {
-    position: 'absolute',
-    right: spacing.md,
-    top: '50%',
-    marginTop: -10,
+    marginLeft: spacing.sm,
+    justifyContent: 'center',
   },
 });

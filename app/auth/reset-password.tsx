@@ -11,11 +11,11 @@ import {
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, radius, layout } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
-import CloseIcon from '../../assets/icons/close.svg';
 import authService from '../_services/auth/authService';
+import SubheaderClose from '../_components/common/SubheaderClose';
 
 export default function ResetPasswordScreen() {
   const params = useLocalSearchParams<{ code: string; email: string }>();
@@ -73,12 +73,7 @@ export default function ResetPasswordScreen() {
     <SafeAreaView style={styles.safeAreaContainer} testID="reset-password-screen">
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.mainContainer}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Nueva Contraseña</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-          </TouchableOpacity>
-        </View>
+        <SubheaderClose title="Nueva Contraseña" onClose={handleClose} />
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.formContainer}>
@@ -157,31 +152,13 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    paddingTop: spacing.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingTop: layout.subheaderScreenTop,
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
-  },
-  headerTitle: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
-    color: colors.primary,
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   scrollView: {
     flex: 1,
   },
   formContainer: {
-    paddingHorizontal: spacing.lg,
     gap: spacing.lg,
   },
   infoText: {

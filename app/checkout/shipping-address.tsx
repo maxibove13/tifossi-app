@@ -12,13 +12,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
-import CloseIcon from '../../assets/icons/close.svg';
 import PlusCircle from '../../assets/icons/plus_circle.svg';
+import SubheaderClose from '../_components/common/SubheaderClose';
 import RadioButton from '../_components/ui/form/RadioButton';
 
 // Import style tokens
 import { colors } from '../_styles/colors';
-import { spacing, radius } from '../_styles/spacing';
+import { spacing, radius, layout } from '../_styles/spacing';
 import { fontWeights } from '../_styles/typography';
 
 // Import services
@@ -105,19 +105,11 @@ export default function ShippingAddressScreen() {
       />
 
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Direcciones de envío</Text>
-        <TouchableOpacity
-          testID="address-close-button"
-          accessibilityRole="button"
-          accessibilityLabel="address-close-button"
-          style={styles.closeButton}
-          onPress={handleClose}
-          activeOpacity={0.7}
-        >
-          <CloseIcon width={20} height={20} stroke={colors.secondary} strokeWidth={1.2} />
-        </TouchableOpacity>
-      </View>
+      <SubheaderClose
+        title="Direcciones de envío"
+        onClose={handleClose}
+        closeTestID="address-close-button"
+      />
 
       {/* Content */}
       <ScrollView style={styles.scrollView}>
@@ -253,9 +245,6 @@ export default function ShippingAddressScreen() {
 type Styles = {
   container: ViewStyle;
   scrollView: ViewStyle;
-  header: ViewStyle;
-  title: TextStyle;
-  closeButton: ViewStyle;
   content: ViewStyle;
   loadingContainer: ViewStyle;
   loadingText: TextStyle;
@@ -289,28 +278,10 @@ const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
     backgroundColor: '#FAFAFA',
+    paddingTop: layout.subheaderScreenTop,
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 54,
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.lg,
-  },
-  title: {
-    fontFamily: 'Roboto',
-    fontSize: 20,
-    fontWeight: fontWeights.regular,
-    lineHeight: 28,
-    color: '#424242',
-  },
-  closeButton: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
   },
   content: {
     flex: 1,
