@@ -54,6 +54,10 @@ export const VideoBackground = ({
         sourceUri = source;
       }
 
+      if (__DEV__) {
+        console.log('[VideoBackground] Loading video:', sourceUri);
+      }
+
       // Check cache for pre-buffered player
       const cached = videoCache.get(sourceUri);
       if (cached) {
@@ -74,7 +78,10 @@ export const VideoBackground = ({
       }
 
       setPlayer(videoPlayer);
-    } catch {
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('[VideoBackground] Failed to load video:', source, error);
+      }
       setHasError(true);
     }
 

@@ -1,18 +1,17 @@
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import type { FeaturedCardProps } from '../types';
-import ProductImage from '../image/ProductImage';
 import { getCardDimensions } from '../../../../_types/product-card';
 import { mapProductToCardData } from '../../../../_types/product';
-import { fonts, fontSizes, lineHeights, fontWeights } from '../../../../_styles/typography';
-import { spacing, radius } from '../../../../_styles/spacing';
+import { fonts, fontSizes, fontWeights } from '../../../../_styles/typography';
+import { radius } from '../../../../_styles/spacing';
 import { colors } from '../../../../_styles/colors';
 import { ProductStatus, hasStatus } from '../../../../_types/product-status';
 
 export default function FeaturedCard({ product, onBuyPress, size = 'small' }: FeaturedCardProps) {
   const cardData = mapProductToCardData(product);
   const dimensions = getCardDimensions('featured', size);
-  const isFullWidth = dimensions.width === 'full';
 
   const formatPrice = (value: number | undefined) => {
     if (typeof value !== 'number') return 'Precio no disponible';
@@ -24,7 +23,7 @@ export default function FeaturedCard({ product, onBuyPress, size = 'small' }: Fe
 
   return (
     <LinearGradient
-      colors={[colors.secondary, colors.primary] as const} // Card background
+      colors={[colors.secondary, colors.primary] as const}
       style={[
         styles.container,
         {
@@ -33,48 +32,41 @@ export default function FeaturedCard({ product, onBuyPress, size = 'small' }: Fe
         },
       ]}
     >
-      <View style={styles.content}>
-        <View style={styles.textSection}>
-          {isNew && <Text style={styles.label}>Nuevo</Text>}
-          <Text style={styles.title}>{cardData.name || 'Producto no disponible'}</Text>
-          {product.isCustomizable && <Text style={styles.customizable}>Personalizable</Text>}
-        </View>
+      {/* Image positioned absolutely to avoid flex layout gaps */}
+      <View style={[styles.imageSectionContainer, { height: dimensions.imageSize }]}>
+        <Image
+          source={{ uri: cardData.image as string }}
+          style={styles.image}
+          contentFit="cover"
+          contentPosition="left center"
+        />
+      </View>
 
-        <View
-          style={[
-            styles.imageSection,
-            isFullWidth ? styles.imageFullWidth : styles.imageSmall,
-            { height: dimensions.imageSize },
+      {/* Text and action sections */}
+      <View style={styles.textSection}>
+        {isNew && <Text style={styles.label}>Nuevo</Text>}
+        <Text style={styles.title}>{cardData.name || 'Producto no disponible'}</Text>
+        {product.isCustomizable && <Text style={styles.customizable}>Personalizable</Text>}
+      </View>
+
+      <View style={styles.actionSection}>
+        <Text style={styles.price}>{formatPrice(cardData.price)}</Text>
+        <Pressable
+          style={({ pressed }) => [
+            styles.buyButton,
+            isBuyDisabled && styles.buyButtonDisabled,
+            pressed && !isBuyDisabled && styles.buyButtonPressed,
           ]}
+          onPress={(e) => {
+            e.stopPropagation();
+            onBuyPress && onBuyPress();
+          }}
+          disabled={isBuyDisabled}
         >
-          <ProductImage
-            source={cardData.image}
-            overlay
-            overlayColor={colors.primary}
-            overlayOpacity={0.0}
-            size={dimensions.imageSize}
-          />
-        </View>
-
-        <View style={styles.actionSection}>
-          <Text style={styles.price}>{formatPrice(cardData.price)}</Text>
-          <Pressable
-            style={({ pressed }) => [
-              styles.buyButton,
-              isBuyDisabled && styles.buyButtonDisabled,
-              pressed && !isBuyDisabled && styles.buyButtonPressed,
-            ]}
-            onPress={(e) => {
-              e.stopPropagation();
-              onBuyPress && onBuyPress();
-            }}
-            disabled={isBuyDisabled}
-          >
-            <Text style={[styles.buyButtonText, isBuyDisabled && styles.buyButtonTextDisabled]}>
-              {isBuyDisabled ? 'No disponible' : 'Comprar'}
-            </Text>
-          </Pressable>
-        </View>
+          <Text style={[styles.buyButtonText, isBuyDisabled && styles.buyButtonTextDisabled]}>
+            {isBuyDisabled ? 'No disponible' : 'Comprar'}
+          </Text>
+        </Pressable>
       </View>
     </LinearGradient>
   );
@@ -86,41 +78,34 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     width: '100%',
   },
-  content: {
-    flex: 1,
-    paddingVertical: spacing.xxl,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    gap: spacing.xxl,
-    alignSelf: 'stretch',
-  },
   textSection: {
-    paddingHorizontal: spacing.xxl,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    alignSelf: 'stretch',
+    position: 'absolute',
+    top: 28,
+    left: 28,
+    right: 28,
   },
-  imageSection: {
-    overflow: 'hidden',
-    position: 'relative',
-    width: '100%',
-  },
-  imageSmall: {
+  imageSectionContainer: {
+    position: 'absolute',
+    right: 0,
+    top: 116,
     width: 293,
-    height: 220,
-    alignSelf: 'flex-end',
+    overflow: 'hidden',
   },
-  imageFullWidth: {
-    width: '100%',
+  image: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
     right: 0,
   },
   actionSection: {
-    paddingHorizontal: 28,
+    position: 'absolute',
+    bottom: 28,
+    left: 28,
+    right: 28,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    alignSelf: 'stretch',
     height: 32,
   },
   label: {
@@ -128,24 +113,21 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.sm,
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.medium,
-    lineHeight: (lineHeights.sm * 1.333) / ((fontSizes.sm * 1.333) / 12),
-    alignSelf: 'stretch',
+    lineHeight: 16,
   },
   title: {
     color: colors.background.light,
     fontSize: fontSizes.xl,
     fontFamily: fonts.primary,
     fontWeight: fontWeights.regular,
-    lineHeight: (lineHeights.xl * 1.4) / ((fontSizes.xl * 1.4) / 20),
-    alignSelf: 'stretch',
+    lineHeight: 28,
   },
   customizable: {
     color: colors.border,
     fontSize: fontSizes.sm,
     fontFamily: fonts.secondary,
     fontWeight: fontWeights.regular,
-    lineHeight: (lineHeights.sm * 1.333) / ((fontSizes.sm * 1.333) / 12),
-    alignSelf: 'stretch',
+    lineHeight: 16,
   },
   price: {
     flex: 1,
