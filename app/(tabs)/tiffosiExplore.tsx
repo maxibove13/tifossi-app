@@ -21,7 +21,23 @@ import { useProductStore } from '../_stores/productStore';
 
 // Function to get app-exclusive products from API data
 const getAppExclusiveProducts = (allProducts: Product[]): Product[] => {
-  return allProducts.filter((product) => hasStatus(product.statuses, ProductStatus.APP_EXCLUSIVE));
+  const exclusive = allProducts.filter((product) =>
+    hasStatus(product.statuses, ProductStatus.APP_EXCLUSIVE)
+  );
+
+  if (__DEV__) {
+    console.log(
+      '[TiffosiExplore] App exclusive products:',
+      exclusive.map((p) => ({
+        id: p.id,
+        title: p.title,
+        hasVideo: !!p.videoSource,
+        videoSource: p.videoSource,
+      }))
+    );
+  }
+
+  return exclusive;
 };
 
 // Placeholder Icon - Replace with actual SVG Icon component if available

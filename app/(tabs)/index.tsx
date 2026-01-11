@@ -427,9 +427,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   section: {
-    paddingVertical: spacing.xxl, // Use token for 32px vertical padding (adjust if needed)
-    paddingHorizontal: spacing.lg, // Add horizontal padding here
-    gap: spacing.lg, // Add gap between header and content
+    paddingVertical: spacing.xxl,
+    marginHorizontal: spacing.lg,
+    gap: spacing.lg,
   },
   horizontalScrollContent: {
     paddingHorizontal: spacing.lg,
@@ -449,11 +449,12 @@ const styles = StyleSheet.create({
   },
   showcaseSection: {
     gap: spacing.md,
-    paddingHorizontal: 0,
-    paddingVertical: spacing.xxl, // Consistent vertical padding
+    marginHorizontal: 0,
+    paddingVertical: spacing.xxl,
   },
   launchSection: {
-    paddingVertical: spacing.xl, // Use token for 24px approx
+    paddingVertical: spacing.xl,
+    marginHorizontal: spacing.lg,
     gap: spacing.lg,
     alignItems: 'center',
   },
@@ -463,7 +464,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingVertical: 8,
-    paddingHorizontal: spacing.lg,
   },
   launchTitle: {
     fontFamily: fonts.primary,
