@@ -362,7 +362,7 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.offWhite,
+    backgroundColor: colors.background.antiflash,
   },
   scrollContent: {
     flexGrow: 1,
