@@ -418,7 +418,7 @@ function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.offWhite,
+    backgroundColor: colors.background.antiflash,
   },
   scrollView: {
     flex: 1,

@@ -181,7 +181,7 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: colors.background.offWhite,
+    backgroundColor: colors.background.antiflash,
   },
   scrollContent: {
     flexGrow: 1,

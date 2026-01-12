@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../_styles/typography';
+import { colors } from '../../_styles/colors';
 
 // Import SVG icons
 import HouseActive from '../../../assets/icons/house_active.svg';
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 84,
     paddingBottom: 34,
-    backgroundColor: '#FBFBFB',
+    backgroundColor: colors.background.offWhite,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'flex-start',
