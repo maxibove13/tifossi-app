@@ -184,17 +184,33 @@ On application startup:
 1. After signup, user is shown the verification screen
 2. Screen displays the email address and verification instructions
 3. User can request a new verification email
-4. Once verified, user is shown success screen
-5. User can continue to their profile
+4. User clicks verification link in email
+5. Link opens Strapi redirect page (`/api/auth/email-action`)
+6. Page auto-redirects to `tifossi://auth/verify-email?oobCode=...`
+7. App receives deep link and calls `firebaseAuth.verifyEmailCode(oobCode)`
+8. Once verified, user is shown success screen
+9. User can continue to their profile
+
+**Deep Link Flow**:
+- Firebase sends email with action URL pointing to Strapi backend
+- Strapi serves HTML page that redirects to `tifossi://` deep link
+- Mobile app handles the deep link via `DeepLinkRouter` and `DeepLinkingService`
+- Verification is completed using Firebase's `applyActionCode()` function
 
 ### Password Reset Flow
 
 1. User navigates to forgot-password screen
 2. User enters email
 3. Client-side validation checks email format
-4. Reset request is submitted (currently mocked)
+4. Reset request is submitted via Firebase
 5. Confirmation message is displayed
-6. User is redirected to login screen
+6. User receives email with reset link
+7. Link opens Strapi redirect page (`/api/auth/email-action?mode=resetPassword`)
+8. Page auto-redirects to `tifossi://auth/reset-password?oobCode=...`
+9. App opens reset password screen with the code
+10. User enters new password and submits
+11. Password is reset via `firebaseAuth.confirmPasswordReset()`
+12. User is redirected to login screen
 
 ### Password Change Flow
 
