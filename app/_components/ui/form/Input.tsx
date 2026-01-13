@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { radius } from '../../../_styles/spacing';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#DCDCDC',
-    borderRadius: 4,
+    borderRadius: radius.button,
     height: 40,
   },
   inputContainerFocused: {

@@ -2,6 +2,7 @@ import React, { useState, forwardRef } from 'react';
 import { StyleSheet, Text, Pressable, ViewStyle, TextStyle, AccessibilityRole } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { radius } from '../../../_styles/spacing';
 
 type ButtonVariant = 'primary' | 'secondary' | 'icon' | 'solo-icon';
 
@@ -129,12 +130,12 @@ const styles = StyleSheet.create({
   primary: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 24,
+    borderRadius: radius.button,
   },
   secondary: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 24,
+    borderRadius: radius.button,
     borderWidth: 1,
     borderColor: '#DCDCDC',
   },
