@@ -167,7 +167,41 @@ Before starting, make sure you have:
      - `REVERSED_CLIENT_ID`: Your reversed client ID for URL scheme
    - Both values should be from your Firebase project settings
 
-## Step 6: Configure Environment Variables
+## Step 6: Configure Email Action URL (Deep Links)
+
+Firebase sends email action links for email verification and password reset. These links need to redirect users back to the mobile app.
+
+### Configure Action URL in Firebase Console
+
+1. **Go to Firebase Console**:
+   - Navigate to Authentication → Templates
+   - Click on the pencil icon to edit any email template
+
+2. **Set the Action URL**:
+   - Scroll to "Customize action URL"
+   - Enter: `https://tifossi-strapi-backend.onrender.com/api/auth/email-action`
+
+3. **How It Works**:
+   - Firebase appends parameters: `?mode=verifyEmail&oobCode=ABC123`
+   - The Strapi endpoint serves an HTML page that redirects to `tifossi://auth/verify-email?...`
+   - The mobile app handles the deep link and completes the verification
+
+### Supported Action Modes
+
+| Mode | Deep Link | Description |
+|------|-----------|-------------|
+| `verifyEmail` | `tifossi://auth/verify-email` | Email verification |
+| `resetPassword` | `tifossi://auth/reset-password` | Password reset |
+| `recoverEmail` | `tifossi://auth/recover-email` | Email recovery |
+
+### Testing Email Actions
+
+1. Register a new user or request password reset
+2. Click the link in the email
+3. You should see a branded loading page
+4. The app should open automatically with the action completed
+
+## Step 7: Configure Environment Variables
 
 Create a `.env.local` file in your project root with your Firebase configuration:
 
