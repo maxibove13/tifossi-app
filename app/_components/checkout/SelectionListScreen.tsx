@@ -100,7 +100,6 @@ const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
     paddingTop: layout.subheaderScreenTop,
-    paddingHorizontal: spacing.lg,
     paddingBottom: layout.safeAreaBottom,
     gap: 40,
   },
@@ -109,7 +108,7 @@ const styles = StyleSheet.create<Styles>({
   },
   content: {
     flex: 1,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
   },
   itemsContainer: {
@@ -146,6 +145,7 @@ const styles = StyleSheet.create<Styles>({
     gap: spacing.sm,
     marginTop: spacing.xl,
     alignItems: 'center',
+    paddingHorizontal: spacing.lg,
   },
   secondaryButton: {
     borderRadius: radius.circle,

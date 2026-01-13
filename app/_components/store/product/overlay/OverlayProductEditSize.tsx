@@ -120,11 +120,6 @@ export default function OverlayProductEditSize({
     onGoBack();
   };
 
-  // Handle size guide press
-  const handleSizeGuidePress = () => {
-    // Implement size guide functionality here
-  };
-
   // Helper to format stock display
   const getStockText = (stock: number): string | null => {
     if (stock === 0) return 'Sin stock';
@@ -145,9 +140,6 @@ export default function OverlayProductEditSize({
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Cambiar talle</Text>
-            <TouchableOpacity onPress={handleSizeGuidePress} activeOpacity={0.7}>
-              <Text style={styles.sizeGuideText}>Tabla de medidas</Text>
-            </TouchableOpacity>
           </View>
 
           {/* Size Selection */}
@@ -260,14 +252,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: lineHeights.lg,
     color: '#575757',
-  },
-  sizeGuideText: {
-    fontFamily: 'Inter',
-    fontSize: fontSizes.sm,
-    fontWeight: '400',
-    lineHeight: lineHeights.sm,
-    color: '#575757',
-    textDecorationLine: 'underline',
   },
   sizeSelectionContainer: {
     width: '100%',

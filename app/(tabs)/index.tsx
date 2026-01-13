@@ -178,15 +178,16 @@ function HomeScreen() {
     );
   }
 
-  // Helper to render product pairs for the grid
-  function renderProductPair(products: Product[]) {
+  // Helper to render product pairs for the grid (matches catalog grid)
+  function renderProductPair(products: Product[], startIndex: number) {
     return (
-      <View style={styles.gridRow}>
+      <View style={styles.gridRow} key={`row-${startIndex}`}>
         {products.map((product) => (
           <View key={product.id} style={styles.gridItem}>
             <DefaultLargeCard product={product} onPress={() => handleProductPress(product.id)} />
           </View>
         ))}
+        {products.length === 1 && <View style={styles.gridItem} />}
       </View>
     );
   }
@@ -350,7 +351,7 @@ function HomeScreen() {
           isLoading={sectionLoadingState.launchOpportunity}
           skeleton={
             <View style={styles.launchSection}>
-              <View style={styles.launchHeader}>
+              <View style={[styles.launchHeader, { paddingHorizontal: spacing.lg }]}>
                 <View style={styles.sectionTitleSkeleton} />
                 <View style={styles.sectionButtonSkeleton} />
               </View>
@@ -382,15 +383,20 @@ function HomeScreen() {
           }
         >
           <View style={styles.launchSection}>
-            <View style={styles.launchHeader}>
+            <View style={[styles.launchHeader, { paddingHorizontal: spacing.lg }]}>
               <Text style={styles.launchTitle}>Lanzamiento & Oportunidades</Text>
               <Pressable onPress={() => handleViewMore('opportunity')}>
                 <Text style={styles.launchViewMore}>Ver Más</Text>
               </Pressable>
             </View>
             <View style={styles.launchGridContainer}>
-              {renderProductPair(data.launchAndOpportunityProducts.slice(0, 2))}
-              {renderProductPair(data.launchAndOpportunityProducts.slice(2, 4))}
+              {data.launchAndOpportunityProducts.slice(0, 4).reduce((acc, _product, index) => {
+                if (index % 2 === 0) {
+                  const pair = data.launchAndOpportunityProducts.slice(index, index + 2);
+                  acc.push(renderProductPair(pair, index));
+                }
+                return acc;
+              }, [] as JSX.Element[])}
             </View>
           </View>
         </ProgressiveLoadingSection>
@@ -454,7 +460,6 @@ const styles = StyleSheet.create({
   },
   launchSection: {
     paddingVertical: spacing.xl,
-    marginHorizontal: spacing.lg,
     gap: spacing.lg,
     alignItems: 'center',
   },
@@ -484,13 +489,13 @@ const styles = StyleSheet.create({
   },
   launchGridContainer: {
     width: '100%',
-    gap: 40,
+    gap: spacing.xxxl,
   },
   gridRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    gap: spacing.lg,
+    gap: spacing.sm,
   },
   gridItem: {
     flex: 1,

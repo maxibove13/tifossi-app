@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
   },
   scrollContentContainer: {
     paddingBottom: spacing.xxl,
+    paddingHorizontal: spacing.lg,
   },
   citySection: {
     marginBottom: spacing.xl,
@@ -148,12 +149,10 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.lg,
     color: colors.primary,
-    paddingHorizontal: spacing.lg,
     marginBottom: spacing.md,
   },
   storeCard: {
     backgroundColor: colors.background.light,
-    marginHorizontal: spacing.lg,
     marginBottom: spacing.md,
     borderRadius: radius.sm,
     overflow: 'hidden',

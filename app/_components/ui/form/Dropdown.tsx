@@ -88,15 +88,16 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.sm, // Changed from xs to sm (4px) to match Figma
+    borderRadius: radius.sm,
+    height: 40,
+    justifyContent: 'center',
   },
   input: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.md,
-    lineHeight: lineHeights.md,
     color: colors.secondary,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    height: '100%',
   },
   applyButton: {
     paddingVertical: spacing.sm,

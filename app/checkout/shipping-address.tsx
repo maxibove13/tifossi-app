@@ -287,14 +287,13 @@ const styles = StyleSheet.create<Styles>({
     flex: 1,
     gap: spacing.xxl,
     paddingBottom: spacing.xxl,
+    paddingHorizontal: spacing.lg,
   },
   addressesContainer: {
     gap: spacing.md,
-    paddingHorizontal: spacing.xl,
   },
   noAddressContainer: {
     gap: spacing.sm,
-    paddingHorizontal: spacing.xl + spacing.lg,
   },
   noAddressTitle: {
     fontFamily: 'Roboto',
@@ -339,7 +338,6 @@ const styles = StyleSheet.create<Styles>({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.xl * 2,
-    paddingHorizontal: spacing.xl,
   },
   errorText: {
     fontFamily: 'Inter',
@@ -391,12 +389,8 @@ const styles = StyleSheet.create<Styles>({
     color: colors.primary,
     marginTop: spacing.xs / 2,
   },
-  addAddressContainer: {
-    paddingHorizontal: 48,
-  },
-  addAddressEmptyContainer: {
-    paddingHorizontal: spacing.xl + spacing.lg,
-  },
+  addAddressContainer: {},
+  addAddressEmptyContainer: {},
   addAddressButton: {
     flexDirection: 'row',
     justifyContent: 'center',

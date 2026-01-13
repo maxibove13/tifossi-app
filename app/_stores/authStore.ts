@@ -132,12 +132,15 @@ export const useAuthStore = create<ExtendedAuthState>()(
 
             // Check for stored token
             const storedToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+            console.log('[AUTH] Stored token found:', !!storedToken);
 
             if (storedToken) {
               try {
                 setHttpClientAuthToken(storedToken, 'startup-restore');
                 // Validate token with the unified API service
+                console.log('[AUTH] Validating token with backend...');
                 const user = await authService.validateToken(storedToken);
+                console.log('[AUTH] Token validated, user:', user?.email);
 
                 set({
                   user,
@@ -153,12 +156,14 @@ export const useAuthStore = create<ExtendedAuthState>()(
                 // This prevents circular dependencies between stores
               } catch (tokenError) {
                 // Clear invalid token and continue as logged out
+                console.log('[AUTH] Token validation failed:', tokenError);
                 await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
                 setHttpClientAuthToken(null, 'startup-invalid-token');
                 throw tokenError;
               }
             } else {
               // No token found, set logged out state
+              console.log('[AUTH] No stored token, user logged out');
               setHttpClientAuthToken(null, 'startup-no-token');
               set({
                 user: null,
@@ -607,10 +612,12 @@ export const useAuthStore = create<ExtendedAuthState>()(
     {
       name: 'tifossi-auth-store',
       storage: mmkvStorage as any,
-      // Only persist non-sensitive data (tokens are stored in SecureStore)
+      // Only persist user data (tokens are stored in SecureStore)
+      // NOTE: Do NOT persist isInitialized - it must start false on each cold start
+      // so initializeAuth() runs and validates the stored token
       partialize: (state: any) => {
-        const { isInitialized, user } = state;
-        return { isInitialized, user } as any;
+        const { user } = state;
+        return { user } as any;
       },
       // IMPORTANT: Do NOT call initializeAuth() in onRehydrateStorage!
       // This callback runs synchronously during store creation (module load time),
