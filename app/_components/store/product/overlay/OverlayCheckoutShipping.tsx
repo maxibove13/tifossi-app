@@ -411,7 +411,7 @@ const styles = StyleSheet.create<Styles>({
   actionButtons: {
     flexDirection: 'column',
     width: '100%',
-    gap: spacing.lg,
+    gap: spacing.sm,
   },
   primaryButton: {
     width: '100%',
