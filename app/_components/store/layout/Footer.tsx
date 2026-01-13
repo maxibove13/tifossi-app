@@ -27,7 +27,7 @@ export default function Footer({ style }: FooterProps) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: colors.background.light,
+    backgroundColor: colors.background.antiflash,
     paddingTop: 64,
     paddingBottom: 16,
     gap: spacing.md,

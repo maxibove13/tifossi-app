@@ -134,7 +134,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.antiflash,
     paddingTop: layout.subheaderScreenTop,
-    paddingHorizontal: spacing.lg,
   },
   scrollView: {
     flex: 1,
@@ -142,6 +141,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: spacing.xxxxl,
     paddingBottom: spacing.xxl,
+    paddingHorizontal: spacing.lg,
     gap: spacing.lg,
   },
   infoText: {

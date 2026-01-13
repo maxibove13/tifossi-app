@@ -119,7 +119,6 @@ const styles = StyleSheet.create<Styles>({
     flex: 1,
     paddingTop: layout.subheaderScreenTop,
     paddingBottom: layout.safeAreaBottom,
-    paddingHorizontal: spacing.lg,
     gap: 40,
   },
   scrollView: {
@@ -127,6 +126,7 @@ const styles = StyleSheet.create<Styles>({
   },
   scrollContentContainer: {
     flexGrow: 1,
+    paddingHorizontal: spacing.lg,
   },
   storeDetailsContainer: {
     borderRadius: radius.xs,
@@ -165,6 +165,7 @@ const styles = StyleSheet.create<Styles>({
   },
   actionButtons: {
     gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
   actionButtonsCentered: {
     alignItems: 'center',

@@ -460,7 +460,9 @@ class FirebaseAuthService {
   async sendPasswordReset(email: string): Promise<{ success: boolean; error?: string }> {
     try {
       const { sendPasswordResetEmail } = getFirebaseAuthModule();
-      await sendPasswordResetEmail(getAuthSafe(), email);
+      const auth = getAuthSafe();
+      auth.languageCode = 'es';
+      await sendPasswordResetEmail(auth, email);
       return { success: true };
     } catch (error) {
       return {
@@ -509,7 +511,9 @@ class FirebaseAuthService {
   async sendEmailVerification(): Promise<{ success: boolean; error?: string }> {
     try {
       const { sendEmailVerification } = getFirebaseAuthModule();
-      const currentUser = getAuthSafe().currentUser;
+      const auth = getAuthSafe();
+      auth.languageCode = 'es';
+      const currentUser = auth.currentUser;
       if (!currentUser) {
         throw new Error('No user is currently signed in');
       }

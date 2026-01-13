@@ -596,7 +596,6 @@ const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
     paddingTop: layout.subheaderScreenTop,
-    paddingHorizontal: spacing.lg,
   },
   scrollView: {
     flex: 1,
@@ -606,6 +605,7 @@ const styles = StyleSheet.create<Styles>({
     gap: spacing.lg,
     paddingTop: spacing.xxxxl,
     paddingBottom: spacing.xxl,
+    paddingHorizontal: spacing.lg,
   },
   orderSummaryContainer: {
     backgroundColor: colors.background.light,
@@ -720,6 +720,7 @@ const styles = StyleSheet.create<Styles>({
   },
   actionButtons: {
     gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
   primaryButton: {
     width: '100%',

@@ -311,7 +311,6 @@ const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
     paddingTop: layout.subheaderScreenTop,
-    paddingHorizontal: spacing.lg,
   },
   scrollView: {
     flex: 1,
@@ -319,6 +318,7 @@ const styles = StyleSheet.create<Styles>({
   content: {
     paddingTop: spacing.xxxxl,
     paddingBottom: spacing.xxl,
+    paddingHorizontal: spacing.lg,
   },
   loadingContainer: {
     flex: 1,

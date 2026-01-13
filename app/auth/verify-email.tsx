@@ -126,7 +126,6 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     paddingTop: layout.subheaderScreenTop,
-    paddingHorizontal: spacing.lg,
   },
   contentContainer: {
     flex: 1,

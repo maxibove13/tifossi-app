@@ -72,6 +72,7 @@ const AppWithNotifications: React.FC = () => {
 export default function Layout() {
   const [showSplash, setShowSplash] = useState(true);
   const [appReady, setAppReady] = useState(false);
+  const [preloadComplete, setPreloadComplete] = useState(false);
   const [fontsLoaded] = useFonts({
     Roboto: Roboto_500Medium,
     Inter: Inter_500Medium,
@@ -79,6 +80,7 @@ export default function Layout() {
 
   // Initialize Auth state on app load
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const isInitialized = useAuthStore((state) => state.isInitialized);
   useEffect(() => {
     if (fontsLoaded) {
       // Initialize app configuration (endpoints, network monitoring)
@@ -118,8 +120,16 @@ export default function Layout() {
 
   // Handle completion of the preloading process
   const handlePreloadComplete = () => {
-    setShowSplash(false);
+    setPreloadComplete(true);
   };
+
+  // Wait for both preloading AND auth initialization before hiding splash
+  // This ensures logged-in users go directly to (tabs) without seeing landing page
+  useEffect(() => {
+    if (preloadComplete && isInitialized) {
+      setShowSplash(false);
+    }
+  }, [preloadComplete, isInitialized]);
 
   if (!fontsLoaded || !appReady) {
     return null;

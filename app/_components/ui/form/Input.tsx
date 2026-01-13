@@ -116,7 +116,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DCDCDC',
     borderRadius: 4,
-    backgroundColor: '#FFFFFF',
     height: 40,
   },
   inputContainerFocused: {
@@ -127,13 +126,12 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    alignSelf: 'stretch',
     fontFamily: 'Inter',
     fontSize: 16,
     fontWeight: '400',
-    lineHeight: 24,
     color: '#0C0C0C',
     paddingHorizontal: 16,
-    paddingVertical: 8,
   },
   inputWithStartIcon: {
     paddingLeft: 8,

@@ -153,13 +153,13 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     paddingTop: layout.subheaderScreenTop,
-    paddingHorizontal: spacing.lg,
   },
   scrollView: {
     flex: 1,
   },
   formContainer: {
     gap: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
   infoText: {
     fontFamily: fonts.secondary,
