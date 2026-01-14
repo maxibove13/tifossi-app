@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "KM7UAMA5MF.app.tiffosi.store",
+        "paths": [
+          "/api/auth/*"
+        ]
+      }
+    ]
+  }
+}

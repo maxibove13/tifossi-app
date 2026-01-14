@@ -15,7 +15,8 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "associatedDomains": [
         "applinks:auth.tifossi.app",
-        "applinks:pay.tifossi.app"
+        "applinks:pay.tifossi.app",
+        "applinks:tifossi-strapi-backend.onrender.com"
       ],
       "config": {
         "usesNonExemptEncryption": false
@@ -99,6 +100,11 @@
             {
               "scheme": "https",
               "host": "pay.tifossi.app"
+            },
+            {
+              "scheme": "https",
+              "host": "tifossi-strapi-backend.onrender.com",
+              "pathPrefix": "/api/auth"
             }
           ],
           "category": [
