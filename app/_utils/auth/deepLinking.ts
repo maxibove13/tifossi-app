@@ -138,13 +138,13 @@ class DeepLinkingService {
               error: null,
             });
 
-            router.replace('/(tabs)/profile');
+            router.replace('/auth/verify-success');
 
             return {
               handled: true,
               success: true,
               action: 'email-verified',
-              redirectTo: '/(tabs)/profile',
+              redirectTo: '/auth/verify-success',
             };
           }
         } catch {
