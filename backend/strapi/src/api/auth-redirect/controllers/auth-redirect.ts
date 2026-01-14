@@ -11,51 +11,9 @@ export default {
   async emailAction(ctx: any) {
     const { mode, oobCode, continueUrl, lang } = ctx.query;
 
-    // Validate required parameter
-    if (!oobCode) {
-      ctx.type = 'text/html';
-      ctx.status = 400;
-      ctx.body = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enlace Invalido - Tifossi</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-    }
-    .container { text-align: center; padding: 40px 20px; max-width: 400px; }
-    .logo {
-      font-size: 48px;
-      font-weight: bold;
-      margin-bottom: 24px;
-      background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    h1 { font-size: 24px; margin-bottom: 12px; font-weight: 600; }
-    p { color: #a0a0a0; margin-bottom: 32px; line-height: 1.5; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="logo">TIFOSSI</div>
-    <h1>Enlace Invalido</h1>
-    <p>Este enlace no es valido o ha expirado. Por favor solicita un nuevo enlace desde la app.</p>
-  </div>
-</body>
-</html>`;
-      return;
-    }
+    // If no oobCode, Firebase already processed the verification
+    // Just redirect to the app with a success flag
+    const alreadyVerified = !oobCode;
 
     // Build query string preserving all params
     const params = new URLSearchParams();
@@ -63,13 +21,16 @@ export default {
     if (oobCode) params.set('oobCode', oobCode);
     if (continueUrl) params.set('continueUrl', continueUrl);
     if (lang) params.set('lang', lang);
+    if (alreadyVerified) params.set('verified', 'true');
 
     const queryString = params.toString();
 
     // Determine the deep link path based on mode
-    let deepLinkPath = '/auth/verify-email';
-    let actionTitle = 'Verificar Email';
-    let actionDescription = 'Verificando tu cuenta...';
+    let deepLinkPath = alreadyVerified ? '/auth/verify-success' : '/auth/verify-email';
+    let actionTitle = alreadyVerified ? 'Email Verificado' : 'Verificar Email';
+    let actionDescription = alreadyVerified
+      ? 'Tu email ha sido verificado. Redirigiendo a la app...'
+      : 'Verificando tu cuenta...';
 
     if (mode === 'resetPassword') {
       deepLinkPath = '/auth/reset-password';
