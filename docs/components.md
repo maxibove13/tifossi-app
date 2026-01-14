@@ -277,6 +277,9 @@ Modal overlay components for the checkout process.
 10. **OverlayProductSearch** (`/_components/store/product/overlay/OverlayProductSearch.tsx`): Search overlay triggered from the header, using `useSearch` hook for client-side product searching
 11. **OverlayShippingAddress** (`/_components/store/product/overlay/OverlayShippingAddress.tsx`): Shipping address overlay
 12. **OverlayShippingSelection** (`/_components/store/product/overlay/OverlayShippingSelection.tsx`): Shipping method selection overlay
+    - Props: `isVisible`, `onClose`, `onGoBack?`, `onSelectShipping`, `initialMethod?`
+    - `onGoBack` (optional): Called when user presses X or backdrop to return to previous overlay. Falls back to `onClose` if not provided.
+    - Used by `OverlayCheckoutShipping` and `OverlayProductAdding` for nested overlay navigation
 
 #### Layout Components (`/_components/store/layout/`)
 

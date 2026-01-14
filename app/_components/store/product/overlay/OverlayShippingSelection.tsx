@@ -29,6 +29,7 @@ type ShippingMethod = 'delivery' | 'pickup' | '';
 interface OverlayShippingSelectionProps {
   isVisible: boolean;
   onClose: () => void;
+  onGoBack?: () => void;
   onSelectShipping: (method: ShippingMethod) => void;
   initialMethod?: ShippingMethod;
 }
@@ -36,9 +37,11 @@ interface OverlayShippingSelectionProps {
 export default function OverlayShippingSelection({
   isVisible,
   onClose,
+  onGoBack,
   onSelectShipping,
   initialMethod = '',
 }: OverlayShippingSelectionProps) {
+  const handleGoBack = onGoBack || onClose;
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(height));
@@ -69,14 +72,13 @@ export default function OverlayShippingSelection({
   const handleSelectMethod = (method: ShippingMethod) => {
     setSelectedMethod(method);
     onSelectShipping(method);
-    onClose();
   };
 
   return (
-    <Modal transparent visible={isVisible} onRequestClose={onClose} animationType="none">
+    <Modal transparent visible={isVisible} onRequestClose={handleGoBack} animationType="none">
       <View style={styles.modalContainer}>
-        {/* Animated overlay background that can be tapped to close */}
-        <TouchableWithoutFeedback onPress={onClose}>
+        {/* Animated overlay background that can be tapped to go back */}
+        <TouchableWithoutFeedback onPress={handleGoBack}>
           <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />
         </TouchableWithoutFeedback>
 
@@ -85,7 +87,7 @@ export default function OverlayShippingSelection({
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Seleccionar entrega</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.closeButton} onPress={handleGoBack} activeOpacity={0.7}>
               <CloseIcon width={24} height={24} />
             </TouchableOpacity>
           </View>

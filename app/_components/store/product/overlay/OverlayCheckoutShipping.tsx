@@ -295,7 +295,8 @@ export default function OverlayCheckoutShipping({
       {/* Shipping Overlay */}
       <OverlayShippingSelection
         isVisible={isShippingOverlayVisible}
-        onClose={() => setIsShippingOverlayVisible(false)}
+        onGoBack={() => setIsShippingOverlayVisible(false)}
+        onClose={onClose}
         onSelectShipping={handleSelectShipping}
       />
     </>
