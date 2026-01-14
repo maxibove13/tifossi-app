@@ -76,6 +76,7 @@ export default ({ env }: { env: any }) => {
     });
   }
 
+  middlewares.push('global::apple-app-site-association');
   middlewares.push('strapi::public');
 
   return middlewares;
