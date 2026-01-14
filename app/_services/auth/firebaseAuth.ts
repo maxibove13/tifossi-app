@@ -462,7 +462,10 @@ class FirebaseAuthService {
       const { sendPasswordResetEmail } = getFirebaseAuthModule();
       const auth = getAuthSafe();
       auth.languageCode = 'es';
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, email, {
+        url: 'https://tifossi-strapi-backend.onrender.com/api/auth/email-action',
+        handleCodeInApp: true,
+      });
       return { success: true };
     } catch (error) {
       return {
@@ -518,7 +521,10 @@ class FirebaseAuthService {
         throw new Error('No user is currently signed in');
       }
 
-      await sendEmailVerification(currentUser);
+      await sendEmailVerification(currentUser, {
+        url: 'https://tifossi-strapi-backend.onrender.com/api/auth/email-action',
+        handleCodeInApp: true,
+      });
       return { success: true };
     } catch (error) {
       return {
