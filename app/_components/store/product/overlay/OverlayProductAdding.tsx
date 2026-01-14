@@ -112,6 +112,7 @@ function OverlayProductAdding({ isVisible, onClose }: OverlayProductAddingProps)
 
       <OverlayShippingSelection
         isVisible={isShippingOverlayVisible}
+        onGoBack={() => setIsShippingOverlayVisible(false)}
         onClose={() => setIsShippingOverlayVisible(false)}
         onSelectShipping={handleSelectShipping}
       />
