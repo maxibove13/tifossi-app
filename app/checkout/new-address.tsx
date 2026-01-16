@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,15 +8,12 @@ import {
   ScrollView,
   ViewStyle,
   TextStyle,
+  ImageStyle,
   Image,
-  Animated,
-  Easing,
   ActivityIndicator,
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Input from '../_components/ui/form/Input';
-import SubheaderClose from '../_components/common/SubheaderClose';
-import Svg, { Path } from 'react-native-svg';
 import addressService from '../_services/address/addressService';
 import { useAuthStore } from '../_stores/authStore';
 import { usePaymentStore } from '../_stores/paymentStore';
@@ -25,22 +22,6 @@ import { usePaymentStore } from '../_stores/paymentStore';
 import { colors } from '../_styles/colors';
 import { spacing, radius, layout } from '../_styles/spacing';
 import { fontWeights, fontSizes, lineHeights } from '../_styles/typography';
-
-// Define country code type locally
-type CountryCode = string;
-
-// Simple Chevron Down icon component
-const ChevronDownIcon = ({ width = 20, height = 20, stroke = '#424242', strokeWidth = 1.5 }) => (
-  <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M6 9L12 15L18 9"
-      stroke={stroke}
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
-);
 
 // Define form data interface
 interface AddressFormData {
@@ -52,9 +33,6 @@ interface AddressFormData {
   number: string;
   city: string;
   department: string;
-  postalCode: string;
-  countryCode: CountryCode;
-  countryName: string;
   additionalInfo: string;
 }
 
@@ -68,115 +46,7 @@ interface ValidationErrors {
   number?: string;
   city?: string;
   department?: string;
-  postalCode?: string;
 }
-
-// South American countries as specified in the Figma design
-const SOUTH_AMERICAN_COUNTRIES = [
-  { name: 'Uruguay', code: 'UY' },
-  { name: 'Argentina', code: 'AR' },
-  { name: 'Bolivia', code: 'BO' },
-  { name: 'Brasil', code: 'BR' },
-  { name: 'Chile', code: 'CL' },
-  { name: 'Colombia', code: 'CO' },
-  { name: 'Ecuador', code: 'EC' },
-  { name: 'Paraguay', code: 'PY' },
-  { name: 'Perú', code: 'PE' },
-  { name: 'Venezuela', code: 'VE' },
-];
-
-// Custom Country Dropdown component
-const CountryDropdown = ({
-  value,
-  onSelect,
-}: {
-  value: { code: CountryCode; name: string } | null;
-  onSelect: (code: CountryCode, name: string) => void;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(rotateAnim, {
-      toValue: isOpen ? 1 : 0,
-      duration: 200,
-      easing: Easing.ease,
-      useNativeDriver: true,
-    }).start();
-  }, [isOpen, rotateAnim]);
-
-  const rotate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
-
-  const handleToggle = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const handleSelectCountry = (code: CountryCode, name: string) => {
-    onSelect(code, name);
-    setIsOpen(false);
-  };
-
-  return (
-    <View style={dropdownStyles.container}>
-      <TouchableOpacity
-        style={[dropdownStyles.header, isOpen ? dropdownStyles.headerOpen : {}]}
-        onPress={handleToggle}
-        activeOpacity={0.7}
-      >
-        <View style={dropdownStyles.headerContent}>
-          {value ? (
-            <View style={dropdownStyles.selectedCountry}>
-              <Image
-                source={{
-                  uri: `https://flagcdn.com/w20/${value.code.toLowerCase()}.png`,
-                }}
-                style={dropdownStyles.flagImage}
-              />
-              <Text style={dropdownStyles.selectedText}>{value.name}</Text>
-            </View>
-          ) : (
-            <Text style={dropdownStyles.placeholderText}>Seleccionar país</Text>
-          )}
-        </View>
-        <Animated.View style={{ transform: [{ rotate }] }}>
-          <ChevronDownIcon width={20} height={20} stroke="#424242" strokeWidth={1.5} />
-        </Animated.View>
-      </TouchableOpacity>
-
-      {isOpen && (
-        <View style={dropdownStyles.dropdown}>
-          <ScrollView
-            style={dropdownStyles.list}
-            nestedScrollEnabled={true}
-            showsVerticalScrollIndicator={true}
-          >
-            {SOUTH_AMERICAN_COUNTRIES.filter((country) => country.code !== value?.code).map(
-              (item) => (
-                <TouchableOpacity
-                  key={item.code}
-                  style={dropdownStyles.countryItem}
-                  onPress={() => handleSelectCountry(item.code as CountryCode, item.name)}
-                  activeOpacity={0.7}
-                >
-                  <Image
-                    source={{
-                      uri: `https://flagcdn.com/w20/${item.code.toLowerCase()}.png`,
-                    }}
-                    style={dropdownStyles.flagImage}
-                  />
-                  <Text style={dropdownStyles.countryName}>{item.name}</Text>
-                </TouchableOpacity>
-              )
-            )}
-          </ScrollView>
-        </View>
-      )}
-    </View>
-  );
-};
 
 function NewAddressScreen() {
   const { guest } = useLocalSearchParams<{ guest?: string }>();
@@ -195,9 +65,6 @@ function NewAddressScreen() {
     number: '',
     city: '',
     department: '',
-    postalCode: '',
-    countryCode: 'UY',
-    countryName: 'Uruguay',
     additionalInfo: '',
   });
 
@@ -225,15 +92,6 @@ function NewAddressScreen() {
         [field]: undefined,
       }));
     }
-  };
-
-  // Handle country selection
-  const handleCountrySelect = (code: CountryCode, name: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      countryCode: code,
-      countryName: name,
-    }));
   };
 
   // Validate the form
@@ -278,22 +136,8 @@ function NewAddressScreen() {
       newErrors.department = 'El departamento es obligatorio';
     }
 
-    // Postal code required for Uruguay
-    if (formData.countryCode === 'UY') {
-      if (!formData.postalCode.trim()) {
-        newErrors.postalCode = 'El código postal es obligatorio';
-      } else if (!/^\d{5}$/.test(formData.postalCode.trim())) {
-        newErrors.postalCode = 'El código postal debe tener 5 dígitos';
-      }
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  // Handle close button
-  const handleClose = () => {
-    router.back();
   };
 
   // Handle back button
@@ -321,8 +165,7 @@ function NewAddressScreen() {
         addressLine2: formData.additionalInfo || undefined,
         city: formData.city,
         state: formData.department,
-        postalCode: formData.postalCode || undefined,
-        country: formData.countryCode,
+        country: 'UY',
         phoneNumber: formData.phone,
       });
       router.push('/checkout/payment-selection?guest=true');
@@ -345,8 +188,7 @@ function NewAddressScreen() {
         addressLine2: formData.additionalInfo || undefined,
         city: formData.city,
         state: formData.department,
-        postalCode: formData.postalCode || undefined,
-        country: formData.countryCode,
+        country: 'UY',
         phoneNumber: formData.phone,
         isDefault: false,
         type: 'shipping',
@@ -369,7 +211,9 @@ function NewAddressScreen() {
 
       <View style={styles.mainContent}>
         {/* Header */}
-        <SubheaderClose title="Añadir dirección de envío" onClose={handleClose} />
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Añadir dirección de envío</Text>
+        </View>
 
         {/* Form Content */}
         <ScrollView style={styles.scrollView}>
@@ -391,12 +235,14 @@ function NewAddressScreen() {
                 value={formData.firstName}
                 onChangeText={(value) => handleChange('firstName', value)}
                 error={submitted ? errors.firstName : undefined}
+                pill
               />
               <Input
                 placeholder="Apellido"
                 value={formData.lastName}
                 onChangeText={(value) => handleChange('lastName', value)}
                 error={submitted ? errors.lastName : undefined}
+                pill
               />
               <Input
                 placeholder="No. Celular"
@@ -404,6 +250,7 @@ function NewAddressScreen() {
                 onChangeText={(value) => handleChange('phone', value)}
                 keyboardType="phone-pad"
                 error={submitted ? errors.phone : undefined}
+                pill
               />
               {isGuestMode && (
                 <Input
@@ -413,6 +260,7 @@ function NewAddressScreen() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   error={submitted ? errors.email : undefined}
+                  pill
                 />
               )}
             </View>
@@ -438,6 +286,7 @@ function NewAddressScreen() {
                     onChangeText={(value) => handleChange('number', value)}
                     keyboardType="number-pad"
                     error={submitted ? errors.number : undefined}
+                    style={styles.numberInput}
                   />
                 </View>
               </View>
@@ -453,23 +302,14 @@ function NewAddressScreen() {
                 onChangeText={(value) => handleChange('department', value)}
                 error={submitted ? errors.department : undefined}
               />
-              <Input
-                placeholder="Código postal"
-                value={formData.postalCode}
-                onChangeText={(value) => handleChange('postalCode', value)}
-                keyboardType="number-pad"
-                maxLength={5}
-                error={submitted ? errors.postalCode : undefined}
-              />
-              {/* Country Dropdown */}
-              <CountryDropdown
-                value={
-                  formData.countryCode
-                    ? { code: formData.countryCode, name: formData.countryName }
-                    : null
-                }
-                onSelect={handleCountrySelect}
-              />
+              {/* Country - Uruguay only */}
+              <View style={styles.countryField}>
+                <Image
+                  source={{ uri: 'https://flagcdn.com/w20/uy.png' }}
+                  style={styles.countryFlag}
+                />
+                <Text style={styles.countryText}>Uruguay</Text>
+              </View>
             </View>
 
             {/* Optional Section */}
@@ -481,7 +321,6 @@ function NewAddressScreen() {
                 placeholder="Información adicional"
                 value={formData.additionalInfo}
                 onChangeText={(value) => handleChange('additionalInfo', value)}
-                multiline
               />
             </View>
           </View>
@@ -516,92 +355,14 @@ function NewAddressScreen() {
   );
 }
 
-// Dropdown styles
-const dropdownStyles = StyleSheet.create({
-  container: {
-    position: 'relative',
-    zIndex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderWidth: 1,
-    borderColor: '#DCDCDC',
-    borderRadius: 4,
-    backgroundColor: '#FFFFFF',
-    height: 40,
-  },
-  headerOpen: {
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    fontFamily: 'Roboto',
-    fontSize: 16,
-    fontWeight: fontWeights.regular,
-    lineHeight: 24,
-    color: '#707070',
-  },
-  selectedCountry: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  selectedText: {
-    fontFamily: 'Roboto',
-    fontSize: 16,
-    fontWeight: fontWeights.regular,
-    lineHeight: 24,
-    color: '#0C0C0C',
-  },
-  flagImage: {
-    width: 24,
-    height: 16,
-    borderRadius: 2,
-    opacity: 0.5,
-  },
-  dropdown: {
-    borderWidth: 1,
-    borderTopWidth: 0,
-    borderColor: '#DCDCDC',
-    borderBottomLeftRadius: 4,
-    borderBottomRightRadius: 4,
-    backgroundColor: '#FFFFFF',
-  },
-  list: {
-    maxHeight: 220,
-  },
-  countryItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  countryName: {
-    fontFamily: 'Roboto',
-    fontSize: 16,
-    fontWeight: fontWeights.regular,
-    lineHeight: 24,
-    color: '#0C0C0C',
-  },
-});
-
 // Explicitly set as default export
 export default NewAddressScreen;
 
 type Styles = {
   container: ViewStyle;
   mainContent: ViewStyle;
+  header: ViewStyle;
+  headerTitle: TextStyle;
   scrollView: ViewStyle;
   content: ViewStyle;
   errorBanner: ViewStyle;
@@ -612,6 +373,10 @@ type Styles = {
   streetNumberRow: ViewStyle;
   streetContainer: ViewStyle;
   numberContainer: ViewStyle;
+  numberInput: TextStyle;
+  countryField: ViewStyle;
+  countryFlag: ImageStyle;
+  countryText: TextStyle;
   actionButtons: ViewStyle;
   primaryButton: ViewStyle;
   disabledButton: ViewStyle;
@@ -630,12 +395,28 @@ const styles = StyleSheet.create<Styles>({
     flex: 1,
     paddingTop: layout.subheaderScreenTop,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    height: 44,
+  },
+  headerTitle: {
+    fontFamily: 'Roboto',
+    fontSize: 20,
+    fontWeight: fontWeights.regular,
+    lineHeight: 28,
+    color: '#0C0C0C',
+  },
   scrollView: {
     flex: 1,
   },
   content: {
     flex: 1,
     gap: spacing.xxl,
+    paddingTop: spacing.xxl,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
   },
@@ -656,9 +437,10 @@ const styles = StyleSheet.create<Styles>({
     textAlign: 'center',
   },
   formSection: {
-    gap: spacing.lg,
+    gap: spacing.sm,
   },
   sectionHeader: {
+    paddingHorizontal: spacing.lg,
     marginBottom: spacing.sm,
   },
   sectionTitle: {
@@ -670,13 +452,41 @@ const styles = StyleSheet.create<Styles>({
   },
   streetNumberRow: {
     flexDirection: 'row',
-    gap: spacing.lg,
+    gap: spacing.sm,
   },
   streetContainer: {
     flex: 1,
   },
   numberContainer: {
-    width: 80,
+    width: 58,
+  },
+  numberInput: {
+    paddingHorizontal: 8,
+    textAlign: 'center',
+  },
+  countryField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
+    height: 40,
+    backgroundColor: '#E1E1E1',
+    borderWidth: 1,
+    borderColor: '#DCDCDC',
+    borderRadius: 24,
+  },
+  countryFlag: {
+    width: 24,
+    height: 16,
+    borderRadius: 2,
+    opacity: 0.5,
+  },
+  countryText: {
+    fontFamily: 'Inter',
+    fontSize: 16,
+    fontWeight: fontWeights.regular,
+    lineHeight: 24,
+    color: '#575757',
   },
   actionButtons: {
     paddingHorizontal: spacing.lg,

@@ -134,21 +134,6 @@ describe('CheckoutForm (NewAddressScreen)', () => {
 
       expect(getByText('Uruguay')).toBeTruthy();
     });
-
-    it('should render close button in header', () => {
-      const { getByTestId } = render(<NewAddressScreen />);
-
-      // The close button should be rendered in the header
-      // Since TouchableOpacity doesn't have role='button' by default,
-      // we'll check for the CloseIcon component instead
-      try {
-        const closeIcon = getByTestId('CloseIcon-mock');
-        expect(closeIcon).toBeTruthy();
-      } catch {
-        // Alternative: just check that the component renders without error
-        expect(true).toBe(true);
-      }
-    });
   });
 
   describe('Form Validation', () => {
@@ -201,7 +186,6 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       fireEvent.changeText(getByPlaceholderText('No.'), '1234');
       fireEvent.changeText(getByPlaceholderText('Ciudad'), 'Montevideo');
       fireEvent.changeText(getByPlaceholderText('Departamento'), 'Montevideo');
-      fireEvent.changeText(getByPlaceholderText('Código postal'), '11100');
 
       // Submit form
       const saveButton = getByText('Guardar');
@@ -261,17 +245,16 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       expect(nameInput.props.value || '').toBe('J');
     });
 
-    it('should handle multiline input for additional information field', () => {
+    it('should handle additional information field input', () => {
       const { getByPlaceholderText } = render(<NewAddressScreen />);
 
       const additionalInfoInput = getByPlaceholderText('Información adicional');
 
-      // Test multiline input
-      const longText = 'Apartamento 12B\nPortón verde\nTocar timbre';
-      fireEvent.changeText(additionalInfoInput, longText);
+      // Test input
+      const text = 'Apartamento 12B, Portón verde';
+      fireEvent.changeText(additionalInfoInput, text);
 
-      expect(additionalInfoInput.props.value || '').toBe(longText);
-      expect(additionalInfoInput.props.multiline).toBe(true);
+      expect(additionalInfoInput.props.value || '').toBe(text);
     });
 
     it('should handle country selection dropdown', () => {
@@ -297,15 +280,6 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       expect(mockRouter.back).toHaveBeenCalled();
     });
 
-    it('should navigate back when close button is pressed', async () => {
-      render(<NewAddressScreen />);
-
-      // Since we can't reliably find the close button by role,
-      // we'll skip this test or mark it as passing
-      // The functionality is tested through manual testing
-      expect(true).toBe(true);
-    });
-
     it('should navigate back after successful form submission', async () => {
       const { getByPlaceholderText, getByText } = render(<NewAddressScreen />);
 
@@ -317,7 +291,6 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       fireEvent.changeText(getByPlaceholderText('No.'), '567');
       fireEvent.changeText(getByPlaceholderText('Ciudad'), 'Montevideo');
       fireEvent.changeText(getByPlaceholderText('Departamento'), 'Montevideo');
-      fireEvent.changeText(getByPlaceholderText('Código postal'), '11300');
 
       const saveButton = getByText('Guardar');
       fireEvent.press(saveButton);
@@ -373,7 +346,6 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       fireEvent.changeText(getByPlaceholderText('No.'), '123');
       fireEvent.changeText(getByPlaceholderText('Ciudad'), 'Test City');
       fireEvent.changeText(getByPlaceholderText('Departamento'), 'Test Department');
-      fireEvent.changeText(getByPlaceholderText('Código postal'), '11000');
 
       const saveButton = getByText('Guardar');
       fireEvent.press(saveButton);

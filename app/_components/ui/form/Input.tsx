@@ -19,6 +19,8 @@ interface InputProps extends TextInputProps {
   endIcon?: keyof typeof Ionicons.glyphMap;
   onEndIconPress?: () => void;
   containerStyle?: StyleProp<ViewStyle>;
+  /** Use pill shape (100px radius) instead of default rounded (24px) */
+  pill?: boolean;
 }
 
 export const Input = ({
@@ -32,6 +34,7 @@ export const Input = ({
   onFocus,
   onBlur,
   style,
+  pill,
   ...props
 }: InputProps) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -53,6 +56,7 @@ export const Input = ({
       <View
         style={[
           styles.inputContainer,
+          pill && styles.inputContainerPill,
           isFocused && styles.inputContainerFocused,
           error && styles.inputContainerError,
         ]}
@@ -119,6 +123,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.button,
     height: 40,
   },
+  inputContainerPill: {
+    borderRadius: radius.circle,
+  },
   inputContainerFocused: {
     borderColor: '#0C0C0C',
   },
@@ -128,9 +135,8 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     alignSelf: 'stretch',
-    fontFamily: 'Inter',
+    fontFamily: 'InterRegular',
     fontSize: 16,
-    fontWeight: '400',
     color: '#0C0C0C',
     paddingHorizontal: 16,
   },
