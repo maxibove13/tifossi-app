@@ -174,6 +174,9 @@ import { Input } from '../_components/ui/form/Input';
 />;
 ```
 
+Props:
+- `pill?: boolean` - Use pill shape (100px border radius) instead of default rounded (24px)
+
 #### Dropdown (`/_components/ui/form/Dropdown.tsx`)
 
 Dropdown selector for options.

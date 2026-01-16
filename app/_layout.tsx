@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { useFonts, Roboto_500Medium } from '@expo-google-fonts/roboto';
-import { Inter_500Medium } from '@expo-google-fonts/inter';
+import { Inter_400Regular, Inter_500Medium } from '@expo-google-fonts/inter';
 import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -76,6 +76,7 @@ export default function Layout() {
   const [fontsLoaded] = useFonts({
     Roboto: Roboto_500Medium,
     Inter: Inter_500Medium,
+    InterRegular: Inter_400Regular,
   });
 
   // Initialize Auth state on app load
