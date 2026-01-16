@@ -17,7 +17,7 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { User, Package, MapPin, Lock, Shield, LogOut, Trash2 } from 'react-native-feather';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
@@ -61,7 +61,7 @@ const ProfileListItem: React.FC<ProfileListItemProps> = ({
 }) => (
   <TouchableOpacity style={[styles.listItemContainer, style]} onPress={onPress}>
     <Text style={[styles.listItemText, textStyle]}>{text}</Text>
-    <IconComponent width={24} height={24} stroke={colors.primary} strokeWidth={1.2} />
+    <IconComponent />
   </TouchableOpacity>
 );
 
@@ -110,7 +110,7 @@ const LogoutButton = () => {
       >
         <View style={styles.logoutButton}>
           <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
-          <Feather name="log-out" size={24} color={colors.error} />
+          <LogOut width={24} height={24} stroke={colors.error} strokeWidth={1.5} />
         </View>
       </TouchableOpacity>
 
@@ -192,7 +192,7 @@ const DeleteAccountButton = () => {
       >
         <View style={styles.deleteAccountButton}>
           <Text style={styles.deleteAccountButtonText}>Eliminar Cuenta</Text>
-          <Feather name="trash-2" size={24} color={colors.error} />
+          <Trash2 width={24} height={24} stroke={colors.error} strokeWidth={1.5} />
         </View>
       </TouchableOpacity>
 
@@ -269,11 +269,13 @@ const LoggedInProfileCard = () => {
         <Image source={{ uri: profilePicture }} style={styles.profilePicture} />
       ) : (
         <View style={styles.profileIconContainer}>
-          <Feather name="user" size={32} color={colors.secondary} />
+          <User width={32} height={32} stroke={colors.secondary} strokeWidth={1.5} />
         </View>
       )}
-      <Text style={styles.userName}>{displayName}</Text>
-      {displayEmail ? <Text style={styles.userEmail}>{displayEmail}</Text> : null}
+      <View style={styles.profileTextFrame}>
+        <Text style={styles.userName}>{displayName}</Text>
+        {displayEmail ? <Text style={styles.userEmail}>{displayEmail}</Text> : null}
+      </View>
     </View>
   );
 };
@@ -565,24 +567,32 @@ export default function ProfileScreen() {
 
       <View style={styles.actionButtonsContainer}>
         <ProfileListItem
-          IconComponent={() => <Feather name="package" size={24} color={colors.primary} />}
+          IconComponent={() => (
+            <Package width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
+          )}
           text="Mis Pedidos"
           onPress={() => router.push('/profile/orders')}
         />
         <ProfileListItem
-          IconComponent={() => <Feather name="map-pin" size={24} color={colors.primary} />}
+          IconComponent={() => (
+            <MapPin width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
+          )}
           text="Direcciones de Envío"
           onPress={() => router.push('/profile/addresses')}
         />
         {isEmailUser && (
           <ProfileListItem
-            IconComponent={() => <Feather name="lock" size={24} color={colors.primary} />}
+            IconComponent={() => (
+              <Lock width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
+            )}
             text="Cambiar Contraseña"
             onPress={() => router.push('/profile/change-password')}
           />
         )}
         <ProfileListItem
-          IconComponent={() => <Feather name="shield" size={24} color={colors.primary} />}
+          IconComponent={() => (
+            <Shield width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
+          )}
           text="Política de Privacidad"
           onPress={() => {
             const privacyUrl =
@@ -631,6 +641,7 @@ type Styles = {
   profileCard: ViewStyle;
   profilePicture: ImageStyle;
   profileIconContainer: ViewStyle;
+  profileTextFrame: ViewStyle;
   userName: TextStyle;
   userEmail: TextStyle;
   actionButtonsContainer: ViewStyle;
@@ -771,10 +782,9 @@ const styles = StyleSheet.create<Styles>({
     color: colors.tertiary,
   },
   profileCardBackground: {
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.xl,
     paddingHorizontal: spacing.lg,
-    position: 'relative',
-    paddingBottom: spacing.xxl,
+    height: 160,
   },
   backgroundImageStyle: {
     resizeMode: 'cover',
@@ -790,17 +800,20 @@ const styles = StyleSheet.create<Styles>({
     zIndex: 1,
   },
   profilePicture: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: colors.border,
   },
   profileIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: colors.border,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileTextFrame: {
     alignItems: 'center',
   },
   userName: {
@@ -808,7 +821,7 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: '500',
     fontSize: fontSizes.lg,
     lineHeight: lineHeights.lg,
-    color: colors.background.light,
+    color: colors.background.offWhite,
     textAlign: 'center',
   },
   userEmail: {
