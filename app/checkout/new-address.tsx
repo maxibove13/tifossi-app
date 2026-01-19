@@ -12,6 +12,7 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Input from '../_components/ui/form/Input';
 import addressService from '../_services/address/addressService';
@@ -335,11 +336,16 @@ function NewAddressScreen() {
           activeOpacity={0.7}
           disabled={isLoading}
         >
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#FBFBFB" />
-          ) : (
-            <Text style={styles.primaryButtonText}>Guardar</Text>
-          )}
+          <LinearGradient
+            colors={colors.button.defaultGradient}
+            style={styles.primaryButtonGradient}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FBFBFB" />
+            ) : (
+              <Text style={styles.primaryButtonText}>Guardar</Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -379,6 +385,7 @@ type Styles = {
   countryText: TextStyle;
   actionButtons: ViewStyle;
   primaryButton: ViewStyle;
+  primaryButtonGradient: ViewStyle;
   disabledButton: ViewStyle;
   primaryButtonText: TextStyle;
   secondaryButton: ViewStyle;
@@ -498,10 +505,13 @@ const styles = StyleSheet.create<Styles>({
     width: '100%',
     height: 48,
     borderRadius: 24,
+    overflow: 'hidden',
+  },
+  primaryButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
-    backgroundColor: colors.background.dark,
   },
   disabledButton: {
     opacity: 0.6,

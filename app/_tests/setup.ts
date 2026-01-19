@@ -658,6 +658,23 @@ jest.mock('expo-router', () => ({
   },
 }));
 
+// Mock @react-navigation/native's useFocusEffect
+// In tests, we simulate being focused by executing the callback immediately
+jest.mock('@react-navigation/native', () => {
+  const actual = jest.requireActual('@react-navigation/native');
+  return {
+    ...actual,
+    useFocusEffect: jest.fn((callback: () => void | (() => void)) => {
+      // Execute the callback to simulate being focused in tests
+      const React = require('react');
+      React.useEffect(() => {
+        const cleanup = callback();
+        return cleanup;
+      }, [callback]);
+    }),
+  };
+});
+
 // Mock React Native Reanimated
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');

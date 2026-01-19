@@ -7,6 +7,7 @@ import {
   Animated,
   TouchableOpacity,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../../../_styles/colors';
 import { spacing, radius } from '../../../../_styles/spacing';
 import { fonts, fontSizes, fontWeights, lineHeights } from '../../../../_styles/typography';
@@ -71,6 +72,7 @@ export default function AddToCartButton({
         <TouchableOpacity
           style={[
             styles.button,
+            !darkMode && !inCart && !disabled && styles.buttonGradientWrapper,
             darkMode && styles.buttonDark,
             disabled && (darkMode ? styles.buttonDisabledDark : styles.buttonDisabled),
             inCart && styles.buttonInCart,
@@ -79,22 +81,49 @@ export default function AddToCartButton({
           disabled={disabled || loading}
           activeOpacity={0.8}
         >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
+          {!darkMode && !inCart && !disabled ? (
+            <LinearGradient colors={colors.button.defaultGradient} style={styles.buttonGradient}>
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <>
+                  <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
+                    {quantity > 1 ? `${buttonText} (${quantity})` : buttonText}
+                  </Text>
+                  {price && (
+                    <View style={[styles.priceTag, darkMode && styles.priceTagDark]}>
+                      <Text style={styles.priceText}>${price}</Text>
+                    </View>
+                  )}
+                  <Ionicons name="cart-outline" size={20} color="#FFFFFF" style={styles.icon} />
+                </>
+              )}
+            </LinearGradient>
           ) : (
             <>
-              <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
-                {quantity > 1 ? `${buttonText} (${quantity})` : buttonText}
-              </Text>
-              {price && (
-                <View style={[styles.priceTag, darkMode && styles.priceTagDark]}>
-                  <Text style={styles.priceText}>${price}</Text>
-                </View>
-              )}
-              {inCart ? (
-                <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={styles.icon} />
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
-                <Ionicons name="cart-outline" size={20} color="#FFFFFF" style={styles.icon} />
+                <>
+                  <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
+                    {quantity > 1 ? `${buttonText} (${quantity})` : buttonText}
+                  </Text>
+                  {price && (
+                    <View style={[styles.priceTag, darkMode && styles.priceTagDark]}>
+                      <Text style={styles.priceText}>${price}</Text>
+                    </View>
+                  )}
+                  {inCart ? (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color="#FFFFFF"
+                      style={styles.icon}
+                    />
+                  ) : (
+                    <Ionicons name="cart-outline" size={20} color="#FFFFFF" style={styles.icon} />
+                  )}
+                </>
               )}
             </>
           )}
@@ -135,6 +164,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     flexDirection: 'row',
+  },
+  buttonGradientWrapper: {
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+    paddingHorizontal: 0,
+  },
+  buttonGradient: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    width: '100%',
   },
   buttonDark: {
     backgroundColor: 'rgba(251, 251, 251, 0.25)',

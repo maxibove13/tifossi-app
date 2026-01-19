@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
 import { colors } from '../_styles/colors';
 import { spacing, radius, layout } from '../_styles/spacing';
@@ -103,7 +104,12 @@ export default function VerifyEmailScreen() {
           }
           activeOpacity={0.7}
         >
-          <Text style={styles.primaryButtonText}>Ingresar Código</Text>
+          <LinearGradient
+            colors={colors.button.defaultGradient}
+            style={styles.primaryButtonGradient}
+          >
+            <Text style={styles.primaryButtonText}>Ingresar Código</Text>
+          </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.secondaryButton}
@@ -206,9 +212,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 48,
     borderRadius: radius.xxl,
+    overflow: 'hidden',
+  },
+  primaryButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.dark,
     paddingHorizontal: spacing.xl,
   },
   primaryButtonText: {

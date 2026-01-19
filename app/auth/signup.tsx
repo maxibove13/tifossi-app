@@ -283,16 +283,22 @@ export default function SignupScreen() {
               {acceptedTerms && <Feather name="check" size={14} color={colors.background.light} />}
             </View>
           </TouchableOpacity>
-          <Text style={styles.termsText}>
-            He leído y acepto los{' '}
-            <Text style={styles.termsLink} onPress={() => router.push('/legal/terms')}>
-              Términos y Condiciones
-            </Text>{' '}
-            y la{' '}
-            <Text style={styles.termsLink} onPress={() => router.push('/legal/privacy')}>
-              Política de Privacidad
-            </Text>
-          </Text>
+          <View style={styles.termsTextContainer}>
+            <Text style={styles.termsText}>He leído y acepto los </Text>
+            <TouchableOpacity onPress={() => router.push('/legal/terms')} activeOpacity={0.7}>
+              <View>
+                <Text style={styles.termsLinkText}>Términos y Condiciones</Text>
+                <View style={styles.termsUnderline} />
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.termsText}> y la </Text>
+            <TouchableOpacity onPress={() => router.push('/legal/privacy')} activeOpacity={0.7}>
+              <View>
+                <Text style={styles.termsLinkText}>Política de Privacidad</Text>
+                <View style={styles.termsUnderline} />
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* General error message */}
@@ -355,22 +361,6 @@ export default function SignupScreen() {
             </TouchableOpacity>
           )}
         </View>
-
-        {/* Login Link */}
-        <View style={styles.loginSection}>
-          <Text style={styles.loginPromptText}>¿Ya tienes cuenta?</Text>
-          <TouchableOpacity
-            onPress={() => router.push('/auth/login')}
-            activeOpacity={0.7}
-            disabled={isSubmitting || isLoading}
-            style={{ marginTop: spacing.sm }}
-          >
-            <View style={styles.underlinedTextContainer}>
-              <Text style={styles.loginLinkText}>Inicia Sesión</Text>
-              <View style={styles.textUnderline} />
-            </View>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
     </View>
   );
@@ -397,6 +387,7 @@ const styles = StyleSheet.create({
   termsContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    paddingHorizontal: spacing.lg,
   },
   checkboxContainer: {
     marginRight: spacing.sm,
@@ -415,16 +406,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
-  termsText: {
+  termsTextContainer: {
     flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
+  termsText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
     lineHeight: lineHeights.md,
     color: colors.secondary,
   },
-  termsLink: {
+  termsLinkText: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    lineHeight: lineHeights.md,
     color: colors.primary,
-    textDecorationLine: 'underline',
+  },
+  termsUnderline: {
+    height: 1,
+    backgroundColor: colors.primary,
+    marginTop: -2,
   },
   errorText: {
     color: colors.error,
@@ -479,30 +482,5 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.7,
-  },
-  loginSection: {
-    alignItems: 'center',
-  },
-  loginPromptText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.sm,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.sm,
-    color: colors.tertiary,
-  },
-  loginLinkText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.sm,
-    fontWeight: '400',
-    lineHeight: 16,
-    color: colors.tertiary,
-  },
-  underlinedTextContainer: {
-    alignSelf: 'center',
-  },
-  textUnderline: {
-    height: 1,
-    backgroundColor: colors.tertiary,
-    marginTop: 2,
   },
 });

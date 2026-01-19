@@ -44,6 +44,11 @@ export const colors = {
     offWhite25: 'rgba(251, 251, 251, 0.25)',
     antiflash: '#FAFAFA',       // Auth screens background
   },
+  button: {
+    defaultGradient: ['#373737', '#0C0C0C'],  // Primary button gradient
+    disabledGradient: ['#A0A0A0', '#707070'], // Disabled state gradient
+    pressed: '#424242',                        // Pressed/active state
+  },
 };
 ```
 

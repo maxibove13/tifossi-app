@@ -9,6 +9,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
 import Input from '../_components/ui/form/Input';
 import SubheaderClose from '../_components/common/SubheaderClose';
@@ -187,7 +188,12 @@ function GuestContactInfoScreen() {
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
         <TouchableOpacity style={styles.primaryButton} onPress={handleSave} activeOpacity={0.7}>
-          <Text style={styles.primaryButtonText}>Continuar</Text>
+          <LinearGradient
+            colors={colors.button.defaultGradient}
+            style={styles.primaryButtonGradient}
+          >
+            <Text style={styles.primaryButtonText}>Continuar</Text>
+          </LinearGradient>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.secondaryButton} onPress={handleBack} activeOpacity={0.7}>
@@ -212,6 +218,7 @@ type Styles = {
   sectionTitle: TextStyle;
   actionButtons: ViewStyle;
   primaryButton: ViewStyle;
+  primaryButtonGradient: ViewStyle;
   primaryButtonText: TextStyle;
   secondaryButton: ViewStyle;
   secondaryButtonText: TextStyle;
@@ -265,10 +272,13 @@ const styles = StyleSheet.create<Styles>({
     width: '100%',
     height: 48,
     borderRadius: 24,
+    overflow: 'hidden',
+  },
+  primaryButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
-    backgroundColor: colors.background.dark,
   },
   primaryButtonText: {
     fontFamily: 'Inter',

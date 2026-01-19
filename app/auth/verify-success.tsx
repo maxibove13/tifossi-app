@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
 import { colors } from '../_styles/colors';
 import { spacing, radius } from '../_styles/spacing';
@@ -31,7 +32,12 @@ export default function VerifySuccessScreen() {
       </View>
       <View style={styles.actionButtonsContainer}>
         <TouchableOpacity style={styles.primaryButton} onPress={handleContinue} activeOpacity={0.7}>
-          <Text style={styles.primaryButtonText}>Continuar</Text>
+          <LinearGradient
+            colors={colors.button.defaultGradient}
+            style={styles.primaryButtonGradient}
+          >
+            <Text style={styles.primaryButtonText}>Continuar</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -89,9 +95,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 48,
     borderRadius: radius.xxl,
+    overflow: 'hidden',
+  },
+  primaryButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.dark,
     paddingHorizontal: spacing.xl,
   },
   primaryButtonText: {
