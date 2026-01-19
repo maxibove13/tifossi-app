@@ -98,6 +98,8 @@ const getAuthSafe = () => {
     try {
       const { getAuth } = getFirebaseAuthModule();
       _authInstance = getAuth();
+      // Set Spanish locale globally for all Firebase Auth operations
+      _authInstance.languageCode = 'es';
     } catch (error) {
       console.error('Failed to initialize Firebase Auth:', error);
       throw error;
