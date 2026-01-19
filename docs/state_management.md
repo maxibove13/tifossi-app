@@ -123,6 +123,9 @@ const profile = await httpClient.get('/users/me');
     - `PendingBuyNowItem`: Stores product info for direct purchase without adding to cart
     - Allows users to back out of checkout without polluting their cart
     - Cleared automatically via `clearPaymentState()` when leaving checkout
+    - `payment-selection.tsx` validates and includes `pendingBuyNowItem` in order creation (merged with cart items if same product/size/color)
+    - `cart.tsx` clears `pendingBuyNowItem` when starting cart checkout to prevent stale items from abandoned buy-now flows
+    - `OverlayCheckoutShipping` restores size/quantity from `pendingBuyNowItem` when returning from checkout screens
   - Loading and error state for payment processing UI
 
 ### 3.3 Store Synchronization (`storeSynchronizer.ts`)

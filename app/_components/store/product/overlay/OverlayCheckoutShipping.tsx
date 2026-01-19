@@ -58,6 +58,8 @@ export default function OverlayCheckoutShipping({
   const setShowShippingSelectionOnReturn = usePaymentStore(
     (state) => state.setShowShippingSelectionOnReturn
   );
+  // Get pending buy now item to restore state when returning from checkout
+  const pendingBuyNowItem = usePaymentStore((state) => state.pendingBuyNowItem);
 
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -77,11 +79,20 @@ export default function OverlayCheckoutShipping({
 
   useEffect(() => {
     if (isVisible && !wasVisible) {
-      // Reset state only when overlay OPENS (transition from hidden to visible)
-      setSelectedQuantity(initialQuantity);
-      setSelectedSize(initialSize);
-      setHasExplicitlySelectedSize(false);
-      setHasExplicitlySelectedQuantity(false);
+      // If returning from checkout with pending buy now item for this product,
+      // restore the previous selections instead of resetting
+      if (pendingBuyNowItem && product?.id === pendingBuyNowItem.productId) {
+        setSelectedSize(pendingBuyNowItem.size);
+        setSelectedQuantity(pendingBuyNowItem.quantity);
+        setHasExplicitlySelectedSize(true);
+        setHasExplicitlySelectedQuantity(true);
+      } else {
+        // Reset state only when overlay OPENS (transition from hidden to visible)
+        setSelectedQuantity(initialQuantity);
+        setSelectedSize(initialSize);
+        setHasExplicitlySelectedSize(false);
+        setHasExplicitlySelectedQuantity(false);
+      }
     }
     setWasVisible(isVisible);
 
@@ -108,7 +119,16 @@ export default function OverlayCheckoutShipping({
       setIsSizeOverlayVisible(false);
       setIsShippingOverlayVisible(false);
     }
-  }, [isVisible, fadeAnim, slideAnim, initialQuantity, initialSize, wasVisible]);
+  }, [
+    isVisible,
+    fadeAnim,
+    slideAnim,
+    initialQuantity,
+    initialSize,
+    wasVisible,
+    pendingBuyNowItem,
+    product?.id,
+  ]);
 
   const handleSelectQuantity = () => {
     // Show the quantity overlay
@@ -151,7 +171,7 @@ export default function OverlayCheckoutShipping({
   const handleSelectShipping = async (method: 'delivery' | 'pickup' | '') => {
     if (!method) return;
 
-    // PRODUCT-012: Don't add to cart yet - use onBuyNow to set pending item
+    // Don't add to cart yet - use onBuyNow to set pending item
     // Cart addition will happen at order confirmation
     if (onBuyNow) {
       onBuyNow(selectedSize, selectedQuantity);
