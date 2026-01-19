@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
-  ScrollView,
   TouchableOpacity,
   Image,
   ViewStyle,
@@ -49,16 +48,14 @@ export default function StoreDetailView({
       <View style={styles.container}>
         <SubheaderClose title={title || store.name} onClose={onClose} closeTestID={closeTestID} />
 
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContentContainer}>
-          <View style={styles.storeDetailsContainer}>
-            <Image source={store.image} style={styles.storeImage} resizeMode="cover" />
-            <View style={styles.storeTextContainer}>
-              <Text style={styles.storeName}>{store.name}</Text>
-              <Text style={styles.storeAddress}>{store.address}</Text>
-              <Text style={styles.storeHours}>{store.hours}</Text>
-            </View>
+        <View style={styles.contentContainer}>
+          <Image source={store.image} style={styles.storeImage} resizeMode="cover" />
+          <View style={styles.storeTextContainer}>
+            <Text style={styles.storeName}>{store.name}</Text>
+            <Text style={styles.storeAddress}>{store.address}</Text>
+            <Text style={styles.storeHours}>{store.hours}</Text>
           </View>
-        </ScrollView>
+        </View>
 
         {showActions && (
           <View style={[styles.actionButtons, !onConfirm && styles.actionButtonsCentered]}>
@@ -93,9 +90,7 @@ export default function StoreDetailView({
 type Styles = {
   safeArea: ViewStyle;
   container: ViewStyle;
-  scrollView: ViewStyle;
-  scrollContentContainer: ViewStyle;
-  storeDetailsContainer: ViewStyle;
+  contentContainer: ViewStyle;
   storeImage: ImageStyle;
   storeTextContainer: ViewStyle;
   storeName: TextStyle;
@@ -121,22 +116,15 @@ const styles = StyleSheet.create<Styles>({
     paddingBottom: layout.safeAreaBottom,
     gap: 40,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContentContainer: {
-    flexGrow: 1,
-    paddingHorizontal: spacing.lg,
-  },
-  storeDetailsContainer: {
-    borderRadius: radius.xs,
-    overflow: 'hidden',
+  contentContainer: {
     flex: 1,
     gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
   storeImage: {
     width: '100%',
-    height: 394,
+    flex: 1,
+    borderRadius: radius.xs,
   },
   storeTextContainer: {
     paddingHorizontal: spacing.xs,
