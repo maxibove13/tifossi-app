@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../_styles/colors';
@@ -96,7 +97,12 @@ export default function VerificationCodeScreen() {
 
       <View style={styles.actionButtonsContainer}>
         <TouchableOpacity style={styles.primaryButton} onPress={handleContinue} activeOpacity={0.7}>
-          <Text style={styles.primaryButtonText}>Continuar</Text>
+          <LinearGradient
+            colors={colors.button.defaultGradient}
+            style={styles.primaryButtonGradient}
+          >
+            <Text style={styles.primaryButtonText}>Continuar</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -189,9 +195,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 48,
     borderRadius: radius.xxl,
+    overflow: 'hidden',
+  },
+  primaryButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.dark,
     paddingHorizontal: spacing.xl,
   },
   primaryButtonText: {

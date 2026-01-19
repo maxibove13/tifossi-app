@@ -14,6 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../../../_stores/authStore';
+import { usePaymentStore } from '../../../../_stores/paymentStore';
 import ChevronRight from '../../../../../assets/icons/chevron_right.svg';
 import CloseIcon from '../../../../../assets/icons/close_md.svg';
 import ChevronRightGreen from '../../../../../assets/icons/chevron_right_green.svg';
@@ -54,6 +55,9 @@ export default function OverlayCheckoutShipping({
   product,
 }: OverlayCheckoutShippingProps) {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const setShowShippingSelectionOnReturn = usePaymentStore(
+    (state) => state.setShowShippingSelectionOnReturn
+  );
 
   // Animation values
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -152,6 +156,9 @@ export default function OverlayCheckoutShipping({
     if (onBuyNow) {
       onBuyNow(selectedSize, selectedQuantity);
     }
+
+    // Set flag so shipping selection shows when user navigates back
+    setShowShippingSelectionOnReturn(true);
 
     setIsShippingOverlayVisible(false);
     onClose();
@@ -255,7 +262,10 @@ export default function OverlayCheckoutShipping({
             {hasExplicitlySelectedSize && hasExplicitlySelectedQuantity && (
               <View style={styles.actionButtons}>
                 <TouchableOpacity onPress={handleBuyNow} activeOpacity={0.7}>
-                  <LinearGradient colors={['#373737', '#0C0C0C']} style={styles.primaryButton}>
+                  <LinearGradient
+                    colors={colors.button.defaultGradient}
+                    style={styles.primaryButton}
+                  >
                     <Text style={styles.primaryButtonText}>Comprar ahora</Text>
                   </LinearGradient>
                 </TouchableOpacity>

@@ -17,8 +17,10 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import Animated, { useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 
 // design‑tokens
 import { colors, spacing, typography, radius } from './styles';
@@ -29,6 +31,8 @@ import ProductSections from '../sections/ProductSections';
 import OverlayCheckoutShipping from '../overlay/OverlayCheckoutShipping';
 import OverlayAddingToCart from '../overlay/OverlayAddingToCart';
 import OverlayProductAdding from '../overlay/OverlayProductAdding';
+import OverlayShippingSelection from '../overlay/OverlayShippingSelection';
+import { useAuthStore } from '../../../../_stores/authStore';
 // TODO: Re-enable when support options are implemented
 // import SupportOption from './SupportOption';
 
@@ -360,6 +364,59 @@ const SwipeableEdge = ({
   const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
   const setGuestContactInfo = usePaymentStore((state) => state.setGuestContactInfo);
   const setGuestAddress = usePaymentStore((state) => state.setGuestAddress);
+  const showShippingSelectionOnReturn = usePaymentStore(
+    (state) => state.showShippingSelectionOnReturn
+  );
+  const setShowShippingSelectionOnReturn = usePaymentStore(
+    (state) => state.setShowShippingSelectionOnReturn
+  );
+
+  // Auth store for shipping navigation
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+
+  // State for standalone shipping selection overlay (shown when returning from checkout)
+  const [showReturnShippingOverlay, setShowReturnShippingOverlay] = useState(false);
+
+  // Show shipping selection overlay when returning from checkout screens
+  // Use useFocusEffect to ensure the overlay only shows when the product screen is focused
+  // This prevents the modal from appearing on top of checkout screens during navigation
+  useFocusEffect(
+    useCallback(() => {
+      if (showShippingSelectionOnReturn) {
+        setShowReturnShippingOverlay(true);
+        setShowShippingSelectionOnReturn(false);
+      }
+    }, [showShippingSelectionOnReturn, setShowShippingSelectionOnReturn])
+  );
+
+  // Handle shipping selection from the return overlay
+  const handleReturnShippingSelect = useCallback(
+    (method: 'delivery' | 'pickup' | '') => {
+      if (!method) return;
+
+      // Set flag for potential next return
+      setShowShippingSelectionOnReturn(true);
+      setShowReturnShippingOverlay(false);
+
+      if (method === 'delivery') {
+        if (isLoggedIn) {
+          router.navigate('/checkout/shipping-address');
+        } else {
+          router.navigate('/checkout/new-address?guest=true');
+        }
+      } else {
+        router.navigate('/checkout/shipping-pickup');
+      }
+    },
+    [isLoggedIn, setShowShippingSelectionOnReturn]
+  );
+
+  // Handle closing the return shipping overlay (user cancels "buy now" intent)
+  const handleReturnShippingClose = useCallback(() => {
+    setShowReturnShippingOverlay(false);
+    // Clear pending buy now item since user is canceling the flow
+    setPendingBuyNowItem(null);
+  }, [setPendingBuyNowItem]);
 
   const handleAddToCartPress = useCallback(() => {
     if (isOutOfStock) return;
@@ -515,6 +572,14 @@ const SwipeableEdge = ({
           isVisible={showConfirmationOverlay}
           onClose={() => setShowConfirmationOverlay(false)}
         />
+
+        {/* Standalone shipping selection overlay - shown when returning from checkout */}
+        <OverlayShippingSelection
+          isVisible={showReturnShippingOverlay}
+          onGoBack={handleReturnShippingClose}
+          onClose={handleReturnShippingClose}
+          onSelectShipping={handleReturnShippingSelect}
+        />
       </View>
     );
   }
@@ -635,6 +700,14 @@ const SwipeableEdge = ({
       <OverlayProductAdding
         isVisible={showConfirmationOverlay}
         onClose={() => setShowConfirmationOverlay(false)}
+      />
+
+      {/* Standalone shipping selection overlay - shown when returning from checkout */}
+      <OverlayShippingSelection
+        isVisible={showReturnShippingOverlay}
+        onGoBack={handleReturnShippingClose}
+        onClose={handleReturnShippingClose}
+        onSelectShipping={handleReturnShippingSelect}
       />
     </>
   );

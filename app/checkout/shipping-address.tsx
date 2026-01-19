@@ -11,6 +11,7 @@ import {
   TextStyle,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import PlusCircle from '../../assets/icons/plus_circle.svg';
 import SubheaderClose from '../_components/common/SubheaderClose';
@@ -231,7 +232,12 @@ export default function ShippingAddressScreen() {
           activeOpacity={0.7}
           disabled={selectedAddress === null && addresses.length > 0}
         >
-          <Text style={styles.primaryButtonText}>Siguiente</Text>
+          <LinearGradient
+            colors={colors.button.defaultGradient}
+            style={styles.primaryButtonGradient}
+          >
+            <Text style={styles.primaryButtonText}>Siguiente</Text>
+          </LinearGradient>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.secondaryButton} onPress={handleBack} activeOpacity={0.7}>
@@ -268,6 +274,7 @@ type Styles = {
   addAddressText: TextStyle;
   actionButtons: ViewStyle;
   primaryButton: ViewStyle;
+  primaryButtonGradient: ViewStyle;
   disabledButton: ViewStyle;
   primaryButtonText: TextStyle;
   secondaryButton: ViewStyle;
@@ -417,9 +424,12 @@ const styles = StyleSheet.create<Styles>({
     width: '100%',
     height: 48,
     borderRadius: 24,
+    overflow: 'hidden',
+  },
+  primaryButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0C0C0C',
   },
   disabledButton: {
     opacity: 0.5,

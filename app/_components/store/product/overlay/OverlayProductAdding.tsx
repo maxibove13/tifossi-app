@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../../../_stores/authStore';
+import { usePaymentStore } from '../../../../_stores/paymentStore';
 import OverlayShippingSelection from './OverlayShippingSelection';
 import CartIcon from '../../../../../assets/icons/cart_white.svg';
 import { spacing } from '../../../../_styles/spacing';
@@ -26,6 +27,9 @@ function OverlayProductAdding({ isVisible, onClose }: OverlayProductAddingProps)
   const [fadeAnim] = useState(new Animated.Value(0));
   const [isShippingOverlayVisible, setIsShippingOverlayVisible] = useState(false);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const setShowShippingSelectionOnReturn = usePaymentStore(
+    (state) => state.setShowShippingSelectionOnReturn
+  );
 
   useEffect(() => {
     if (isVisible) {
@@ -45,6 +49,10 @@ function OverlayProductAdding({ isVisible, onClose }: OverlayProductAddingProps)
 
   const handleSelectShipping = (method: 'delivery' | 'pickup' | '') => {
     if (!method) return;
+
+    // Set flag so shipping selection shows when user navigates back
+    setShowShippingSelectionOnReturn(true);
+
     setIsShippingOverlayVisible(false);
     onClose();
 

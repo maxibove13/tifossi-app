@@ -14,6 +14,7 @@ import {
   ImageSourcePropType,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import RadioButton from '../_components/ui/form/RadioButton';
 import SubheaderClose from '../_components/common/SubheaderClose';
@@ -533,9 +534,14 @@ export default function PaymentSelectionScreen() {
               disabled: !selectedPaymentMethod || isProcessingPayment || isLoading,
             }}
           >
-            <Text style={styles.primaryButtonText}>
-              {isProcessingPayment || isLoading ? 'Procesando...' : 'Continuar con el pago'}
-            </Text>
+            <LinearGradient
+              colors={colors.button.defaultGradient}
+              style={styles.primaryButtonGradient}
+            >
+              <Text style={styles.primaryButtonText}>
+                {isProcessingPayment || isLoading ? 'Procesando...' : 'Continuar con el pago'}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -582,6 +588,7 @@ type Styles = {
   paymentMethodText: TextStyle;
   actionButtons: ViewStyle;
   primaryButton: ViewStyle;
+  primaryButtonGradient: ViewStyle;
   disabledButton: ViewStyle;
   primaryButtonText: TextStyle;
   secondaryButton: ViewStyle;
@@ -726,9 +733,12 @@ const styles = StyleSheet.create<Styles>({
     width: '100%',
     height: 48,
     borderRadius: 24,
+    overflow: 'hidden',
+  },
+  primaryButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0C0C0C',
   },
   disabledButton: {
     opacity: 0.5,

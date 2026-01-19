@@ -69,6 +69,10 @@ interface PaymentUIState {
   // This allows checkout without adding to cart until order is confirmed
   pendingBuyNowItem: PendingBuyNowItem | null;
 
+  // Flag to show shipping selection overlay when returning from checkout screens
+  // This preserves the "buy now" intent when user navigates back
+  showShippingSelectionOnReturn: boolean;
+
   // UI state
   isLoading: boolean;
   error: string | null;
@@ -79,6 +83,7 @@ interface PaymentUIState {
   setGuestAddress: (address: GuestAddress | null) => void;
   setGuestContactInfo: (info: GuestContactInfo | null) => void;
   setPendingBuyNowItem: (item: PendingBuyNowItem | null) => void;
+  setShowShippingSelectionOnReturn: (show: boolean) => void;
   clearPaymentState: () => void;
   setError: (error: string | null) => void;
   setLoading: (isLoading: boolean) => void;
@@ -92,6 +97,7 @@ export const usePaymentStore = create<PaymentUIState>((set) => ({
   guestAddress: null,
   guestContactInfo: null,
   pendingBuyNowItem: null,
+  showShippingSelectionOnReturn: false,
   isLoading: false,
   error: null,
 
@@ -120,6 +126,10 @@ export const usePaymentStore = create<PaymentUIState>((set) => ({
     set({ pendingBuyNowItem: item });
   },
 
+  setShowShippingSelectionOnReturn: (show) => {
+    set({ showShippingSelectionOnReturn: show });
+  },
+
   clearPaymentState: () => {
     set({
       currentOrderNumber: null,
@@ -128,6 +138,7 @@ export const usePaymentStore = create<PaymentUIState>((set) => ({
       guestAddress: null,
       guestContactInfo: null,
       pendingBuyNowItem: null,
+      showShippingSelectionOnReturn: false,
       isLoading: false,
       error: null,
     });

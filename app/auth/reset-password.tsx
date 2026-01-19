@@ -9,6 +9,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { colors } from '../_styles/colors';
 import { spacing, radius, layout } from '../_styles/spacing';
@@ -125,11 +126,16 @@ export default function ResetPasswordScreen() {
           disabled={isSubmitting}
           testID="submit-reset"
         >
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color={colors.background.light} />
-          ) : (
-            <Text style={styles.primaryButtonText}>Guardar Contraseña</Text>
-          )}
+          <LinearGradient
+            colors={colors.button.defaultGradient}
+            style={styles.primaryButtonGradient}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color={colors.background.light} />
+            ) : (
+              <Text style={styles.primaryButtonText}>Guardar Contraseña</Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.secondaryButton}
@@ -185,9 +191,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 48,
     borderRadius: radius.xxl,
+    overflow: 'hidden',
+  },
+  primaryButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.dark,
     paddingHorizontal: spacing.xl,
   },
   primaryButtonText: {

@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
@@ -245,7 +246,12 @@ export default function PaymentResultScreen() {
             onPress={handleTryAgain}
             activeOpacity={0.7}
           >
-            <Text style={styles.primaryButtonText}>Intentar nuevamente</Text>
+            <LinearGradient
+              colors={colors.button.defaultGradient}
+              style={styles.primaryButtonGradient}
+            >
+              <Text style={styles.primaryButtonText}>Intentar nuevamente</Text>
+            </LinearGradient>
           </TouchableOpacity>
         )}
         {isLoggedIn && !showRetryButton && (
@@ -254,7 +260,12 @@ export default function PaymentResultScreen() {
             onPress={handleGoToOrders}
             activeOpacity={0.7}
           >
-            <Text style={styles.primaryButtonText}>Ver mis pedidos</Text>
+            <LinearGradient
+              colors={colors.button.defaultGradient}
+              style={styles.primaryButtonGradient}
+            >
+              <Text style={styles.primaryButtonText}>Ver mis pedidos</Text>
+            </LinearGradient>
           </TouchableOpacity>
         )}
         <TouchableOpacity
@@ -262,13 +273,16 @@ export default function PaymentResultScreen() {
           onPress={handleBackToHome}
           activeOpacity={0.7}
         >
-          <Text
-            style={
-              isLoggedIn && !showRetryButton ? styles.secondaryButtonText : styles.primaryButtonText
-            }
-          >
-            Volver al inicio
-          </Text>
+          {isLoggedIn && !showRetryButton ? (
+            <Text style={styles.secondaryButtonText}>Volver al inicio</Text>
+          ) : (
+            <LinearGradient
+              colors={colors.button.defaultGradient}
+              style={styles.primaryButtonGradient}
+            >
+              <Text style={styles.primaryButtonText}>Volver al inicio</Text>
+            </LinearGradient>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -362,9 +376,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: components.button.height,
     borderRadius: radius.xxl,
+    overflow: 'hidden',
+  },
+  primaryButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.dark,
     paddingHorizontal: spacing.xl,
   },
   primaryButtonText: {
