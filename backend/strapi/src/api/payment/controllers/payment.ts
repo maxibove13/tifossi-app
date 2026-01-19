@@ -12,6 +12,54 @@ import {
   buildClientOrder,
 } from '../../../utils/order-sanitizer';
 
+/**
+ * Cancel recent pending orders that are superseded by a new payment attempt
+ */
+async function cancelSupersededPendingOrders(
+  filter: { user: number } | { guestEmail: string },
+  logIdentifier: Record<string, unknown>
+): Promise<void> {
+  const sixtyMinutesAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const pendingOrders = await strapi.documents('api::order.order').findMany({
+    filters: {
+      ...filter,
+      status: 'pending',
+      createdAt: { $gte: sixtyMinutesAgo },
+    } as any,
+  });
+
+  await Promise.allSettled(
+    pendingOrders.map(async (pendingOrder) => {
+      const currentOrder = await strapi.documents('api::order.order').findOne({
+        documentId: pendingOrder.documentId,
+      });
+      if ((currentOrder as any)?.status !== 'pending') {
+        strapi.log.info('[Payment] Skipping cancel - order no longer pending', {
+          orderNumber: (pendingOrder as any).orderNumber,
+          currentStatus: (currentOrder as any)?.status,
+        });
+        return;
+      }
+
+      await strapi.documents('api::order.order').update({
+        documentId: pendingOrder.documentId,
+        data: {
+          status: 'cancelled',
+          metadata: {
+            ...(pendingOrder as any).metadata,
+            cancelReason: 'superseded_by_new_attempt',
+            supersededAt: new Date().toISOString(),
+          },
+        } as any,
+      });
+      strapi.log.info('[Payment] Cancelled pending order (superseded)', {
+        orderNumber: (pendingOrder as any).orderNumber,
+        ...logIdentifier,
+      });
+    })
+  );
+}
+
 export default {
   /**
    * Create payment preference for an order
@@ -38,6 +86,9 @@ export default {
           ip: ctx.request.ip,
         },
       });
+
+      // Cancel recent pending orders for this user (superseded by new attempt)
+      await cancelSupersededPendingOrders({ user: authUser.id }, { userId: authUser.id });
 
       const mpService = new MercadoPagoService();
 
@@ -187,6 +238,12 @@ export default {
           ip: ctx.request.ip,
         },
       });
+
+      // Cancel recent pending orders for this guest email (superseded by new attempt)
+      await cancelSupersededPendingOrders(
+        { guestEmail: guestInfo.email },
+        { guestEmail: guestInfo.email }
+      );
 
       const mpService = new MercadoPagoService();
 
@@ -542,11 +599,12 @@ export default {
   /**
    * Get order status by order number (for payment result verification)
    * GET /api/payment/order-status/:orderNumber
-   * No auth required - allows guest order status checks
+   * Requires auth token (for user orders) or email query param (for guest orders)
    */
   async getOrderStatus(ctx: any) {
     try {
       const { orderNumber } = ctx.params;
+      const { email } = ctx.query;
 
       if (!orderNumber) {
         return ctx.badRequest('Order number is required');
@@ -557,6 +615,7 @@ export default {
           orderNumber,
         },
         limit: 1,
+        populate: ['user'],
       });
 
       if (!orders || orders.length === 0) {
@@ -564,8 +623,38 @@ export default {
       }
 
       const order = orders[0];
-
       const orderData = order as any;
+
+      // Authorization check
+      const authUser = ctx.state?.user;
+      const isUserOrder = orderData.user?.id;
+      const isGuestOrder = !!orderData.guestEmail;
+
+      if (isUserOrder) {
+        // User order: require matching auth token
+        if (!authUser || authUser.id !== orderData.user.id) {
+          strapi.log.warn('[getOrderStatus] Unauthorized access attempt', {
+            orderNumber,
+            requestUserId: authUser?.id,
+            orderUserId: orderData.user?.id,
+          });
+          return ctx.unauthorized('Not authorized to view this order');
+        }
+      } else if (isGuestOrder) {
+        // Guest order: require matching email
+        if (!email || email.toLowerCase() !== orderData.guestEmail.toLowerCase()) {
+          strapi.log.warn('[getOrderStatus] Unauthorized guest access attempt', {
+            orderNumber,
+            providedEmail: email ? '[redacted]' : 'none',
+          });
+          return ctx.unauthorized('Email verification required for guest orders');
+        }
+      } else {
+        // Order has neither user nor guestEmail - data integrity issue
+        strapi.log.error('[getOrderStatus] Order has no user or guestEmail', { orderNumber });
+        return ctx.internalServerError('Order data error');
+      }
+
       ctx.body = {
         success: true,
         data: {

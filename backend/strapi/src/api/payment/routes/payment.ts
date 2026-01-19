@@ -79,7 +79,7 @@ const paymentRoutes: RoutesModule = {
       handler: 'payment.getOrderStatus',
       config: {
         auth: false,
-        middlewares: ['global::guest-rate-limit'], // Rate limit to prevent enumeration
+        middlewares: ['global::jwt-auth-optional', 'global::guest-rate-limit'],
       },
     },
     {

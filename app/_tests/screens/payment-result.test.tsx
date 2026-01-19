@@ -35,6 +35,7 @@ const { router, useLocalSearchParams } = require('expo-router');
 
 describe('PaymentResultScreen', () => {
   let mockGetOrderStatus: jest.SpyInstance;
+  let mockSetAuthToken: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -43,6 +44,8 @@ describe('PaymentResultScreen', () => {
     usePaymentStore.setState({
       currentOrderNumber: null,
       currentOrderId: null,
+      guestAddress: null,
+      guestContactInfo: null,
       isLoading: false,
       error: null,
     });
@@ -72,10 +75,101 @@ describe('PaymentResultScreen', () => {
         orderNumber: 'ORDER-123',
         status: 'pending',
       });
+
+    // Mock setAuthToken
+    mockSetAuthToken = jest.spyOn(mercadoPagoService, 'setAuthToken').mockImplementation(() => {});
   });
 
   afterEach(() => {
     mockGetOrderStatus.mockRestore();
+    mockSetAuthToken.mockRestore();
+  });
+
+  describe('Authentication', () => {
+    it('should set auth token on service when user is logged in', async () => {
+      useAuthStore.setState({
+        token: 'my-jwt-token',
+        isLoggedIn: true,
+        user: { id: 'user-1', email: 'test@example.com', name: 'Test', profilePicture: null },
+      });
+
+      mockGetOrderStatus.mockResolvedValue({
+        orderNumber: 'ORDER-123',
+        status: 'paid',
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        external_reference: 'ORDER-123',
+      });
+
+      render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(mockSetAuthToken).toHaveBeenCalledWith('my-jwt-token');
+      });
+    });
+
+    it('should not set auth token when user is not logged in', async () => {
+      useAuthStore.setState({
+        token: null,
+        isLoggedIn: false,
+        user: null,
+      });
+
+      mockGetOrderStatus.mockResolvedValue({
+        orderNumber: 'ORDER-123',
+        status: 'paid',
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        external_reference: 'ORDER-123',
+      });
+
+      render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(mockSetAuthToken).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should NOT pass email to getOrderStatusByNumber for authenticated users', async () => {
+      useAuthStore.setState({
+        token: 'auth-token',
+        isLoggedIn: true,
+        user: { id: 'user-1', email: 'user@example.com', name: 'User', profilePicture: null },
+      });
+
+      // Even if guestAddress exists, authenticated users should not pass email
+      usePaymentStore.setState({
+        guestAddress: {
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'guest@example.com',
+          addressLine1: '123 Main St',
+          city: 'Buenos Aires',
+          state: 'CABA',
+          country: 'Argentina',
+          phoneNumber: '+5491122334455',
+        },
+      });
+
+      mockGetOrderStatus.mockResolvedValue({
+        orderNumber: 'AUTH-ORDER-123',
+        status: 'paid',
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        external_reference: 'AUTH-ORDER-123',
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        // Should pass undefined for email since user is authenticated
+        expect(mockGetOrderStatus).toHaveBeenCalledWith('AUTH-ORDER-123', undefined);
+        expect(getByText('¡Pago exitoso!')).toBeTruthy();
+      });
+    });
   });
 
   describe('Successful Payment (via backend polling)', () => {
@@ -162,6 +256,7 @@ describe('PaymentResultScreen', () => {
     it('should display failure UI when paymentFailure=true in params', async () => {
       (useLocalSearchParams as jest.Mock).mockReturnValue({
         paymentFailure: 'true',
+        external_reference: 'ORDER-FAILED',
         error: 'Fondos insuficientes',
       });
 
@@ -208,9 +303,11 @@ describe('PaymentResultScreen', () => {
       clearCartSpy.mockRestore();
     });
 
-    it('should navigate back when "Intentar Nuevamente" is pressed', async () => {
+    it('should navigate to payment selection when "Intentar Nuevamente" is pressed', async () => {
+      // paymentFailure with no payment_id shows failure immediately
       (useLocalSearchParams as jest.Mock).mockReturnValue({
         paymentFailure: 'true',
+        external_reference: 'ORDER-FAILED',
       });
 
       const { getByText } = render(<PaymentResultScreen />);
@@ -221,7 +318,84 @@ describe('PaymentResultScreen', () => {
 
       fireEvent.press(getByText('Intentar nuevamente'));
 
-      expect(router.back).toHaveBeenCalled();
+      expect(router.replace).toHaveBeenCalledWith('/checkout/payment-selection');
+    });
+
+    it('should verify once when paymentFailure=true but payment_id exists', async () => {
+      // Edge case: payment_id exists means MP created a payment, so we should verify
+      mockGetOrderStatus.mockResolvedValue({
+        orderNumber: 'ORDER-EDGE',
+        status: 'cancelled', // Backend confirms it really failed
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        paymentFailure: 'true',
+        external_reference: 'ORDER-EDGE',
+        payment_id: '12345678',
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(mockGetOrderStatus).toHaveBeenCalledTimes(1);
+        expect(mockGetOrderStatus).toHaveBeenCalledWith('ORDER-EDGE', undefined);
+        expect(getByText('Pago no completado')).toBeTruthy();
+      });
+    });
+
+    it('should show success when paymentFailure=true but backend returns paid (edge case)', async () => {
+      // Edge case: User got failure redirect but payment actually went through
+      mockGetOrderStatus.mockResolvedValue({
+        orderNumber: 'ORDER-SURPRISE',
+        status: 'paid',
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        paymentFailure: 'true',
+        external_reference: 'ORDER-SURPRISE',
+        payment_id: '12345678',
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(getByText('¡Pago exitoso!')).toBeTruthy();
+      });
+    });
+
+    it('should show pending when paymentFailure=true but backend returns pending', async () => {
+      // Payment still processing - don't show as failed yet
+      mockGetOrderStatus.mockResolvedValue({
+        orderNumber: 'ORDER-PROCESSING',
+        status: 'pending',
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        paymentFailure: 'true',
+        external_reference: 'ORDER-PROCESSING',
+        payment_id: '12345678',
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(getByText('Pago pendiente')).toBeTruthy();
+      });
+    });
+
+    it('should show failure immediately when paymentFailure=true and no payment_id', async () => {
+      // No payment_id = user cancelled before MP created a payment
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        paymentFailure: 'true',
+        external_reference: 'ORDER-CANCELLED',
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(mockGetOrderStatus).not.toHaveBeenCalled();
+        expect(getByText('Pago no completado')).toBeTruthy();
+      });
     });
   });
 
@@ -269,7 +443,7 @@ describe('PaymentResultScreen', () => {
       const { getByText } = render(<PaymentResultScreen />);
 
       await waitFor(() => {
-        expect(mockGetOrderStatus).toHaveBeenCalledWith('ORDER-123');
+        expect(mockGetOrderStatus).toHaveBeenCalledWith('ORDER-123', undefined);
         expect(getByText('¡Pago exitoso!')).toBeTruthy();
       });
     });
@@ -420,7 +594,78 @@ describe('PaymentResultScreen', () => {
       const { getByText } = render(<PaymentResultScreen />);
 
       await waitFor(() => {
-        expect(mockGetOrderStatus).toHaveBeenCalledWith('GUEST-ORDER-123');
+        expect(mockGetOrderStatus).toHaveBeenCalledWith('GUEST-ORDER-123', undefined);
+        expect(getByText('¡Pago exitoso!')).toBeTruthy();
+      });
+    });
+
+    it('should pass guest email to getOrderStatusByNumber when guestAddress has email', async () => {
+      useAuthStore.setState({
+        token: null,
+        isLoggedIn: false,
+        user: null,
+      });
+
+      usePaymentStore.setState({
+        guestAddress: {
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'guest@example.com',
+          addressLine1: '123 Main St',
+          city: 'Buenos Aires',
+          state: 'CABA',
+          country: 'Argentina',
+          phoneNumber: '+5491122334455',
+        },
+      });
+
+      mockGetOrderStatus.mockResolvedValue({
+        orderNumber: 'GUEST-ORDER-456',
+        status: 'paid',
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        external_reference: 'GUEST-ORDER-456',
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(mockGetOrderStatus).toHaveBeenCalledWith('GUEST-ORDER-456', 'guest@example.com');
+        expect(getByText('¡Pago exitoso!')).toBeTruthy();
+      });
+    });
+
+    it('should pass guest email from guestContactInfo when guestAddress is not set', async () => {
+      useAuthStore.setState({
+        token: null,
+        isLoggedIn: false,
+        user: null,
+      });
+
+      usePaymentStore.setState({
+        guestAddress: null,
+        guestContactInfo: {
+          firstName: 'Jane',
+          lastName: 'Smith',
+          email: 'jane@example.com',
+          phoneNumber: '+5491122334455',
+        },
+      });
+
+      mockGetOrderStatus.mockResolvedValue({
+        orderNumber: 'GUEST-PICKUP-789',
+        status: 'paid',
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        external_reference: 'GUEST-PICKUP-789',
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(mockGetOrderStatus).toHaveBeenCalledWith('GUEST-PICKUP-789', 'jane@example.com');
         expect(getByText('¡Pago exitoso!')).toBeTruthy();
       });
     });

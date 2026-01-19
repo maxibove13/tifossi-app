@@ -408,10 +408,14 @@ export default function PaymentSelectionScreen() {
         return;
       }
 
-      // After browser closes, navigate to payment result to check actual status.
-      // The browser 'cancel' type doesn't mean payment failed - user may have
-      // completed payment and pressed "Done" on the redirect page.
-      // Use replace to avoid stacking screens if deep link already navigated there.
+      // User dismissed browser (cancelled Apple overlay or closed before completing)
+      // Stay on payment screen so they can retry immediately
+      // The pending order will be cancelled when they attempt again
+      if (paymentResult.userDismissed) {
+        return;
+      }
+
+      // User completed redirect flow - navigate to payment result to verify status
       navigation.replace({
         pathname: '/checkout/payment-result',
         params: { external_reference: preference.externalReference },

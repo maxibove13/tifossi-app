@@ -15,8 +15,8 @@ import {
 } from 'react-native';
 import { router, Stack } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
-import { Feather } from '@expo/vector-icons';
 import Input from '../../_components/ui/form/Input';
+import SubheaderClose from '../../_components/common/SubheaderClose';
 import addressService from '../../_services/address/addressService';
 import { useAuthStore } from '../../_stores/authStore';
 
@@ -306,12 +306,7 @@ export default function NewAddressScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       <View style={styles.mainContent}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Adicionar direccion de envio</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <Feather name="x" size={24} color={colors.secondary} />
-          </TouchableOpacity>
-        </View>
+        <SubheaderClose title="Adicionar dirección de envío" onClose={handleClose} />
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.content}>
@@ -524,9 +519,6 @@ type Styles = {
   container: ViewStyle;
   mainContent: ViewStyle;
   scrollView: ViewStyle;
-  header: ViewStyle;
-  title: TextStyle;
-  closeButton: ViewStyle;
   content: ViewStyle;
   errorBanner: ViewStyle;
   errorBannerText: TextStyle;
@@ -552,32 +544,10 @@ const styles = StyleSheet.create<Styles>({
   },
   mainContent: {
     flex: 1,
-    paddingTop: spacing.md,
+    paddingTop: layout.subheaderScreenTop,
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.lg,
-  },
-  title: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
-    color: colors.primary,
-  },
-  closeButton: {
-    width: components.closeButton.width,
-    height: components.closeButton.height,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   content: {
     flex: 1,

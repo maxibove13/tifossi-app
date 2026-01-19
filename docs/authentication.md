@@ -564,6 +564,12 @@ Current security measures:
    - Rejects paths missing leading slash
    - Rejects paths with `/api/` prefix (prevents double `/api/api/...` paths)
 
+6. **Guest Order Verification**:
+   Guest checkout orders require email verification for status checks:
+   - API: `GET /api/payment/order-status/:orderNumber?email=guest@email.com`
+   - Email must match the order's guest contact email
+   - Prevents unauthorized access to order status by order number alone
+
 Pending security enhancements:
 
 1. **Token Refresh Mechanism**:
