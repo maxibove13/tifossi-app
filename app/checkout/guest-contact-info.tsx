@@ -248,12 +248,13 @@ const styles = StyleSheet.create<Styles>({
     fontSize: 14,
     fontWeight: fontWeights.regular,
     lineHeight: 22,
-    color: '#707070',
+    color: '#424242',
   },
   formSection: {
     gap: spacing.lg,
   },
   sectionHeader: {
+    paddingHorizontal: spacing.lg,
     marginBottom: spacing.sm,
   },
   sectionTitle: {
