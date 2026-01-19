@@ -67,6 +67,8 @@ export interface PaymentResult {
   collectionId?: string;
   status?: 'approved' | 'rejected' | 'pending';
   error?: string;
+  /** True when user dismissed browser without completing payment flow */
+  userDismissed?: boolean;
 }
 
 export interface PaymentStatus {
@@ -133,8 +135,10 @@ class MercadoPagoService {
         };
 
         const url = `${this.baseUrl}/api/payment/guest/create-preference`;
-        console.log('[MercadoPago] Guest request URL:', url);
-        console.log('[MercadoPago] Guest request data:', JSON.stringify(guestOrderData, null, 2));
+        if (__DEV__) {
+          console.log('[MercadoPago] Guest request URL:', url);
+          console.log('[MercadoPago] Guest request data:', JSON.stringify(guestOrderData, null, 2));
+        }
 
         const response = await fetch(url, {
           method: 'POST',
@@ -162,7 +166,9 @@ class MercadoPagoService {
         }
 
         const result = await response.json();
-        console.log('[MercadoPago] Guest response:', JSON.stringify(result, null, 2));
+        if (__DEV__) {
+          console.log('[MercadoPago] Guest response:', JSON.stringify(result, null, 2));
+        }
 
         if (!result.success || !result.data) {
           throw new Error('Invalid response format from server');
@@ -177,8 +183,10 @@ class MercadoPagoService {
 
       // Use authenticated endpoint for logged-in users
       const url = `${this.baseUrl}/api/payment/create-preference`;
-      console.log('[MercadoPago] Auth request URL:', url);
-      console.log('[MercadoPago] Auth request data:', JSON.stringify(orderData, null, 2));
+      if (__DEV__) {
+        console.log('[MercadoPago] Auth request URL:', url);
+        console.log('[MercadoPago] Auth request data:', JSON.stringify(orderData, null, 2));
+      }
 
       const response = await fetch(url, {
         method: 'POST',
@@ -207,7 +215,9 @@ class MercadoPagoService {
       }
 
       const result = await response.json();
-      console.log('[MercadoPago] Auth response:', JSON.stringify(result, null, 2));
+      if (__DEV__) {
+        console.log('[MercadoPago] Auth response:', JSON.stringify(result, null, 2));
+      }
 
       if (!result.success || !result.data) {
         throw new Error('Invalid response format from server');
@@ -291,13 +301,13 @@ class MercadoPagoService {
         }
       }
 
-      // User cancelled or dismissed - still return success to check actual payment status
-      // They might have completed payment before dismissing
+      // User cancelled or dismissed without completing redirect flow
       if (result.type === 'cancel' || result.type === 'dismiss') {
         return {
           success: true,
           orderId: preference.externalReference,
           status: 'pending',
+          userDismissed: true,
         };
       }
 
@@ -350,15 +360,27 @@ class MercadoPagoService {
   }
 
   /**
-   * Get order status by order number (no auth required for guest orders)
+   * Get order status by order number
+   * Requires either auth token (for logged-in users) or email (for guests)
    */
   async getOrderStatusByNumber(
-    orderNumber: string
+    orderNumber: string,
+    guestEmail?: string
   ): Promise<{ orderNumber: string; status: string; mpCollectionStatus?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/payment/order-status/${orderNumber}`, {
-        method: 'GET',
-      });
+      const params = guestEmail ? `?email=${encodeURIComponent(guestEmail)}` : '';
+      const headers: Record<string, string> = {};
+      if (this.authToken) {
+        headers['Authorization'] = `Bearer ${this.authToken}`;
+      }
+
+      const response = await fetch(
+        `${this.baseUrl}/api/payment/order-status/${orderNumber}${params}`,
+        {
+          method: 'GET',
+          headers,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

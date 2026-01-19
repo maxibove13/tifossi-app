@@ -25,8 +25,18 @@ import mercadoPagoService from '../_services/payment/mercadoPago';
 export default function PaymentResultScreen() {
   const params = useLocalSearchParams();
   const { clearCart } = useCartStore();
-  const { isLoggedIn } = useAuthStore();
-  const { currentOrderNumber } = usePaymentStore();
+  const { isLoggedIn, token } = useAuthStore();
+  const { currentOrderNumber, guestAddress, guestContactInfo } = usePaymentStore();
+
+  // Get guest email for order status verification
+  const guestEmail = guestAddress?.email || guestContactInfo?.email;
+
+  // Set auth token on service if logged in
+  useEffect(() => {
+    if (token) {
+      mercadoPagoService.setAuthToken(token);
+    }
+  }, [token]);
 
   const [isVerifying, setIsVerifying] = useState(true);
   const [resolvedStatus, setResolvedStatus] = useState<'success' | 'pending' | 'failed' | null>(
@@ -38,6 +48,8 @@ export default function PaymentResultScreen() {
   const paymentFailureParam = params.paymentFailure === 'true';
   const rawExternalRef = params.external_reference || params.externalReference;
   const externalReference = Array.isArray(rawExternalRef) ? rawExternalRef[0] : rawExternalRef;
+  const rawPaymentId = params.payment_id;
+  const paymentId = Array.isArray(rawPaymentId) ? rawPaymentId[0] : rawPaymentId;
   const error = params.error as string;
 
   // Order number: from params or store
@@ -45,13 +57,6 @@ export default function PaymentResultScreen() {
 
   // Poll backend to verify payment status (webhook is source of truth)
   useEffect(() => {
-    // If payment failed at MercadoPago, show failure immediately
-    if (paymentFailureParam) {
-      setResolvedStatus('failed');
-      setIsVerifying(false);
-      return;
-    }
-
     // No order number - can't verify
     if (!orderNumber) {
       setResolvedStatus('pending');
@@ -60,6 +65,41 @@ export default function PaymentResultScreen() {
     }
 
     let isMounted = true;
+
+    // If payment failed at MercadoPago but payment_id exists, do a single check
+    // Edge case: payment might have gone through despite failure redirect
+    if (paymentFailureParam) {
+      if (paymentId) {
+        // Single verification - payment was created, check if it actually succeeded
+        setIsVerifying(true);
+        mercadoPagoService
+          .getOrderStatusByNumber(orderNumber, isLoggedIn ? undefined : guestEmail)
+          .then((orderStatus) => {
+            if (!isMounted) return;
+            if (orderStatus.status === 'paid' || orderStatus.status === 'processing') {
+              setResolvedStatus('success');
+            } else if (orderStatus.status === 'pending') {
+              // Payment still processing - don't show as failed
+              setResolvedStatus('pending');
+            } else {
+              setResolvedStatus('failed');
+            }
+          })
+          .catch(() => {
+            if (isMounted) setResolvedStatus('failed');
+          })
+          .finally(() => {
+            if (isMounted) setIsVerifying(false);
+          });
+      } else {
+        // No payment_id - user cancelled before payment was created, show failure immediately
+        setResolvedStatus('failed');
+        setIsVerifying(false);
+      }
+      return;
+    }
+
+    // Normal flow: poll for status (browser closed or success/pending redirect)
     let attempts = 0;
     let currentDelay = 2000; // Start with 2s, will increase on 429
     const maxPolls = 5; // 5 polls, ~10-15 seconds max with backoff
@@ -74,7 +114,10 @@ export default function PaymentResultScreen() {
       if (!isMounted) return;
 
       try {
-        const orderStatus = await mercadoPagoService.getOrderStatusByNumber(orderNumber);
+        const orderStatus = await mercadoPagoService.getOrderStatusByNumber(
+          orderNumber,
+          isLoggedIn ? undefined : guestEmail
+        );
 
         if (!isMounted) return;
 
@@ -120,7 +163,7 @@ export default function PaymentResultScreen() {
     return () => {
       isMounted = false;
     };
-  }, [orderNumber, paymentFailureParam]);
+  }, [orderNumber, paymentFailureParam, paymentId, isLoggedIn, guestEmail]);
 
   // Determine final display status
   const paymentSuccess = resolvedStatus === 'success';
@@ -138,7 +181,7 @@ export default function PaymentResultScreen() {
   };
 
   const handleTryAgain = () => {
-    router.back(); // Go back to payment selection
+    router.replace('/checkout/payment-selection');
   };
 
   const handleBackToHome = () => {

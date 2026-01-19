@@ -15,6 +15,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Input from '../_components/ui/form/Input';
+import SubheaderClose from '../_components/common/SubheaderClose';
 import addressService from '../_services/address/addressService';
 import { useAuthStore } from '../_stores/authStore';
 import { usePaymentStore } from '../_stores/paymentStore';
@@ -211,12 +212,8 @@ function NewAddressScreen() {
       />
 
       <View style={styles.mainContent}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Añadir dirección de envío</Text>
-        </View>
+        <SubheaderClose title="Añadir dirección de envío" onClose={handleBack} />
 
-        {/* Form Content */}
         <ScrollView style={styles.scrollView}>
           <View style={styles.content}>
             {/* API Error */}
@@ -367,8 +364,6 @@ export default NewAddressScreen;
 type Styles = {
   container: ViewStyle;
   mainContent: ViewStyle;
-  header: ViewStyle;
-  headerTitle: TextStyle;
   scrollView: ViewStyle;
   content: ViewStyle;
   errorBanner: ViewStyle;
@@ -401,21 +396,6 @@ const styles = StyleSheet.create<Styles>({
   mainContent: {
     flex: 1,
     paddingTop: layout.subheaderScreenTop,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    height: 44,
-  },
-  headerTitle: {
-    fontFamily: 'Roboto',
-    fontSize: 20,
-    fontWeight: fontWeights.regular,
-    lineHeight: 28,
-    color: '#0C0C0C',
   },
   scrollView: {
     flex: 1,

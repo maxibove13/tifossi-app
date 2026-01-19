@@ -10,9 +10,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
 import { colors } from '../_styles/colors';
-import { spacing, radius, components } from '../_styles/spacing';
+import { spacing, radius, components, layout } from '../_styles/spacing';
+import SubheaderClose from '../_components/common/SubheaderClose';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
 import { useAuthStore } from '../_stores/authStore';
@@ -93,13 +93,7 @@ export default function ChangePasswordScreen() {
     <SafeAreaView style={styles.safeAreaContainer}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.mainContainer}>
-        {/* Custom Header - Matching existing auth screens */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Cambiar Contraseña</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <Feather name="x" size={24} color={colors.secondary} />
-          </TouchableOpacity>
-        </View>
+        <SubheaderClose title="Cambiar Contraseña" onClose={handleClose} />
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.formContainer}>
@@ -193,29 +187,7 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    paddingTop: spacing.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
-  },
-  headerTitle: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
-    color: colors.primary,
-  },
-  closeButton: {
-    width: components.closeButton.width,
-    height: components.closeButton.height,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingTop: layout.subheaderScreenTop,
   },
   scrollView: {
     flex: 1,

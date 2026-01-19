@@ -11,7 +11,7 @@
 | Metric | Value |
 |--------|-------|
 | Production Status | Active - Accepting payments |
-| Test Coverage | 100% (35 tests passing) |
+| Test Coverage | 100% (35 backend + 25 frontend tests) |
 | Security Rating | 88/100 (Strong) |
 | Critical Blockers | 0 (All resolved) |
 | Backend URL | https://tifossi-strapi-backend.onrender.com |
@@ -34,6 +34,8 @@
 - **Duplicate Prevention**: Database-backed webhook deduplication (prevents replay attacks)
 - **Deep Link Security**: Parameter validation and injection prevention
 - **State Validation**: Order state transition enforcement
+- **Order Status Authorization**: API requires auth token (users) or email param (guests) to prevent unauthorized status checks
+- **Superseded Order Cleanup**: Old pending orders are automatically cancelled when new payment attempts occur
 
 ### What's Not Implemented (Acceptable for MVP)
 - `merchant_order` webhook handler (logs only)
@@ -81,6 +83,7 @@ Payment Result Screen     Payment Result Screen
 (uses URL params)         (verifies via API)
                                 ↓
                      GET /api/payment/order-status/:orderNumber
+                     (Requires: auth token OR ?email=guest@email.com)
                                 ↓
                           Show Actual Status
                  ↓
@@ -110,6 +113,22 @@ When the user presses "Done" in the WebBrowser after completing payment, `WebBro
 
 The mobile app now handles this gracefully by always navigating to the payment result screen and verifying status via API when deep link params are not available.
 
+### User Dismissed Handling
+
+The `PaymentResult` interface includes a `userDismissed` flag to distinguish between:
+- **User dismissed browser** (`userDismissed: true`): User pressed "Done" before completing payment
+- **Payment completed** (`userDismissed: false`): Payment flow completed (success or failure)
+
+When `userDismissed` is true, the payment selection screen does NOT navigate to payment-result, allowing users to retry or select a different payment method.
+
+### Payment Failure Edge Cases
+
+The payment result screen handles complex failure scenarios:
+
+1. **Failure before payment creation**: No `payment_id` exists - show error, allow retry
+2. **Failure after payment creation**: `payment_id` exists but `paymentFailure=true` - verify actual status via API (payment may have succeeded despite failure redirect)
+3. **Browser dismissal**: `userDismissed=true` - stay on payment selection screen
+
 ### Key Components
 
 | Component | File | Responsibility |
@@ -120,6 +139,7 @@ The mobile app now handles this gracefully by always navigating to the payment r
 | Webhook Processor | `webhook-processor.ts` | Background processing with retries |
 | Order State Manager | `order-state-manager.ts` | State transitions, validation |
 | Device Fingerprint | `deviceFingerprint.ts` | Fraud prevention metadata |
+| JWT Auth Optional | `jwt-auth-optional.ts` | Optional auth middleware for guest/user endpoints |
 
 ---
 

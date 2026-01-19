@@ -1,9 +1,9 @@
 # Payment Tests Status
 
-## Current Status: TEMPORARILY DISABLED
+## Current Status: ACTIVE
 
-**Date**: September 2025
-**Reason**: Waiting for MercadoPago account setup and credentials
+**Date**: January 2026
+**Status**: Payment tests enabled with full coverage
 
 ## What's Been Done
 
@@ -138,20 +138,27 @@ All test configurations are in: `/app/_config/mercadopago-uruguay.config.ts`
    - Implement webhook signature validation
    - Add end-to-end payment flow tests
 
-## Current Test Results (Without Payment Tests)
+## Current Test Results
 
 ```
-Test Suites: 32 total
-Tests: 513 total (with payment tests skipped)
-- ✅ 319 passing
-- ❌ 189 failing (unrelated to payments)
-- ⏭️ 5 skipped
+Test Suites: 44 total
+Tests: 819 total
+- ✅ 819 passing
+- ❌ 0 failing
 ```
 
-Payment tests that are skipped:
+### Payment Result Screen Tests
 
-- 8 tests in `mercadopago-payment-flow.test.tsx`
-- 3 tests in `revenue-critical-purchase.test.tsx`
+The `payment-result.test.tsx` includes comprehensive coverage for:
+
+- **Authentication flow**: Auth token setting for authenticated users
+- **Guest verification**: Guest email passed to order status API
+- **Payment failure edge cases**:
+  - Failure before payment creation (no payment_id)
+  - Failure after creation (payment_id exists, marked failed)
+  - Payment succeeded despite failure redirect
+- **Retry navigation**: "Intentar Nuevamente" navigates to payment-selection
+- **User dismissed handling**: Browser dismissal vs payment completion
 
 ## Contact
 
