@@ -260,6 +260,11 @@ Local state is managed using a two-pronged approach:
   - **"Comprar ahora" (Buy Now) Flow:** Stores product selection in `pendingBuyNowItem` without adding to cart, allowing users to back out cleanly
   - **Order Tracking:** Temporarily holds current order info during payment processing
 
+  **Buy Now Flow Implementation Details:**
+  - `payment-selection.tsx`: Validates `pendingBuyNowItem` alongside cart items; includes it in totals and order creation (merges with cart items if same product/size/color)
+  - `cart.tsx`: Clears `pendingBuyNowItem` when starting cart checkout to prevent stale items from abandoned buy-now flows
+  - `OverlayCheckoutShipping.tsx`: Restores size/quantity selections from `pendingBuyNowItem` when user navigates back from checkout screens
+
 ## 3. Local Component State (React Hooks)
 
 - **Responsibility:** Managing state that is specific to a component's rendering logic, UI interactions, or temporary data.

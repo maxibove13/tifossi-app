@@ -359,7 +359,7 @@ const SwipeableEdge = ({
     [measuredHeaderHeight]
   );
 
-  // Payment store for "buy now" flow (PRODUCT-012)
+  // Payment store for "buy now" flow
   const setPendingBuyNowItem = usePaymentStore((state) => state.setPendingBuyNowItem);
   const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
   const setGuestContactInfo = usePaymentStore((state) => state.setGuestContactInfo);
@@ -445,7 +445,7 @@ const SwipeableEdge = ({
     [onAddToCart, selectedColor, onSizeChange, onQuantityChange]
   );
 
-  // PRODUCT-012: Handle "buy now" flow - sets pending item without adding to cart
+  // Handle "buy now" flow - sets pending item without adding to cart
   const handleOverlayBuyNow = useCallback(
     (size: string, qty: number) => {
       // Clear previous checkout state so each "buy now" starts fresh

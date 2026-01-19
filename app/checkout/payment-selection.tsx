@@ -59,7 +59,7 @@ export default function PaymentSelectionScreen() {
   const selectedStore = usePaymentStore((state) => state.selectedStore);
   const guestAddress = usePaymentStore((state) => state.guestAddress);
   const guestContactInfo = usePaymentStore((state) => state.guestContactInfo);
-  // PRODUCT-012: Pending buy now item (for "Comprar ahora" flow without cart)
+  // Pending buy now item (for "Comprar ahora" flow without cart)
   const pendingBuyNowItem = usePaymentStore((state) => state.pendingBuyNowItem);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
@@ -72,7 +72,7 @@ export default function PaymentSelectionScreen() {
   }
 
   // Convert cart items to displayable format with product details
-  // PRODUCT-012: Also include pending buy now item if present
+  // Also include pending buy now item if present
   const cartDisplayItems = useMemo(() => {
     const result: CartDisplayItem[] = [];
 
@@ -123,7 +123,7 @@ export default function PaymentSelectionScreen() {
   }, [cartItems, allProducts, pendingBuyNowItem]);
 
   // Calculate order totals
-  // PRODUCT-012: Include pending buy now item in totals
+  // Include pending buy now item in totals
   const shippingMethod = selectedStore ? 'pickup' : 'delivery';
   const cartSubtotal = cartItems.reduce((sum, item) => {
     const price = item.discountedPrice ?? item.price ?? 0;
@@ -229,7 +229,8 @@ export default function PaymentSelectionScreen() {
 
   const handleMercadoPagoPayment = async () => {
     try {
-      if (!cartItems || cartItems.length === 0) {
+      // Check for either cart items OR pending buy now item
+      if ((!cartItems || cartItems.length === 0) && !pendingBuyNowItem) {
         Alert.alert('Error', 'Tu carrito está vacío');
         return;
       }
@@ -298,11 +299,16 @@ export default function PaymentSelectionScreen() {
         return;
       }
 
-      // Calculate totals from cart items
-      const subtotal = cartItems.reduce((sum, item) => {
+      // Calculate totals from cart items + pending buy now item
+      const cartSubtotalForPayment = cartItems.reduce((sum, item) => {
         const price = item.discountedPrice ?? item.price ?? 0;
         return sum + price * item.quantity;
       }, 0);
+      const pendingItemSubtotalForPayment = pendingBuyNowItem
+        ? (pendingBuyNowItem.discountedPrice ?? pendingBuyNowItem.price) *
+          pendingBuyNowItem.quantity
+        : 0;
+      const subtotal = cartSubtotalForPayment + pendingItemSubtotalForPayment;
       const shippingCost = shippingMethod === 'pickup' ? 0 : 200;
       const total = subtotal + shippingCost;
 
@@ -338,15 +344,43 @@ export default function PaymentSelectionScreen() {
 
       // Build order data - backend creates order + preference in one call
       // Note: productName/description are placeholders - backend fetches fresh product data
+      // Include both cart items and pending buy now item
+      const cartOrderItems = cartItems.map((item) => ({
+        productId: item.productId,
+        productName: `Product ${item.productId}`, // Backend overwrites with actual name
+        quantity: item.quantity,
+        price: item.discountedPrice ?? item.price ?? 0,
+        size: item.size,
+        color: item.color,
+      }));
+      // Merge pending buy now item with cart items (avoid duplicates for same product/size/color)
+      let allOrderItems = [...cartOrderItems];
+      if (pendingBuyNowItem) {
+        const existingIndex = allOrderItems.findIndex(
+          (item) =>
+            item.productId === pendingBuyNowItem.productId &&
+            item.color === pendingBuyNowItem.color &&
+            item.size === pendingBuyNowItem.size
+        );
+        if (existingIndex > -1) {
+          allOrderItems[existingIndex] = {
+            ...allOrderItems[existingIndex],
+            quantity: allOrderItems[existingIndex].quantity + pendingBuyNowItem.quantity,
+          };
+        } else {
+          allOrderItems.push({
+            productId: pendingBuyNowItem.productId,
+            productName: pendingBuyNowItem.title,
+            quantity: pendingBuyNowItem.quantity,
+            price: pendingBuyNowItem.discountedPrice ?? pendingBuyNowItem.price,
+            size: pendingBuyNowItem.size,
+            color: pendingBuyNowItem.color,
+          });
+        }
+      }
+
       const orderData: OrderData = {
-        items: cartItems.map((item) => ({
-          productId: item.productId,
-          productName: `Product ${item.productId}`, // Backend overwrites with actual name
-          quantity: item.quantity,
-          price: item.discountedPrice ?? item.price ?? 0,
-          size: item.size,
-          color: item.color,
-        })),
+        items: allOrderItems,
         user: userData,
         shippingAddress: shippingAddressData,
         shippingMethod,
