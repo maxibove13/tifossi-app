@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   ViewStyle,
   TextStyle,
   ImageStyle,
@@ -188,149 +190,154 @@ function NewAddressScreen() {
         }}
       />
 
-      <View style={styles.mainContent}>
-        <SubheaderClose title="Añadir dirección de envío" onClose={handleBack} />
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.mainContent}>
+          <SubheaderClose title="Añadir dirección de envío" onClose={handleBack} />
 
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.content}>
-            {/* API Error */}
-            {apiError && (
-              <View style={styles.errorBanner}>
-                <Text style={styles.errorBannerText}>{apiError}</Text>
-              </View>
-            )}
+          <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+            <View style={styles.content}>
+              {/* API Error */}
+              {apiError && (
+                <View style={styles.errorBanner}>
+                  <Text style={styles.errorBannerText}>{apiError}</Text>
+                </View>
+              )}
 
-            {/* Personal Information Section */}
-            <View style={styles.formSection}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Información personal</Text>
-              </View>
-              <Input
-                placeholder="Nombre"
-                value={formData.firstName}
-                onChangeText={(value) => handleChange('firstName', value)}
-                error={submitted ? errors.firstName : undefined}
-                pill
-              />
-              <Input
-                placeholder="Apellido"
-                value={formData.lastName}
-                onChangeText={(value) => handleChange('lastName', value)}
-                error={submitted ? errors.lastName : undefined}
-                pill
-              />
-              <Input
-                placeholder="No. Celular"
-                value={formData.phone}
-                onChangeText={(value) => handleChange('phone', value)}
-                keyboardType="phone-pad"
-                error={submitted ? errors.phone : undefined}
-                pill
-              />
-              {isGuestMode && (
+              {/* Personal Information Section */}
+              <View style={styles.formSection}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Información personal</Text>
+                </View>
                 <Input
-                  placeholder="Email"
-                  value={formData.email}
-                  onChangeText={(value) => handleChange('email', value)}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  error={submitted ? errors.email : undefined}
+                  placeholder="Nombre"
+                  value={formData.firstName}
+                  onChangeText={(value) => handleChange('firstName', value)}
+                  error={submitted ? errors.firstName : undefined}
                   pill
                 />
-              )}
-            </View>
-
-            {/* Address Section */}
-            <View style={styles.formSection}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Dirección</Text>
-              </View>
-              <View style={styles.streetNumberRow}>
-                <View style={styles.streetContainer}>
-                  <Input
-                    placeholder="Calle"
-                    value={formData.street}
-                    onChangeText={(value) => handleChange('street', value)}
-                    error={submitted ? errors.street : undefined}
-                  />
-                </View>
-                <View style={styles.numberContainer}>
-                  <Input
-                    placeholder="No."
-                    value={formData.number}
-                    onChangeText={(value) => handleChange('number', value)}
-                    keyboardType="number-pad"
-                    error={submitted ? errors.number : undefined}
-                    style={styles.numberInput}
-                  />
-                </View>
-              </View>
-              <Input
-                placeholder="Ciudad"
-                value={formData.city}
-                onChangeText={(value) => handleChange('city', value)}
-                error={submitted ? errors.city : undefined}
-              />
-              <Input
-                placeholder="Departamento"
-                value={formData.department}
-                onChangeText={(value) => handleChange('department', value)}
-                error={submitted ? errors.department : undefined}
-              />
-              {/* Country - Uruguay only */}
-              <View style={styles.countryField}>
-                <Image
-                  source={{ uri: 'https://flagcdn.com/w20/uy.png' }}
-                  style={styles.countryFlag}
+                <Input
+                  placeholder="Apellido"
+                  value={formData.lastName}
+                  onChangeText={(value) => handleChange('lastName', value)}
+                  error={submitted ? errors.lastName : undefined}
+                  pill
                 />
-                <Text style={styles.countryText}>Uruguay</Text>
+                <Input
+                  placeholder="No. Celular"
+                  value={formData.phone}
+                  onChangeText={(value) => handleChange('phone', value)}
+                  keyboardType="phone-pad"
+                  error={submitted ? errors.phone : undefined}
+                  pill
+                />
+                {isGuestMode && (
+                  <Input
+                    placeholder="Email"
+                    value={formData.email}
+                    onChangeText={(value) => handleChange('email', value)}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    error={submitted ? errors.email : undefined}
+                    pill
+                  />
+                )}
+              </View>
+
+              {/* Address Section */}
+              <View style={styles.formSection}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Dirección</Text>
+                </View>
+                <View style={styles.streetNumberRow}>
+                  <View style={styles.streetContainer}>
+                    <Input
+                      placeholder="Calle"
+                      value={formData.street}
+                      onChangeText={(value) => handleChange('street', value)}
+                      error={submitted ? errors.street : undefined}
+                    />
+                  </View>
+                  <View style={styles.numberContainer}>
+                    <Input
+                      placeholder="No."
+                      value={formData.number}
+                      onChangeText={(value) => handleChange('number', value)}
+                      keyboardType="number-pad"
+                      error={submitted ? errors.number : undefined}
+                      style={styles.numberInput}
+                    />
+                  </View>
+                </View>
+                <Input
+                  placeholder="Ciudad"
+                  value={formData.city}
+                  onChangeText={(value) => handleChange('city', value)}
+                  error={submitted ? errors.city : undefined}
+                />
+                <Input
+                  placeholder="Departamento"
+                  value={formData.department}
+                  onChangeText={(value) => handleChange('department', value)}
+                  error={submitted ? errors.department : undefined}
+                />
+                {/* Country - Uruguay only */}
+                <View style={styles.countryField}>
+                  <Image
+                    source={{ uri: 'https://flagcdn.com/w20/uy.png' }}
+                    style={styles.countryFlag}
+                  />
+                  <Text style={styles.countryText}>Uruguay</Text>
+                </View>
+              </View>
+
+              {/* Optional Section */}
+              <View style={styles.formSection}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Opcional</Text>
+                </View>
+                <Input
+                  placeholder="Información adicional"
+                  value={formData.additionalInfo}
+                  onChangeText={(value) => handleChange('additionalInfo', value)}
+                />
               </View>
             </View>
+          </ScrollView>
+        </View>
 
-            {/* Optional Section */}
-            <View style={styles.formSection}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Opcional</Text>
-              </View>
-              <Input
-                placeholder="Información adicional"
-                value={formData.additionalInfo}
-                onChangeText={(value) => handleChange('additionalInfo', value)}
-              />
-            </View>
-          </View>
-        </ScrollView>
-      </View>
-
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity
-          style={[styles.primaryButton, isLoading && styles.disabledButton]}
-          onPress={handleSave}
-          activeOpacity={0.7}
-          disabled={isLoading}
-        >
-          <LinearGradient
-            colors={colors.button.defaultGradient}
-            style={styles.primaryButtonGradient}
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={[styles.primaryButton, isLoading && styles.disabledButton]}
+            onPress={handleSave}
+            activeOpacity={0.7}
+            disabled={isLoading}
           >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#FBFBFB" />
-            ) : (
-              <Text style={styles.primaryButtonText}>Guardar</Text>
-            )}
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={colors.button.defaultGradient}
+              style={styles.primaryButtonGradient}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#FBFBFB" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Guardar</Text>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={handleBack}
-          activeOpacity={0.7}
-          disabled={isLoading}
-        >
-          <Text style={styles.secondaryButtonText}>Atrás</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleBack}
+            activeOpacity={0.7}
+            disabled={isLoading}
+          >
+            <Text style={styles.secondaryButtonText}>Atrás</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -340,6 +347,7 @@ export default NewAddressScreen;
 
 type Styles = {
   container: ViewStyle;
+  keyboardAvoid: ViewStyle;
   mainContent: ViewStyle;
   scrollView: ViewStyle;
   content: ViewStyle;
@@ -368,6 +376,9 @@ const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
     backgroundColor: '#FAFAFA',
+  },
+  keyboardAvoid: {
+    flex: 1,
     justifyContent: 'space-between',
   },
   mainContent: {
