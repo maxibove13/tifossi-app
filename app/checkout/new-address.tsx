@@ -323,7 +323,7 @@ function NewAddressScreen() {
               {isLoading ? (
                 <ActivityIndicator size="small" color="#FBFBFB" />
               ) : (
-                <Text style={styles.primaryButtonText}>Guardar</Text>
+                <Text style={styles.primaryButtonText}>Siguiente</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>
