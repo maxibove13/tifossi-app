@@ -273,6 +273,9 @@ export default function PaymentResultScreen() {
             <View style={styles.orderInfo}>
               <Text style={styles.orderLabel}>Número de pedido</Text>
               <Text style={styles.orderNumber}>{orderNumber}</Text>
+              {guestEmail && paymentSuccess && (
+                <Text style={styles.emailSent}>Te enviamos la confirmación a {guestEmail}</Text>
+              )}
             </View>
           )}
 
@@ -409,6 +412,13 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
     color: colors.primary,
+  },
+  emailSent: {
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
+    textAlign: 'center',
   },
   actionButtonsContainer: {
     paddingHorizontal: spacing.lg,
