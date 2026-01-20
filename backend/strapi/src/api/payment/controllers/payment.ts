@@ -590,34 +590,11 @@ export default {
 
     const deepLink = `${appScheme}://checkout/payment-result?${params.toString()}`;
 
-    // Serve an HTML page that redirects to the app via JavaScript
-    // This avoids Safari's "invalid address" error with direct 302 to custom schemes
-    ctx.type = 'text/html';
-    ctx.body = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Redirigiendo...</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f5f5f5; }
-    .container { text-align: center; padding: 20px; }
-    .spinner { width: 40px; height: 40px; border: 3px solid #ddd; border-top-color: #333; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    p { color: #666; margin: 0; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="spinner"></div>
-    <p>Volviendo a Tifossi...</p>
-  </div>
-  <script>
-    window.location.href = "${deepLink}";
-  </script>
-</body>
-</html>`;
+    // Use HTTP 302 redirect to the app's custom URL scheme
+    // ASWebAuthenticationSession (used by expo-web-browser openAuthSessionAsync) intercepts
+    // HTTP redirects to the registered scheme and returns the URL to the app.
+    // Note: JavaScript redirects (window.location.href) don't work in ASWebAuthenticationSession.
+    ctx.redirect(deepLink);
   },
 
   /**
