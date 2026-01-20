@@ -16,11 +16,12 @@ import { Feather } from '@expo/vector-icons';
 import PlusCircle from '../../../assets/icons/plus_circle.svg';
 
 import { colors } from '../../_styles/colors';
-import { spacing, radius, layout, components } from '../../_styles/spacing';
+import { spacing, radius } from '../../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../../_styles/typography';
 import { useAuthStore } from '../../_stores/authStore';
 import addressService, { Address } from '../../_services/address/addressService';
 import ReusableAuthPrompt from '../../_components/auth/AuthPrompt';
+import SubheaderClose from '../../_components/common/SubheaderClose';
 
 interface AddressItemProps {
   address: Address;
@@ -169,12 +170,7 @@ export default function AddressesListScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
-        <View style={styles.header}>
-          <Text style={styles.title}>Direcciones de envio</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <Feather name="x" size={24} color={colors.secondary} />
-          </TouchableOpacity>
-        </View>
+        <SubheaderClose title="Direcciones de envio" onClose={handleClose} />
         <ReusableAuthPrompt message="Inicia sesion para ver tus direcciones." />
       </SafeAreaView>
     );
@@ -183,13 +179,7 @@ export default function AddressesListScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-
-      <View style={styles.header}>
-        <Text style={styles.title}>Direcciones de envio</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-          <Feather name="x" size={24} color={colors.secondary} />
-        </TouchableOpacity>
-      </View>
+      <SubheaderClose title="Direcciones de envio" onClose={handleClose} />
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
@@ -259,12 +249,6 @@ export default function AddressesListScreen() {
           )}
         </View>
       </ScrollView>
-
-      <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.secondaryButton} onPress={handleClose} activeOpacity={0.7}>
-          <Text style={styles.secondaryButtonText}>Volver</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
@@ -272,9 +256,6 @@ export default function AddressesListScreen() {
 type Styles = {
   container: ViewStyle;
   scrollView: ViewStyle;
-  header: ViewStyle;
-  title: TextStyle;
-  closeButton: ViewStyle;
   content: ViewStyle;
   loadingContainer: ViewStyle;
   loadingText: TextStyle;
@@ -298,9 +279,6 @@ type Styles = {
   addAddressEmptyContainer: ViewStyle;
   addAddressButton: ViewStyle;
   addAddressText: TextStyle;
-  actionButtons: ViewStyle;
-  secondaryButton: ViewStyle;
-  secondaryButtonText: TextStyle;
 };
 
 const styles = StyleSheet.create<Styles>({
@@ -311,33 +289,12 @@ const styles = StyleSheet.create<Styles>({
   scrollView: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  title: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
-    color: colors.primary,
-  },
-  closeButton: {
-    width: components.closeButton.width,
-    height: components.closeButton.height,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   content: {
     flex: 1,
     gap: spacing.xxl,
     paddingTop: spacing.xxxxl,
     paddingBottom: spacing.xxl,
+    paddingHorizontal: spacing.lg,
   },
   loadingContainer: {
     flex: 1,
@@ -387,8 +344,8 @@ const styles = StyleSheet.create<Styles>({
     paddingHorizontal: spacing.xl,
   },
   noAddressContainer: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xl + spacing.lg,
+    gap: spacing.xs,
+    paddingHorizontal: spacing.lg,
   },
   noAddressTitle: {
     fontFamily: fonts.primary,
@@ -453,7 +410,7 @@ const styles = StyleSheet.create<Styles>({
     paddingHorizontal: spacing.xxl + spacing.lg,
   },
   addAddressEmptyContainer: {
-    paddingHorizontal: spacing.xl + spacing.lg,
+    paddingHorizontal: spacing.xxl,
   },
   addAddressButton: {
     flexDirection: 'row',
@@ -470,28 +427,6 @@ const styles = StyleSheet.create<Styles>({
     fontSize: fontSizes.md,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.md,
-    color: colors.primary,
-  },
-  actionButtons: {
-    paddingHorizontal: spacing.lg,
-    gap: spacing.sm,
-    marginBottom: layout.safeAreaBottom,
-  },
-  secondaryButton: {
-    width: '100%',
-    height: components.button.height,
-    borderRadius: radius.xxl,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: 'transparent',
-  },
-  secondaryButtonText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.lg,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.lg,
     color: colors.primary,
   },
 });

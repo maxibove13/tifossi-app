@@ -44,8 +44,7 @@ describe('PaymentResultScreen', () => {
     usePaymentStore.setState({
       currentOrderNumber: null,
       currentOrderId: null,
-      guestAddress: null,
-      guestContactInfo: null,
+      guestData: null,
       isLoading: false,
       error: null,
     });
@@ -139,17 +138,17 @@ describe('PaymentResultScreen', () => {
         user: { id: 'user-1', email: 'user@example.com', name: 'User', profilePicture: null },
       });
 
-      // Even if guestAddress exists, authenticated users should not pass email
+      // Even if guestData exists, authenticated users should not pass email
       usePaymentStore.setState({
-        guestAddress: {
+        guestData: {
           firstName: 'John',
           lastName: 'Doe',
           email: 'guest@example.com',
+          phoneNumber: '+5491122334455',
           addressLine1: '123 Main St',
           city: 'Buenos Aires',
           state: 'CABA',
           country: 'Argentina',
-          phoneNumber: '+5491122334455',
         },
       });
 
@@ -599,7 +598,7 @@ describe('PaymentResultScreen', () => {
       });
     });
 
-    it('should pass guest email to getOrderStatusByNumber when guestAddress has email', async () => {
+    it('should pass guest email to getOrderStatusByNumber when guestData has email', async () => {
       useAuthStore.setState({
         token: null,
         isLoggedIn: false,
@@ -607,15 +606,15 @@ describe('PaymentResultScreen', () => {
       });
 
       usePaymentStore.setState({
-        guestAddress: {
+        guestData: {
           firstName: 'John',
           lastName: 'Doe',
           email: 'guest@example.com',
+          phoneNumber: '+5491122334455',
           addressLine1: '123 Main St',
           city: 'Buenos Aires',
           state: 'CABA',
           country: 'Argentina',
-          phoneNumber: '+5491122334455',
         },
       });
 
@@ -636,16 +635,16 @@ describe('PaymentResultScreen', () => {
       });
     });
 
-    it('should pass guest email from guestContactInfo when guestAddress is not set', async () => {
+    it('should pass guest email from guestData for pickup (contact info only)', async () => {
       useAuthStore.setState({
         token: null,
         isLoggedIn: false,
         user: null,
       });
 
+      // Pickup case: guestData has contact info only (no address fields)
       usePaymentStore.setState({
-        guestAddress: null,
-        guestContactInfo: {
+        guestData: {
           firstName: 'Jane',
           lastName: 'Smith',
           email: 'jane@example.com',

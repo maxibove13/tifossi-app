@@ -16,6 +16,7 @@ import SubheaderClose from '../common/SubheaderClose';
 import { colors } from '../../_styles/colors';
 import { spacing, radius, layout } from '../../_styles/spacing';
 import { fontWeights, fonts, fontSizes, lineHeights } from '../../_styles/typography';
+import { usePaymentStore } from '../../_stores/paymentStore';
 
 export interface SelectionItem {
   id: string;
@@ -36,14 +37,23 @@ export default function SelectionListScreen({
   sectionTitle,
   items,
   onItemSelect,
-  onClose = () => router.navigate('/(tabs)'),
+  onClose,
   onBack = () => router.back(),
 }: SelectionListScreenProps) {
+  const closeCheckoutFlow = usePaymentStore((state) => state.closeCheckoutFlow);
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      closeCheckoutFlow();
+    }
+  };
   return (
     <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.container}>
-        <SubheaderClose title={pageTitle} onClose={onClose} />
+        <SubheaderClose title={pageTitle} onClose={handleClose} />
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.content}>

@@ -13,12 +13,13 @@ import { router, Stack, useFocusEffect } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
 import { colors } from '../../_styles/colors';
-import { spacing, radius, components } from '../../_styles/spacing';
-import { fonts, fontSizes, lineHeights, fontWeights } from '../../_styles/typography';
+import { spacing, radius } from '../../_styles/spacing';
+import { fonts, fontSizes, fontWeights } from '../../_styles/typography';
 import { useAuthStore } from '../../_stores/authStore';
 import orderService, { Order } from '../../_services/order/orderService';
 import EmptyState from '../../_components/common/EmptyState';
 import ReusableAuthPrompt from '../../_components/auth/AuthPrompt';
+import SubheaderClose from '../../_components/common/SubheaderClose';
 import { getStatusColor, formatDate, formatCurrency } from '../../_utils/orderUtils';
 
 interface OrderCardProps {
@@ -155,12 +156,7 @@ export default function OrdersListScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Mis Pedidos</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-            <Feather name="x" size={24} color={colors.secondary} />
-          </TouchableOpacity>
-        </View>
+        <SubheaderClose title="Mis Pedidos" onClose={handleClose} />
         <ReusableAuthPrompt message="Inicia sesión para ver tus pedidos." />
       </SafeAreaView>
     );
@@ -169,13 +165,7 @@ export default function OrdersListScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Mis Pedidos</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
-          <Feather name="x" size={24} color={colors.secondary} />
-        </TouchableOpacity>
-      </View>
+      <SubheaderClose title="Mis Pedidos" onClose={handleClose} />
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -218,37 +208,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.light,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  headerTitle: {
-    fontFamily: fonts.primary,
-    fontSize: fontSizes.xl,
-    fontWeight: fontWeights.regular,
-    lineHeight: lineHeights.xl,
-    color: colors.primary,
-  },
-  closeButton: {
-    width: components.closeButton.width,
-    height: components.closeButton.height,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: spacing.xxxxl,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: spacing.xxxxl,
     paddingHorizontal: spacing.xl,
   },
   errorText: {
@@ -272,6 +242,7 @@ const styles = StyleSheet.create({
     color: colors.background.light,
   },
   listContent: {
+    paddingTop: spacing.xxxxl,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xl,
   },

@@ -26,10 +26,10 @@ export default function PaymentResultScreen() {
   const params = useLocalSearchParams();
   const { clearCart } = useCartStore();
   const { isLoggedIn, token } = useAuthStore();
-  const { currentOrderNumber, guestAddress, guestContactInfo } = usePaymentStore();
+  const { currentOrderNumber, guestData, setPendingBuyNowItem } = usePaymentStore();
 
   // Get guest email for order status verification
-  const guestEmail = guestAddress?.email || guestContactInfo?.email;
+  const guestEmail = guestData?.email;
 
   // Set auth token on service if logged in
   useEffect(() => {
@@ -42,6 +42,7 @@ export default function PaymentResultScreen() {
   const [resolvedStatus, setResolvedStatus] = useState<'success' | 'pending' | 'failed' | null>(
     null
   );
+  const [isManualRetrying, setIsManualRetrying] = useState(false);
 
   // Extract payment result from params
   // MercadoPago may duplicate external_reference in redirect URL, causing array
@@ -169,12 +170,14 @@ export default function PaymentResultScreen() {
   const paymentSuccess = resolvedStatus === 'success';
   const paymentPending = resolvedStatus === 'pending' || isVerifying;
 
-  // Clear cart on successful payment
+  // Clear cart and pending buy now item on successful payment
   useEffect(() => {
     if (paymentSuccess && !isVerifying) {
       clearCart();
+      // Clear pending buy now item to prevent stale overlay state
+      setPendingBuyNowItem(null);
     }
-  }, [paymentSuccess, isVerifying, clearCart]);
+  }, [paymentSuccess, isVerifying, clearCart, setPendingBuyNowItem]);
 
   const handleGoToOrders = () => {
     router.replace('/profile/orders');
@@ -186,6 +189,31 @@ export default function PaymentResultScreen() {
 
   const handleBackToHome = () => {
     router.replace('/');
+  };
+
+  // Manual retry verification for pending status
+  const handleVerifyStatus = async () => {
+    if (!orderNumber || isManualRetrying) return;
+
+    setIsManualRetrying(true);
+    try {
+      const orderStatus = await mercadoPagoService.getOrderStatusByNumber(
+        orderNumber,
+        isLoggedIn ? undefined : guestEmail
+      );
+
+      if (orderStatus.status === 'paid' || orderStatus.status === 'processing') {
+        setResolvedStatus('success');
+      } else if (orderStatus.status === 'cancelled') {
+        setResolvedStatus('failed');
+      }
+      // If still pending, status remains as pending (no change needed)
+    } catch (err) {
+      console.error('[PaymentResult] Manual verify failed:', err);
+      // Keep pending status on error - don't change to failed
+    } finally {
+      setIsManualRetrying(false);
+    }
   };
 
   // Render icon based on state
@@ -258,6 +286,9 @@ export default function PaymentResultScreen() {
 
   const content = getContent();
   const showRetryButton = !paymentSuccess && !paymentPending && !isVerifying;
+  // Show verify button when status is pending (not verifying) and we have an order number
+  const showVerifyButton =
+    resolvedStatus === 'pending' && !isVerifying && !isManualRetrying && orderNumber;
 
   return (
     <SafeAreaView style={styles.safeAreaContainer}>
@@ -286,6 +317,22 @@ export default function PaymentResultScreen() {
       </View>
 
       <View style={styles.actionButtonsContainer}>
+        {showVerifyButton && (
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={handleVerifyStatus}
+            activeOpacity={0.7}
+          >
+            <LinearGradient
+              colors={colors.button.defaultGradient}
+              style={styles.primaryButtonGradient}
+            >
+              <Text style={styles.primaryButtonText}>
+                {isManualRetrying ? 'Verificando...' : 'Verificar estado'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
         {showRetryButton && (
           <TouchableOpacity
             style={styles.primaryButton}
@@ -300,7 +347,7 @@ export default function PaymentResultScreen() {
             </LinearGradient>
           </TouchableOpacity>
         )}
-        {isLoggedIn && !showRetryButton && (
+        {isLoggedIn && !showRetryButton && !showVerifyButton && (
           <TouchableOpacity
             style={styles.primaryButton}
             onPress={handleGoToOrders}
@@ -315,11 +362,15 @@ export default function PaymentResultScreen() {
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={isLoggedIn && !showRetryButton ? styles.secondaryButton : styles.primaryButton}
+          style={
+            isLoggedIn && !showRetryButton && !showVerifyButton
+              ? styles.secondaryButton
+              : styles.primaryButton
+          }
           onPress={handleBackToHome}
           activeOpacity={0.7}
         >
-          {isLoggedIn && !showRetryButton ? (
+          {isLoggedIn && !showRetryButton && !showVerifyButton ? (
             <Text style={styles.secondaryButtonText}>Volver al inicio</Text>
           ) : (
             <LinearGradient

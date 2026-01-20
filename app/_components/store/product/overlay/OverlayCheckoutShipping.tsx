@@ -55,9 +55,7 @@ export default function OverlayCheckoutShipping({
   product,
 }: OverlayCheckoutShippingProps) {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const setShowShippingSelectionOnReturn = usePaymentStore(
-    (state) => state.setShowShippingSelectionOnReturn
-  );
+  const setOriginProductId = usePaymentStore((state) => state.setOriginProductId);
   // Get pending buy now item to restore state when returning from checkout
   const pendingBuyNowItem = usePaymentStore((state) => state.pendingBuyNowItem);
 
@@ -177,8 +175,10 @@ export default function OverlayCheckoutShipping({
       onBuyNow(selectedSize, selectedQuantity);
     }
 
-    // Set flag so shipping selection shows when user navigates back
-    setShowShippingSelectionOnReturn(true);
+    // Track origin product for close button navigation
+    if (product?.id) {
+      setOriginProductId(product.id);
+    }
 
     setIsShippingOverlayVisible(false);
     onClose();

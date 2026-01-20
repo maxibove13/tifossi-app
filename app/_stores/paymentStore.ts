@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { router } from 'expo-router';
+import type { Address } from '../_services/address/addressService';
 
 /**
  * Minimal Payment Store for UI State Management
@@ -19,25 +21,25 @@ interface SelectedStore {
   strapiId?: number; // Optional Strapi store-location document ID
 }
 
-export interface GuestAddress {
+// Unified guest checkout data - contact info always present, address fields optional (for pickup)
+export interface GuestCheckoutData {
+  // Contact info (always required)
   firstName: string;
   lastName: string;
   email: string;
-  addressLine1: string;
-  addressLine2?: string;
-  city: string;
-  state: string;
-  postalCode?: string;
-  country: string;
   phoneNumber: string;
+  // Delivery address fields (optional - only for delivery, not pickup)
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
 }
 
-export interface GuestContactInfo {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-}
+// Type aliases for backward compatibility during refactor
+export type GuestAddress = GuestCheckoutData;
+export type GuestContactInfo = GuestCheckoutData;
 
 // Pending buy now item - for "Comprar ahora" flow without adding to cart
 export interface PendingBuyNowItem {
@@ -59,19 +61,18 @@ interface PaymentUIState {
   // Selected store location for pickup orders
   selectedStore: SelectedStore | null;
 
-  // Guest address for delivery (used when not logged in)
-  guestAddress: GuestAddress | null;
+  // Selected address for logged-in delivery (passed from shipping-address screen)
+  selectedAddress: Address | null;
 
-  // Guest contact info for pickup (used when not logged in)
-  guestContactInfo: GuestContactInfo | null;
+  // Guest checkout data (unified contact + optional address info)
+  guestData: GuestCheckoutData | null;
 
   // Pending buy now item - product being purchased via "Comprar ahora" flow
   // This allows checkout without adding to cart until order is confirmed
   pendingBuyNowItem: PendingBuyNowItem | null;
 
-  // Flag to show shipping selection overlay when returning from checkout screens
-  // This preserves the "buy now" intent when user navigates back
-  showShippingSelectionOnReturn: boolean;
+  // Product ID where checkout flow originated (for close navigation)
+  originProductId: string | null;
 
   // UI state
   isLoading: boolean;
@@ -80,24 +81,25 @@ interface PaymentUIState {
   // Actions
   setCurrentOrder: (orderNumber: string | null, orderId: string | null) => void;
   setSelectedStore: (store: SelectedStore | null) => void;
-  setGuestAddress: (address: GuestAddress | null) => void;
-  setGuestContactInfo: (info: GuestContactInfo | null) => void;
+  setSelectedAddress: (address: Address | null) => void;
+  setGuestData: (data: GuestCheckoutData | null) => void;
   setPendingBuyNowItem: (item: PendingBuyNowItem | null) => void;
-  setShowShippingSelectionOnReturn: (show: boolean) => void;
+  setOriginProductId: (productId: string | null) => void;
   clearPaymentState: () => void;
+  closeCheckoutFlow: () => void;
   setError: (error: string | null) => void;
   setLoading: (isLoading: boolean) => void;
 }
 
-export const usePaymentStore = create<PaymentUIState>((set) => ({
+export const usePaymentStore = create<PaymentUIState>((set, get) => ({
   // Initial state
   currentOrderNumber: null,
   currentOrderId: null,
   selectedStore: null,
-  guestAddress: null,
-  guestContactInfo: null,
+  selectedAddress: null,
+  guestData: null,
   pendingBuyNowItem: null,
-  showShippingSelectionOnReturn: false,
+  originProductId: null,
   isLoading: false,
   error: null,
 
@@ -114,20 +116,20 @@ export const usePaymentStore = create<PaymentUIState>((set) => ({
     set({ selectedStore: store });
   },
 
-  setGuestAddress: (address) => {
-    set({ guestAddress: address });
+  setSelectedAddress: (address) => {
+    set({ selectedAddress: address });
   },
 
-  setGuestContactInfo: (info) => {
-    set({ guestContactInfo: info });
+  setGuestData: (data) => {
+    set({ guestData: data });
   },
 
   setPendingBuyNowItem: (item) => {
     set({ pendingBuyNowItem: item });
   },
 
-  setShowShippingSelectionOnReturn: (show) => {
-    set({ showShippingSelectionOnReturn: show });
+  setOriginProductId: (productId) => {
+    set({ originProductId: productId });
   },
 
   clearPaymentState: () => {
@@ -135,13 +137,38 @@ export const usePaymentStore = create<PaymentUIState>((set) => ({
       currentOrderNumber: null,
       currentOrderId: null,
       selectedStore: null,
-      guestAddress: null,
-      guestContactInfo: null,
+      selectedAddress: null,
+      guestData: null,
       pendingBuyNowItem: null,
-      showShippingSelectionOnReturn: false,
+      originProductId: null,
       isLoading: false,
       error: null,
     });
+  },
+
+  closeCheckoutFlow: () => {
+    // Get origin product ID before clearing state
+    const originProductId = get().originProductId;
+
+    // Clear all payment state
+    set({
+      currentOrderNumber: null,
+      currentOrderId: null,
+      selectedStore: null,
+      selectedAddress: null,
+      guestData: null,
+      pendingBuyNowItem: null,
+      originProductId: null,
+      isLoading: false,
+      error: null,
+    });
+
+    // Navigate back to origin product or home
+    if (originProductId) {
+      router.replace(`/products/${originProductId}`);
+    } else {
+      router.navigate('/(tabs)');
+    }
   },
 
   setError: (error) => {

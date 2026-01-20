@@ -61,6 +61,7 @@ export default function ShippingPickupZoneScreen() {
   }, [cityId, cityName, zones]);
 
   const handleZoneSelect = (selectedItem: SelectionItem) => {
+    if (!cityId || !selectedItem?.id) return;
     router.push({
       pathname: '/checkout/store-selection',
       params: { cityId: cityId, zoneId: selectedItem.id },

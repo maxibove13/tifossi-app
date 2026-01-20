@@ -22,28 +22,30 @@ import { completeAddToCartFlow } from '../utils/add-to-cart-helpers';
 import { useCartStore } from '../../_stores/cartStore';
 import { useFavoritesStore } from '../../_stores/favoritesStore';
 import { useAuthStore } from '../../_stores/authStore';
+import { useProductStore } from '../../_stores/productStore';
 
 // Types
 import { Product } from '../../_types/product';
 import { ProductStatus } from '../../_types/product-status';
 
-// Import the product store for direct state manipulation in tests
-import { useProductStore } from '../../_stores/productStore';
-
-// Mock expo-router
+// Setup expo-router mocks (global mock is defined in setup.ts)
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 
-jest.mock('expo-router', () => ({
-  ...jest.requireActual('expo-router'),
-  useRouter: () => ({
-    push: mockPush,
-    back: mockBack,
-  }),
-  useLocalSearchParams: () => ({
-    id: 'prod-1',
-  }),
-}));
+// Import the mocked expo-router to configure it for this test file
+const expoRouterMock = jest.requireMock('expo-router');
+const { useLocalSearchParams } = expoRouterMock;
+
+// Override useRouter to return our controlled mock functions
+expoRouterMock.useRouter = () => ({
+  push: mockPush,
+  back: mockBack,
+  replace: jest.fn(),
+  navigate: jest.fn(),
+});
+
+// Configure the mock implementations for this test
+(useLocalSearchParams as jest.Mock).mockReturnValue({ id: 'prod-1' });
 
 // Mock StatusBar
 jest.mock('expo-status-bar', () => ({
@@ -185,23 +187,29 @@ describe('Product Detail Flow - Integration', () => {
     mockPush.mockClear();
     mockBack.mockClear();
 
+    // Configure expo-router mock for product ID
+    (useLocalSearchParams as jest.Mock).mockReturnValue({ id: 'prod-1' });
+
     // Setup productStore with mock data (this is the source of truth for the component)
-    useProductStore.setState({
-      products: [...relatedProducts, mockProduct],
-      productCache: {
-        'prod-1': mockProduct,
-        'prod-2': relatedProducts[0],
-        'prod-3': relatedProducts[1],
-      },
-      isLoading: false,
-      error: null,
-      lastFetchTimestamp: Date.now(),
-      cacheExpiryTime: 30 * 60 * 1000,
-      actionStatus: {
-        fetchProducts: 'success',
-        fetchProductById: 'success',
-        refresh: 'idle',
-      },
+    // Use act() to ensure state updates are properly flushed before render
+    act(() => {
+      useProductStore.setState({
+        products: [...relatedProducts, mockProduct],
+        productCache: {
+          'prod-1': mockProduct,
+          'prod-2': relatedProducts[0],
+          'prod-3': relatedProducts[1],
+        },
+        isLoading: false,
+        error: null,
+        lastFetchTimestamp: Date.now(),
+        cacheExpiryTime: 30 * 60 * 1000,
+        actionStatus: {
+          fetchProducts: 'success',
+          fetchProductById: 'success',
+          refresh: 'idle',
+        },
+      });
     });
 
     useAppSettings.mockReturnValue({
@@ -249,7 +257,7 @@ describe('Product Detail Flow - Integration', () => {
     // Sizes are now selected via overlay, not inline on product page
     // This test verifies the overlay size selection flow instead
     it('should display size selection via overlay', async () => {
-      const { getByTestId, getByText, getAllByText } = render(
+      const { getByTestId, getByText } = render(
         <TestWrapper>
           <ProductDetailScreen />
         </TestWrapper>
@@ -372,7 +380,7 @@ describe('Product Detail Flow - Integration', () => {
 
     // Sizes are now selected via overlay - testing the overlay interaction
     it('should open size overlay when tapping size selection', async () => {
-      const { getByTestId, getByText, getAllByText } = render(
+      const { getByTestId, getByText } = render(
         <TestWrapper>
           <ProductDetailScreen />
         </TestWrapper>

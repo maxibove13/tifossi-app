@@ -19,6 +19,7 @@ import SubheaderClose from '../_components/common/SubheaderClose';
 import addressService from '../_services/address/addressService';
 import { useAuthStore } from '../_stores/authStore';
 import { usePaymentStore } from '../_stores/paymentStore';
+import { useCheckoutFormValidation } from '../_hooks/useCheckoutFormValidation';
 
 // Import style tokens
 import { colors } from '../_styles/colors';
@@ -38,24 +39,26 @@ interface AddressFormData {
   additionalInfo: string;
 }
 
-// Define validation errors interface
-interface ValidationErrors {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  street?: string;
-  number?: string;
-  city?: string;
-  department?: string;
-}
+type AddressFormField =
+  | 'firstName'
+  | 'lastName'
+  | 'email'
+  | 'phone'
+  | 'street'
+  | 'number'
+  | 'city'
+  | 'department';
 
 function NewAddressScreen() {
   const { guest } = useLocalSearchParams<{ guest?: string }>();
   const isGuestMode = guest === 'true';
 
   const { token } = useAuthStore();
-  const setGuestAddress = usePaymentStore((state) => state.setGuestAddress);
+  const setGuestData = usePaymentStore((state) => state.setGuestData);
+
+  // Form validation hook
+  const { errors, setErrors, validateRequired, validateEmail, clearFieldError } =
+    useCheckoutFormValidation<AddressFormField>();
 
   // Form state
   const [formData, setFormData] = useState<AddressFormData>({
@@ -69,9 +72,6 @@ function NewAddressScreen() {
     department: '',
     additionalInfo: '',
   });
-
-  // Validation errors state
-  const [errors, setErrors] = useState<ValidationErrors>({});
 
   // Track if form was submitted to show validation errors
   const [submitted, setSubmitted] = useState(false);
@@ -88,58 +88,35 @@ function NewAddressScreen() {
     }));
 
     // Clear error for this field if it has a value now
-    if (value.trim() && errors[field as keyof ValidationErrors]) {
-      setErrors((prev) => ({
-        ...prev,
-        [field]: undefined,
-      }));
+    if (value.trim() && errors[field as AddressFormField]) {
+      clearFieldError(field as AddressFormField);
     }
   };
 
   // Validate the form
   const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    // Check required fields
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'El nombre es obligatorio';
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'El apellido es obligatorio';
-    }
+    const newErrors: Partial<Record<AddressFormField, string>> = {
+      firstName: validateRequired(formData.firstName, 'firstName'),
+      lastName: validateRequired(formData.lastName, 'lastName'),
+      phone: validateRequired(formData.phone, 'phone'),
+      street: validateRequired(formData.street, 'street'),
+      number: validateRequired(formData.number, 'number'),
+      city: validateRequired(formData.city, 'city'),
+      department: validateRequired(formData.department, 'department'),
+    };
 
     // Email required for guest mode (needed for MercadoPago)
     if (isGuestMode) {
-      if (!formData.email.trim()) {
-        newErrors.email = 'El email es obligatorio';
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-        newErrors.email = 'El email no es válido';
-      }
+      newErrors.email = validateEmail(formData.email);
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'El número de celular es obligatorio';
-    }
+    // Filter out undefined errors
+    const filteredErrors = Object.fromEntries(
+      Object.entries(newErrors).filter(([, v]) => v !== undefined)
+    ) as Partial<Record<AddressFormField, string>>;
 
-    if (!formData.street.trim()) {
-      newErrors.street = 'La calle es obligatoria';
-    }
-
-    if (!formData.number.trim()) {
-      newErrors.number = 'El número es obligatorio';
-    }
-
-    if (!formData.city.trim()) {
-      newErrors.city = 'La ciudad es obligatoria';
-    }
-
-    if (!formData.department.trim()) {
-      newErrors.department = 'El departamento es obligatorio';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(filteredErrors);
+    return Object.keys(filteredErrors).length === 0;
   };
 
   // Handle back button
@@ -159,16 +136,16 @@ function NewAddressScreen() {
 
     // Guest mode: store address locally and continue to payment
     if (isGuestMode) {
-      setGuestAddress({
+      setGuestData({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
+        phoneNumber: formData.phone,
         addressLine1: `${formData.street} ${formData.number}`.trim(),
         addressLine2: formData.additionalInfo || undefined,
         city: formData.city,
         state: formData.department,
         country: 'UY',
-        phoneNumber: formData.phone,
       });
       router.push('/checkout/payment-selection?guest=true');
       return;

@@ -59,8 +59,7 @@ export default function CartScreen() {
 
   // Payment store for clearing checkout state
   const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
-  const setGuestContactInfo = usePaymentStore((state) => state.setGuestContactInfo);
-  const setGuestAddress = usePaymentStore((state) => state.setGuestAddress);
+  const setGuestData = usePaymentStore((state) => state.setGuestData);
   const setPendingBuyNowItem = usePaymentStore((state) => state.setPendingBuyNowItem);
 
   // Get recommended products from API data or use fallback
@@ -191,8 +190,7 @@ export default function CartScreen() {
     // Clear previous checkout state so each checkout starts fresh
     // Clear any stale pending buy-now item when checking out from cart
     setSelectedStore(null);
-    setGuestContactInfo(null);
-    setGuestAddress(null);
+    setGuestData(null);
     setPendingBuyNowItem(null);
 
     setShowShippingOverlay(false);
