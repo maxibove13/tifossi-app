@@ -84,6 +84,8 @@ app/
 ├── profile/            # Profile-related screens
 │   ├── _layout.tsx     # Profile screens layout
 │   ├── change-password.tsx # Password change screen
+│   ├── addresses/      # Saved addresses management
+│   │   └── index.tsx   # Addresses list (uses /checkout/new-address for adding)
 │   └── orders/         # Order management screens
 │       ├── index.tsx   # Orders list screen
 │       └── [id].tsx    # Order detail screen

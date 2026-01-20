@@ -27,6 +27,9 @@ import { useAuthStore } from '../../_stores/authStore';
 import { Product } from '../../_types/product';
 import { ProductStatus } from '../../_types/product-status';
 
+// Import the product store for direct state manipulation in tests
+import { useProductStore } from '../../_stores/productStore';
+
 // Mock expo-router
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -157,9 +160,6 @@ jest.mock('../../_services/api/queryHooks', () => ({
 }));
 
 const { useAppSettings } = require('../../_services/api/queryHooks');
-
-// Import the product store for direct state manipulation in tests
-import { useProductStore } from '../../_stores/productStore';
 
 describe('Product Detail Flow - Integration', () => {
   // Simple wrapper for tests - no need for full navigation setup

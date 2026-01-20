@@ -7,6 +7,9 @@
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useCartStore } from '../../_stores/cartStore';
 
+// Import the mocked module to get references
+import httpClient from '../../_services/api/httpClient';
+
 // Mock MMKV at the boundary
 const mockMMKVStore = new Map<string, string>();
 
@@ -39,9 +42,6 @@ jest.mock('../../_services/api/httpClient', () => {
     httpClient: mockFns,
   };
 });
-
-// Import the mocked module to get references
-import httpClient from '../../_services/api/httpClient';
 const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
 describe('cartStore', () => {

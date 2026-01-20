@@ -127,7 +127,7 @@ export default function AddressesListScreen() {
   );
 
   const handleAddAddress = () => {
-    router.push('/profile/addresses/new');
+    router.push('/checkout/new-address');
   };
 
   const handleDelete = async (index: number) => {

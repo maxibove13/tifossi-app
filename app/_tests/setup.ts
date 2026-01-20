@@ -4,8 +4,6 @@
  */
 
 // Set default test timeout for jsdom tests
-jest.setTimeout(5000);
-
 // Load test environment variables
 import { config } from 'dotenv';
 import { resolve } from 'path';
@@ -16,6 +14,8 @@ import { TextEncoder, TextDecoder } from 'util';
 
 // Setup custom matchers for domain-specific assertions
 import { setupCustomMatchers } from './utils/custom-matchers';
+
+jest.setTimeout(5000);
 
 // Load .env.test file for test environment
 config({ path: resolve(__dirname, '../../.env.test') });
