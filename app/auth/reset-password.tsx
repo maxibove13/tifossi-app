@@ -78,39 +78,43 @@ export default function ResetPasswordScreen() {
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.formContainer}>
-            <Text style={styles.infoText} testID="email-display">
-              {email
-                ? `Ingresa tu nueva contraseña para ${email}.`
-                : 'Ingresa tu nueva contraseña.'}
-            </Text>
-            <Input
-              placeholder="Nueva Contraseña"
-              secureTextEntry
-              value={password}
-              testID="new-password-input"
-              onChangeText={(text) => {
-                setPassword(text);
-                if (error) setError(null);
-              }}
-              error={
-                error && (error.includes('6 caracteres') || error.includes('contraseña'))
-                  ? error
-                  : undefined
-              }
-              containerStyle={styles.inputSpacing}
-            />
-            <Input
-              placeholder="Confirmar Contraseña"
-              secureTextEntry
-              value={confirmPassword}
-              testID="confirm-password-input"
-              onChangeText={(text) => {
-                setConfirmPassword(text);
-                if (error) setError(null);
-              }}
-              error={error && error.includes('coinciden') ? error : undefined}
-              containerStyle={styles.inputSpacing}
-            />
+            <View style={styles.formSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle} testID="email-display">
+                  {email
+                    ? `Ingresa tu nueva contraseña para ${email}.`
+                    : 'Ingresa tu nueva contraseña.'}
+                </Text>
+              </View>
+              <Input
+                placeholder="Nueva Contraseña"
+                secureTextEntry
+                value={password}
+                testID="new-password-input"
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (error) setError(null);
+                }}
+                error={
+                  error && (error.includes('6 caracteres') || error.includes('contraseña'))
+                    ? error
+                    : undefined
+                }
+                pill
+              />
+              <Input
+                placeholder="Confirmar Contraseña"
+                secureTextEntry
+                value={confirmPassword}
+                testID="confirm-password-input"
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  if (error) setError(null);
+                }}
+                error={error && error.includes('coinciden') ? error : undefined}
+                pill
+              />
+            </View>
             {error &&
               !error.includes('6 caracteres') &&
               !error.includes('coinciden') &&
@@ -164,17 +168,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formContainer: {
-    gap: spacing.lg,
+    gap: spacing.xxl,
     paddingHorizontal: spacing.lg,
   },
-  infoText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.sm,
-    color: colors.secondary,
-    textAlign: 'center',
-    marginBottom: spacing.md,
+  formSection: {
+    gap: spacing.sm,
   },
-  inputSpacing: {},
+  sectionHeader: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  sectionTitle: {
+    fontFamily: 'Roboto',
+    fontSize: 14,
+    fontWeight: fontWeights.regular,
+    lineHeight: 22,
+    color: '#424242',
+  },
   errorText: {
     color: colors.error,
     fontSize: fontSizes.sm,

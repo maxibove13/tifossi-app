@@ -63,7 +63,7 @@ export interface User {
 }
 
 interface UserProfileResponse {
-  favorites?: Array<{ id?: number; documentId?: string }>;
+  favorites?: { id?: number; documentId?: string }[];
   favoriteIds?: string[];
 }
 
