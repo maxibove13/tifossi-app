@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { colors } from '../_styles/colors';
-import { spacing, radius, components, layout } from '../_styles/spacing';
+import { spacing, radius, components } from '../_styles/spacing';
 import SubheaderClose from '../_components/common/SubheaderClose';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 import Input from '../_components/ui/form/Input';
@@ -187,12 +187,12 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    paddingTop: layout.subheaderScreenTop,
   },
   scrollView: {
     flex: 1,
   },
   formContainer: {
+    paddingTop: spacing.xxxxl,
     paddingHorizontal: spacing.lg,
     gap: spacing.lg,
   },

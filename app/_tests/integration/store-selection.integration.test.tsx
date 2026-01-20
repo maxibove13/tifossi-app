@@ -78,7 +78,7 @@ describe('Store Selection Flow - Integration', () => {
       error: null,
     });
 
-    // Set up logged in user (store selection tests assume logged in user)
+    // Set up logged in user with complete contact info (store selection tests assume logged in user)
     useAuthStore.setState({
       isLoggedIn: true,
       token: 'test-token',
@@ -89,6 +89,7 @@ describe('Store Selection Flow - Integration', () => {
         profilePicture: null,
         firstName: 'Test',
         lastName: 'User',
+        phone: '+598 99 123 456', // Required for pickup flow to skip contact info screen
       },
     });
 

@@ -116,9 +116,21 @@ const profile = await httpClient.get('/users/me');
 - **Key Features:**
   - Current order tracking (orderNumber, orderId)
   - Selected store location for pickup orders
-  - Guest checkout data:
-    - `GuestAddress`: Delivery address for non-authenticated users
-    - `GuestContactInfo`: Contact info for pickup orders
+  - **Selected delivery address:**
+    - `selectedAddress`: Stores the Address object for logged-in user delivery
+    - Set via shipping-address screen when user selects an address
+    - Used by payment-selection to get shipping address without URL params
+  - **Guest checkout data (`GuestCheckoutData`):**
+    - Unified interface containing both contact info and optional delivery address fields
+    - Contact fields (always required): `firstName`, `lastName`, `email`, `phoneNumber`
+    - Address fields (optional, for delivery): `addressLine1`, `addressLine2`, `city`, `state`, `postalCode`, `country`
+    - For pickup orders: Only contact fields are populated
+    - For delivery orders: Both contact and address fields are populated
+  - **Checkout flow navigation (`originProductId` and `closeCheckoutFlow`):**
+    - `originProductId`: Tracks which product initiated the checkout flow
+    - `setOriginProductId`: Called when entering checkout from product detail
+    - `closeCheckoutFlow()`: Clears all payment state and navigates back to origin product (if set) or home
+    - Used by close buttons in checkout screens for intelligent back-navigation
   - **"Comprar ahora" (Buy Now) flow:**
     - `PendingBuyNowItem`: Stores product info for direct purchase without adding to cart
     - Allows users to back out of checkout without polluting their cart

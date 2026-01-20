@@ -115,6 +115,8 @@ app/
 │   ├── favoritesStore.ts # Favorites state management
 │   ├── authStore.ts    # Authentication state management
 │   └── paymentStore.ts # Payment state including guest checkout data
+├── _hooks/             # Checkout and form-specific hooks
+│   └── useCheckoutFormValidation.ts # Reusable form validation for checkout screens
 ├── _types/             # TypeScript type definitions
 │   ├── README.md       # Type system documentation
 │   ├── STYLE_GUIDE.md  # Style system guidelines

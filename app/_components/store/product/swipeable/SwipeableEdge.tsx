@@ -362,31 +362,32 @@ const SwipeableEdge = ({
   // Payment store for "buy now" flow
   const setPendingBuyNowItem = usePaymentStore((state) => state.setPendingBuyNowItem);
   const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
-  const setGuestContactInfo = usePaymentStore((state) => state.setGuestContactInfo);
-  const setGuestAddress = usePaymentStore((state) => state.setGuestAddress);
-  const showShippingSelectionOnReturn = usePaymentStore(
-    (state) => state.showShippingSelectionOnReturn
-  );
-  const setShowShippingSelectionOnReturn = usePaymentStore(
-    (state) => state.setShowShippingSelectionOnReturn
-  );
+  const setGuestData = usePaymentStore((state) => state.setGuestData);
+  const pendingBuyNowItemFromStore = usePaymentStore((state) => state.pendingBuyNowItem);
 
   // Auth store for shipping navigation
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   // State for standalone shipping selection overlay (shown when returning from checkout)
   const [showReturnShippingOverlay, setShowReturnShippingOverlay] = useState(false);
+  // Track whether we've shown the overlay for current pending item
+  const [shownForPendingItem, setShownForPendingItem] = useState<string | null>(null);
 
   // Show shipping selection overlay when returning from checkout screens
   // Use useFocusEffect to ensure the overlay only shows when the product screen is focused
   // This prevents the modal from appearing on top of checkout screens during navigation
   useFocusEffect(
     useCallback(() => {
-      if (showShippingSelectionOnReturn) {
+      // If there's a pending buy now item for this product and we haven't shown the overlay yet
+      if (
+        pendingBuyNowItemFromStore &&
+        pendingBuyNowItemFromStore.productId === product.id &&
+        shownForPendingItem !== pendingBuyNowItemFromStore.productId
+      ) {
         setShowReturnShippingOverlay(true);
-        setShowShippingSelectionOnReturn(false);
+        setShownForPendingItem(pendingBuyNowItemFromStore.productId);
       }
-    }, [showShippingSelectionOnReturn, setShowShippingSelectionOnReturn])
+    }, [pendingBuyNowItemFromStore, product.id, shownForPendingItem])
   );
 
   // Handle shipping selection from the return overlay
@@ -394,8 +395,6 @@ const SwipeableEdge = ({
     (method: 'delivery' | 'pickup' | '') => {
       if (!method) return;
 
-      // Set flag for potential next return
-      setShowShippingSelectionOnReturn(true);
       setShowReturnShippingOverlay(false);
 
       if (method === 'delivery') {
@@ -408,7 +407,7 @@ const SwipeableEdge = ({
         router.navigate('/checkout/shipping-pickup');
       }
     },
-    [isLoggedIn, setShowShippingSelectionOnReturn]
+    [isLoggedIn]
   );
 
   // Handle closing the return shipping overlay (user cancels "buy now" intent)
@@ -450,8 +449,7 @@ const SwipeableEdge = ({
     (size: string, qty: number) => {
       // Clear previous checkout state so each "buy now" starts fresh
       setSelectedStore(null);
-      setGuestContactInfo(null);
-      setGuestAddress(null);
+      setGuestData(null);
 
       // Parse price from string (e.g., "$1,500" -> 1500)
       const parsePrice = (priceStr: string | undefined): number => {
@@ -478,8 +476,7 @@ const SwipeableEdge = ({
       selectedColor,
       setPendingBuyNowItem,
       setSelectedStore,
-      setGuestContactInfo,
-      setGuestAddress,
+      setGuestData,
     ]
   );
 

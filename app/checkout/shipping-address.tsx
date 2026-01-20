@@ -12,23 +12,25 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router, useLocalSearchParams, Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import PlusCircle from '../../assets/icons/plus_circle.svg';
 import SubheaderClose from '../_components/common/SubheaderClose';
 import RadioButton from '../_components/ui/form/RadioButton';
 
 // Import style tokens
 import { colors } from '../_styles/colors';
-import { spacing, radius, layout } from '../_styles/spacing';
-import { fontWeights } from '../_styles/typography';
+import { spacing, radius, layout, components } from '../_styles/spacing';
+import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
 
 // Import services
 import addressService, { Address } from '../_services/address/addressService';
 import { useAuthStore } from '../_stores/authStore';
+import { usePaymentStore } from '../_stores/paymentStore';
 
 export default function ShippingAddressScreen() {
-  const _params = useLocalSearchParams();
   const { token } = useAuthStore();
+  const closeCheckoutFlow = usePaymentStore((state) => state.closeCheckoutFlow);
+  const setSelectedAddressInStore = usePaymentStore((state) => state.setSelectedAddress);
 
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -78,12 +80,10 @@ export default function ShippingAddressScreen() {
   };
 
   const handleNext = () => {
-    if (selectedAddress !== null) {
-      // Pass selected address index to payment selection screen
-      router.push({
-        pathname: '/checkout/payment-selection',
-        params: { selectedAddressId: String(selectedAddress) },
-      });
+    if (selectedAddress !== null && addresses[selectedAddress]) {
+      // Store selected address in payment store and navigate
+      setSelectedAddressInStore(addresses[selectedAddress]);
+      router.push('/checkout/payment-selection');
     }
   };
 
@@ -93,8 +93,7 @@ export default function ShippingAddressScreen() {
   };
 
   const handleClose = () => {
-    // Navigate back to the product screen or wherever the flow started
-    router.navigate('/(tabs)');
+    closeCheckoutFlow();
   };
 
   return (
@@ -209,7 +208,7 @@ export default function ShippingAddressScreen() {
                   onPress={handleAddNewAddress}
                   activeOpacity={0.7}
                 >
-                  <PlusCircle width={20} height={20} stroke="#0C0C0C" strokeWidth={1.6} />
+                  <PlusCircle width={20} height={20} stroke={colors.primary} strokeWidth={1.6} />
                   <Text style={styles.addAddressText}>Adicionar dirección nueva</Text>
                 </TouchableOpacity>
               </View>
@@ -284,8 +283,7 @@ type Styles = {
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
-    paddingTop: layout.subheaderScreenTop,
+    backgroundColor: colors.background.light,
   },
   scrollView: {
     flex: 1,
@@ -293,35 +291,38 @@ const styles = StyleSheet.create<Styles>({
   content: {
     flex: 1,
     gap: spacing.xxl,
+    paddingTop: spacing.xxxxl,
     paddingBottom: spacing.xxl,
     paddingHorizontal: spacing.lg,
   },
   addressesContainer: {
     gap: spacing.md,
+    paddingHorizontal: spacing.sm,
   },
   noAddressContainer: {
-    gap: spacing.sm,
+    gap: spacing.xs,
+    paddingHorizontal: spacing.lg,
   },
   noAddressTitle: {
-    fontFamily: 'Roboto',
-    fontSize: 20,
+    fontFamily: fonts.primary,
+    fontSize: fontSizes.xl,
     fontWeight: fontWeights.regular,
-    lineHeight: 28,
-    color: '#0C0C0C',
+    lineHeight: lineHeights.xl,
+    color: colors.primary,
   },
   noAddressSubtitle: {
-    fontFamily: 'Inter',
-    fontSize: 12,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
     fontWeight: fontWeights.regular,
-    lineHeight: 20,
-    color: '#575757',
+    lineHeight: lineHeights.md,
+    color: colors.secondary,
   },
   sectionTitle: {
-    fontFamily: 'Roboto',
-    fontSize: 14,
+    fontFamily: fonts.primary,
+    fontSize: fontSizes.md,
     fontWeight: fontWeights.regular,
-    lineHeight: 22,
-    color: '#707070',
+    lineHeight: lineHeights.lg,
+    color: colors.secondary,
   },
   addressList: {
     gap: spacing.md,
@@ -333,10 +334,10 @@ const styles = StyleSheet.create<Styles>({
     paddingVertical: spacing.xl * 2,
   },
   loadingText: {
-    fontFamily: 'Inter',
-    fontSize: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
     fontWeight: fontWeights.regular,
-    lineHeight: 20,
+    lineHeight: lineHeights.md,
     color: colors.secondary,
     marginTop: spacing.md,
   },
@@ -345,12 +346,13 @@ const styles = StyleSheet.create<Styles>({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.xl * 2,
+    paddingHorizontal: spacing.xl,
   },
   errorText: {
-    fontFamily: 'Inter',
-    fontSize: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
     fontWeight: fontWeights.regular,
-    lineHeight: 20,
+    lineHeight: lineHeights.md,
     color: colors.error,
     textAlign: 'center',
     marginBottom: spacing.md,
@@ -362,10 +364,10 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: colors.primary,
   },
   retryButtonText: {
-    fontFamily: 'Inter',
-    fontSize: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
     fontWeight: fontWeights.medium,
-    lineHeight: 20,
+    lineHeight: lineHeights.md,
     color: colors.background.light,
   },
   addressItem: {
@@ -375,29 +377,33 @@ const styles = StyleSheet.create<Styles>({
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#DCDCDC',
+    borderBottomColor: colors.border,
   },
   addressInfo: {
     flex: 1,
     marginRight: spacing.md,
   },
   addressText: {
-    fontFamily: 'Inter',
-    fontSize: 16,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.regular,
-    lineHeight: 24,
-    color: '#0C0C0C',
+    lineHeight: lineHeights.lg,
+    color: colors.primary,
   },
   defaultBadge: {
-    fontFamily: 'Inter',
-    fontSize: 12,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.sm,
     fontWeight: fontWeights.medium,
-    lineHeight: 16,
+    lineHeight: lineHeights.sm,
     color: colors.primary,
     marginTop: spacing.xs / 2,
   },
-  addAddressContainer: {},
-  addAddressEmptyContainer: {},
+  addAddressContainer: {
+    paddingHorizontal: spacing.xxl,
+  },
+  addAddressEmptyContainer: {
+    paddingHorizontal: spacing.xxl,
+  },
   addAddressButton: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -405,25 +411,25 @@ const styles = StyleSheet.create<Styles>({
     gap: spacing.sm,
     paddingVertical: spacing.md,
     borderWidth: 1,
-    borderColor: '#DCDCDC',
-    borderRadius: 24,
+    borderColor: colors.border,
+    borderRadius: radius.xxl,
   },
   addAddressText: {
-    fontFamily: 'Inter',
-    fontSize: 14,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.md,
     fontWeight: fontWeights.medium,
-    lineHeight: 20,
-    color: '#0C0C0C',
+    lineHeight: lineHeights.md,
+    color: colors.primary,
   },
   actionButtons: {
     paddingHorizontal: spacing.lg,
     gap: spacing.sm,
-    marginBottom: 34,
+    marginBottom: layout.safeAreaBottom,
   },
   primaryButton: {
     width: '100%',
-    height: 48,
-    borderRadius: 24,
+    height: components.button.height,
+    borderRadius: radius.xxl,
     overflow: 'hidden',
   },
   primaryButtonGradient: {
@@ -435,27 +441,27 @@ const styles = StyleSheet.create<Styles>({
     opacity: 0.5,
   },
   primaryButtonText: {
-    fontFamily: 'Inter',
-    fontSize: 16,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: 24,
-    color: '#FBFBFB',
+    lineHeight: lineHeights.lg,
+    color: colors.background.light,
   },
   secondaryButton: {
     width: '100%',
-    height: 48,
-    borderRadius: 24,
+    height: components.button.height,
+    borderRadius: radius.xxl,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#DCDCDC',
+    borderColor: colors.border,
     backgroundColor: 'transparent',
   },
   secondaryButtonText: {
-    fontFamily: 'Inter',
-    fontSize: 16,
+    fontFamily: fonts.secondary,
+    fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
-    lineHeight: 24,
-    color: '#0C0C0C',
+    lineHeight: lineHeights.lg,
+    color: colors.primary,
   },
 });

@@ -23,23 +23,21 @@ import { useAuthStore } from '../../_stores/authStore';
 
 const httpClientMock: any = require('../../_services/api/httpClient').default;
 
-// Mock expo-router
+// Setup expo-router mocks (global mock is defined in setup.ts)
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 const mockNavigate = jest.fn();
 
-jest.mock('expo-router', () => ({
-  ...jest.requireActual('expo-router'),
-  router: {
-    push: (params: any) => mockPush(params),
-    back: () => mockBack(),
-    navigate: (path: string) => mockNavigate(path),
-  },
-  useLocalSearchParams: () => ({}),
-  Stack: {
-    Screen: () => null,
-  },
-}));
+// Import the mocked expo-router to configure it for this test file
+const expoRouterMock = jest.requireMock('expo-router');
+
+// Override router object with our controlled mock functions
+expoRouterMock.router = {
+  push: mockPush,
+  back: mockBack,
+  navigate: mockNavigate,
+  replace: jest.fn(),
+};
 
 // Mock SVG icons
 jest.mock('../../../assets/icons/close.svg', () => 'CloseIcon');
@@ -198,12 +196,15 @@ describe('Shipping Address Flow - Integration', () => {
         const nextButton = getByLabelText('address-next-button');
         fireEvent.press(nextButton);
 
+        // Address is now stored in payment store, not passed via URL params
         await waitFor(() => {
-          expect(mockPush).toHaveBeenCalledWith({
-            pathname: '/checkout/payment-selection',
-            params: { selectedAddressId: String(secondAddress.id) },
-          });
+          expect(mockPush).toHaveBeenCalledWith('/checkout/payment-selection');
         });
+
+        // Verify address was stored in payment store
+        const { usePaymentStore } = require('../../_stores/paymentStore');
+        const storedAddress = usePaymentStore.getState().selectedAddress;
+        expect(storedAddress?.id).toBe(secondAddress.id);
       }
     });
 
@@ -224,12 +225,15 @@ describe('Shipping Address Flow - Integration', () => {
       const continueButton = getByLabelText('address-next-button');
       fireEvent.press(continueButton);
 
+      // Address is now stored in payment store, not passed via URL params
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith({
-          pathname: '/checkout/payment-selection',
-          params: { selectedAddressId: String(defaultAddress?.id) },
-        });
+        expect(mockPush).toHaveBeenCalledWith('/checkout/payment-selection');
       });
+
+      // Verify default address was stored in payment store
+      const { usePaymentStore } = require('../../_stores/paymentStore');
+      const storedAddress = usePaymentStore.getState().selectedAddress;
+      expect(storedAddress?.id).toBe(defaultAddress?.id);
     });
   });
 
@@ -271,6 +275,10 @@ describe('Shipping Address Flow - Integration', () => {
     });
 
     it('should handle close navigation to home', async () => {
+      // Ensure no origin product is set (so it navigates to home)
+      const { usePaymentStore } = require('../../_stores/paymentStore');
+      usePaymentStore.setState({ originProductId: null });
+
       const { getByTestId } = render(
         <TestWrapper>
           <ShippingAddressScreen />
@@ -280,6 +288,7 @@ describe('Shipping Address Flow - Integration', () => {
       const closeButton = getByTestId('address-close-button');
       fireEvent.press(closeButton);
 
+      // closeCheckoutFlow calls router.navigate('/(tabs)') when no origin product
       expect(mockNavigate).toHaveBeenCalledWith('/(tabs)');
     });
   });
@@ -397,13 +406,18 @@ describe('Shipping Address Flow - Integration', () => {
       // Continue to payment
       fireEvent.press(getByLabelText('address-next-button'));
 
-      // Verify navigation with selected address
+      // Address is now stored in payment store, not passed via URL params
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith({
-          pathname: '/checkout/payment-selection',
-          params: { selectedAddressId: expect.any(String) },
-        });
+        expect(mockPush).toHaveBeenCalledWith('/checkout/payment-selection');
       });
+
+      // Verify selected address was stored in payment store
+      const { usePaymentStore } = require('../../_stores/paymentStore');
+      const storedAddress = usePaymentStore.getState().selectedAddress;
+      expect(storedAddress).toBeDefined();
+      if (addresses.length > 1) {
+        expect(storedAddress?.id).toBe(addresses[1].id);
+      }
 
       // Note: addressService uses the mocked httpClient internally
     });

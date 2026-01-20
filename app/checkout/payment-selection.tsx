@@ -15,7 +15,7 @@ import {
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import RadioButton from '../_components/ui/form/RadioButton';
 import SubheaderClose from '../_components/common/SubheaderClose';
 import CartProductCard from '../_components/store/product/cart/CartProductCard';
@@ -31,7 +31,7 @@ import { usePaymentStore } from '../_stores/paymentStore';
 import { useAuthStore } from '../_stores/authStore';
 import { useProductStore } from '../_stores/productStore';
 import { Product } from '../_types/product';
-import addressService, { Address } from '../_services/address/addressService';
+import addressService from '../_services/address/addressService';
 import mercadoPagoService, { OrderData } from '../_services/payment/mercadoPago';
 
 interface PaymentMethod {
@@ -43,8 +43,6 @@ interface PaymentMethod {
 }
 
 export default function PaymentSelectionScreen() {
-  const params = useLocalSearchParams();
-  const { selectedAddressId } = params;
   const navigation = useRouter();
 
   // Store hooks
@@ -57,8 +55,8 @@ export default function PaymentSelectionScreen() {
   const clearPaymentState = usePaymentStore((state) => state.clearPaymentState);
   const setLoading = usePaymentStore((state) => state.setLoading);
   const selectedStore = usePaymentStore((state) => state.selectedStore);
-  const guestAddress = usePaymentStore((state) => state.guestAddress);
-  const guestContactInfo = usePaymentStore((state) => state.guestContactInfo);
+  const selectedAddress = usePaymentStore((state) => state.selectedAddress);
+  const guestData = usePaymentStore((state) => state.guestData);
   // Pending buy now item (for "Comprar ahora" flow without cart)
   const pendingBuyNowItem = usePaymentStore((state) => state.pendingBuyNowItem);
 
@@ -136,29 +134,6 @@ export default function PaymentSelectionScreen() {
   const shippingCost = shippingMethod === 'pickup' ? 0 : 200;
   const total = subtotal + shippingCost;
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
-
-  // Fetch selected address by index
-  useEffect(() => {
-    const fetchSelectedAddress = async () => {
-      if (selectedAddressId && token) {
-        try {
-          addressService.setAuthToken(token);
-          const addresses = await addressService.fetchUserAddresses();
-          const index = parseInt(selectedAddressId as string, 10);
-          if (!isNaN(index) && index >= 0 && index < addresses.length) {
-            setSelectedAddress(addresses[index]);
-          } else {
-            Alert.alert('Error', 'No pudimos cargar la dirección de envío.');
-          }
-        } catch {
-          Alert.alert('Error', 'No pudimos cargar la dirección de envío.');
-        }
-      }
-    };
-
-    fetchSelectedAddress();
-  }, [selectedAddressId, token]);
 
   // Clear payment state when leaving screen
   useEffect(() => {
@@ -239,7 +214,8 @@ export default function PaymentSelectionScreen() {
       const shippingMethod = selectedStore ? ('pickup' as const) : ('delivery' as const);
 
       // Only require address for delivery, not for store pickup
-      if (shippingMethod === 'delivery' && !selectedAddress && !guestAddress) {
+      // For delivery: need selectedAddress (logged in) or guestData with address fields
+      if (shippingMethod === 'delivery' && !selectedAddress && !guestData?.addressLine1) {
         Alert.alert('Error', 'Debes proporcionar una dirección de envío');
         return;
       }
@@ -250,7 +226,7 @@ export default function PaymentSelectionScreen() {
       // Set auth token for MercadoPago service (empty string for guests)
       mercadoPagoService.setAuthToken(token || '');
 
-      // Prepare user data for MercadoPago (handle logged-in, guest delivery, and guest pickup)
+      // Prepare user data for MercadoPago (handle logged-in and guest)
       let userData;
       if (user) {
         // Logged-in user
@@ -266,31 +242,17 @@ export default function PaymentSelectionScreen() {
               }
             : undefined,
         };
-      } else if (guestAddress) {
-        // Guest delivery - use data from guestAddress
+      } else if (guestData) {
+        // Guest user - use unified guestData (works for both delivery and pickup)
         userData = {
           id: `guest-${Date.now()}`,
-          firstName: guestAddress.firstName,
-          lastName: guestAddress.lastName,
-          email: guestAddress.email,
-          phone: guestAddress.phoneNumber
+          firstName: guestData.firstName,
+          lastName: guestData.lastName,
+          email: guestData.email,
+          phone: guestData.phoneNumber
             ? {
                 areaCode: '598',
-                number: guestAddress.phoneNumber,
-              }
-            : undefined,
-        };
-      } else if (guestContactInfo) {
-        // Guest pickup - use data from guestContactInfo
-        userData = {
-          id: `guest-${Date.now()}`,
-          firstName: guestContactInfo.firstName,
-          lastName: guestContactInfo.lastName,
-          email: guestContactInfo.email,
-          phone: guestContactInfo.phoneNumber
-            ? {
-                areaCode: '598',
-                number: guestContactInfo.phoneNumber,
+                number: guestData.phoneNumber,
               }
             : undefined,
         };
@@ -327,17 +289,17 @@ export default function PaymentSelectionScreen() {
                 postalCode: selectedAddress.postalCode,
                 phoneNumber: selectedAddress.phoneNumber,
               }
-            : guestAddress
+            : guestData?.addressLine1
               ? {
-                  firstName: guestAddress.firstName,
-                  lastName: guestAddress.lastName,
-                  addressLine1: guestAddress.addressLine1,
-                  addressLine2: guestAddress.addressLine2,
-                  city: guestAddress.city,
-                  state: guestAddress.state,
-                  country: guestAddress.country,
-                  postalCode: guestAddress.postalCode,
-                  phoneNumber: guestAddress.phoneNumber,
+                  firstName: guestData.firstName,
+                  lastName: guestData.lastName,
+                  addressLine1: guestData.addressLine1,
+                  addressLine2: guestData.addressLine2,
+                  city: guestData.city,
+                  state: guestData.state,
+                  country: guestData.country,
+                  postalCode: guestData.postalCode,
+                  phoneNumber: guestData.phoneNumber,
                 }
               : null
           : null;
@@ -441,9 +403,10 @@ export default function PaymentSelectionScreen() {
     }
   };
 
+  const closeCheckoutFlow = usePaymentStore((state) => state.closeCheckoutFlow);
+
   const handleClose = () => {
-    // Navigate back to the product screen or wherever the flow started
-    navigation.navigate('/(tabs)');
+    closeCheckoutFlow();
   };
 
   const renderPaymentMethod = (method: PaymentMethod) => (
@@ -506,9 +469,9 @@ export default function PaymentSelectionScreen() {
                   <Text style={styles.shippingInfoText}>
                     {addressService.formatAddressDisplay(selectedAddress)}
                   </Text>
-                ) : guestAddress ? (
+                ) : guestData?.addressLine1 ? (
                   <Text style={styles.shippingInfoText}>
-                    {`${guestAddress.addressLine1}, ${guestAddress.city}`}
+                    {`${guestData.addressLine1}, ${guestData.city}`}
                   </Text>
                 ) : null}
               </View>

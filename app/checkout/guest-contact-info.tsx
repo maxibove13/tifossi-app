@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,10 +10,12 @@ import {
   TextStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Input from '../_components/ui/form/Input';
 import SubheaderClose from '../_components/common/SubheaderClose';
 import { usePaymentStore } from '../_stores/paymentStore';
+import { useAuthStore } from '../_stores/authStore';
+import { useCheckoutFormValidation } from '../_hooks/useCheckoutFormValidation';
 
 // Import style tokens
 import { colors } from '../_styles/colors';
@@ -28,18 +30,21 @@ interface ContactFormData {
   phone: string;
 }
 
-// Define validation errors interface
-interface ValidationErrors {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-}
+type ContactFormField = keyof ContactFormData;
 
 function GuestContactInfoScreen() {
-  const setGuestContactInfo = usePaymentStore((state) => state.setGuestContactInfo);
+  const { prefill } = useLocalSearchParams<{ prefill?: string }>();
+  const isPrefillMode = prefill === 'true';
 
-  // Form state
+  const setGuestData = usePaymentStore((state) => state.setGuestData);
+  const closeCheckoutFlow = usePaymentStore((state) => state.closeCheckoutFlow);
+  const user = useAuthStore((state) => state.user);
+
+  // Form validation hook
+  const { errors, setErrors, validateRequired, validateEmail, clearFieldError } =
+    useCheckoutFormValidation<ContactFormField>();
+
+  // Form state - initialize with user data if prefill mode
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: '',
     lastName: '',
@@ -47,59 +52,55 @@ function GuestContactInfoScreen() {
     phone: '',
   });
 
-  // Validation errors state
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  // Pre-fill form with user data when in prefill mode
+  useEffect(() => {
+    if (isPrefillMode && user) {
+      setFormData({
+        firstName: user.firstName || user.name?.split(' ')[0] || '',
+        lastName: user.lastName || user.name?.split(' ').slice(1).join(' ') || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+    }
+  }, [isPrefillMode, user]);
 
   // Track if form was submitted to show validation errors
   const [submitted, setSubmitted] = useState(false);
 
   // Update form fields
-  const handleChange = (field: keyof ContactFormData, value: string) => {
+  const handleChange = (field: ContactFormField, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
 
     // Clear error for this field if it has a value now
-    if (value.trim() && errors[field as keyof ValidationErrors]) {
-      setErrors((prev) => ({
-        ...prev,
-        [field]: undefined,
-      }));
+    if (value.trim() && errors[field]) {
+      clearFieldError(field);
     }
   };
 
   // Validate the form
   const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
+    const newErrors: Partial<Record<ContactFormField, string>> = {
+      firstName: validateRequired(formData.firstName, 'firstName'),
+      lastName: validateRequired(formData.lastName, 'lastName'),
+      email: validateEmail(formData.email),
+      phone: validateRequired(formData.phone, 'phone'),
+    };
 
-    // Check required fields
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'El nombre es obligatorio';
-    }
+    // Filter out undefined errors
+    const filteredErrors = Object.fromEntries(
+      Object.entries(newErrors).filter(([, v]) => v !== undefined)
+    ) as Partial<Record<ContactFormField, string>>;
 
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'El apellido es obligatorio';
-    }
-
-    // Email is required for MercadoPago
-    if (!formData.email.trim()) {
-      newErrors.email = 'El email es obligatorio';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      newErrors.email = 'El email no es válido';
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'El número de celular es obligatorio';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(filteredErrors);
+    return Object.keys(filteredErrors).length === 0;
   };
 
   // Handle close button
   const handleClose = () => {
-    router.navigate('/(tabs)');
+    closeCheckoutFlow();
   };
 
   // Handle back button
@@ -116,8 +117,8 @@ function GuestContactInfoScreen() {
       return;
     }
 
-    // Store guest contact info
-    setGuestContactInfo({
+    // Store guest contact info (no address fields for pickup)
+    setGuestData({
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,

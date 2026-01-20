@@ -15,7 +15,9 @@ import StoreDetailView from '../_components/common/StoreDetailView';
 export default function StoreSelectionScreen() {
   const { cityId, zoneId } = useLocalSearchParams<{ cityId: string; zoneId?: string }>();
   const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
+  const closeCheckoutFlow = usePaymentStore((state) => state.closeCheckoutFlow);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const user = useAuthStore((state) => state.user);
 
   const store = useMemo(() => {
     return storesData.find((s: StoreDetails) => s.cityId === cityId && s.zoneId === zoneId);
@@ -31,10 +33,21 @@ export default function StoreSelectionScreen() {
         address: store.address,
       });
     }
-    // Guests need to provide contact info after store selection
+
     if (isLoggedIn) {
-      router.push('/checkout/payment-selection');
+      // Check if logged-in user has required contact info for pickup
+      const hasEmail = user?.email && user.email.trim().length > 0;
+      const hasPhone = user?.phone && user.phone.trim().length > 0;
+
+      if (hasEmail && hasPhone) {
+        // User has complete contact info, go directly to payment
+        router.push('/checkout/payment-selection');
+      } else {
+        // User needs to complete their contact info - prefill with existing data
+        router.push('/checkout/guest-contact-info?prefill=true');
+      }
     } else {
+      // Guests always need to provide contact info
       router.push('/checkout/guest-contact-info');
     }
   };
@@ -44,7 +57,7 @@ export default function StoreSelectionScreen() {
   };
 
   const handleClose = () => {
-    router.navigate('/(tabs)');
+    closeCheckoutFlow();
   };
 
   if (!store) {
