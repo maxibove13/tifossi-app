@@ -258,10 +258,12 @@ export class MercadoPagoService {
           }
         : undefined,
 
+      // Redirect through backend to avoid Safari's "invalid address" error with custom URL schemes
+      // Backend serves HTML page that uses JavaScript to redirect to the app
       back_urls: {
-        success: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentSuccess=true&external_reference=${encodeURIComponent(orderData.orderNumber)}`,
-        failure: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentFailure=true&external_reference=${encodeURIComponent(orderData.orderNumber)}`,
-        pending: `${process.env.APP_SCHEME || 'tifossi'}://checkout/payment-result?paymentPending=true&external_reference=${encodeURIComponent(orderData.orderNumber)}`,
+        success: `${process.env.PUBLIC_URL}/api/payment/redirect?status=success&external_reference=${encodeURIComponent(orderData.orderNumber)}`,
+        failure: `${process.env.PUBLIC_URL}/api/payment/redirect?status=failure&external_reference=${encodeURIComponent(orderData.orderNumber)}`,
+        pending: `${process.env.PUBLIC_URL}/api/payment/redirect?status=pending&external_reference=${encodeURIComponent(orderData.orderNumber)}`,
       },
 
       auto_return: 'approved' as const,
