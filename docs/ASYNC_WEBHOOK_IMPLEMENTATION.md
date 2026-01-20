@@ -49,8 +49,12 @@ The implementation follows this flow:
 - `processQueue()`: Main entry point, processes up to 10 webhooks per run
 - `processWebhook()`: Handles a single webhook with retry logic
 - `processPaymentWebhook()`: Payment-specific processing logic
+- `processPostPaymentActions()`: Triggers email notifications on PAID status
 - `updateWebhookStatus()`: Marks webhooks as processing/completed/failed
 - `updateWebhookRetry()`: Implements exponential backoff retry logic
+
+**Email Notifications**:
+When payment status becomes PAID, `processPostPaymentActions()` calls the order confirmation email service (`/backend/strapi/src/lib/email/order-confirmation.ts`). The email includes order details, items, totals, and shipping info. If SMTP is not configured, email is skipped gracefully (logged but no error thrown).
 
 **Exponential Backoff**:
 - Attempt 1: Immediate

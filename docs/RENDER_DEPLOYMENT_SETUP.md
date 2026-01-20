@@ -73,13 +73,16 @@ CLOUDINARY_NAME=<your-cloudinary-name>
 CLOUDINARY_KEY=<your-cloudinary-key>
 CLOUDINARY_SECRET=<your-cloudinary-secret>
 
-# Email Service (optional but recommended)
-SMTP_HOST=<your-smtp-host>
+# Email Service (optional - for order confirmation emails)
+# If not configured, emails are skipped gracefully (order still processes)
+# Order confirmations are sent automatically when payment status = PAID
+# See: backend/strapi/src/lib/email/order-confirmation.ts
+SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
-SMTP_USERNAME=<your-smtp-username>
-SMTP_PASSWORD=<your-smtp-password>
-EMAIL_FROM=noreply@tifossi.com
-EMAIL_REPLY_TO=support@tifossi.com
+SMTP_USERNAME=apikey
+SMTP_PASSWORD=<your-sendgrid-api-key>
+EMAIL_FROM=<your-verified-sender-email>
+EMAIL_REPLY_TO=<your-support-email>
 ```
 
 #### Generate Security Keys

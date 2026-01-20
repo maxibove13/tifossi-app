@@ -5,6 +5,7 @@
 
 import { MPPaymentResponse, MPWebhookPayload, MPWebhookType } from './types/mercadopago';
 import { OrderStatus } from './types/orders';
+import { sendOrderConfirmationEmail } from '../email/order-confirmation';
 
 declare const strapi: any;
 
@@ -17,21 +18,37 @@ interface StrapiOrder {
   orderNumber: string;
   status: OrderStatus;
   total: number;
+  subtotal: number;
+  shippingCost: number;
   mpPaymentId?: string;
   mpPreferenceId?: string;
   mpCollectionId?: string;
   mpCollectionStatus?: string;
   paidAt?: string;
   metadata?: Record<string, any>;
-  user: {
+  guestEmail?: string;
+  shippingMethod: 'delivery' | 'pickup';
+  shippingAddress?: {
+    firstName: string;
+    lastName: string;
+    addressLine1: string;
+    city: string;
+  };
+  storeLocation?: {
+    name: string;
+    address: string;
+  };
+  user?: {
     id: number;
     email: string;
   };
   items: {
-    id: number;
-    productId: string;
+    productSnapshot: { name: string };
     quantity: number;
-    price: number;
+    unitPrice: number;
+    totalPrice: number;
+    selectedSize?: string;
+    selectedColor?: string;
   }[];
 }
 
@@ -179,6 +196,7 @@ export class WebhookProcessor {
           filters: {
             orderNumber: paymentInfo.external_reference,
           },
+          populate: ['user', 'items', 'shippingAddress', 'storeLocation'],
         });
 
         if (orders && orders.length > 0) {
@@ -192,6 +210,7 @@ export class WebhookProcessor {
           filters: {
             $or: [{ mpPaymentId: paymentId }, { mpPreferenceId: paymentInfo.external_reference }],
           },
+          populate: ['user', 'items', 'shippingAddress', 'storeLocation'],
         });
 
         if (orders && orders.length > 0) {
@@ -342,7 +361,7 @@ export class WebhookProcessor {
       switch (status) {
         case OrderStatus.PAID:
           strapi.log.info(`Payment approved for order ${order.orderNumber}`);
-          // Post-payment actions would go here (email, notifications, etc.)
+          await sendOrderConfirmationEmail(order);
           break;
 
         case OrderStatus.CANCELLED:

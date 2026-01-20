@@ -13,8 +13,8 @@ module.exports = {
     // Uncomment when ready to run integration tests with proper Strapi mocking
     // '**/tests/health.test.js',
     // '**/tests/products.test.js',
-    '**/src/**/*.test.js',
-    '**/src/**/__tests__/**/*.js',
+    '**/src/**/*.test.{js,ts}',
+    '**/src/**/__tests__/**/*.{js,ts}',
   ],
 
   // Coverage configuration
