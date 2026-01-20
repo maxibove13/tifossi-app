@@ -34,7 +34,7 @@ import { UnknownError } from '../_types/ui';
 const GoogleLogo = require('../../assets/icons/google-logo.png');
 const AppleLogo = require('../../assets/icons/apple-logo.png');
 
-const backgroundImage = require('../../assets/images/background_image_profile.png');
+const backgroundImage = require('../../assets/images/profile-banner.png');
 
 function getErrorMessage(error: UnknownError): string {
   if (typeof error === 'string') return error;
@@ -89,10 +89,10 @@ const LogoutButton = () => {
   }, [showSplashScreen, logout]);
 
   const handleLogout = () => {
-    Alert.alert('Cerrar Sesión', '¿Estás seguro que deseas cerrar sesión?', [
+    Alert.alert('Cerrar sesión', '¿Estás seguro que deseas cerrar sesión?', [
       { text: 'Cancelar', style: 'cancel' },
       {
-        text: 'Cerrar Sesión',
+        text: 'Cerrar sesión',
         style: 'destructive',
         onPress: () => {
           setShowSplashScreen(true);
@@ -109,8 +109,8 @@ const LogoutButton = () => {
         disabled={showSplashScreen}
       >
         <View style={styles.logoutButton}>
-          <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
-          <LogOut width={24} height={24} stroke={colors.error} strokeWidth={1.5} />
+          <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
+          <LogOut width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
         </View>
       </TouchableOpacity>
 
@@ -137,12 +137,12 @@ const DeleteAccountButton = () => {
 
   const handleDeletePress = () => {
     Alert.alert(
-      'Eliminar Cuenta',
+      'Eliminar cuenta',
       'Esta acción es irreversible. Se eliminarán tus datos personales. El historial de pedidos se mantendrá de forma anónima por razones legales.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Eliminar Cuenta',
+          text: 'Eliminar cuenta',
           style: 'destructive',
           onPress: () => (provider === 'email' ? setShowPasswordModal(true) : performDeletion()),
         },
@@ -191,7 +191,7 @@ const DeleteAccountButton = () => {
         disabled={isDeleting}
       >
         <View style={styles.deleteAccountButton}>
-          <Text style={styles.deleteAccountButtonText}>Eliminar Cuenta</Text>
+          <Text style={styles.deleteAccountButtonText}>Eliminar cuenta</Text>
           <Trash2 width={24} height={24} stroke={colors.error} strokeWidth={1.5} />
         </View>
       </TouchableOpacity>
@@ -565,46 +565,57 @@ export default function ProfileScreen() {
         <LoggedInProfileCard />
       </ImageBackground>
 
-      <View style={styles.actionButtonsContainer}>
-        <ProfileListItem
-          IconComponent={() => (
-            <Package width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
-          )}
-          text="Mis Pedidos"
-          onPress={() => router.push('/profile/orders')}
-        />
-        <ProfileListItem
-          IconComponent={() => (
-            <MapPin width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
-          )}
-          text="Direcciones de Envío"
-          onPress={() => router.push('/profile/addresses')}
-        />
-        {isEmailUser && (
+      <View style={styles.menuSection}>
+        <View style={styles.sectionDivider} />
+
+        <View style={styles.menuItemsContainer}>
           <ProfileListItem
             IconComponent={() => (
-              <Lock width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
+              <Package width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
             )}
-            text="Cambiar Contraseña"
-            onPress={() => router.push('/profile/change-password')}
+            text="Pedidos"
+            onPress={() => router.push('/profile/orders')}
           />
-        )}
-        <ProfileListItem
-          IconComponent={() => (
-            <Shield width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
+          <ProfileListItem
+            IconComponent={() => (
+              <MapPin width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
+            )}
+            text="Direcciones de envío"
+            onPress={() => router.push('/profile/addresses')}
+          />
+          {isEmailUser && (
+            <ProfileListItem
+              IconComponent={() => (
+                <Lock width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
+              )}
+              text="Cambiar Contraseña"
+              onPress={() => router.push('/profile/change-password')}
+            />
           )}
-          text="Política de Privacidad"
-          onPress={() => {
-            const privacyUrl =
-              Constants.expoConfig?.extra?.privacyPolicyUrl ||
-              'https://tifossi-strapi-backend.onrender.com/privacy.html';
-            Linking.openURL(privacyUrl).catch(() => {
-              Alert.alert('Error', 'No se pudo abrir la política de privacidad.');
-            });
-          }}
-        />
-        <LogoutButton />
-        <DeleteAccountButton />
+          <ProfileListItem
+            IconComponent={() => (
+              <Shield width={24} height={24} stroke={colors.primary} strokeWidth={1.5} />
+            )}
+            text="Política de Privacidad"
+            onPress={() => {
+              const privacyUrl =
+                Constants.expoConfig?.extra?.privacyPolicyUrl ||
+                'https://tifossi-strapi-backend.onrender.com/privacy.html';
+              Linking.openURL(privacyUrl).catch(() => {
+                Alert.alert('Error', 'No se pudo abrir la política de privacidad.');
+              });
+            }}
+          />
+        </View>
+
+        <View style={styles.sectionDivider} />
+
+        <View style={styles.menuItemsContainer}>
+          <LogoutButton />
+          <DeleteAccountButton />
+        </View>
+
+        <View style={styles.sectionDivider} />
       </View>
     </View>
   );
@@ -644,7 +655,9 @@ type Styles = {
   profileTextFrame: ViewStyle;
   userName: TextStyle;
   userEmail: TextStyle;
-  actionButtonsContainer: ViewStyle;
+  menuSection: ViewStyle;
+  sectionDivider: ViewStyle;
+  menuItemsContainer: ViewStyle;
   listItemContainer: ViewStyle;
   listItemText: TextStyle;
   logoutButtonContainer: ViewStyle;
@@ -784,14 +797,15 @@ const styles = StyleSheet.create<Styles>({
   profileCardBackground: {
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.lg,
-    height: 160,
+    height: 200,
+    justifyContent: 'center',
   },
   backgroundImageStyle: {
     resizeMode: 'cover',
   },
   backgroundOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(12, 12, 12, 0.72)',
+    backgroundColor: 'rgba(12, 12, 12, 0.32)',
   },
   profileCard: {
     alignItems: 'center',
@@ -832,11 +846,15 @@ const styles = StyleSheet.create<Styles>({
     color: colors.text.lightGray,
     textAlign: 'center',
   },
-  actionButtonsContainer: {
+  menuSection: {
     paddingHorizontal: spacing.lg,
-    marginTop: spacing.xxl,
-    gap: 0,
+    marginTop: spacing.lg,
   },
+  sectionDivider: {
+    height: 4,
+    backgroundColor: colors.border,
+  },
+  menuItemsContainer: {},
   listItemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -856,9 +874,8 @@ const styles = StyleSheet.create<Styles>({
     textAlign: 'left',
   },
   logoutButtonContainer: {
-    marginTop: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   logoutButton: {
     flexDirection: 'row',
@@ -869,15 +886,13 @@ const styles = StyleSheet.create<Styles>({
   },
   logoutButtonText: {
     fontFamily: fonts.secondary,
-    fontWeight: fontWeights.medium,
+    fontWeight: '400',
     fontSize: fontSizes.lg,
     lineHeight: lineHeights.lg,
-    color: colors.error,
+    color: colors.primary,
     textAlign: 'left',
   },
-  deleteAccountButtonContainer: {
-    marginTop: spacing.md,
-  },
+  deleteAccountButtonContainer: {},
   deleteAccountButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -887,7 +902,7 @@ const styles = StyleSheet.create<Styles>({
   },
   deleteAccountButtonText: {
     fontFamily: fonts.secondary,
-    fontWeight: fontWeights.medium,
+    fontWeight: '400',
     fontSize: fontSizes.lg,
     lineHeight: lineHeights.lg,
     color: colors.error,
