@@ -125,7 +125,7 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       expect(getByPlaceholderText('Información adicional')).toBeTruthy();
 
       // Check buttons
-      expect(getByText('Guardar')).toBeTruthy();
+      expect(getByText('Siguiente')).toBeTruthy();
       expect(getByText('Atrás')).toBeTruthy();
     });
 
@@ -141,12 +141,12 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       const { getByText, getByPlaceholderText } = render(<NewAddressScreen />);
 
       // Try to submit empty form
-      const saveButton = getByText('Guardar');
+      const saveButton = getByText('Siguiente');
       fireEvent.press(saveButton);
 
       await waitFor(() => {
         // Form should still be visible since validation failed
-        expect(getByText('Guardar')).toBeTruthy();
+        expect(getByText('Siguiente')).toBeTruthy();
       });
 
       // Check that form inputs are still rendered (indicating validation failed)
@@ -166,12 +166,12 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       fireEvent.changeText(nameInput, 'Juan Pérez');
 
       // Try to submit
-      const saveButton = getByText('Guardar');
+      const saveButton = getByText('Siguiente');
       fireEvent.press(saveButton);
 
       await waitFor(() => {
         // Form should not submit since other required fields are empty
-        expect(getByText('Guardar')).toBeTruthy();
+        expect(getByText('Siguiente')).toBeTruthy();
       });
     });
 
@@ -188,7 +188,7 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       fireEvent.changeText(getByPlaceholderText('Departamento'), 'Montevideo');
 
       // Submit form
-      const saveButton = getByText('Guardar');
+      const saveButton = getByText('Siguiente');
       fireEvent.press(saveButton);
 
       await waitFor(() => {
@@ -229,12 +229,12 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       const { getByPlaceholderText, getByText } = render(<NewAddressScreen />);
 
       // Submit empty form to trigger validation
-      const saveButton = getByText('Guardar');
+      const saveButton = getByText('Siguiente');
       fireEvent.press(saveButton);
 
       // Wait for validation
       await waitFor(() => {
-        expect(getByText('Guardar')).toBeTruthy();
+        expect(getByText('Siguiente')).toBeTruthy();
       });
 
       // Start typing in name field
@@ -292,7 +292,7 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       fireEvent.changeText(getByPlaceholderText('Ciudad'), 'Montevideo');
       fireEvent.changeText(getByPlaceholderText('Departamento'), 'Montevideo');
 
-      const saveButton = getByText('Guardar');
+      const saveButton = getByText('Siguiente');
       fireEvent.press(saveButton);
 
       await waitFor(() => {
@@ -309,7 +309,7 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       fireEvent.changeText(getByPlaceholderText('Nombre'), 'Juan');
       // Leave other required fields empty
 
-      const saveButton = getByText('Guardar');
+      const saveButton = getByText('Siguiente');
       fireEvent.press(saveButton);
 
       await waitFor(() => {
@@ -318,7 +318,7 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       });
 
       // Form should still be visible
-      expect(getByText('Guardar')).toBeTruthy();
+      expect(getByText('Siguiente')).toBeTruthy();
     });
 
     it('should handle empty field validation gracefully', () => {
@@ -347,7 +347,7 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       fireEvent.changeText(getByPlaceholderText('Ciudad'), 'Test City');
       fireEvent.changeText(getByPlaceholderText('Departamento'), 'Test Department');
 
-      const saveButton = getByText('Guardar');
+      const saveButton = getByText('Siguiente');
       fireEvent.press(saveButton);
 
       // During loading, the button shows a loading indicator instead of text
@@ -355,7 +355,7 @@ describe('CheckoutForm (NewAddressScreen)', () => {
       // We check that either loading is shown or the button navigated back
       await waitFor(() => {
         // Either the text is still showing (not loading) or we navigated back
-        const guardarButton = queryByText('Guardar');
+        const guardarButton = queryByText('Siguiente');
         expect(guardarButton !== null || mockRouter.back.mock.calls.length > 0).toBe(true);
       });
     });
@@ -365,7 +365,7 @@ describe('CheckoutForm (NewAddressScreen)', () => {
     it('should have proper button roles and labels', () => {
       const { getByText } = render(<NewAddressScreen />);
 
-      const saveButton = getByText('Guardar');
+      const saveButton = getByText('Siguiente');
       const backButton = getByText('Atrás');
 
       expect(saveButton).toBeTruthy();
