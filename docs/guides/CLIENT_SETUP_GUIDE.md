@@ -75,10 +75,10 @@ MERCADOPAGO_SANDBOX_ACCESS_TOKEN=
 
 - Configurar URL de webhook: `https://tifossi-strapi-backend.onrender.com/api/webhooks/mercadopago`
 - Activar notificaciones IPN (Instant Payment Notification)
-- Configurar URLs de retorno:
-  - Success: `tifossi://payment-success`
-  - Failure: `tifossi://payment-failure`
-  - Pending: `tifossi://payment-pending`
+- URLs de retorno: No configurar manualmente en el dashboard de MercadoPago.
+  Las `back_urls` se configuran automáticamente en cada preferencia de pago y redirigen
+  a través del backend (`/api/payment/redirect`) para evitar el error "Safari cannot
+  open the page" con esquemas URL personalizados.
 
 ---
 
