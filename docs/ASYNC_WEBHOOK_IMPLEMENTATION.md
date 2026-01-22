@@ -72,28 +72,40 @@ When payment status becomes PAID, `processPostPaymentActions()` calls the order 
 - Added response time tracking
 - Returns webhook status in response body
 - Moved heavy processing to WebhookProcessor
+- **Only accepts V1.0 signed webhooks with query parameters**
 
-**Before** (Synchronous):
-```typescript
-async handleWebhook(ctx) {
-  // Validate signature
-  // Process payment notification (200-800ms)
-  // Update order status
-  // Trigger post-payment actions
-  // Return 200 OK
-}
+**Webhook Format Requirements**:
+```
+POST /api/webhooks/mercadopago?data.id=123456&type=payment
+Headers:
+  x-signature: ts=1234567890,v1=abc123...
+  x-request-id: unique-request-id
 ```
 
-**After** (Async Queue):
+- `data.id` and `type` are extracted from **query params** (not body)
+- Signature is verified using query param `data.id` (per MercadoPago docs)
+- Legacy format (`?id=X&topic=Y`) is rejected with 400
+- Supports both flat key (`query['data.id']`) and nested (`query.data.id`) parsing
+
+**Current Implementation** (Async Queue, V1.0 only):
 ```typescript
 async handleWebhook(ctx) {
   const startTime = Date.now();
+  const query = ctx.query;
 
-  // Validate signature (fast)
-  // Check for duplicates (fast)
+  // Extract from query params (V1.0 format)
+  const dataId = query['data.id'] || query.data?.id;
+  const webhookType = query['type'];
+
+  // Reject non-V1.0 format
+  if (!dataId || !webhookType) {
+    return 400; // "Only V1.0 signed webhooks supported"
+  }
+
+  // Verify signature using query param data.id
+  verifyWebhookSignature(signature, requestId, dataId);
+
   // Queue webhook (fast)
-
-  const responseTime = Date.now() - startTime;
   // Return 200 OK (<50ms)
   ctx.body = { success: true, status: 'queued', responseTime };
 }
