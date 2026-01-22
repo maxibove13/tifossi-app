@@ -367,6 +367,7 @@ POST   /api/payment/refund                   # Request refund
 ```
 GET    /api/health                # Basic health check
 GET    /api/health/detailed       # Detailed health information
+POST   /api/health/test-email     # Send test email (body: {"to": "email@example.com"})
 ```
 
 ## 🚀 Deployment

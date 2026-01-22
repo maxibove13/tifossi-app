@@ -81,6 +81,48 @@ export default {
   },
 
   /**
+   * Test email endpoint - sends a test email
+   */
+  async testEmail(ctx: any) {
+    try {
+      const { to } = ctx.request.body || {};
+
+      if (!to) {
+        ctx.status = 400;
+        ctx.body = { error: 'Missing "to" email address in request body' };
+        return;
+      }
+
+      if (!strapi.plugins?.['email']?.services?.email) {
+        ctx.status = 503;
+        ctx.body = { error: 'Email plugin not configured' };
+        return;
+      }
+
+      await strapi.plugins['email'].services.email.send({
+        to,
+        subject: 'Test Email - Tifossi',
+        html: `
+          <h1>Test Email</h1>
+          <p>This is a test email from Tifossi backend.</p>
+          <p>Timestamp: ${new Date().toISOString()}</p>
+        `,
+      });
+
+      ctx.status = 200;
+      ctx.body = { success: true, message: `Test email sent to ${to}` };
+    } catch (error: any) {
+      strapi.log.error('Test email failed:', error);
+      ctx.status = 500;
+      ctx.body = {
+        error: 'Failed to send test email',
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      };
+    }
+  },
+
+  /**
    * Firebase health check endpoint - for debugging auth issues
    */
   async firebaseHealthCheck(ctx: any) {
