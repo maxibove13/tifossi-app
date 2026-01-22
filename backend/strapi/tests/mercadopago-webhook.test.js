@@ -137,15 +137,6 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
    */
   describe('Webhook Signature Validation', () => {
     it('should reject webhooks with invalid signature', async () => {
-      const webhookPayload = {
-        id: 12345,
-        type: 'payment',
-        data: { id: 'payment-123' },
-        action: 'payment.updated',
-        date_created: new Date().toISOString(),
-        api_version: 'v1',
-      };
-
       const xRequestId = 'req-' + Date.now();
       const dataId = 'payment-123';
       const wrongSecret = 'wrong-secret';
@@ -158,16 +149,17 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       const ctx = {
         request: {
-          body: webhookPayload,
-          query: {},
+          body: {},
           headers: {
             'x-signature': `ts=${timestamp},v1=${invalidSignature}`,
             'x-request-id': xRequestId,
             'user-agent': 'MercadoPago/Test',
           },
         },
-        badRequest: jest.fn(),
-        unauthorized: jest.fn(),
+        query: {
+          'data.id': dataId,
+          'type': 'payment',
+        },
         status: null,
         body: null,
       };
@@ -177,20 +169,11 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
       const webhookHandler = require('../src/webhooks/mercadopago');
       await webhookHandler.handleWebhook(ctx);
 
-      expect(ctx.unauthorized).toHaveBeenCalledWith('Invalid signature');
-      expect(ctx.badRequest).not.toHaveBeenCalled();
+      expect(ctx.status).toBe(401);
+      expect(ctx.body.error).toBe('Invalid signature');
     });
 
     it('should accept webhooks with valid signature', async () => {
-      const webhookPayload = {
-        id: 12346,
-        type: 'payment',
-        data: { id: 'payment-124' },
-        action: 'payment.updated',
-        date_created: new Date().toISOString(),
-        api_version: 'v1',
-      };
-
       const xRequestId = 'req-' + Date.now();
       const dataId = 'payment-124';
       const webhookSecret = process.env.MP_WEBHOOK_SECRET || 'test-webhook-secret';
@@ -201,64 +184,75 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
         .update(manifest)
         .digest('hex');
 
-      const mockPaymentInfo = {
-        id: 124,
-        status: 'approved',
-        status_detail: 'accredited',
-        transaction_amount: 100,
-        currency_id: 'UYU',
-        external_reference: 'ORDER-123',
-        payment_method_id: 'visa',
-        payment_type_id: 'credit_card',
-        date_approved: new Date().toISOString(),
-      };
-
       const ctx = {
         request: {
-          body: webhookPayload,
-          query: {},
+          body: {},
           headers: {
             'x-signature': `ts=${timestamp},v1=${validSignature}`,
             'x-request-id': xRequestId,
             'user-agent': 'MercadoPago/Test',
           },
         },
-        badRequest: jest.fn(),
-        unauthorized: jest.fn(),
+        query: {
+          'data.id': dataId,
+          'type': 'payment',
+        },
         status: null,
         body: null,
       };
 
-      global.strapi = createStrapiMock({
-        paymentInfo: mockPaymentInfo,
-      });
+      global.strapi = createStrapiMock();
 
       const webhookHandler = require('../src/webhooks/mercadopago');
-
       await webhookHandler.handleWebhook(ctx);
 
-      expect(ctx.unauthorized).not.toHaveBeenCalled();
-      expect(ctx.badRequest).not.toHaveBeenCalled();
       expect(ctx.status).toBe(200);
       expect(ctx.body).toBeDefined();
-
-      if (ctx.body.success === false) {
-        throw new Error(`Webhook test failed: ${ctx.body.error} - ${ctx.body.message}`);
-      }
-
       expect(ctx.body.success).toBe(true);
+      expect(ctx.body.status).toBe('queued');
+    });
+
+    it('should accept webhooks with nested query parsing (allowDots)', async () => {
+      // Some query parsers (with allowDots: true) parse ?data.id=X as { data: { id: X } }
+      const xRequestId = 'req-nested-' + Date.now();
+      const dataId = 'payment-nested-456';
+      const webhookSecret = process.env.MP_WEBHOOK_SECRET || 'test-webhook-secret';
+      const timestamp = Math.floor(Date.now() / 1000);
+      const manifest = `id:${dataId};request-id:${xRequestId};ts:${timestamp};`;
+      const validSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(manifest)
+        .digest('hex');
+
+      const ctx = {
+        request: {
+          body: {},
+          headers: {
+            'x-signature': `ts=${timestamp},v1=${validSignature}`,
+            'x-request-id': xRequestId,
+            'user-agent': 'MercadoPago/Test',
+          },
+        },
+        // Nested format: query.data.id instead of query['data.id']
+        query: {
+          data: { id: dataId },
+          type: 'payment',
+        },
+        status: null,
+        body: null,
+      };
+
+      global.strapi = createStrapiMock();
+
+      const webhookHandler = require('../src/webhooks/mercadopago');
+      await webhookHandler.handleWebhook(ctx);
+
+      expect(ctx.status).toBe(200);
+      expect(ctx.body.success).toBe(true);
+      expect(ctx.body.status).toBe('queued');
     });
 
     it('should handle replay attacks', async () => {
-      const webhookPayload = {
-        id: 12347,
-        type: 'payment',
-        data: { id: 'payment-125' },
-        action: 'payment.updated',
-        date_created: new Date().toISOString(),
-        api_version: 'v1',
-      };
-
       const xRequestId = 'req-replay-test-' + Date.now();
       const dataId = 'payment-125';
       const webhookSecret = process.env.MP_WEBHOOK_SECRET || 'test-webhook-secret';
@@ -271,15 +265,17 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       const createContext = () => ({
         request: {
-          body: { ...webhookPayload },
-          query: {},
+          body: {},
           headers: {
             'x-signature': `ts=${timestamp},v1=${validSignature}`,
             'x-request-id': xRequestId,
             'user-agent': 'MercadoPago/Test',
           },
         },
-        badRequest: jest.fn(),
+        query: {
+          'data.id': dataId,
+          'type': 'payment',
+        },
         unauthorized: jest.fn(),
         status: null,
         body: null,
@@ -908,15 +904,13 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
     it('should handle malformed webhook data', async () => {
       const webhookHandler = require('../src/webhooks/mercadopago');
 
-      // Test 1: Null body and empty query - unknown format
+      // Test 1: Empty query - missing data.id and type
       const ctx1 = {
         request: {
-          body: null,
-          query: {},
+          body: {},
           headers: {},
         },
-        badRequest: jest.fn(),
-        unauthorized: jest.fn(),
+        query: {},
         status: null,
         body: null,
       };
@@ -935,21 +929,20 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       await webhookHandler.handleWebhook(ctx1);
 
-      // Should call badRequest for unknown webhook format
-      expect(ctx1.badRequest).toHaveBeenCalledWith('Unknown webhook format');
+      // Should return 400 for missing V1.0 format
+      expect(ctx1.status).toBe(400);
+      expect(ctx1.body.error).toBe('Only V1.0 signed webhooks supported');
 
-      // Test 2: v1 format body but missing signature headers
+      // Test 2: V1.0 format query but missing signature headers
       const ctx2 = {
         request: {
-          body: {
-            type: 'payment',
-            data: { id: '123' },
-          },
-          query: {},
+          body: {},
           headers: {}, // Missing x-signature and x-request-id
         },
-        badRequest: jest.fn(),
-        unauthorized: jest.fn(),
+        query: {
+          'data.id': '123',
+          'type': 'payment',
+        },
         status: null,
         body: null,
       };
@@ -968,8 +961,9 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       await webhookHandler.handleWebhook(ctx2);
 
-      // Should call badRequest for missing signature headers (v1 format requires them)
-      expect(ctx2.badRequest).toHaveBeenCalledWith('Missing signature headers');
+      // Should return 400 for missing signature headers
+      expect(ctx2.status).toBe(400);
+      expect(ctx2.body.error).toBe('Missing signature headers');
     });
 
     it('should handle MercadoPago API errors', async () => {
@@ -1046,18 +1040,19 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
     it('should handle missing webhook headers', async () => {
       const webhookHandler = require('../src/webhooks/mercadopago');
 
-      // v1 format with missing x-signature
+      // V1.0 format with missing x-signature
       const ctx1 = {
         request: {
-          body: { type: 'payment', data: { id: '123' } },
-          query: {},
+          body: {},
           headers: {
             'x-request-id': 'test-req-id',
             // Missing x-signature
           },
         },
-        badRequest: jest.fn(),
-        unauthorized: jest.fn(),
+        query: {
+          'data.id': '123',
+          'type': 'payment',
+        },
         status: null,
         body: null,
       };
@@ -1076,21 +1071,23 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       await webhookHandler.handleWebhook(ctx1);
 
-      // Should call badRequest for missing signature headers (v1 format)
-      expect(ctx1.badRequest).toHaveBeenCalledWith('Missing signature headers');
+      // Should return 400 for missing signature headers
+      expect(ctx1.status).toBe(400);
+      expect(ctx1.body.error).toBe('Missing signature headers');
 
-      // v1 format with missing x-request-id
+      // V1.0 format with missing x-request-id
       const ctx2 = {
         request: {
-          body: { type: 'payment', data: { id: '123' } },
-          query: {},
+          body: {},
           headers: {
             'x-signature': 'test-signature',
             // Missing x-request-id
           },
         },
-        badRequest: jest.fn(),
-        unauthorized: jest.fn(),
+        query: {
+          'data.id': '123',
+          'type': 'payment',
+        },
         status: null,
         body: null,
       };
@@ -1109,8 +1106,9 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       await webhookHandler.handleWebhook(ctx2);
 
-      // Should call badRequest for missing signature headers (v1 format)
-      expect(ctx2.badRequest).toHaveBeenCalledWith('Missing signature headers');
+      // Should return 400 for missing signature headers
+      expect(ctx2.status).toBe(400);
+      expect(ctx2.body.error).toBe('Missing signature headers');
     });
 
     it('should handle concurrent webhook processing', async () => {
@@ -1302,15 +1300,6 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
     it('should queue webhook for async processing and return quickly', async () => {
       const startTime = Date.now();
-      const webhookPayload = {
-        id: 12350,
-        type: 'payment',
-        data: { id: 'payment-queue-123' },
-        action: 'payment.updated',
-        date_created: new Date().toISOString(),
-        api_version: 'v1',
-      };
-
       const xRequestId = 'req-queue-test-' + Date.now();
       const dataId = 'payment-queue-123';
       const webhookSecret = process.env.MP_WEBHOOK_SECRET || 'test-webhook-secret';
@@ -1326,16 +1315,17 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       const ctx = {
         request: {
-          body: webhookPayload,
-          query: {},
+          body: {},
           headers: {
             'x-signature': `ts=${timestamp},v1=${validSignature}`,
             'x-request-id': xRequestId,
             'user-agent': 'MercadoPago/Test',
           },
         },
-        badRequest: jest.fn(),
-        unauthorized: jest.fn(),
+        query: {
+          'data.id': dataId,
+          'type': 'payment',
+        },
         status: null,
         body: null,
       };
@@ -1642,16 +1632,6 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
     it('should prevent duplicate webhook processing via webhook-log', async () => {
       const xRequestId = 'req-duplicate-queue-' + Date.now();
       const dataId = 'payment-dup-555';
-      const webhookKey = `${xRequestId}_payment_${dataId}`;
-
-      const webhookPayload = {
-        id: 12351,
-        type: 'payment',
-        data: { id: dataId },
-        action: 'payment.updated',
-        date_created: new Date().toISOString(),
-        api_version: 'v1',
-      };
 
       const webhookSecret = process.env.MP_WEBHOOK_SECRET || 'test-webhook-secret';
       const timestamp = Math.floor(Date.now() / 1000);
@@ -1663,16 +1643,17 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
 
       const ctx = {
         request: {
-          body: webhookPayload,
-          query: {},
+          body: {},
           headers: {
             'x-signature': `ts=${timestamp},v1=${validSignature}`,
             'x-request-id': xRequestId,
             'user-agent': 'MercadoPago/Test',
           },
         },
-        badRequest: jest.fn(),
-        unauthorized: jest.fn(),
+        query: {
+          'data.id': dataId,
+          'type': 'payment',
+        },
         status: null,
         body: null,
       };

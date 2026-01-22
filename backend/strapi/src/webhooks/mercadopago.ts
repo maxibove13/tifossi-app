@@ -51,70 +51,56 @@ interface WebhookUpdateData {
 
 module.exports = {
   /**
-   * Handle MercadoPago webhook notifications (v1.0 signed webhooks only)
-   * POST /webhooks/mercadopago
+   * Handle MercadoPago webhook notifications (V1.0 signed webhooks only)
+   * POST /webhooks/mercadopago?data.id=X&type=Y
    */
   async handleWebhook(ctx: Context): Promise<void> {
     const startTime = Date.now();
 
     try {
-      const body: MPWebhookPayload = (ctx.request as any).body || {};
+      const query = ctx.query as Record<string, string>;
+      const body = (ctx.request as any).body || {};
       const signature = ctx.request.headers['x-signature'] as string;
       const requestId = ctx.request.headers['x-request-id'] as string;
       const userAgent = (ctx.request.headers['user-agent'] as string) || '';
 
+      // V1.0 signed webhooks: data comes from query params
+      // Support both flat key (data.id) and nested (data.id parsed with allowDots)
+      const dataId = query['data.id'] || (query as any).data?.id;
+      const webhookType = query['type'] as MPWebhookType;
+
       strapi.log.info('[MP-WEBHOOK] Incoming request', {
-        bodyType: body?.type,
-        bodyDataId: body?.data?.id,
+        dataId,
+        webhookType,
         hasSignature: !!signature,
         hasRequestId: !!requestId,
-        ip: ctx.request.ip,
+        userAgent,
       });
 
-      // Validate webhook format
-      if (!body?.type || !body?.data?.id) {
-        strapi.log.error('[MP-WEBHOOK] Invalid format - missing type or data.id');
-        const ctxAny = ctx as any;
-        if (typeof ctxAny.badRequest === 'function') {
-          ctxAny.badRequest('Unknown webhook format');
-        } else {
-          ctx.status = 400;
-          ctx.body = { error: 'Unknown webhook format' };
-        }
+      // Require V1.0 format: ?data.id=X&type=Y
+      if (!dataId || !webhookType) {
+        strapi.log.warn('[MP-WEBHOOK] Rejected - not V1.0 format (missing data.id or type)', {
+          queryKeys: Object.keys(query),
+        });
+        ctx.status = 400;
+        ctx.body = { error: 'Only V1.0 signed webhooks supported' };
         return;
       }
 
       // Require signature headers
       if (!signature || !requestId) {
-        strapi.log.error('[MP-WEBHOOK] Missing required headers', {
-          hasSignature: !!signature,
-          hasRequestId: !!requestId,
-        });
-        const ctxAny = ctx as any;
-        if (typeof ctxAny.badRequest === 'function') {
-          ctxAny.badRequest('Missing signature headers');
-        } else {
-          ctx.status = 400;
-          ctx.body = { error: 'Missing signature headers' };
-        }
+        strapi.log.warn('[MP-WEBHOOK] Rejected - missing signature headers');
+        ctx.status = 400;
+        ctx.body = { error: 'Missing signature headers' };
         return;
       }
 
-      const webhookType: MPWebhookType = body.type;
-      // Always use body.data.id for signature verification - MercadoPago signs using body value
-      const dataId = String(body.data.id);
-
-      // Verify signature
+      // Verify signature using query param data.id (per MercadoPago docs)
       const mpService = strapi.mercadoPago;
       if (!mpService.verifyWebhookSignature(signature, requestId, dataId)) {
         strapi.log.error('[MP-WEBHOOK] Signature verification FAILED', { dataId, requestId });
-        const ctxAny = ctx as any;
-        if (typeof ctxAny.unauthorized === 'function') {
-          ctxAny.unauthorized('Invalid signature');
-        } else {
-          ctx.status = 401;
-          ctx.body = { error: 'Invalid signature' };
-        }
+        ctx.status = 401;
+        ctx.body = { error: 'Invalid signature' };
         return;
       }
       strapi.log.info('[MP-WEBHOOK] Signature verified', { dataId, requestId });
@@ -132,8 +118,8 @@ module.exports = {
             processedAt: new Date().toISOString(),
             status: 'received',
             metadata: {
-              action: body.action,
-              apiVersion: body.api_version,
+              action: body?.action,
+              apiVersion: body?.api_version,
               receivedAt: new Date().toISOString(),
             } as any,
           },
@@ -157,8 +143,8 @@ module.exports = {
           payload: {
             type: webhookType,
             data: { id: dataId },
-            action: body.action,
-            api_version: body.api_version,
+            action: body?.action,
+            api_version: body?.api_version,
           },
           status: 'queued',
           retryCount: 0,

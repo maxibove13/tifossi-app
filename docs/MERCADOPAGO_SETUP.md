@@ -316,6 +316,26 @@ npm run test:payment
 2. **Use real webhook**: Manual cURL tests won't work (signature is cryptographic)
 3. **Check duplicate detection**: Verify webhook wasn't already processed (check webhook_logs table)
 
+### Webhook format errors (400 - "Only V1.0 signed webhooks supported")
+
+**Symptom**: Webhooks rejected with 400 error
+
+**Cause**: The backend only accepts MercadoPago V1.0 signed webhooks with query parameters.
+
+**Required format**:
+```
+POST /api/webhooks/mercadopago?data.id=123456&type=payment
+Headers:
+  x-signature: ts=1234567890,v1=abc123...
+  x-request-id: unique-request-id
+```
+
+**Key points**:
+- `data.id` and `type` must be in the **query string** (not body)
+- `x-signature` and `x-request-id` headers are **required**
+- Legacy format (`?id=X&topic=Y`) is **not supported**
+- Signature is verified using `data.id` from query params
+
 ### Payment created but webhook not received
 
 **Symptom**: Order stuck in "pending" status
