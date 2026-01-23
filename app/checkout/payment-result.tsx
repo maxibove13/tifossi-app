@@ -134,7 +134,7 @@ export default function PaymentResultScreen() {
           return;
         }
       } catch (err) {
-        console.error('[PaymentResult] Poll failed:', err);
+        console.warn('[PaymentResult] Poll failed:', err);
         // Exponential backoff on errors (especially 429)
         const errorMessage = err instanceof Error ? err.message : '';
         if (errorMessage.includes('429')) {
