@@ -409,8 +409,16 @@ export class MercadoPagoService {
       const manifest = `id:${dataId};request-id:${xRequestId};ts:${timestamp};`;
       const expectedSignature = crypto
         .createHmac('sha256', this.webhookSecret)
-        .update(manifest, 'utf8')
+        .update(manifest)
         .digest('hex');
+
+      // Debug: log signature details (remove after fixing)
+      strapi?.log?.info?.('[MP-SIG-DEBUG]', {
+        manifest,
+        received: signatureHash.substring(0, 16) + '...',
+        computed: expectedSignature.substring(0, 16) + '...',
+        secretLen: this.webhookSecret?.length,
+      });
 
       // Compare signatures
       return crypto.timingSafeEqual(
