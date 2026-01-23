@@ -407,14 +407,20 @@ export class MercadoPagoService {
       // Replay attacks are prevented by database duplicate detection in webhook handler.
       // Format: id:${dataId};request-id:${xRequestId};ts:${timestamp};
       const manifest = `id:${dataId};request-id:${xRequestId};ts:${timestamp};`;
+
+      // Try both: hex-decoded secret (if secret is hex) and plain string
+      const isHexSecret =
+        /^[0-9a-fA-F]+$/.test(this.webhookSecret) && this.webhookSecret.length === 64;
+      const secretKey = isHexSecret ? Buffer.from(this.webhookSecret, 'hex') : this.webhookSecret;
+
       const expectedSignature = crypto
-        .createHmac('sha256', this.webhookSecret)
+        .createHmac('sha256', secretKey)
         .update(manifest)
         .digest('hex');
 
       // Debug: log signature details (remove after fixing)
       strapi?.log?.info?.(
-        `[MP-SIG-DEBUG] manifest="${manifest}" received="${signatureHash.substring(0, 16)}..." computed="${expectedSignature.substring(0, 16)}..." secretLen=${this.webhookSecret?.length}`
+        `[MP-SIG-DEBUG] manifest="${manifest}" received="${signatureHash.substring(0, 16)}..." computed="${expectedSignature.substring(0, 16)}..." secretLen=${this.webhookSecret?.length} isHex=${isHexSecret}`
       );
 
       // Compare signatures
