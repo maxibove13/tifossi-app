@@ -392,10 +392,12 @@ export class MercadoPagoService {
    */
   verifyWebhookSignature(signature: string, xRequestId: string, dataId: string): boolean {
     // Bypass signature verification in TEST mode
-    // This is safe because the check is based on server-side access token,
+    // This is safe because the check is based on server-side env var,
     // not anything from the incoming request. Attackers cannot control this.
-    if (this.accessToken.startsWith('TEST-')) {
-      strapi?.log?.info?.('[MP-WEBHOOK] Signature verification bypassed (TEST mode)');
+    // Note: Uruguay test credentials use APP_USR- prefix, not TEST-, so we use explicit env var.
+    const isTestMode = process.env.MP_TEST_MODE === 'true';
+    if (isTestMode) {
+      strapi?.log?.info?.('[MP-WEBHOOK] Signature verification bypassed (MP_TEST_MODE=true)');
       return true;
     }
 
