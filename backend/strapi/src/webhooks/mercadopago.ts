@@ -69,13 +69,10 @@ module.exports = {
       const dataId = query['data.id'] || (query as any).data?.id;
       const webhookType = query['type'] as MPWebhookType;
 
-      strapi.log.info('[MP-WEBHOOK] Incoming request', {
-        dataId,
-        webhookType,
-        hasSignature: !!signature,
-        hasRequestId: !!requestId,
-        userAgent,
-      });
+      strapi.log.info('[MP-WEBHOOK] Incoming request');
+      strapi.log.info(`[MP-WEBHOOK-DEBUG] dataId="${dataId}" type="${webhookType}"`);
+      strapi.log.info(`[MP-WEBHOOK-DEBUG] x-request-id="${requestId}"`);
+      strapi.log.info(`[MP-WEBHOOK-DEBUG] x-signature="${signature}"`);
 
       // Require V1.0 format: ?data.id=X&type=Y
       if (!dataId || !webhookType) {
