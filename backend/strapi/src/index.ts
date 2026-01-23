@@ -245,7 +245,7 @@ function setupCronJobs(strapi: any) {
           }
         },
         options: {
-          rule: '*/30 * * * * *', // Every 30 seconds
+          rule: '*/10 * * * * *', // Every 10 seconds for faster payment confirmation
         },
       },
     });
