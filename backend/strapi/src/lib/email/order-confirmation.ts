@@ -7,7 +7,7 @@ export interface OrderForEmail {
   guestEmail?: string;
   user?: { email: string };
   items: Array<{
-    productSnapshot: { name: string };
+    productSnapshot: { title: string };
     quantity: number;
     unitPrice: number;
     totalPrice: number;
@@ -46,7 +46,7 @@ export async function sendOrderConfirmationEmail(order: OrderForEmail): Promise<
     await strapi.plugins['email'].services.email.send({
       to: recipientEmail,
       subject: `Tu pedido #${order.orderNumber} ha sido confirmado - Tifossi`,
-      html: buildEmailHtml(order, recipientEmail),
+      html: buildEmailHtml(order),
     });
     strapi.log.info(`Confirmation email sent for order ${order.orderNumber}`);
   } catch (error) {
@@ -55,12 +55,12 @@ export async function sendOrderConfirmationEmail(order: OrderForEmail): Promise<
   }
 }
 
-export function buildEmailHtml(order: OrderForEmail, email: string): string {
+export function buildEmailHtml(order: OrderForEmail): string {
   const itemsHtml = order.items
     .map((item) => {
       const variant = [item.selectedSize, item.selectedColor].filter(Boolean).join(' / ');
       return `<tr>
-        <td style="padding:8px;border-bottom:1px solid #eee">${item.productSnapshot.name}${variant ? ` (${variant})` : ''}</td>
+        <td style="padding:8px;border-bottom:1px solid #eee">${item.productSnapshot.title}${variant ? ` (${variant})` : ''}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;text-align:center">${item.quantity}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">$${item.totalPrice.toLocaleString()}</td>
       </tr>`;
@@ -73,8 +73,6 @@ export function buildEmailHtml(order: OrderForEmail, email: string): string {
       : order.shippingAddress
         ? `<p><strong>Envio a:</strong><br>${order.shippingAddress.firstName} ${order.shippingAddress.lastName}<br>${order.shippingAddress.addressLine1}<br>${order.shippingAddress.city}</p>`
         : '';
-
-  const statusUrl = `${process.env.FRONTEND_URL}/order-status/${order.orderNumber}?email=${encodeURIComponent(email)}`;
 
   return `
 <!DOCTYPE html>
@@ -101,10 +99,6 @@ export function buildEmailHtml(order: OrderForEmail, email: string): string {
   </table>
 
   ${deliveryInfo}
-
-  <p style="margin-top:24px">
-    <a href="${statusUrl}" style="background:#000;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px">Ver estado del pedido</a>
-  </p>
 
   <p style="color:#666;font-size:12px;margin-top:32px">
     Preguntas? Contactanos a support@tifossi.com
