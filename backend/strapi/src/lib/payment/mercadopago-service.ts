@@ -408,19 +408,17 @@ export class MercadoPagoService {
       // Format: id:${dataId};request-id:${xRequestId};ts:${timestamp};
       const manifest = `id:${dataId};request-id:${xRequestId};ts:${timestamp};`;
 
-      // Try both: hex-decoded secret (if secret is hex) and plain string
-      const isHexSecret =
-        /^[0-9a-fA-F]+$/.test(this.webhookSecret) && this.webhookSecret.length === 64;
-      const secretKey = isHexSecret ? Buffer.from(this.webhookSecret, 'hex') : this.webhookSecret;
-
+      // Per MercadoPago docs: use secret as plain string (not hex-decoded)
       const expectedSignature = crypto
-        .createHmac('sha256', secretKey)
+        .createHmac('sha256', this.webhookSecret)
         .update(manifest)
         .digest('hex');
 
       // Debug: log signature details (remove after fixing)
+      const secretFirst8Chars = this.webhookSecret?.substring(0, 8) || '';
+      const secretCharCodes = secretFirst8Chars.split('').map((c) => c.charCodeAt(0));
       strapi?.log?.info?.(
-        `[MP-SIG-DEBUG] manifest="${manifest}" received="${signatureHash.substring(0, 16)}..." computed="${expectedSignature.substring(0, 16)}..." secretLen=${this.webhookSecret?.length} isHex=${isHexSecret}`
+        `[MP-SIG-DEBUG] manifest="${manifest}" received="${signatureHash.substring(0, 16)}..." computed="${expectedSignature.substring(0, 16)}..." secretLen=${this.webhookSecret?.length} secretStart="${secretFirst8Chars}" charCodes=[${secretCharCodes.join(',')}]`
       );
 
       // Compare signatures
