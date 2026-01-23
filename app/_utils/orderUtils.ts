@@ -7,6 +7,7 @@ export const getStatusColor = (status: OrderStatus): string => {
     case 'PAYMENT_PENDING':
       return colors.secondary;
     case 'PAID':
+      return colors.success;
     case 'PROCESSING':
     case 'SHIPPED':
       return colors.primary;
