@@ -413,12 +413,9 @@ export class MercadoPagoService {
         .digest('hex');
 
       // Debug: log signature details (remove after fixing)
-      strapi?.log?.info?.('[MP-SIG-DEBUG]', {
-        manifest,
-        received: signatureHash.substring(0, 16) + '...',
-        computed: expectedSignature.substring(0, 16) + '...',
-        secretLen: this.webhookSecret?.length,
-      });
+      strapi?.log?.info?.(
+        `[MP-SIG-DEBUG] manifest="${manifest}" received="${signatureHash.substring(0, 16)}..." computed="${expectedSignature.substring(0, 16)}..." secretLen=${this.webhookSecret?.length}`
+      );
 
       // Compare signatures
       return crypto.timingSafeEqual(
