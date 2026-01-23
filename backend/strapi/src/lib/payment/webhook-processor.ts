@@ -43,7 +43,7 @@ interface StrapiOrder {
     email: string;
   };
   items: {
-    productSnapshot: { name: string };
+    productSnapshot: { title: string };
     quantity: number;
     unitPrice: number;
     totalPrice: number;
