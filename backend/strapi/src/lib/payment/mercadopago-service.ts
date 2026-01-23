@@ -395,9 +395,8 @@ export class MercadoPagoService {
     // This is safe because the check is based on server-side env var,
     // not anything from the incoming request. Attackers cannot control this.
     // Note: Uruguay test credentials use APP_USR- prefix, not TEST-, so we use explicit env var.
-    const isTestMode = process.env.MP_TEST_MODE === 'true';
-    if (isTestMode) {
-      strapi?.log?.info?.('[MP-WEBHOOK] Signature verification bypassed (MP_TEST_MODE=true)');
+    if (process.env.MP_MODE === 'test') {
+      strapi?.log?.info?.('[MP-WEBHOOK] Signature verification bypassed (MP_MODE=test)');
       return true;
     }
 
