@@ -232,7 +232,13 @@ describe('PaymentResultScreen', () => {
       });
     });
 
-    it('should clear cart on successful payment', async () => {
+    it('should clear cart on successful cart checkout payment', async () => {
+      // No pendingBuyNowItem = this was a cart checkout
+      usePaymentStore.setState({
+        pendingBuyNowItem: null,
+        currentOrderNumber: 'ORDER-123',
+      });
+
       mockGetOrderStatus.mockResolvedValue({
         orderNumber: 'ORDER-123',
         status: 'paid',
@@ -249,6 +255,55 @@ describe('PaymentResultScreen', () => {
       await waitFor(() => {
         expect(clearCartSpy).toHaveBeenCalled();
       });
+
+      clearCartSpy.mockRestore();
+    });
+
+    it('should NOT clear cart on successful "Buy Now" payment', async () => {
+      // pendingBuyNowItem exists = this was a "Buy Now" order, cart items were not part of order
+      usePaymentStore.setState({
+        pendingBuyNowItem: {
+          productId: 'buy-now-product',
+          size: 'M',
+          quantity: 1,
+          price: 100,
+          title: 'Buy Now Product',
+          imageUrl: 'https://example.com/image.jpg',
+        },
+        currentOrderNumber: 'ORDER-BUY-NOW',
+      });
+
+      // Cart has items that should NOT be cleared
+      useCartStore.setState({
+        items: [
+          { productId: 'cart-item-1', quantity: 2, price: 50 },
+          { productId: 'cart-item-2', quantity: 1, price: 75 },
+        ],
+      });
+
+      mockGetOrderStatus.mockResolvedValue({
+        orderNumber: 'ORDER-BUY-NOW',
+        status: 'paid',
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        external_reference: 'ORDER-BUY-NOW',
+      });
+
+      const clearCartSpy = jest.spyOn(useCartStore.getState(), 'clearCart');
+
+      render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        // Should show success
+        expect(mockGetOrderStatus).toHaveBeenCalled();
+      });
+
+      // Wait for effect to complete
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Cart should NOT be cleared for "Buy Now" orders
+      expect(clearCartSpy).not.toHaveBeenCalled();
 
       clearCartSpy.mockRestore();
     });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -37,7 +37,8 @@ export default function PaymentResultScreen() {
   const params = useLocalSearchParams();
   const { clearCart } = useCartStore();
   const { isLoggedIn, token } = useAuthStore();
-  const { currentOrderNumber, guestData, setPendingBuyNowItem } = usePaymentStore();
+  const { currentOrderNumber, guestData, pendingBuyNowItem, setPendingBuyNowItem } =
+    usePaymentStore();
 
   // Get guest email for order status verification
   const guestEmail = guestData?.email;
@@ -53,6 +54,10 @@ export default function PaymentResultScreen() {
   const [resolvedStatus, setResolvedStatus] = useState<'success' | 'pending' | 'failed' | null>(
     null
   );
+
+  // Track if this was a "Buy Now" order - captured before we clear the pendingBuyNowItem
+  // Using ref to capture the initial state and prevent re-triggering when cleared
+  const wasBuyNowOrderRef = useRef(!!pendingBuyNowItem);
 
   // Extract payment result from params
   // MercadoPago may duplicate external_reference in redirect URL, causing array
@@ -183,7 +188,11 @@ export default function PaymentResultScreen() {
   // Clear cart and pending buy now item on successful payment
   useEffect(() => {
     if (paymentSuccess && !isVerifying) {
-      clearCart();
+      // Only clear cart if this was NOT a "Buy Now" order
+      // "Buy Now" orders only include pendingBuyNowItem, not cart items
+      if (!wasBuyNowOrderRef.current) {
+        clearCart();
+      }
       // Clear pending buy now item to prevent stale overlay state
       setPendingBuyNowItem(null);
     }
@@ -256,7 +265,7 @@ export default function PaymentResultScreen() {
     if (paymentPending) {
       return {
         title: 'Pago pendiente',
-        description: 'Tu pago está siendo procesado.',
+        description: 'Tu pago fue recibido y está siendo verificado.',
         subdescription: `Revisá tu casilla de correo para la confirmación. Si no la recibís, contactanos a ${SUPPORT_EMAIL}`,
       };
     }
@@ -265,7 +274,7 @@ export default function PaymentResultScreen() {
     return {
       title: 'Pago no completado',
       description: error || 'No se pudo procesar tu pago. Por favor, intenta nuevamente.',
-      subdescription: null,
+      subdescription: `Si el problema persiste, contactanos a ${SUPPORT_EMAIL}`,
     };
   };
 
@@ -339,11 +348,11 @@ export default function PaymentResultScreen() {
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={isLoggedIn && !showRetryButton ? styles.secondaryButton : styles.primaryButton}
+          style={showRetryButton || isLoggedIn ? styles.secondaryButton : styles.primaryButton}
           onPress={handleBackToHome}
           activeOpacity={0.7}
         >
-          {isLoggedIn && !showRetryButton ? (
+          {showRetryButton || isLoggedIn ? (
             <Text style={styles.secondaryButtonText}>Volver al inicio</Text>
           ) : (
             <LinearGradient
