@@ -51,7 +51,7 @@ export default {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${actionTitle} - Tifossi</title>
+  <title>${actionTitle} - Tiffosi</title>
   <style>
     * {
       margin: 0;
@@ -136,11 +136,11 @@ export default {
 </head>
 <body>
   <div class="container">
-    <div class="logo">TIFOSSI</div>
+    <div class="logo">TIFFOSI</div>
     <div class="spinner"></div>
     <h1>${actionTitle}</h1>
     <p>${actionDescription}</p>
-    <a href="${deepLink}" class="btn">Abrir en Tifossi</a>
+    <a href="${deepLink}" class="btn">Abrir en Tiffosi</a>
     <p class="help">Si la app no se abre automaticamente, toca el boton de arriba.</p>
   </div>
 </body>

@@ -27,14 +27,14 @@ export default function TermsScreen() {
 
             <Text style={styles.sectionTitle}>1. Aceptación de los Términos</Text>
             <Text style={styles.paragraph}>
-              Al acceder y utilizar la aplicación Tifossi, usted acepta estar sujeto a estos
+              Al acceder y utilizar la aplicación Tiffosi, usted acepta estar sujeto a estos
               Términos y Condiciones de uso. Si no está de acuerdo con alguno de estos términos, le
               rogamos que no utilice nuestra aplicación.
             </Text>
 
             <Text style={styles.sectionTitle}>2. Uso de la Aplicación</Text>
             <Text style={styles.paragraph}>
-              Tifossi es una plataforma de comercio electrónico que permite a los usuarios navegar
+              Tiffosi es una plataforma de comercio electrónico que permite a los usuarios navegar
               por productos, crear cuentas, guardar favoritos y realizar compras. El uso de estas
               funcionalidades está sujeto a estos términos y a nuestra Política de Privacidad.
             </Text>
@@ -48,7 +48,7 @@ export default function TermsScreen() {
 
             <Text style={styles.sectionTitle}>4. Compras y Pagos</Text>
             <Text style={styles.paragraph}>
-              Al realizar una compra a través de Tifossi, usted acepta proporcionar información de
+              Al realizar una compra a través de Tiffosi, usted acepta proporcionar información de
               pago precisa y completa. Todos los precios mostrados son en la moneda local e incluyen
               impuestos aplicables. Los métodos de pago aceptados se mostrarán durante el proceso de
               compra.
@@ -63,21 +63,21 @@ export default function TermsScreen() {
 
             <Text style={styles.sectionTitle}>6. Propiedad Intelectual</Text>
             <Text style={styles.paragraph}>
-              Todos los contenidos presentes en la aplicación Tifossi, incluyendo textos, gráficos,
-              logos, imágenes, y software, son propiedad de Tifossi o de sus proveedores de
+              Todos los contenidos presentes en la aplicación Tiffosi, incluyendo textos, gráficos,
+              logos, imágenes, y software, son propiedad de Tiffosi o de sus proveedores de
               contenido y están protegidos por leyes de propiedad intelectual.
             </Text>
 
             <Text style={styles.sectionTitle}>7. Limitación de Responsabilidad</Text>
             <Text style={styles.paragraph}>
-              Tifossi no será responsable por daños indirectos, incidentales, especiales,
+              Tiffosi no será responsable por daños indirectos, incidentales, especiales,
               consecuentes o punitivos, incluyendo pérdida de beneficios, datos, o cualquier otro
               daño intangible, resultante del uso o la imposibilidad de usar la aplicación.
             </Text>
 
             <Text style={styles.sectionTitle}>8. Modificaciones de los Términos</Text>
             <Text style={styles.paragraph}>
-              Tifossi se reserva el derecho de modificar estos términos en cualquier momento. Los
+              Tiffosi se reserva el derecho de modificar estos términos en cualquier momento. Los
               cambios entrarán en vigor inmediatamente después de su publicación en la aplicación.
               El uso continuado de la aplicación después de tales cambios constituirá su
               consentimiento a dichos cambios.

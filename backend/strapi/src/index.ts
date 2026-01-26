@@ -116,7 +116,7 @@ async function initializeDefaultData(strapi: any) {
       await strapi.db.query('api::app-setting.app-setting').create({
         data: {
           supportPhoneNumber: '+59899000000',
-          businessName: 'Tifossi',
+          businessName: 'Tiffosi',
         },
       });
       strapi.log.info('Default app settings created');

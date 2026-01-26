@@ -26,7 +26,7 @@ export default function VerifySuccessScreen() {
 
           <Text style={styles.description}>
             Tu correo electrónico ha sido verificado exitosamente. Ahora puedes disfrutar de todas
-            las funcionalidades de Tifossi.
+            las funcionalidades de Tiffosi.
           </Text>
         </View>
       </View>
