@@ -190,13 +190,13 @@ function NewAddressScreen() {
         }}
       />
 
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoid}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={styles.mainContent}>
-          <SubheaderClose title="Añadir dirección de envío" onClose={handleBack} />
+      <View style={styles.mainContent}>
+        <SubheaderClose title="Añadir dirección de envío" onClose={handleBack} />
 
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoid}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
             <View style={styles.content}>
               {/* API Error */}
@@ -306,38 +306,38 @@ function NewAddressScreen() {
               </View>
             </View>
           </ScrollView>
-        </View>
+        </KeyboardAvoidingView>
+      </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={[styles.primaryButton, isLoading && styles.disabledButton]}
-            onPress={handleSave}
-            activeOpacity={0.7}
-            disabled={isLoading}
+      {/* Action Buttons - Outside KeyboardAvoidingView so they stay fixed */}
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={[styles.primaryButton, isLoading && styles.disabledButton]}
+          onPress={handleSave}
+          activeOpacity={0.7}
+          disabled={isLoading}
+        >
+          <LinearGradient
+            colors={colors.button.defaultGradient}
+            style={styles.primaryButtonGradient}
           >
-            <LinearGradient
-              colors={colors.button.defaultGradient}
-              style={styles.primaryButtonGradient}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#FBFBFB" />
-              ) : (
-                <Text style={styles.primaryButtonText}>Siguiente</Text>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FBFBFB" />
+            ) : (
+              <Text style={styles.primaryButtonText}>Siguiente</Text>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={handleBack}
-            activeOpacity={0.7}
-            disabled={isLoading}
-          >
-            <Text style={styles.secondaryButtonText}>Atrás</Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={handleBack}
+          activeOpacity={0.7}
+          disabled={isLoading}
+        >
+          <Text style={styles.secondaryButtonText}>Atrás</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -379,7 +379,6 @@ const styles = StyleSheet.create<Styles>({
   },
   keyboardAvoid: {
     flex: 1,
-    justifyContent: 'space-between',
   },
   mainContent: {
     flex: 1,

@@ -32,6 +32,7 @@ Tifossi is a React Native Expo application for a sports apparel e-commerce platf
   - Action buttons only appear after all required selections are made
   - Loading overlay with progress indicator while adding
   - Success confirmation with options to checkout immediately ("Comprar ahora") or continue shopping ("Volver a Tienda")
+  - "Comprar ahora" (Buy Now) creates an independent purchase that does NOT affect the shopping cart - cart items are preserved for later
 - **Favorites Toggle**: Save products for later purchase
 - **Related Products**: Horizontal scroll of complementary items
 
