@@ -417,6 +417,8 @@ const SwipeableEdge = ({
       setShowReturnShippingOverlay(false);
       // Reset tracking so overlay shows again if user navigates back
       setShownForPendingItem(null);
+      // Set flag so overlay shows when user navigates back from checkout
+      setShouldShowShippingSelectionOnReturn(true);
 
       if (method === 'delivery') {
         if (isLoggedIn) {
@@ -432,7 +434,7 @@ const SwipeableEdge = ({
         }
       }
     },
-    [isLoggedIn]
+    [isLoggedIn, setShouldShowShippingSelectionOnReturn]
   );
 
   // Handle closing the return shipping overlay (user cancels "buy now" intent)
