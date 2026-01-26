@@ -268,7 +268,7 @@ export class MercadoPagoService {
 
       auto_return: 'approved' as const,
 
-      statement_descriptor: 'TIFOSSI',
+      statement_descriptor: 'TIFFOSI',
 
       notification_url:
         process.env.WEBHOOK_URL || `${process.env.PUBLIC_URL}/api/webhooks/mercadopago`,

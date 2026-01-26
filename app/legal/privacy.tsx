@@ -26,7 +26,7 @@ export default function PrivacyScreen() {
             <Text style={styles.lastUpdated}>Última actualización: 7 de Diciembre, 2025</Text>
 
             <Text style={styles.paragraph}>
-              En Tifossi, valoramos su privacidad y nos comprometemos a proteger sus datos
+              En Tiffosi, valoramos su privacidad y nos comprometemos a proteger sus datos
               personales. Esta Política de Privacidad explica cómo recopilamos, utilizamos y
               protegemos su información cuando utiliza nuestra aplicación móvil.
             </Text>

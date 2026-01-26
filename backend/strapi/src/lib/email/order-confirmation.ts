@@ -45,7 +45,7 @@ export async function sendOrderConfirmationEmail(order: OrderForEmail): Promise<
   try {
     await strapi.plugins['email'].services.email.send({
       to: recipientEmail,
-      subject: `Tu pedido #${order.orderNumber} ha sido confirmado - Tifossi`,
+      subject: `Tu pedido #${order.orderNumber} ha sido confirmado - Tiffosi`,
       html: buildEmailHtml(order),
     });
     strapi.log.info(`Confirmation email sent for order ${order.orderNumber}`);

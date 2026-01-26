@@ -188,7 +188,7 @@ export class PreferenceBuilder {
   private buildDescription(orderData: ExtendedOrderData): string {
     const itemCount = orderData.items.reduce((sum, item) => sum + item.quantity, 0);
     const itemText = itemCount === 1 ? 'artículo' : 'artículos';
-    return `Pedido Tifossi #${orderData.orderNumber} - ${itemCount} ${itemText}`;
+    return `Pedido Tiffosi #${orderData.orderNumber} - ${itemCount} ${itemText}`;
   }
 
   /**
@@ -364,7 +364,7 @@ export class PreferenceBuilder {
     if (orderData.shippingMethod === ShippingMethod.PICKUP) {
       const pickup = orderData.pickupLocation;
       return {
-        street_name: pickup?.address || 'Tienda Tifossi',
+        street_name: pickup?.address || 'Tienda Tiffosi',
         street_number: 1,
         zip_code: pickup?.postalCode || '11000',
         city_name: pickup?.city || 'Montevideo',
@@ -396,7 +396,7 @@ export class PreferenceBuilder {
         description: extendedItem.description,
         picture_url: extendedItem.imageUrl,
         category_id: extendedItem.categoryId,
-        warranty: extendedItem.warranty || 'Garantía estándar Tifossi',
+        warranty: extendedItem.warranty || 'Garantía estándar Tiffosi',
       };
     });
   }
