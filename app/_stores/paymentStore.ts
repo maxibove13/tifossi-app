@@ -74,6 +74,9 @@ interface PaymentUIState {
   // Product ID where checkout flow originated (for close navigation)
   originProductId: string | null;
 
+  // Flag to show shipping selection overlay when returning from checkout (add-to-cart flow)
+  shouldShowShippingSelectionOnReturn: boolean;
+
   // UI state
   isLoading: boolean;
   error: string | null;
@@ -85,6 +88,7 @@ interface PaymentUIState {
   setGuestData: (data: GuestCheckoutData | null) => void;
   setPendingBuyNowItem: (item: PendingBuyNowItem | null) => void;
   setOriginProductId: (productId: string | null) => void;
+  setShouldShowShippingSelectionOnReturn: (value: boolean) => void;
   clearPaymentState: () => void;
   closeCheckoutFlow: () => void;
   setError: (error: string | null) => void;
@@ -100,6 +104,7 @@ export const usePaymentStore = create<PaymentUIState>((set, get) => ({
   guestData: null,
   pendingBuyNowItem: null,
   originProductId: null,
+  shouldShowShippingSelectionOnReturn: false,
   isLoading: false,
   error: null,
 
@@ -132,6 +137,10 @@ export const usePaymentStore = create<PaymentUIState>((set, get) => ({
     set({ originProductId: productId });
   },
 
+  setShouldShowShippingSelectionOnReturn: (value) => {
+    set({ shouldShowShippingSelectionOnReturn: value });
+  },
+
   clearPaymentState: () => {
     set({
       currentOrderNumber: null,
@@ -141,6 +150,7 @@ export const usePaymentStore = create<PaymentUIState>((set, get) => ({
       guestData: null,
       pendingBuyNowItem: null,
       originProductId: null,
+      shouldShowShippingSelectionOnReturn: false,
       isLoading: false,
       error: null,
     });
@@ -159,6 +169,7 @@ export const usePaymentStore = create<PaymentUIState>((set, get) => ({
       guestData: null,
       pendingBuyNowItem: null,
       originProductId: null,
+      shouldShowShippingSelectionOnReturn: false,
       isLoading: false,
       error: null,
     });
