@@ -33,7 +33,7 @@ interface ContactFormData {
 type ContactFormField = keyof ContactFormData;
 
 function GuestContactInfoScreen() {
-  const { prefill } = useLocalSearchParams<{ prefill?: string }>();
+  const { prefill, returnTo } = useLocalSearchParams<{ prefill?: string; returnTo?: string }>();
   const isPrefillMode = prefill === 'true';
 
   const setGuestData = usePaymentStore((state) => state.setGuestData);
@@ -125,8 +125,12 @@ function GuestContactInfoScreen() {
       phoneNumber: formData.phone,
     });
 
-    // Navigate to payment
-    router.push('/checkout/payment-selection');
+    // Navigate based on returnTo param or default to payment
+    if (returnTo === 'shipping-pickup') {
+      router.push('/checkout/shipping-pickup');
+    } else {
+      router.push('/checkout/payment-selection');
+    }
   };
 
   return (

@@ -364,6 +364,12 @@ const SwipeableEdge = ({
   const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
   const setGuestData = usePaymentStore((state) => state.setGuestData);
   const pendingBuyNowItemFromStore = usePaymentStore((state) => state.pendingBuyNowItem);
+  const shouldShowShippingSelectionOnReturn = usePaymentStore(
+    (state) => state.shouldShowShippingSelectionOnReturn
+  );
+  const setShouldShowShippingSelectionOnReturn = usePaymentStore(
+    (state) => state.setShouldShowShippingSelectionOnReturn
+  );
 
   // Auth store for shipping navigation
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -378,7 +384,7 @@ const SwipeableEdge = ({
   // This prevents the modal from appearing on top of checkout screens during navigation
   useFocusEffect(
     useCallback(() => {
-      // If there's a pending buy now item for this product and we haven't shown the overlay yet
+      // Check for "buy now" flow (pending item without adding to cart)
       if (
         pendingBuyNowItemFromStore &&
         pendingBuyNowItemFromStore.productId === product.id &&
@@ -386,8 +392,21 @@ const SwipeableEdge = ({
       ) {
         setShowReturnShippingOverlay(true);
         setShownForPendingItem(pendingBuyNowItemFromStore.productId);
+        return;
       }
-    }, [pendingBuyNowItemFromStore, product.id, shownForPendingItem])
+
+      // Check for "add to cart" flow (item already in cart, flag set)
+      if (shouldShowShippingSelectionOnReturn) {
+        setShowReturnShippingOverlay(true);
+        setShouldShowShippingSelectionOnReturn(false);
+      }
+    }, [
+      pendingBuyNowItemFromStore,
+      product.id,
+      shownForPendingItem,
+      shouldShowShippingSelectionOnReturn,
+      setShouldShowShippingSelectionOnReturn,
+    ])
   );
 
   // Handle shipping selection from the return overlay
@@ -396,6 +415,8 @@ const SwipeableEdge = ({
       if (!method) return;
 
       setShowReturnShippingOverlay(false);
+      // Reset tracking so overlay shows again if user navigates back
+      setShownForPendingItem(null);
 
       if (method === 'delivery') {
         if (isLoggedIn) {
@@ -404,7 +425,11 @@ const SwipeableEdge = ({
           router.navigate('/checkout/new-address?guest=true');
         }
       } else {
-        router.navigate('/checkout/shipping-pickup');
+        if (isLoggedIn) {
+          router.navigate('/checkout/shipping-pickup');
+        } else {
+          router.navigate('/checkout/guest-contact-info?returnTo=shipping-pickup');
+        }
       }
     },
     [isLoggedIn]
