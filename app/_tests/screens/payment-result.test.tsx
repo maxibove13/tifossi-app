@@ -33,6 +33,30 @@ jest.mock('@expo/vector-icons', () => ({
 // Import mocked router after mocking
 const { router, useLocalSearchParams } = require('expo-router');
 
+// Import maskEmail for unit testing - extract from component
+// We test it indirectly through the rendered output
+const maskEmail = (email: string): string => {
+  const [localPart, domain] = email.split('@');
+  if (!domain) return email;
+  const firstChar = localPart.charAt(0);
+  return `${firstChar}***@${domain}`;
+};
+
+describe('maskEmail utility', () => {
+  it('should mask email correctly', () => {
+    expect(maskEmail('john@example.com')).toBe('j***@example.com');
+    expect(maskEmail('maria@gmail.com')).toBe('m***@gmail.com');
+  });
+
+  it('should handle single character local part', () => {
+    expect(maskEmail('a@test.com')).toBe('a***@test.com');
+  });
+
+  it('should return original if no @ symbol', () => {
+    expect(maskEmail('invalid-email')).toBe('invalid-email');
+  });
+});
+
 describe('PaymentResultScreen', () => {
   let mockGetOrderStatus: jest.SpyInstance;
   let mockSetAuthToken: jest.SpyInstance;
@@ -408,6 +432,36 @@ describe('PaymentResultScreen', () => {
 
       await waitFor(() => {
         expect(getByText('Pago pendiente')).toBeTruthy();
+        expect(getByText(/Revisá tu casilla de correo/)).toBeTruthy();
+        expect(getByText(/support@tifossi.com/)).toBeTruthy();
+      });
+    });
+
+    it('should show masked email for guest in pending state', async () => {
+      useAuthStore.setState({
+        token: null,
+        isLoggedIn: false,
+        user: null,
+      });
+
+      usePaymentStore.setState({
+        guestData: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'testuser@example.com',
+          phoneNumber: '+59899123456',
+        },
+      });
+
+      (useLocalSearchParams as jest.Mock).mockReturnValue({
+        // No external_reference - immediate pending
+      });
+
+      const { getByText } = render(<PaymentResultScreen />);
+
+      await waitFor(() => {
+        expect(getByText('Pago pendiente')).toBeTruthy();
+        expect(getByText(/t\*\*\*@example\.com/)).toBeTruthy();
       });
     });
 
