@@ -363,7 +363,6 @@ const SwipeableEdge = ({
   const setPendingBuyNowItem = usePaymentStore((state) => state.setPendingBuyNowItem);
   const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
   const setGuestData = usePaymentStore((state) => state.setGuestData);
-  const pendingBuyNowItemFromStore = usePaymentStore((state) => state.pendingBuyNowItem);
   const shouldShowShippingSelectionOnReturn = usePaymentStore(
     (state) => state.shouldShowShippingSelectionOnReturn
   );
@@ -376,37 +375,16 @@ const SwipeableEdge = ({
 
   // State for standalone shipping selection overlay (shown when returning from checkout)
   const [showReturnShippingOverlay, setShowReturnShippingOverlay] = useState(false);
-  // Track whether we've shown the overlay for current pending item
-  const [shownForPendingItem, setShownForPendingItem] = useState<string | null>(null);
 
   // Show shipping selection overlay when returning from checkout screens
-  // Use useFocusEffect to ensure the overlay only shows when the product screen is focused
-  // This prevents the modal from appearing on top of checkout screens during navigation
+  // Both "buy now" and "add to cart" flows set shouldShowShippingSelectionOnReturn before navigating
   useFocusEffect(
     useCallback(() => {
-      // Check for "buy now" flow (pending item without adding to cart)
-      if (
-        pendingBuyNowItemFromStore &&
-        pendingBuyNowItemFromStore.productId === product.id &&
-        shownForPendingItem !== pendingBuyNowItemFromStore.productId
-      ) {
-        setShowReturnShippingOverlay(true);
-        setShownForPendingItem(pendingBuyNowItemFromStore.productId);
-        return;
-      }
-
-      // Check for "add to cart" flow (item already in cart, flag set)
       if (shouldShowShippingSelectionOnReturn) {
         setShowReturnShippingOverlay(true);
         setShouldShowShippingSelectionOnReturn(false);
       }
-    }, [
-      pendingBuyNowItemFromStore,
-      product.id,
-      shownForPendingItem,
-      shouldShowShippingSelectionOnReturn,
-      setShouldShowShippingSelectionOnReturn,
-    ])
+    }, [shouldShowShippingSelectionOnReturn, setShouldShowShippingSelectionOnReturn])
   );
 
   // Handle shipping selection from the return overlay
@@ -415,8 +393,6 @@ const SwipeableEdge = ({
       if (!method) return;
 
       setShowReturnShippingOverlay(false);
-      // Reset tracking so overlay shows again if user navigates back
-      setShownForPendingItem(null);
       // Set flag so overlay shows when user navigates back from checkout
       setShouldShowShippingSelectionOnReturn(true);
 

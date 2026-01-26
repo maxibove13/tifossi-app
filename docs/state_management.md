@@ -139,12 +139,11 @@ const profile = await httpClient.get('/users/me');
     - `cart.tsx` clears `pendingBuyNowItem` when starting cart checkout to prevent stale items from abandoned buy-now flows
     - `OverlayCheckoutShipping` restores size/quantity from `pendingBuyNowItem` when returning from checkout screens
   - **Shipping selection return flow (`shouldShowShippingSelectionOnReturn`):**
-    - Boolean flag for the "add-to-cart" checkout flow (distinct from buy-now flow)
-    - Set by `OverlayProductAdding` when user selects "Comprar ahora" from the post-add confirmation overlay
+    - Single boolean flag used by BOTH "add-to-cart" and "buy-now" checkout flows
+    - Set before navigating to checkout by: `OverlayProductAdding`, `OverlayCheckoutShipping`, and `SwipeableEdge.handleReturnShippingSelect`
     - Checked by `SwipeableEdge`'s `useFocusEffect` to show shipping selection overlay when user navigates back from checkout
     - Reset to `false` after overlay is displayed to prevent duplicate shows
-    - Complements `pendingBuyNowItem` tracking: buy-now uses `pendingBuyNowItem`, add-to-cart uses this flag
-    - `SwipeableEdge` resets `shownForPendingItem` to `null` on shipping selection, allowing overlay to show on multiple back navigations
+    - Simplifies previous logic that used separate tracking mechanisms for each flow
   - Loading and error state for payment processing UI
 
 ### 3.3 Store Synchronization (`storeSynchronizer.ts`)

@@ -22,6 +22,17 @@ import { useCartStore } from '../_stores/cartStore';
 import { useAuthStore } from '../_stores/authStore';
 import mercadoPagoService from '../_services/payment/mercadoPago';
 
+// Support email for contact
+const SUPPORT_EMAIL = 'support@tifossi.com';
+
+// Mask email for display (e.g., "m***@gmail.com")
+function maskEmail(email: string): string {
+  const [localPart, domain] = email.split('@');
+  if (!domain) return email;
+  const firstChar = localPart.charAt(0);
+  return `${firstChar}***@${domain}`;
+}
+
 export default function PaymentResultScreen() {
   const params = useLocalSearchParams();
   const { clearCart } = useCartStore();
@@ -246,7 +257,7 @@ export default function PaymentResultScreen() {
       return {
         title: 'Pago pendiente',
         description: 'Tu pago está siendo procesado.',
-        subdescription: 'Te notificaremos cuando el pago sea confirmado.',
+        subdescription: `Revisá tu casilla de correo para la confirmación. Si no la recibís, contactanos a ${SUPPORT_EMAIL}`,
       };
     }
 
@@ -275,10 +286,21 @@ export default function PaymentResultScreen() {
             <View style={styles.orderInfo}>
               <Text style={styles.orderLabel}>Número de pedido</Text>
               <Text style={styles.orderNumber}>{orderNumber}</Text>
-              {guestEmail && paymentSuccess && (
-                <Text style={styles.emailSent}>Te enviamos la confirmación a {guestEmail}</Text>
+              {guestEmail && (paymentSuccess || paymentPending) && (
+                <Text style={styles.emailSent}>
+                  {paymentSuccess
+                    ? `Te enviamos la confirmación a ${maskEmail(guestEmail)}`
+                    : `Enviaremos la confirmación a ${maskEmail(guestEmail)}`}
+                </Text>
               )}
             </View>
+          )}
+
+          {/* Show email for pending without order number */}
+          {!orderNumber && guestEmail && paymentPending && (
+            <Text style={styles.emailSent}>
+              Enviaremos la confirmación a {maskEmail(guestEmail)}
+            </Text>
           )}
 
           {content.subdescription && (
