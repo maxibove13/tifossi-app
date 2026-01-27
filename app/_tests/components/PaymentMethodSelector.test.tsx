@@ -661,18 +661,27 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
       });
     });
 
-    it('should clear payment state on cleanup', async () => {
+    it('should preserve payment state on unmount for back navigation', async () => {
+      // State should NOT be cleared on unmount - this allows users to go back
+      // and fix selections without losing their data. State is only cleared
+      // via closeCheckoutFlow (X button) or after successful payment.
       renderStoreUtils.payment.setState({
         error: 'Payment error',
+        guestData: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phoneNumber: '123',
+        },
       });
 
       const { unmount } = render(<PaymentSelectionScreen />);
 
       unmount();
 
-      // Payment state should be cleared on component unmount
-      // This is tested by the component's useEffect cleanup
-      expect(renderStoreUtils.payment.getState().error).toBeNull();
+      // State should be preserved after unmount
+      expect(renderStoreUtils.payment.getState().error).toBe('Payment error');
+      expect(renderStoreUtils.payment.getState().guestData?.email).toBe('test@example.com');
     });
   });
 
