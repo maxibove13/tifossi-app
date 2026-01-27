@@ -143,8 +143,14 @@ const profile = await httpClient.get('/users/me');
     - Single boolean flag used by BOTH "add-to-cart" and "buy-now" checkout flows
     - Set before navigating to checkout by: `OverlayProductAdding`, `OverlayCheckoutShipping`, and `SwipeableEdge.handleReturnShippingSelect`
     - Checked by `SwipeableEdge`'s `useFocusEffect` to show shipping selection overlay when user navigates back from checkout
+    - **Important:** The `useFocusEffect` callback reads from `usePaymentStore.getState()` directly to avoid stale closure issues (the flag may change while the component is in the background)
     - Reset to `false` after overlay is displayed to prevent duplicate shows
+    - Also explicitly cleared before navigating to `payment-result` to prevent re-display after successful payment
     - Simplifies previous logic that used separate tracking mechanisms for each flow
+  - **State cleanup strategy:**
+    - Payment state is NOT cleared on component unmount (allows users to press "Atrás" without losing selections)
+    - State is only cleared via: `closeCheckoutFlow()` (X button), after successful payment, or explicit flag clearing before navigation
+    - `guestData` is preserved through the checkout flow until `closeCheckoutFlow()` is called (needed by `payment-result` for guest email verification)
   - Loading and error state for payment processing UI
 
 ### 3.3 Store Synchronization (`storeSynchronizer.ts`)

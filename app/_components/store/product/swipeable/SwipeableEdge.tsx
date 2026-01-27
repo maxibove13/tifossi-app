@@ -363,9 +363,6 @@ const SwipeableEdge = ({
   const setPendingBuyNowItem = usePaymentStore((state) => state.setPendingBuyNowItem);
   const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
   const setGuestData = usePaymentStore((state) => state.setGuestData);
-  const shouldShowShippingSelectionOnReturn = usePaymentStore(
-    (state) => state.shouldShowShippingSelectionOnReturn
-  );
   const setShouldShowShippingSelectionOnReturn = usePaymentStore(
     (state) => state.setShouldShowShippingSelectionOnReturn
   );
@@ -378,13 +375,15 @@ const SwipeableEdge = ({
 
   // Show shipping selection overlay when returning from checkout screens
   // Both "buy now" and "add to cart" flows set shouldShowShippingSelectionOnReturn before navigating
+  // Read directly from store inside callback to get current value, not stale closure value
   useFocusEffect(
     useCallback(() => {
-      if (shouldShowShippingSelectionOnReturn) {
+      const shouldShow = usePaymentStore.getState().shouldShowShippingSelectionOnReturn;
+      if (shouldShow) {
         setShowReturnShippingOverlay(true);
         setShouldShowShippingSelectionOnReturn(false);
       }
-    }, [shouldShowShippingSelectionOnReturn, setShouldShowShippingSelectionOnReturn])
+    }, [setShouldShowShippingSelectionOnReturn])
   );
 
   // Handle shipping selection from the return overlay

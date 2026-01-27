@@ -52,7 +52,6 @@ export default function PaymentSelectionScreen() {
   const isLoading = usePaymentStore((state) => state.isLoading);
   const error = usePaymentStore((state) => state.error);
   const setCurrentOrder = usePaymentStore((state) => state.setCurrentOrder);
-  const clearPaymentState = usePaymentStore((state) => state.clearPaymentState);
   const setLoading = usePaymentStore((state) => state.setLoading);
   const selectedStore = usePaymentStore((state) => state.selectedStore);
   const selectedAddress = usePaymentStore((state) => state.selectedAddress);
@@ -68,6 +67,10 @@ export default function PaymentSelectionScreen() {
     selectedSize?: string;
     color?: string;
   }
+
+  // NOTE: State cleanup happens via closeCheckoutFlow (X button) or after successful payment.
+  // Do NOT add a cleanup effect here - it would clear guestData needed by payment-result
+  // and lose user selections when pressing "Atrás".
 
   // Convert items to displayable format with product details
   // "Buy Now" flow: show ONLY the buy-now item (not mixed with cart)
@@ -117,13 +120,6 @@ export default function PaymentSelectionScreen() {
   const shippingCost = shippingMethod === 'pickup' ? 0 : 200;
   const total = subtotal + shippingCost;
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-
-  // Clear payment state when leaving screen
-  useEffect(() => {
-    return () => {
-      clearPaymentState();
-    };
-  }, [clearPaymentState]);
 
   // Surface store-level errors
   useEffect(() => {
@@ -333,6 +329,8 @@ export default function PaymentSelectionScreen() {
       }
 
       // User completed redirect flow - navigate to payment result to verify status
+      // Clear the return overlay flag before navigating (guestData preserved for payment-result)
+      usePaymentStore.getState().setShouldShowShippingSelectionOnReturn(false);
       navigation.replace({
         pathname: '/checkout/payment-result',
         params: { external_reference: preference.externalReference },
