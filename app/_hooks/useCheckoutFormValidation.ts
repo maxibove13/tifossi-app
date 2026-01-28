@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 const MESSAGES = {
   required: (field: string) => `${field} es obligatorio`,
   invalidEmail: 'El email no es válido',
+  emailMismatch: 'Los emails no coinciden',
 };
 
 // Email regex pattern
@@ -14,6 +15,7 @@ const FIELD_NAMES: Record<string, string> = {
   firstName: 'El nombre',
   lastName: 'El apellido',
   email: 'El email',
+  confirmEmail: 'La confirmación de email',
   phone: 'El número de celular',
   street: 'La calle',
   number: 'El número',
@@ -28,6 +30,7 @@ interface UseCheckoutFormValidationReturn<T extends string> {
   setErrors: React.Dispatch<React.SetStateAction<ValidationErrors<T>>>;
   validateRequired: (value: string, field: T) => string | undefined;
   validateEmail: (value: string) => string | undefined;
+  validateEmailMatch: (email: string, confirmEmail: string) => string | undefined;
   clearFieldError: (field: T) => void;
   clearAllErrors: () => void;
 }
@@ -69,6 +72,19 @@ export function useCheckoutFormValidation<T extends string>(): UseCheckoutFormVa
     return undefined;
   }, []);
 
+  const validateEmailMatch = useCallback(
+    (email: string, confirmEmail: string): string | undefined => {
+      if (!confirmEmail.trim()) {
+        return MESSAGES.required(FIELD_NAMES.confirmEmail);
+      }
+      if (email.trim().toLowerCase() !== confirmEmail.trim().toLowerCase()) {
+        return MESSAGES.emailMismatch;
+      }
+      return undefined;
+    },
+    []
+  );
+
   const clearFieldError = useCallback((field: T) => {
     setErrors((prev) => ({
       ...prev,
@@ -85,6 +101,7 @@ export function useCheckoutFormValidation<T extends string>(): UseCheckoutFormVa
     setErrors,
     validateRequired,
     validateEmail,
+    validateEmailMatch,
     clearFieldError,
     clearAllErrors,
   };

@@ -27,6 +27,7 @@ interface ContactFormData {
   firstName: string;
   lastName: string;
   email: string;
+  confirmEmail: string;
   phone: string;
 }
 
@@ -41,14 +42,21 @@ function GuestContactInfoScreen() {
   const user = useAuthStore((state) => state.user);
 
   // Form validation hook
-  const { errors, setErrors, validateRequired, validateEmail, clearFieldError } =
-    useCheckoutFormValidation<ContactFormField>();
+  const {
+    errors,
+    setErrors,
+    validateRequired,
+    validateEmail,
+    validateEmailMatch,
+    clearFieldError,
+  } = useCheckoutFormValidation<ContactFormField>();
 
   // Form state - initialize with user data if prefill mode
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: '',
     lastName: '',
     email: '',
+    confirmEmail: '',
     phone: '',
   });
 
@@ -59,6 +67,7 @@ function GuestContactInfoScreen() {
         firstName: user.firstName || user.name?.split(' ')[0] || '',
         lastName: user.lastName || user.name?.split(' ').slice(1).join(' ') || '',
         email: user.email || '',
+        confirmEmail: user.email || '',
         phone: user.phone || '',
       });
     }
@@ -86,6 +95,7 @@ function GuestContactInfoScreen() {
       firstName: validateRequired(formData.firstName, 'firstName'),
       lastName: validateRequired(formData.lastName, 'lastName'),
       email: validateEmail(formData.email),
+      confirmEmail: validateEmailMatch(formData.email, formData.confirmEmail),
       phone: validateRequired(formData.phone, 'phone'),
     };
 
@@ -177,6 +187,14 @@ function GuestContactInfoScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 error={submitted ? errors.email : undefined}
+              />
+              <Input
+                placeholder="Confirmar Email"
+                value={formData.confirmEmail}
+                onChangeText={(value) => handleChange('confirmEmail', value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                error={submitted ? errors.confirmEmail : undefined}
               />
               <Input
                 placeholder="No. Celular"
