@@ -834,12 +834,14 @@ class StrapiApiService {
     supportPhoneNumber: string;
     supportEmail?: string;
     businessName?: string;
+    shippingCostDelivery: number;
   }> {
     const cacheKey = createCacheKey('app-settings');
     const cached = cache.get<{
       supportPhoneNumber: string;
       supportEmail?: string;
       businessName?: string;
+      shippingCostDelivery: number;
     }>(cacheKey);
     if (cached) return cached;
 
@@ -850,6 +852,10 @@ class StrapiApiService {
         supportPhoneNumber: response.data?.supportPhoneNumber || '+59899000000',
         supportEmail: response.data?.supportEmail,
         businessName: response.data?.businessName || 'Tifossi',
+        shippingCostDelivery:
+          response.data?.shippingCostDelivery != null
+            ? Number(response.data.shippingCostDelivery)
+            : 200,
       };
 
       cache.set(cacheKey, settings, CACHE_TTL.CATEGORIES); // Long cache for settings
@@ -859,6 +865,7 @@ class StrapiApiService {
       return {
         supportPhoneNumber: '+59899000000',
         businessName: 'Tifossi',
+        shippingCostDelivery: 200,
       };
     }
   }

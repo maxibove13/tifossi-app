@@ -33,6 +33,7 @@ import { useProductStore } from '../_stores/productStore';
 import { Product } from '../_types/product';
 import addressService from '../_services/address/addressService';
 import mercadoPagoService, { OrderData } from '../_services/payment/mercadoPago';
+import strapiApi from '../_services/api/strapiApi';
 
 interface PaymentMethod {
   id: string;
@@ -60,6 +61,14 @@ export default function PaymentSelectionScreen() {
   const pendingBuyNowItem = usePaymentStore((state) => state.pendingBuyNowItem);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
+  const [deliveryShippingCost, setDeliveryShippingCost] = useState<number>(200);
+
+  // Fetch configurable shipping cost from Strapi
+  useEffect(() => {
+    strapiApi.fetchAppSettings().then((settings) => {
+      setDeliveryShippingCost(settings.shippingCostDelivery);
+    });
+  }, []);
 
   // Cart display item type
   interface CartDisplayItem extends Product {
@@ -117,7 +126,7 @@ export default function PaymentSelectionScreen() {
         const price = item.discountedPrice ?? item.price ?? 0;
         return sum + price * item.quantity;
       }, 0);
-  const shippingCost = shippingMethod === 'pickup' ? 0 : 200;
+  const shippingCost = shippingMethod === 'pickup' ? 0 : deliveryShippingCost;
   const total = subtotal + shippingCost;
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
@@ -321,10 +330,14 @@ export default function PaymentSelectionScreen() {
         return;
       }
 
-      // User dismissed browser (cancelled Apple overlay or closed before completing)
-      // Stay on payment screen so they can retry immediately
-      // The pending order will be cancelled when they attempt again
+      // User dismissed browser - navigate to verification screen to check actual payment status
+      // This handles the case where user paid but then dismissed before redirect completed
       if (paymentResult.userDismissed) {
+        usePaymentStore.getState().setShouldShowShippingSelectionOnReturn(false);
+        navigation.replace({
+          pathname: '/checkout/payment-result',
+          params: { external_reference: preference.externalReference },
+        });
         return;
       }
 

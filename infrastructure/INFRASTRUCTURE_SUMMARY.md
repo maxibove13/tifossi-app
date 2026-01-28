@@ -24,8 +24,8 @@ This document provides a comprehensive summary of the infrastructure architectur
 - **Components**:
   - Multi-stage Dockerfile for different environments
   - Docker Compose configurations for dev/staging/production
-  - Service orchestration (Strapi, PostgreSQL, Redis, Nginx)
-  - Development tools integration (Adminer, Redis Commander, MailHog)
+  - Service orchestration (Strapi, PostgreSQL, Nginx)
+  - Development tools integration (Adminer, MailHog)
   - Production optimizations and security measures
 
 ### 3. CI/CD Pipeline ✅
@@ -85,7 +85,7 @@ This document provides a comprehensive summary of the infrastructure architectur
 
 - **Horizontal scaling** support through Docker Compose and platform features
 - **Database optimization** with connection pooling and performance tuning
-- **Caching strategies** with Redis integration
+- **Caching strategies** at application and database level
 - **CDN integration** through Cloudinary
 - **Load balancing** with Nginx in production
 
@@ -102,7 +102,7 @@ This document provides a comprehensive summary of the infrastructure architectur
 - **One-command deployment** with automated scripts
 - **Local development environment** matching production
 - **Comprehensive logging** and debugging tools
-- **Development tools integration** (Adminer, Redis Commander, MailHog)
+- **Development tools integration** (Adminer, MailHog)
 - **Clear documentation** and troubleshooting guides
 
 ## Environment-Specific Configurations
@@ -111,7 +111,7 @@ This document provides a comprehensive summary of the infrastructure architectur
 
 - **Focus**: Developer productivity and debugging
 - **Features**: Hot reloading, debug tools, email testing, permissive security
-- **Services**: Strapi + PostgreSQL + Redis + Development tools
+- **Services**: Strapi + PostgreSQL + Development tools
 - **Access**: Local ports exposed, admin interfaces available
 
 ### Staging Environment
@@ -190,7 +190,6 @@ backend/
 
 - **Strapi v4**: Headless CMS with custom content types
 - **PostgreSQL**: Primary database with connection pooling
-- **Redis**: Caching and session storage
 - **Node.js**: Runtime environment with production optimizations
 
 ### External Services
@@ -213,7 +212,7 @@ backend/
 
 - **JWT-based authentication** with Strapi built-in system
 - **Role-based access control** for admin and user permissions
-- **Session management** with Redis storage
+- **Session management** with JWT tokens
 - **API token authentication** for service-to-service communication
 
 ### Data Protection
@@ -235,7 +234,7 @@ backend/
 ### Application Level
 
 - **Connection pooling** for database efficiency
-- **Redis caching** for frequently accessed data
+- **In-memory caching** for frequently accessed data
 - **Image optimization** through Cloudinary
 - **Gzip compression** for API responses
 

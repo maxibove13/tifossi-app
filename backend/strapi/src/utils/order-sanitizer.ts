@@ -33,6 +33,7 @@ interface RawOrder {
   shippingAddress: RawAddress;
   storeLocationId?: number | string;
   storeLocationCode?: string;
+  shippingCost?: number;
 }
 
 interface AuthUser {
@@ -265,9 +266,18 @@ export const generateOrderNumber = (): string => {
   return `TIF-${year}${month}${day}-${timestamp}`;
 };
 
-export const calculateShippingCost = (shippingMethod: string, _subtotal: number): number => {
+export const calculateShippingCost = (
+  shippingMethod: string,
+  _subtotal: number,
+  providedCost?: number
+): number => {
   if (shippingMethod === 'pickup') {
     return 0;
+  }
+
+  // Use provided cost if valid (from Strapi app settings via frontend)
+  if (providedCost !== undefined && providedCost >= 0 && providedCost < 10000) {
+    return providedCost;
   }
 
   return DEFAULT_SHIPPING_FEE;
@@ -571,7 +581,21 @@ export const sanitizeOrderPayload = async ({
   const requestedDiscount = toNumber(rawOrder.discount) || 0;
   const discount = Math.max(0, Math.min(requestedDiscount, subtotal));
 
-  const shippingCost = Number(calculateShippingCost(shippingMethod, subtotal).toFixed(2));
+  // Fetch shipping cost from server-side app settings (never trust client value)
+  let serverShippingCost = DEFAULT_SHIPPING_FEE;
+  try {
+    const appSettings = await strapi.documents('api::app-setting.app-setting').findFirst({});
+    if (appSettings?.shippingCostDelivery != null) {
+      const parsed = Number(appSettings.shippingCostDelivery);
+      serverShippingCost = Number.isNaN(parsed) ? DEFAULT_SHIPPING_FEE : parsed;
+    }
+  } catch {
+    // Use default if app-settings unavailable
+  }
+
+  const shippingCost = Number(
+    calculateShippingCost(shippingMethod, subtotal, serverShippingCost).toFixed(2)
+  );
 
   const total = Number((subtotal - discount + shippingCost).toFixed(2));
   if (total <= 0) {
@@ -813,7 +837,21 @@ export const sanitizeGuestOrderPayload = async ({
   const requestedDiscount = toNumber(rawOrder.discount) || 0;
   const discount = Math.max(0, Math.min(requestedDiscount, subtotal));
 
-  const shippingCost = Number(calculateShippingCost(shippingMethod, subtotal).toFixed(2));
+  // Fetch shipping cost from server-side app settings (never trust client value)
+  let serverShippingCost = DEFAULT_SHIPPING_FEE;
+  try {
+    const appSettings = await strapi.documents('api::app-setting.app-setting').findFirst({});
+    if (appSettings?.shippingCostDelivery != null) {
+      const parsed = Number(appSettings.shippingCostDelivery);
+      serverShippingCost = Number.isNaN(parsed) ? DEFAULT_SHIPPING_FEE : parsed;
+    }
+  } catch {
+    // Use default if app-settings unavailable
+  }
+
+  const shippingCost = Number(
+    calculateShippingCost(shippingMethod, subtotal, serverShippingCost).toFixed(2)
+  );
 
   const total = Number((subtotal - discount + shippingCost).toFixed(2));
   if (total <= 0) {

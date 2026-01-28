@@ -114,7 +114,7 @@ export interface MPPreferenceRequest {
     default_installments?: number;
   };
   shipments?: {
-    cost: number;
+    cost?: number;
     mode: string;
     receiver_address: {
       street_name: string;

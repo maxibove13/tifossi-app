@@ -1628,12 +1628,11 @@ See Section 3.2 for full configuration.
 |---------|------|------|
 | Render Web Service | Starter (512MB) | $7 |
 | Render PostgreSQL | Basic (1GB) | $7 |
-| Render Redis | Basic | $7 |
-| Storage Buffer | - | $14 |
-| **Subtotal** | - | **$35** |
+| Storage Buffer | - | $7 |
+| **Subtotal** | - | **$21** |
 | Cloudinary | Free Tier | $0 |
 | Firebase Auth | Free Tier | $0 |
-| **TOTAL** | - | **$35/month** |
+| **TOTAL** | - | **$21/month** |
 
 **MercadoPago Transaction Fees**:
 - 14-day settlement: 5.23%
@@ -1642,8 +1641,8 @@ See Section 3.2 for full configuration.
 **Example Revenue Calculation**:
 - Monthly sales: $10,000 UYU
 - MercadoPago fee (5.23%): -$523 UYU
-- Infrastructure: -$35 USD (~$1,400 UYU at 40 UYU/USD)
-- **Net revenue**: ~$8,077 UYU
+- Infrastructure: -$21 USD (~$840 UYU at 40 UYU/USD)
+- **Net revenue**: ~$8,637 UYU
 
 ---
 

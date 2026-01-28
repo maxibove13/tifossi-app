@@ -44,8 +44,6 @@ services:
       - SMTP_USERNAME=${SMTP_USERNAME:-}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-}
       - EMAIL_FROM=noreply@tifossi.local
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
     volumes:
       - ./:/app
       - /app/node_modules
@@ -53,7 +51,6 @@ services:
       - ./logs:/app/logs
     depends_on:
       - postgres
-      - redis
     networks:
       - tifossi-network
     restart: unless-stopped
@@ -87,24 +84,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: tifossi-redis
-    ports:
-      - '6379:6379'
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-    volumes:
-      - redis_data:/data
-    networks:
-      - tifossi-network
-    restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
   # Adminer (Database Admin Interface)
   adminer:
     image: adminer:latest
@@ -119,26 +98,8 @@ services:
     profiles:
       - admin
 
-  # Redis Commander (Redis Admin Interface)
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: tifossi-redis-commander
-    ports:
-      - '8081:8081'
-    environment:
-      REDIS_HOSTS: local:redis:6379
-    networks:
-      - tifossi-network
-    depends_on:
-      - redis
-    restart: unless-stopped
-    profiles:
-      - admin
-
 volumes:
   postgres_data:
-    driver: local
-  redis_data:
     driver: local
 
 networks:

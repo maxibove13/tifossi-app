@@ -23,7 +23,7 @@ function getErrorMessage(error: UnknownError): string {
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
-  return 'No se pudo enviar el código de verificación. Intenta nuevamente.';
+  return 'No se pudo enviar el enlace de verificación. Intenta nuevamente.';
 }
 
 export default function VerifyEmailScreen() {
@@ -38,8 +38,8 @@ export default function VerifyEmailScreen() {
     try {
       await resendVerificationEmail();
       Alert.alert(
-        'Código Enviado',
-        'Se ha enviado un nuevo código de verificación a tu dirección de email.'
+        'Enlace Enviado',
+        'Se ha enviado un nuevo enlace de verificación a tu dirección de email.'
       );
     } catch (error: UnknownError) {
       Alert.alert('Error', getErrorMessage(error));
@@ -108,7 +108,7 @@ export default function VerifyEmailScreen() {
             colors={colors.button.defaultGradient}
             style={styles.primaryButtonGradient}
           >
-            <Text style={styles.primaryButtonText}>Ingresar Código</Text>
+            <Text style={styles.primaryButtonText}>Continuar</Text>
           </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity

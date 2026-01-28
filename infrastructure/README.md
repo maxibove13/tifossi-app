@@ -59,7 +59,6 @@ docker-compose logs -f strapi
 # Access services:
 # - Strapi: http://localhost:1337
 # - Database Admin: http://localhost:8080
-# - Redis Admin: http://localhost:8081
 # - MailHog (email testing): http://localhost:8025
 ```
 
@@ -84,7 +83,6 @@ export RENDER_API_KEY=your_render_api_key
 
 - **Purpose**: Local development and testing
 - **Database**: PostgreSQL (Docker container)
-- **Cache**: Redis (Docker container)
 - **Email**: MailHog for testing
 - **Debug**: Enabled with detailed logging
 - **Features**: All debug tools enabled
@@ -169,12 +167,10 @@ SECURITY_HEADERS_ENABLED=true
 
 - **strapi**: Main Strapi CMS application
 - **postgres**: PostgreSQL database
-- **redis**: Redis cache for sessions and caching
 
 ### Development Services (dev profile)
 
 - **adminer**: Database administration interface
-- **redis-commander**: Redis management interface
 - **mailhog**: Email testing service
 
 ### Production Services (prod profile)

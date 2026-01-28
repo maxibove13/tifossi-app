@@ -22,6 +22,12 @@
     "businessName": {
       "type": "string",
       "default": "Tifossi"
+    },
+    "shippingCostDelivery": {
+      "type": "decimal",
+      "required": true,
+      "default": 200,
+      "min": 0
     }
   }
 }

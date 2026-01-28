@@ -142,11 +142,10 @@ React Native/Expo mobile application for sports apparel e-commerce with Strapi C
 
 ### Monthly Operational Costs
 
-- **Render.com Hosting**: $35/month
+- **Render.com Hosting**: $21/month
   - Web Service: $7
   - PostgreSQL: $7
-  - Redis Cache: $7
-  - Storage Buffer: $14
+  - Storage Buffer: $7
 - **MercadoPago**: 5.23% per transaction
 - **Cloudinary**: Free tier (upgrade as needed)
 - **Firebase**: Free tier for authentication
