@@ -245,7 +245,6 @@ export class MercadoPagoService {
 
       shipments: orderData.shippingAddress
         ? {
-            cost: orderData.shippingCost,
             mode: 'not_specified' as const,
             receiver_address: {
               street_name: this.sanitizeText(orderData.shippingAddress.addressLine1),

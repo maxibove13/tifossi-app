@@ -31,6 +31,7 @@ export default function ShippingAddressScreen() {
   const { token } = useAuthStore();
   const closeCheckoutFlow = usePaymentStore((state) => state.closeCheckoutFlow);
   const setSelectedAddressInStore = usePaymentStore((state) => state.setSelectedAddress);
+  const setSelectedStore = usePaymentStore((state) => state.setSelectedStore);
 
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -81,6 +82,8 @@ export default function ShippingAddressScreen() {
 
   const handleNext = () => {
     if (selectedAddress !== null && addresses[selectedAddress]) {
+      // Clear any stale store selection since we're doing delivery
+      setSelectedStore(null);
       // Store selected address in payment store and navigate
       setSelectedAddressInStore(addresses[selectedAddress]);
       router.push('/checkout/payment-selection');

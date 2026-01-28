@@ -257,7 +257,7 @@ Based on **FUNCIONALIDADES_APP_TIFOSSI.md** and **COSTOS_OPERATIVOS_URUGUAY_2025
 
 - **Strapi Backend**: ✅ DEPLOYED to Render at https://tifossi-strapi-backend.onrender.com
 - **Database**: ✅ PostgreSQL configured and connected (Render managed)
-- **Redis Cache**: ✅ Valkey cache service active
+- **Caching**: Database-level (PostgreSQL) - no Redis needed
 - **CI/CD Pipeline**: ✅ GitHub Actions workflow active with deploy hook
 - **Environment Variables**: ✅ Configured via Render Dashboard
 - **Cloudinary**: ✅ CONFIGURED - UPLOAD_PROVIDER=cloudinary, credentials set
@@ -339,7 +339,7 @@ After comprehensive audit of GUIA_USUARIO_STRAPI.md vs actual implementation (se
    - Service: tifossi-strapi-backend
    - Plan: Starter ($7/month)
    - Database: PostgreSQL configured
-   - Redis: Valkey cache configured
+   - Caching: Database-level (no Redis)
 
 2. **Cloudinary**:
    - Upload provider: CONFIGURED (UPLOAD_PROVIDER=cloudinary)
@@ -573,10 +573,9 @@ All technical blockers have been resolved. Remaining items are configuration-onl
 ```
 Render Web Service:        $7
 PostgreSQL Database:       $7
-Redis Cache:              $7
-Storage Buffer:          $14
+Storage Buffer:           $7
 ------------------------
-Total:                   $35/month
+Total:                   $21/month
 
 Plus: MercadoPago fees (5.23% of sales)
 ```

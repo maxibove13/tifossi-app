@@ -108,13 +108,6 @@ services:
       - key: APP_SCHEME
         value: tifossi
 
-  # Redis Cache (Optional - using Valkey)
-  - type: keyvalue
-    name: tifossi-redis
-    plan: starter
-    maxmemoryPolicy: allkeys-lru
-    ipAllowList: [] # Required field - empty array allows all IPs
-
 databases:
   # PostgreSQL Database
   - name: tifossi_postgres
@@ -166,4 +159,3 @@ databases:
 # - EMAIL_FROM (sender email address)
 # - EMAIL_REPLY_TO (reply-to email address)
 # - SENTRY_DSN (optional - for error monitoring)
-# - REDIS_URL (auto-generated if using Redis service)

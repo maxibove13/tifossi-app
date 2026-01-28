@@ -160,27 +160,6 @@ export default ({ env }: { env: any }) => ({
     },
   },
 
-  // Redis Plugin for Caching (if using Redis)
-  ...((env('REDIS_URL') || env('REDIS_HOST')) && {
-    redis: {
-      config: {
-        connections: {
-          default: {
-            connection: {
-              host: env('REDIS_HOST', 'localhost'),
-              port: env.int('REDIS_PORT', 6379),
-              db: env.int('REDIS_DB', 0),
-              password: env('REDIS_PASSWORD'),
-            },
-            settings: {
-              debug: env.bool('REDIS_DEBUG', false),
-            },
-          },
-        },
-      },
-    },
-  }),
-
   // Sentry Plugin for Error Monitoring (if using Sentry)
   ...(env('SENTRY_DSN') && {
     sentry: {

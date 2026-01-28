@@ -6,11 +6,11 @@
 
 | Componente                                 | Costo Mensual | Costo Anual | Notas                                |
 | ------------------------------------------ | ------------- | ----------- | ------------------------------------ |
-| **Hosting (Render)**                       | $35           | $420        | Servidor web + Base de datos + Redis |
+| **Hosting (Render)**                       | $21           | $252        | Servidor web + Base de datos |
 | **Almacenamiento Multimedia (Cloudinary)** | $0-89         | $0-1.068    | Inicia gratis, escala según uso      |
 | **Autenticación (Firebase)**               | $0            | $0          | Inicio con Google/Apple              |
 | **Cuentas App Store**                      | -             | $124        | Google Play (único) + Apple (anual)  |
-| **TOTAL**                                  | **$35**       | **$544**    | Primer año                           |
+| **TOTAL**                                  | **$21**       | **$376**    | Primer año                           |
 
 ---
 
@@ -20,9 +20,8 @@
 
 - **Servidor Web Starter**: $7/mes (512MB RAM, 0.5 CPU)
 - **Base de Datos PostgreSQL**: $7/mes (1GB almacenamiento)
-- **Redis Cache**: $7/mes (caché para rendimiento)
-- **Almacenamiento adicional**: $14/mes (buffer de crecimiento)
-- **Total**: **$35/mes**
+- **Almacenamiento adicional**: $7/mes (buffer de crecimiento)
+- **Total**: **$21/mes**
 
 #### Cuando necesitará actualizar (crecimiento futuro):
 
@@ -110,11 +109,11 @@
 ### Inversión Año 1 (Con plan gratuito Cloudinary)
 
 ```
-Infraestructura:          $420  (Render config. recomendada)
+Infraestructura:          $252  (Render config. recomendada)
 Almacenamiento Media:       $0  (gratuito al inicio)
 App Stores:               $124
 --------------------------------
-Costos Fijos Totales:     $544
+Costos Fijos Totales:     $376
 
 Más: 5,23% de ingresos brutos (MercadoPago)
 ```
@@ -127,12 +126,12 @@ Más: 5,23% de ingresos brutos (MercadoPago)
 ### Año 2+ (Recurrente)
 
 ```
-Infraestructura:          $420  (config. recomendada)
+Infraestructura:          $252  (config. recomendada)
 Almacenamiento Media:   $0-1.068  (según crecimiento)
 Apple App Store:           $99
 --------------------------------
-Costos Fijos Totales:     $519/año (mínimo)
-                        $1.587/año (con Cloudinary Plus)
+Costos Fijos Totales:     $351/año (mínimo)
+                        $1.419/año (con Cloudinary Plus)
 
 Más: 5,23% de ingresos brutos (MercadoPago)
 ```

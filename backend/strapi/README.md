@@ -11,13 +11,12 @@ A production-ready Strapi v5 backend for the Tifossi e-commerce mobile applicati
 - **Media Management**: Cloudinary integration for optimized media delivery
 - **Security**: CORS configuration and security headers
 - **Monitoring**: Health checks
-- **Scalability**: Redis caching and production-ready configuration
+- **Scalability**: Production-ready configuration
 
 ## 📋 Requirements
 
 - Node.js 18.x or 20.x
 - PostgreSQL 12+
-- Redis (optional, for caching)
 - Cloudinary account (for media storage)
 - MercadoPago account (for payments)
 
@@ -685,7 +684,6 @@ SENTRY_ENVIRONMENT=production
 
 ### Performance
 
-- Enable Redis caching in production
 - Use Cloudinary for media optimization
 - Configure proper database indexes
 - Monitor memory and CPU usage

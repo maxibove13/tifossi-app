@@ -570,7 +570,7 @@ class MercadoPagoService {
   getStatusMessage(status: string): string {
     const messages: Record<string, string> = {
       CREATED: 'Pedido creado',
-      PAYMENT_PENDING: 'Esperando pago',
+      PAYMENT_PENDING: 'Verificando pago',
       PAID: 'Pago confirmado',
       PROCESSING: 'Procesando pedido',
       SHIPPED: 'Pedido enviado',

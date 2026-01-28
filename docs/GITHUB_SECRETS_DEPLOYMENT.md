@@ -47,7 +47,6 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 ### 6. Optional Services
 
-- `REDIS_URL` - Redis connection URL (if using Redis)
 - `SENTRY_DSN` - Sentry error tracking DSN
 - `WEBHOOK_SECRET` - General webhook secret
 
@@ -91,9 +90,8 @@ Add secrets in this order:
 ### Phase 3: Optional Enhancements
 
 1. Email configuration
-2. Redis URL
-3. Sentry DSN
-4. Slack webhook
+2. Sentry DSN
+3. Slack webhook
 
 ## Verification
 

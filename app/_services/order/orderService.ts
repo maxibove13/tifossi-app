@@ -522,7 +522,7 @@ class OrderService {
   getOrderStatusText(status: OrderStatus): string {
     const statusTexts: Record<OrderStatus, string> = {
       CREATED: 'Pedido creado',
-      PAYMENT_PENDING: 'Esperando pago',
+      PAYMENT_PENDING: 'Verificando pago',
       PAID: 'Pago confirmado',
       PROCESSING: 'Procesando',
       SHIPPED: 'Enviado',

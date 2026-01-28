@@ -115,6 +115,7 @@ export const mockFetchAppSettings = async (): Promise<{
   supportPhoneNumber: string;
   supportEmail?: string;
   businessName?: string;
+  shippingCostDelivery: number;
 }> => {
   await simulateNetworkConditions();
   safeLog('[Mock API] Fetching app settings');
@@ -122,6 +123,7 @@ export const mockFetchAppSettings = async (): Promise<{
   return {
     supportPhoneNumber: '+59899000000',
     businessName: 'Tifossi',
+    shippingCostDelivery: 200,
   };
 };
 
