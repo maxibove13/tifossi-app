@@ -320,7 +320,7 @@ styles/
 
 The app uses Expo Router with a tab-based navigation structure:
 
-1. **Store Tab** - Main product browsing experience
+1. **Home Tab (Inicio)** - Main product browsing experience
 2. **Favorites Tab** - Saved/favorite products
 3. **Home Tab** - Landing/home page with featured content
 4. **Cart Tab** - Shopping cart management

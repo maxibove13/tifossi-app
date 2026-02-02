@@ -96,27 +96,15 @@ export default function VerifyEmailScreen() {
       <View style={styles.actionButtonsContainer}>
         <TouchableOpacity
           style={styles.primaryButton}
-          onPress={() =>
-            router.push({
-              pathname: '/auth/verification-code',
-              params: { email },
-            })
-          }
+          onPress={handleGoToLogin}
           activeOpacity={0.7}
         >
           <LinearGradient
             colors={colors.button.defaultGradient}
             style={styles.primaryButtonGradient}
           >
-            <Text style={styles.primaryButtonText}>Continuar</Text>
+            <Text style={styles.primaryButtonText}>Volver a Iniciar Sesión</Text>
           </LinearGradient>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={handleGoToLogin}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.secondaryButtonText}>Volver a Iniciar Sesión</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -226,23 +214,5 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.md,
     color: colors.background.light,
-  },
-  secondaryButton: {
-    width: '100%',
-    height: 48,
-    borderRadius: radius.xxl,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: 'transparent',
-    paddingHorizontal: spacing.xl,
-  },
-  secondaryButtonText: {
-    fontFamily: fonts.secondary,
-    fontSize: fontSizes.md,
-    fontWeight: fontWeights.medium,
-    lineHeight: lineHeights.md,
-    color: colors.primary,
   },
 });

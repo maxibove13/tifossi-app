@@ -20,7 +20,6 @@ import OverlayShippingSelection from '../_components/store/product/overlay/Overl
 import { useAuthStore } from '../_stores/authStore';
 import { usePaymentStore } from '../_stores/paymentStore';
 import ProductSections from '../_components/store/product/sections/ProductSections';
-import ReusableAuthPrompt from '../_components/auth/AuthPrompt';
 
 // Function to get recommended products from API data
 const getRecommendedProducts = (allProducts: Product[]): Product[] => {
@@ -222,7 +221,6 @@ export default function CartScreen() {
         contentContainerStyle={[
           styles.scrollContent,
           isEmpty && styles.scrollContentEmpty, // Apply light background when empty
-          !isEmpty && !isLoggedIn && styles.scrollContentWithAuthPrompt, // Extra padding for auth prompt
         ]}
       >
         {isEmpty ? (
@@ -320,11 +318,6 @@ export default function CartScreen() {
             <Text style={styles.checkoutTotalValue}>${getTotalPrice().toFixed(2)}</Text>
           </View>
 
-          {/* Auth prompt for guest users */}
-          {!isLoggedIn && (
-            <ReusableAuthPrompt message="¿Quieres guardar tu carrito y agilizar tu próxima compra?" />
-          )}
-
           <Button
             text="Comprar ahora"
             variant="primary"
@@ -370,9 +363,6 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Adjusted padding for checkout button
   },
   scrollContentEmpty: {},
-  scrollContentWithAuthPrompt: {
-    paddingBottom: 320, // Extra padding to account for auth prompt height
-  },
   section: {
     paddingVertical: spacing.xl,
     backgroundColor: colors.background.light,

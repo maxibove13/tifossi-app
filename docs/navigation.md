@@ -63,7 +63,7 @@ app/
 2. **Tab Navigation**:
    - `app/(tabs)/_layout.tsx` defines the tab bar and tab screens
    - Custom `TabBar` component handles tab switching
-   - Tab routes: Store, Favorites, Explore, Cart, Profile
+   - Tab routes: Home (Inicio), Favorites, Explore, Cart, Profile
 
 3. **Product Details**:
    - Accessed from product cards across the app

@@ -147,6 +147,7 @@ export const linkingConfig = {
     'https://tifossi.app',
     'https://auth.tifossi.app',
     'https://pay.tifossi.app',
+    'https://tifossi-strapi-backend.onrender.com',
     // Development prefixes
     'exp://192.168.1.100:8081',
     'exp://localhost:8081',

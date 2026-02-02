@@ -349,8 +349,11 @@ The `AuthPrompt.tsx` component provides a reusable UI for prompting users to aut
 Usage:
 
 ```tsx
+// Used in screens where unauthenticated users need prompting to log in
 <ReusableAuthPrompt message="Aún no iniciaste sesión." style={styles.authPromptStyle} />
 ```
+
+Note: The AuthPrompt component was previously used in the cart screen but has been removed to simplify the cart experience.
 
 ### Profile Picture Editor Component
 
