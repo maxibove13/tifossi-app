@@ -155,24 +155,6 @@ export default function PaymentSelectionScreen() {
     },
   ];
 
-  // Other payment methods
-  const otherPaymentMethods: PaymentMethod[] = [
-    {
-      id: 'tiffosi',
-      name: 'Crédito Tiffosi',
-      icon: require('../../assets/images/logo/tiffosi.png'),
-      hasChevron: true,
-      enabled: false, // Not implemented yet
-    },
-    {
-      id: 'efectivo',
-      name: 'Efectivo',
-      icon: require('../../assets/images/payment/cash.png'),
-      hasChevron: true,
-      enabled: false, // Not implemented yet
-    },
-  ];
-
   const handlePaymentMethodSelect = (methodId: string) => {
     setSelectedPaymentMethod(methodId);
   };
@@ -467,17 +449,6 @@ export default function PaymentSelectionScreen() {
 
               <View style={styles.paymentMethodsList}>
                 {defaultPaymentMethods
-                  .filter((method) => method.enabled !== false)
-                  .map(renderPaymentMethod)}
-              </View>
-            </View>
-
-            {/* Other Payment Methods */}
-            <View style={styles.paymentMethodsContainer}>
-              <Text style={styles.sectionTitle}>Otros métodos</Text>
-
-              <View style={styles.paymentMethodsList}>
-                {otherPaymentMethods
                   .filter((method) => method.enabled !== false)
                   .map(renderPaymentMethod)}
               </View>

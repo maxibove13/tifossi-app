@@ -231,7 +231,6 @@ describe('PaymentMethodSelector (PaymentSelectionScreen)', () => {
 
           // Check section titles
           expect(screen.getByText('Método de pago')).toBeTruthy();
-          expect(screen.getByText('Otros métodos')).toBeTruthy();
 
           // Only enabled payment methods are shown (Mercado Pago)
           expect(screen.getByText('Mercado Pago')).toBeTruthy();

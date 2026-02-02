@@ -22,7 +22,7 @@ interface TabBarProps {
 }
 
 const LABELS = {
-  store: 'Tienda',
+  store: 'Inicio',
   favorites: 'Favoritos',
   tiffosi: '',
   cart: 'Carrito',

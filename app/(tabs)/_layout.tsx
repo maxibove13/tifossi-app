@@ -69,10 +69,10 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen
-          name="index" // Tienda
+          name="index" // Inicio
           options={{
             // href: '/', // Original option, keep if necessary for deep linking or TabBar behavior
-            title: 'Tienda', // Title for the tab, accessibility
+            title: 'Inicio', // Title for the tab, accessibility
             headerShown: false, // Header is rendered inside HomeScreen to support skeleton loading
           }}
         />
