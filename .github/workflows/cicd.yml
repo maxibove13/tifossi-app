@@ -65,7 +65,7 @@ on:
           - production
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   RENDER_API_URL: 'https://api.render.com/v1'
 
 jobs:
