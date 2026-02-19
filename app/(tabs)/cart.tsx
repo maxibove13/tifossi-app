@@ -290,9 +290,6 @@ export default function CartScreen() {
 
             {/* Final Spacer */}
             <View style={styles.sectionSpacer} />
-
-            {/* Empty space at bottom */}
-            <View style={styles.finalLightSpacer} />
           </>
         )}
 
@@ -431,10 +428,6 @@ const styles = StyleSheet.create({
   dropdownSection: {
     backgroundColor: colors.background.light,
     paddingVertical: spacing.md,
-  },
-  finalLightSpacer: {
-    height: 128, // Match the empty frame height from Figma
-    backgroundColor: colors.background.light, // White background
   },
   checkoutContainer: {
     position: 'absolute',

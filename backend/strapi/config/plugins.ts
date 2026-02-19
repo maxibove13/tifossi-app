@@ -82,7 +82,7 @@ export default ({ env }: { env: any }) => ({
         },
         settings: {
           defaultFrom: env('EMAIL_FROM', 'noreply@tifossi.com'),
-          defaultReplyTo: env('EMAIL_REPLY_TO', 'support@tifossi.com'),
+          defaultReplyTo: env('EMAIL_REPLY_TO', 'infotiffosiuy@gmail.com'),
           testAddress: env('EMAIL_TEST_ADDRESS'),
         },
       },

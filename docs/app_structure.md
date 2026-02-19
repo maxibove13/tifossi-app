@@ -58,8 +58,7 @@ app/
 │   ├── signup.tsx      # User registration screen
 │   ├── forgot-password.tsx # Password reset request
 │   ├── verify-email.tsx    # Email verification screen
-│   ├── verify-success.tsx  # Verification success screen
-│   └── verification-code.tsx # Verification code input
+│   └── verify-success.tsx  # Verification success screen
 ├── cart/               # Cart specific screens
 │   └── deleted.tsx     # Cart item deleted confirmation
 ├── catalog/            # Catalog screens

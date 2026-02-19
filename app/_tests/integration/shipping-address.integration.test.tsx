@@ -294,7 +294,7 @@ describe('Shipping Address Flow - Integration', () => {
   });
 
   describe('Guest User Flow', () => {
-    it('should show empty state for guest users and disable continue', async () => {
+    it('should show empty state for guest users and hide next button', async () => {
       // Set auth state to not logged in
       useAuthStore.setState({
         isLoggedIn: false,
@@ -302,7 +302,7 @@ describe('Shipping Address Flow - Integration', () => {
         user: null,
       });
 
-      const { getByText, getByLabelText } = render(
+      const { getByText, queryByLabelText } = render(
         <TestWrapper>
           <ShippingAddressScreen />
         </TestWrapper>
@@ -312,8 +312,8 @@ describe('Shipping Address Flow - Integration', () => {
         expect(getByText(/ninguna dirección guardada/i)).toBeTruthy();
       });
 
-      const nextButton = getByLabelText('address-next-button');
-      fireEvent.press(nextButton);
+      // Next button should not be rendered when there are no addresses
+      expect(queryByLabelText('address-next-button')).toBeNull();
       expect(mockPush).not.toHaveBeenCalled();
     });
   });

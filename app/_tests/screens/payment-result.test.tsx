@@ -487,8 +487,8 @@ describe('PaymentResultScreen', () => {
 
       await waitFor(() => {
         expect(getByText('Pago pendiente')).toBeTruthy();
-        expect(getByText(/Revisá tu casilla de correo/)).toBeTruthy();
-        expect(getByText(/support@tifossi.com/)).toBeTruthy();
+        expect(getByText(/Si realizaste el pago, revisá tu casilla de correo/)).toBeTruthy();
+        expect(getByText(/infotiffosiuy@gmail.com/)).toBeTruthy();
       });
     });
 

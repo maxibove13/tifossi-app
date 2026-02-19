@@ -101,7 +101,7 @@ export function buildEmailHtml(order: OrderForEmail): string {
   ${deliveryInfo}
 
   <p style="color:#666;font-size:12px;margin-top:32px">
-    Preguntas? Contactanos a support@tifossi.com
+    Preguntas? Contactanos a infotiffosiuy@gmail.com
   </p>
 </body>
 </html>`;

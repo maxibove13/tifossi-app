@@ -76,7 +76,7 @@ export default function LoginScreen() {
 
       if (result.needsEmailVerification) {
         router.replace({
-          pathname: '/auth/verification-code',
+          pathname: '/auth/verify-email',
           params: { email },
         });
         return;
@@ -103,7 +103,7 @@ export default function LoginScreen() {
 
       if (result.needsEmailVerification) {
         router.replace({
-          pathname: '/auth/verification-code',
+          pathname: '/auth/verify-email',
           params: { email: result.user?.email || '' },
         });
         return;
@@ -142,7 +142,7 @@ export default function LoginScreen() {
 
       if (result.needsEmailVerification) {
         router.replace({
-          pathname: '/auth/verification-code',
+          pathname: '/auth/verify-email',
           params: { email: result.user?.email || '' },
         });
         return;

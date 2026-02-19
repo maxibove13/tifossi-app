@@ -34,6 +34,11 @@ jest.mock('../src/lib/payment/order-state-manager', () => {
   };
 });
 
+// Mock email sending for settlement idempotency tests
+jest.mock('../src/lib/email/order-confirmation', () => ({
+  sendOrderConfirmationEmail: jest.fn(),
+}));
+
 /**
  * Helper function to create a complete strapi mock for webhook tests
  * @param {object} options - Configuration options
@@ -1181,6 +1186,334 @@ describe('MercadoPago Webhook - Revenue Critical', () => {
         'Error handling payment notification:',
         expect.anything()
       );
+    });
+  });
+
+  /**
+   * Settlement Webhook Idempotency Tests
+   *
+   * MercadoPago sends `payment.updated` webhooks ~21 days after the original
+   * `payment.created` when payments go through settlement/clearing. These
+   * webhooks have NEW requestIds, so dedup doesn't catch them. The processor
+   * must NOT re-trigger post-payment actions (like confirmation emails) when
+   * the order status hasn't actually changed.
+   */
+  describe('Settlement Webhook Idempotency', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should NOT send confirmation email when order is already PAID', async () => {
+      // This is the exact bug: MP sends payment.updated ~21 days later,
+      // order is already PAID, mapped status is also PAID, no transition,
+      // but processPostPaymentActions was called unconditionally
+
+      const { sendOrderConfirmationEmail } = require('../src/lib/email/order-confirmation');
+      sendOrderConfirmationEmail.mockClear();
+
+      const mockOrder = {
+        id: 1,
+        documentId: 'doc-settlement-1',
+        orderNumber: 'TIF-20260127-569975',
+        status: 'paid', // Already paid
+        total: 390,
+        subtotal: 390,
+        shippingCost: 0,
+        shippingMethod: 'pickup',
+        metadata: {},
+        guestEmail: 'test@example.com',
+        items: [{
+          productSnapshot: { title: 'Neceser Ball' },
+          quantity: 1,
+          unitPrice: 390,
+          totalPrice: 390,
+          selectedSize: 'Talle Unico',
+          selectedColor: 'Negro',
+        }],
+        user: { id: 1, email: 'test@example.com' },
+      };
+
+      const mockPayment = {
+        id: 143687027086,
+        status: 'approved',
+        status_detail: 'accredited',
+        transaction_amount: 390,
+        currency_id: 'UYU',
+        external_reference: 'TIF-20260127-569975',
+        date_approved: '2026-01-27T12:22:00.000Z',
+        payment_method_id: 'visa',
+        payment_type_id: 'credit_card',
+      };
+
+      const mockUpdateOrder = jest.fn(() => Promise.resolve(mockOrder));
+      const mockQueueUpdate = jest.fn(() => Promise.resolve({}));
+
+      global.strapi = {
+        log: {
+          info: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+        documents: jest.fn((type) => {
+          if (type === 'api::webhook-queue.webhook-queue') {
+            return {
+              findMany: jest.fn(() => Promise.resolve([{
+                id: 80,
+                documentId: 'queue-settlement-1',
+                requestId: 'settlement-request-id',
+                webhookType: 'payment',
+                dataId: '143687027086',
+                payload: {
+                  type: 'payment',
+                  data: { id: '143687027086' },
+                  action: 'payment.updated',
+                },
+                status: 'queued',
+                retryCount: 0,
+                maxRetries: 5,
+                scheduledAt: new Date().toISOString(),
+              }])),
+              update: mockQueueUpdate,
+            };
+          }
+          if (type === 'api::order.order') {
+            return {
+              findMany: jest.fn(() => Promise.resolve([mockOrder])),
+              update: mockUpdateOrder,
+            };
+          }
+          return {
+            findMany: jest.fn(() => Promise.resolve([])),
+            update: jest.fn(() => Promise.resolve({})),
+          };
+        }),
+      };
+
+      const { WebhookProcessor } = require('../src/lib/payment/webhook-processor');
+
+      const processor = new WebhookProcessor();
+      processor.mpService = {
+        getPayment: jest.fn().mockResolvedValue(mockPayment),
+        mapPaymentStatus: jest.fn().mockReturnValue('paid'),
+      };
+
+      await processor.processQueue();
+
+      // The critical assertion: email must NOT be sent
+      expect(sendOrderConfirmationEmail).not.toHaveBeenCalled();
+
+      // Order metadata should still be updated (lastWebhookUpdate etc)
+      expect(mockUpdateOrder).toHaveBeenCalled();
+    });
+
+    it('should send confirmation email on genuine pending -> paid transition', async () => {
+      const { sendOrderConfirmationEmail } = require('../src/lib/email/order-confirmation');
+      sendOrderConfirmationEmail.mockClear();
+
+      const mockOrder = {
+        id: 2,
+        documentId: 'doc-genuine-1',
+        orderNumber: 'TIF-20260127-999999',
+        status: 'pending', // Not yet paid
+        total: 500,
+        subtotal: 500,
+        shippingCost: 0,
+        shippingMethod: 'pickup',
+        metadata: {},
+        guestEmail: 'buyer@example.com',
+        items: [{
+          productSnapshot: { title: 'Camiseta Tifossi' },
+          quantity: 1,
+          unitPrice: 500,
+          totalPrice: 500,
+        }],
+        user: { id: 2, email: 'buyer@example.com' },
+      };
+
+      const mockPayment = {
+        id: 999999,
+        status: 'approved',
+        status_detail: 'accredited',
+        transaction_amount: 500,
+        currency_id: 'UYU',
+        external_reference: 'TIF-20260127-999999',
+        date_approved: new Date().toISOString(),
+        payment_method_id: 'visa',
+        payment_type_id: 'credit_card',
+      };
+
+      const mockUpdateOrder = jest.fn(() => Promise.resolve(mockOrder));
+      const mockQueueUpdate = jest.fn(() => Promise.resolve({}));
+
+      global.strapi = {
+        log: {
+          info: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+        documents: jest.fn((type) => {
+          if (type === 'api::webhook-queue.webhook-queue') {
+            return {
+              findMany: jest.fn(() => Promise.resolve([{
+                id: 81,
+                documentId: 'queue-genuine-1',
+                requestId: 'genuine-payment-request',
+                webhookType: 'payment',
+                dataId: '999999',
+                payload: {
+                  type: 'payment',
+                  data: { id: '999999' },
+                  action: 'payment.created',
+                },
+                status: 'queued',
+                retryCount: 0,
+                maxRetries: 5,
+                scheduledAt: new Date().toISOString(),
+              }])),
+              update: mockQueueUpdate,
+            };
+          }
+          if (type === 'api::order.order') {
+            return {
+              findMany: jest.fn(() => Promise.resolve([mockOrder])),
+              update: mockUpdateOrder,
+            };
+          }
+          return {
+            findMany: jest.fn(() => Promise.resolve([])),
+            update: jest.fn(() => Promise.resolve({})),
+          };
+        }),
+      };
+
+      const { WebhookProcessor } = require('../src/lib/payment/webhook-processor');
+
+      const processor = new WebhookProcessor();
+      processor.mpService = {
+        getPayment: jest.fn().mockResolvedValue(mockPayment),
+        mapPaymentStatus: jest.fn().mockReturnValue('paid'),
+      };
+
+      await processor.processQueue();
+
+      // Email SHOULD be sent -- genuine transition from pending to paid
+      expect(sendOrderConfirmationEmail).toHaveBeenCalledTimes(1);
+
+      // State transition SHOULD be logged
+      expect(processor.orderManager.transitionStatus).toHaveBeenCalledWith(
+        2, // order.id
+        'pending',
+        'paid',
+        expect.objectContaining({ triggeredBy: 'webhook' })
+      );
+    });
+  });
+
+  describe('Settlement Idempotency - Handler Level (mercadopago.ts)', () => {
+    beforeEach(() => {
+      jest.resetModules();
+      jest.clearAllMocks();
+    });
+
+    it('should NOT call processPostPaymentActions when order status unchanged', async () => {
+      const mockOrder = {
+        id: 10,
+        documentId: 'doc-handler-settle-1',
+        orderNumber: 'TIF-20260217-SETTLE',
+        status: 'paid', // Already paid
+        total: 390,
+        metadata: {},
+        user: { id: 1, email: 'test@example.com' },
+        items: [],
+      };
+
+      const mockPayment = {
+        id: 77777,
+        status: 'approved',
+        status_detail: 'accredited',
+        transaction_amount: 390,
+        currency_id: 'UYU',
+        external_reference: 'TIF-20260217-SETTLE',
+        date_approved: '2026-01-27T12:22:00.000Z',
+        payment_method_id: 'visa',
+        payment_type_id: 'credit_card',
+      };
+
+      global.strapi = {
+        log: { info: jest.fn(), warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
+        documents: jest.fn(() => ({
+          findMany: jest.fn(() => Promise.resolve([mockOrder])),
+          update: jest.fn(() => Promise.resolve(mockOrder)),
+        })),
+        mercadoPago: {
+          getPayment: jest.fn(() => Promise.resolve(mockPayment)),
+          mapPaymentStatus: jest.fn(() => 'paid'), // Same as current status
+        },
+      };
+
+      const webhookHandler = require('../src/webhooks/mercadopago');
+      const spy = jest.spyOn(webhookHandler, 'processPostPaymentActions');
+
+      await webhookHandler.handlePaymentNotification({ id: '77777' }, 'req-settle-handler');
+
+      expect(spy).not.toHaveBeenCalled();
+
+      // Should log that it skipped
+      expect(strapi.log.info).toHaveBeenCalledWith(
+        expect.stringContaining('Skipping post-payment actions'),
+        expect.objectContaining({ orderNumber: 'TIF-20260217-SETTLE' })
+      );
+
+      spy.mockRestore();
+    });
+
+    it('should call processPostPaymentActions on genuine status transition', async () => {
+      const mockOrder = {
+        id: 11,
+        documentId: 'doc-handler-genuine-1',
+        orderNumber: 'TIF-20260217-GENUINE',
+        status: 'pending', // Not yet paid
+        total: 500,
+        metadata: {},
+        user: { id: 2, email: 'buyer@example.com' },
+        items: [],
+      };
+
+      const mockPayment = {
+        id: 88888,
+        status: 'approved',
+        status_detail: 'accredited',
+        transaction_amount: 500,
+        currency_id: 'UYU',
+        external_reference: 'TIF-20260217-GENUINE',
+        date_approved: new Date().toISOString(),
+        payment_method_id: 'visa',
+        payment_type_id: 'credit_card',
+      };
+
+      global.strapi = {
+        log: { info: jest.fn(), warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
+        documents: jest.fn(() => ({
+          findMany: jest.fn(() => Promise.resolve([mockOrder])),
+          update: jest.fn(() => Promise.resolve(mockOrder)),
+        })),
+        mercadoPago: {
+          getPayment: jest.fn(() => Promise.resolve(mockPayment)),
+          mapPaymentStatus: jest.fn(() => 'paid'), // Different from 'pending'
+        },
+      };
+
+      const webhookHandler = require('../src/webhooks/mercadopago');
+      const spy = jest.spyOn(webhookHandler, 'processPostPaymentActions');
+
+      await webhookHandler.handlePaymentNotification({ id: '88888' }, 'req-genuine-handler');
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(mockOrder, 'paid', mockPayment);
+
+      spy.mockRestore();
     });
   });
 

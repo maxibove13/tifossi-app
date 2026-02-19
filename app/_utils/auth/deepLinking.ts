@@ -183,7 +183,7 @@ class DeepLinkingService {
         await firebaseAuth.signOutUser();
       }
 
-      // Navigate to login with error message (verification-code screen doesn't exist)
+      // Navigate to login with error message
       router.push({
         pathname: '/auth/login' as any,
         params: { verificationError: error.message },

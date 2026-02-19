@@ -240,14 +240,17 @@ const styles = StyleSheet.create<Styles>({
   titleDark: {
     color: colors.background.light,
   },
-  editButton: {},
+  editButton: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.secondary,
+    paddingBottom: 2,
+  },
   editButtonText: {
     fontFamily: fonts.secondary,
     fontSize: fontSizes.sm,
     fontWeight: fontWeights.regular,
     lineHeight: lineHeights.sm,
     color: colors.secondary,
-    textDecorationLine: 'underline',
   },
   customizableText: {
     fontFamily: fonts.secondary,

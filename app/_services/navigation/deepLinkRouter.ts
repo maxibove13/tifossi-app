@@ -176,7 +176,6 @@ export const linkingConfig = {
           'forgot-password': '/auth/forgot-password',
           'reset-password': '/auth/reset-password',
           'verify-email': '/auth/verify-email',
-          'verification-code': '/auth/verification-code',
           'verify-success': '/auth/verify-success',
           // Apple Sign-In callback routes
           'apple-callback': '/auth/apple/callback',

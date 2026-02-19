@@ -222,25 +222,24 @@ export default function ShippingAddressScreen() {
 
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity
-          testID="address-next-button"
-          accessibilityRole="button"
-          accessibilityLabel="address-next-button"
-          style={[
-            styles.primaryButton,
-            selectedAddress === null && addresses.length > 0 && styles.disabledButton,
-          ]}
-          onPress={handleNext}
-          activeOpacity={0.7}
-          disabled={selectedAddress === null && addresses.length > 0}
-        >
-          <LinearGradient
-            colors={colors.button.defaultGradient}
-            style={styles.primaryButtonGradient}
+        {addresses.length > 0 && (
+          <TouchableOpacity
+            testID="address-next-button"
+            accessibilityRole="button"
+            accessibilityLabel="address-next-button"
+            style={[styles.primaryButton, selectedAddress === null && styles.disabledButton]}
+            onPress={handleNext}
+            activeOpacity={0.7}
+            disabled={selectedAddress === null}
           >
-            <Text style={styles.primaryButtonText}>Siguiente</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={colors.button.defaultGradient}
+              style={styles.primaryButtonGradient}
+            >
+              <Text style={styles.primaryButtonText}>Siguiente</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity style={styles.secondaryButton} onPress={handleBack} activeOpacity={0.7}>
           <Text style={styles.secondaryButtonText}>Atrás</Text>
@@ -300,7 +299,7 @@ const styles = StyleSheet.create<Styles>({
   },
   addressesContainer: {
     gap: spacing.md,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.xl,
   },
   noAddressContainer: {
     gap: spacing.xs,
@@ -402,7 +401,7 @@ const styles = StyleSheet.create<Styles>({
     marginTop: spacing.xs / 2,
   },
   addAddressContainer: {
-    paddingHorizontal: spacing.xxl,
+    paddingHorizontal: spacing.xxl + spacing.lg,
   },
   addAddressEmptyContainer: {
     paddingHorizontal: spacing.xxl,

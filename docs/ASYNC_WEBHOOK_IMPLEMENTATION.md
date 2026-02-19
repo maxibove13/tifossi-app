@@ -49,7 +49,7 @@ The implementation follows this flow:
 - `processQueue()`: Main entry point, processes up to 10 webhooks per run
 - `processWebhook()`: Handles a single webhook with retry logic
 - `processPaymentWebhook()`: Payment-specific processing logic
-- `processPostPaymentActions()`: Triggers email notifications on PAID status
+- `processPostPaymentActions()`: Triggers email notifications on PAID status. Only called on genuine status transitions (e.g., pending -> paid), preventing duplicate emails from MercadoPago settlement webhooks (~21 days post-payment)
 - `updateWebhookStatus()`: Marks webhooks as processing/completed/failed
 - `updateWebhookRetry()`: Implements exponential backoff retry logic
 
