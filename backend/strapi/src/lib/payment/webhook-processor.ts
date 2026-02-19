@@ -339,8 +339,16 @@ export class WebhookProcessor {
         data: updateData,
       });
 
-      // Process post-payment actions based on new status
-      await this.processPostPaymentActions(order, newOrderStatus, paymentInfo);
+      // Only run post-payment actions on actual status transitions
+      // MP sends payment.updated webhooks ~21 days later during settlement;
+      // without this guard, confirmation emails get re-sent
+      if (previousStatus !== newOrderStatus) {
+        await this.processPostPaymentActions(order, newOrderStatus, paymentInfo);
+      } else {
+        strapi.log.info(
+          `Skipping post-payment actions for order ${order.orderNumber} (status unchanged: ${previousStatus})`
+        );
+      }
 
       strapi.log.info(`Successfully processed payment notification for order ${order.orderNumber}`);
     } catch (error: any) {

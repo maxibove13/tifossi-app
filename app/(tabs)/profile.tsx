@@ -318,7 +318,7 @@ const LoggedOutLoginForm = () => {
 
       if (result.needsEmailVerification) {
         router.push({
-          pathname: '/auth/verification-code',
+          pathname: '/auth/verify-email',
           params: { email },
         });
       }
@@ -338,7 +338,7 @@ const LoggedOutLoginForm = () => {
 
       if (result.needsEmailVerification) {
         router.push({
-          pathname: '/auth/verification-code',
+          pathname: '/auth/verify-email',
           params: { email: result.user?.email || '' },
         });
       }
@@ -370,7 +370,7 @@ const LoggedOutLoginForm = () => {
 
       if (result.needsEmailVerification) {
         router.push({
-          pathname: '/auth/verification-code',
+          pathname: '/auth/verify-email',
           params: { email: result.user?.email || '' },
         });
       }

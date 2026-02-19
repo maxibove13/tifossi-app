@@ -15,8 +15,8 @@ function CartItemDeletedScreen() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Redirect to home screen after 3 seconds
-      router.replace('/(tabs)'); // Replace to prevent back navigation to this screen
+      // Redirect to cart after 1 second
+      router.replace('/(tabs)/cart'); // Replace to prevent back navigation to this screen
     }, 1000);
 
     // Cleanup the timer if the component unmounts before the timer fires

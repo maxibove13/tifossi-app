@@ -24,7 +24,7 @@ Confirmation screen shown after an item is removed from the cart:
 
 - **Visual Feedback**: Shows a trash icon and confirmation message
 - **Background**: Custom background image with overlay
-- **Auto-redirect**: Automatically returns to the main tab screen after 1 second
+- **Auto-redirect**: Automatically returns to the cart screen after 1 second
 - **Navigation**: Uses `router.replace()` to prevent back navigation to this screen
 
 ## Implementation Flow
@@ -91,8 +91,8 @@ The deleted confirmation screen uses useEffect for auto-redirect:
 ```typescript
 useEffect(() => {
   const timer = setTimeout(() => {
-    // Redirect to home screen after 1 second
-    router.replace('/(tabs)'); // Replace to prevent back navigation
+    // Redirect to cart after 1 second
+    router.replace('/(tabs)/cart'); // Replace to prevent back navigation
   }, 1000);
 
   // Cleanup timer on unmount

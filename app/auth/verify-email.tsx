@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { colors } from '../_styles/colors';
 import { spacing, radius, layout } from '../_styles/spacing';
 import { fonts, fontSizes, lineHeights, fontWeights } from '../_styles/typography';
@@ -27,9 +27,10 @@ function getErrorMessage(error: UnknownError): string {
 }
 
 export default function VerifyEmailScreen() {
+  const params = useLocalSearchParams();
   const [isResending, setIsResending] = useState(false);
   const user = useAuthStore((state) => state.user);
-  const email = user?.email || '';
+  const email = (params.email as string) || user?.email || '';
 
   const resendVerificationEmail = useAuthStore((state) => state.resendVerificationEmail);
 

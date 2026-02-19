@@ -36,6 +36,7 @@
 - **State Validation**: Order state transition enforcement
 - **Order Status Authorization**: API requires auth token (users) or email param (guests) to prevent unauthorized status checks
 - **Superseded Order Cleanup**: Old pending orders are automatically cancelled when new payment attempts occur
+- **Settlement Idempotency**: Post-payment actions only trigger on genuine status transitions, preventing duplicate confirmation emails from MercadoPago settlement webhooks (~21 days post-payment)
 
 ### What's Not Implemented (Acceptable for MVP)
 - `merchant_order` webhook handler (logs only)

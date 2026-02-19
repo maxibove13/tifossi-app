@@ -96,9 +96,9 @@ export default function SignupScreen() {
       const result = await register({ name, email, password });
 
       if (result.needsEmailVerification) {
-        // After successful signup, redirect to verification code screen
+        // After successful signup, redirect to email verification screen
         router.replace({
-          pathname: '/auth/verification-code',
+          pathname: '/auth/verify-email',
           params: { email },
         });
         return;
@@ -124,7 +124,7 @@ export default function SignupScreen() {
 
       if (result.needsEmailVerification) {
         router.replace({
-          pathname: '/auth/verification-code',
+          pathname: '/auth/verify-email',
           params: { email: result.user?.email || '' },
         });
         return;
@@ -173,7 +173,7 @@ export default function SignupScreen() {
 
       if (result.needsEmailVerification) {
         router.replace({
-          pathname: '/auth/verification-code',
+          pathname: '/auth/verify-email',
           params: { email: result.user?.email || '' },
         });
         return;

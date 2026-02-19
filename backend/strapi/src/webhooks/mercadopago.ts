@@ -409,8 +409,17 @@ module.exports = {
         data: updateData,
       });
 
-      // Process post-payment actions based on new status
-      await this.processPostPaymentActions(order, newOrderStatus, paymentInfo);
+      // Only run post-payment actions on actual status transitions
+      // MP sends payment.updated webhooks ~21 days later during settlement;
+      // without this guard, confirmation emails get re-sent
+      if (previousStatus !== newOrderStatus) {
+        await this.processPostPaymentActions(order, newOrderStatus, paymentInfo);
+      } else {
+        strapi.log.info('[MP-PAYMENT] Skipping post-payment actions (status unchanged)', {
+          orderNumber: order.orderNumber,
+          status: previousStatus,
+        });
+      }
 
       strapi.log.info('[MP-PAYMENT] SUCCESS - notification processed', {
         orderNumber: order.orderNumber,

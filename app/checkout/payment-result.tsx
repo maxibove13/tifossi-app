@@ -23,7 +23,7 @@ import { useAuthStore } from '../_stores/authStore';
 import mercadoPagoService from '../_services/payment/mercadoPago';
 
 // Support email for contact
-const SUPPORT_EMAIL = 'support@tifossi.com';
+const SUPPORT_EMAIL = 'infotiffosiuy@gmail.com';
 
 // Mask email for display (e.g., "m***@gmail.com")
 function maskEmail(email: string): string {
@@ -265,8 +265,8 @@ export default function PaymentResultScreen() {
     if (paymentPending) {
       return {
         title: 'Pago pendiente',
-        description: 'Tu pago fue recibido y está siendo verificado.',
-        subdescription: `Revisá tu casilla de correo para la confirmación. Si no la recibís, contactanos a ${SUPPORT_EMAIL}`,
+        description: 'No pudimos confirmar el estado de tu pago.',
+        subdescription: `Si realizaste el pago, revisá tu casilla de correo para la confirmación. Si no la recibís, contactanos a ${SUPPORT_EMAIL}`,
       };
     }
 

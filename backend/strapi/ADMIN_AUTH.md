@@ -131,7 +131,7 @@ SMTP_PORT=587
 SMTP_USERNAME=info@tifossi.com
 SMTP_PASSWORD=<app-password>
 EMAIL_FROM=info@tifossi.com
-EMAIL_REPLY_TO=support@tifossi.com
+EMAIL_REPLY_TO=infotiffosiuy@gmail.com
 ```
 
 **Or for local development (.env):**
