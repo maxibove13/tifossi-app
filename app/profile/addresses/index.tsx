@@ -410,7 +410,7 @@ const styles = StyleSheet.create<Styles>({
     paddingHorizontal: spacing.xxl + spacing.lg,
   },
   addAddressEmptyContainer: {
-    paddingHorizontal: spacing.xxl,
+    paddingHorizontal: spacing.lg,
   },
   addAddressButton: {
     flexDirection: 'row',
