@@ -60,6 +60,10 @@ build/
 dist/
 *.tsbuildinfo
 
+# Firebase config (contains API keys)
+GoogleService-Info.plist
+google-services.json
+
 # Environment variables
 .env
 .env.*

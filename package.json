@@ -3,6 +3,7 @@
   "main": "./index.js",
   "version": "1.1.8",
   "scripts": {
+    "eas-build-pre-install": "[ -n \"$GOOGLE_SERVICE_INFO_PLIST\" ] && cp $GOOGLE_SERVICE_INFO_PLIST ./GoogleService-Info.plist || true",
     "start": "expo start",
     "start:clear": "expo start --clear",
     "android": "expo run:android",
