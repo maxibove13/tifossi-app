@@ -1,16 +1,26 @@
 import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import HomeHeader from '../_components/home/HomeHeader';
 import HomeContent from '../_components/home/HomeContent';
 import { VideoBackground } from '../_components/common/VideoBackground';
 import { layout } from '../_styles/spacing';
 import { useAuthStore } from '../_stores/authStore';
+import strapiApi from '../_services/api/strapiApi';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { isLoggedIn, isInitialized } = useAuthStore();
+  const [videoSource, setVideoSource] = useState<string | null>(null);
+
+  useEffect(() => {
+    strapiApi.fetchAppSettings().then((settings) => {
+      if (settings.splashVideoUrl) {
+        setVideoSource(settings.splashVideoUrl);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (isInitialized && isLoggedIn) {
@@ -22,8 +32,10 @@ export default function HomeScreen() {
     router.replace('/(tabs)');
   };
 
+  if (!videoSource) return null;
+
   return (
-    <VideoBackground source={require('../../assets/videos/splash-screen-background.mov')}>
+    <VideoBackground source={videoSource}>
       <StatusBar style="light" />
       <View style={styles.container}>
         <HomeHeader />
