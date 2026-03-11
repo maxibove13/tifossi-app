@@ -835,6 +835,7 @@ class StrapiApiService {
     supportEmail?: string;
     businessName?: string;
     shippingCostDelivery: number;
+    splashVideoUrl?: string;
   }> {
     const cacheKey = createCacheKey('app-settings');
     const cached = cache.get<{
@@ -842,11 +843,12 @@ class StrapiApiService {
       supportEmail?: string;
       businessName?: string;
       shippingCostDelivery: number;
+      splashVideoUrl?: string;
     }>(cacheKey);
     if (cached) return cached;
 
     try {
-      const response = await httpClient.get<{ data: any }>('/app-settings');
+      const response = await httpClient.get<{ data: any }>('/app-settings?populate=splashVideo');
 
       const settings = {
         supportPhoneNumber: response.data?.supportPhoneNumber || '+59899000000',
@@ -856,6 +858,7 @@ class StrapiApiService {
           response.data?.shippingCostDelivery != null
             ? Number(response.data.shippingCostDelivery)
             : 200,
+        splashVideoUrl: response.data?.splashVideo?.url ?? undefined,
       };
 
       cache.set(cacheKey, settings, CACHE_TTL.CATEGORIES); // Long cache for settings
