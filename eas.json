@@ -28,9 +28,10 @@
     },
     "production": {
       "autoIncrement": true,
-      "autoSubmit": true,
-      "image": "macos-sequoia-15.6-xcode-26.0",
       "channel": "production",
+      "ios": {
+        "image": "macos-sequoia-15.6-xcode-26.0"
+      },
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "production",
         "EXPO_PUBLIC_API_BASE_URL": "https://tifossi-strapi-backend.onrender.com"
