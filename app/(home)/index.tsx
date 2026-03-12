@@ -32,10 +32,8 @@ export default function HomeScreen() {
     router.replace('/(tabs)');
   };
 
-  if (!videoSource) return null;
-
-  return (
-    <VideoBackground source={videoSource}>
+  const content = (
+    <>
       <StatusBar style="light" />
       <View style={styles.container}>
         <HomeHeader />
@@ -43,8 +41,14 @@ export default function HomeScreen() {
           <HomeContent onStorePress={handleGoToStore} />
         </View>
       </View>
-    </VideoBackground>
+    </>
   );
+
+  if (!videoSource) {
+    return <View style={styles.fullScreen}>{content}</View>;
+  }
+
+  return <VideoBackground source={videoSource}>{content}</VideoBackground>;
 }
 
 const styles = StyleSheet.create({
@@ -59,5 +63,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     paddingBottom: 34,
+  },
+  fullScreen: {
+    flex: 1,
+    backgroundColor: '#0c0c0c',
   },
 });
