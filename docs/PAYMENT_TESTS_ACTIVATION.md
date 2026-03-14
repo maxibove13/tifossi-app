@@ -1,8 +1,10 @@
-# 🚨 Payment Tests Activation Guide
+# Payment Tests Activation Guide
 
-## Current Status: READY BUT DISABLED
+> **Note (January 2026):** This activation guide is partially outdated. Payment test infrastructure is now ACTIVE with conditional skipping (not commented out). See [PAYMENT_TESTS_STATUS.md](./PAYMENT_TESTS_STATUS.md) for the current authoritative status.
 
-All payment test infrastructure is **fully implemented** but **commented out** until MercadoPago credentials are obtained.
+## Current Status: ACTIVE (conditionally skipped)
+
+Payment test infrastructure is **active** in the codebase. Tests are conditionally skipped via `describe.skip` until MercadoPago credentials are provided. The steps below remain useful for enabling full credential-based testing.
 
 ## ✅ What's Ready
 

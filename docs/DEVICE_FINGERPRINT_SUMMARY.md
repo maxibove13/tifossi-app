@@ -1,5 +1,7 @@
 # Device Fingerprint Implementation Summary
 
+> For the full technical documentation, see [DEVICE_FINGERPRINT_IMPLEMENTATION.md](./DEVICE_FINGERPRINT_IMPLEMENTATION.md) (authoritative).
+
 ## Completed Implementation
 
 ### Files Created

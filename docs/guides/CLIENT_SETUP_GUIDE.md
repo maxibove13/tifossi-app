@@ -248,7 +248,7 @@ Por favor, proporcione la siguiente información una vez creadas las cuentas:
 
 Por favor, enviar las invitaciones de acceso a las plataformas al siguiente email:
 
-- **Email**: maxibove13@gmail.com
+- **Email**: <your-developer-email>
 
 Una vez recibidas las invitaciones, procederemos con:
 

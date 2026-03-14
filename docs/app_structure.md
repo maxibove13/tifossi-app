@@ -4,8 +4,6 @@
 
 Tifossi is a mobile-first iOS e-commerce application built with React Native and Expo. This document outlines the structure of the application, its components, screens, and overall architecture to help developers understand the codebase organization.
 
-![Application Sitemap](../sitemaps.png)
-
 ## Project Structure
 
 ### Root Directory Structure
@@ -71,7 +69,8 @@ app/
 │   ├── shipping-pickup-zone.tsx # Pickup zone selection
 │   ├── store-selection.tsx   # Store selection screen
 │   ├── new-address.tsx # New address entry form (supports guest mode)
-│   └── guest-contact-info.tsx # Guest contact information form
+│   ├── guest-contact-info.tsx # Guest contact information form
+│   └── payment-result.tsx # Payment result screen
 ├── locations/          # Store location screens
 │   └── [cityId]/       # Dynamic city routes
 │       ├── index.tsx   # Store zone selection screen
@@ -108,12 +107,40 @@ app/
 │   │   ├── mockApi.ts         # Mock API for development
 │   │   ├── strapiApi.ts       # Strapi backend integration
 │   │   ├── errorHandler.ts    # API error handling
+│   │   ├── index.ts           # API service exports
 │   │   └── queryHooks.ts      # React Query hooks
+│   ├── address/       # Address services
+│   │   └── addressService.ts  # Address management service
+│   ├── auth/          # Authentication services
+│   │   ├── authService.ts     # Auth service
+│   │   └── firebaseAuth.ts    # Firebase auth integration
+│   ├── cart/          # Cart services
+│   │   └── cartService.ts     # Cart management service
+│   ├── device/        # Device services
+│   │   └── fingerprint.ts     # Device fingerprinting
+│   ├── error/         # Error services
+│   │   └── errorReporting.ts  # Error reporting service
+│   ├── firebase/      # Firebase services
+│   │   └── config.ts          # Firebase configuration
+│   ├── navigation/    # Navigation services
+│   │   └── deepLinkRouter.ts  # Deep link routing
+│   ├── network/       # Network services
+│   │   └── NetworkService.ts  # Network monitoring service
+│   ├── notifications/ # Notification services
+│   │   └── notificationService.ts # Push notification service
+│   ├── order/         # Order services
+│   │   └── orderService.ts    # Order management service
+│   ├── payment/       # Payment services
+│   │   └── mercadoPago.ts     # MercadoPago integration
+│   └── videoCache.ts  # Video caching service
 ├── _stores/            # Global state stores
 │   ├── cartStore.ts    # Shopping cart state management
 │   ├── favoritesStore.ts # Favorites state management
 │   ├── authStore.ts    # Authentication state management
-│   └── paymentStore.ts # Payment state including guest checkout data
+│   ├── paymentStore.ts # Payment state including guest checkout data
+│   ├── productStore.ts # Product state management
+│   ├── userStore.ts    # User state management
+│   └── storeSynchronizer.ts # Store synchronization
 ├── _hooks/             # Checkout and form-specific hooks
 │   └── useCheckoutFormValidation.ts # Reusable form validation for checkout screens
 ├── _types/             # TypeScript type definitions
@@ -127,6 +154,7 @@ app/
 │   ├── model.ts        # Model types
 │   ├── navigation.ts   # Navigation types
 │   ├── constants.ts    # Constants
+│   ├── store.ts        # Store types
 │   └── ui.ts           # UI component types
 ├── _styles/            # Global styles and themes
 │   ├── colors.ts       # Color definitions
@@ -226,7 +254,6 @@ _components/
 │   │   │   ├── OverlayProductFilters.tsx   # Product filters
 │   │   │   ├── OverlayProductRemoving.tsx  # Cart item removal with undo
 │   │   │   ├── OverlayProductSearch.tsx    # Product search
-│   │   │   ├── OverlayShippingAddress.tsx  # Shipping address
 │   │   │   └── OverlayShippingSelection.tsx # Shipping method
 │   │   ├── cart/           # Cart product cards
 │   │   │   ├── AddToCartButton.tsx # Add to cart button
@@ -252,19 +279,18 @@ _components/
 │   │   └── EmptyOrders.tsx  # Empty orders state
 │   └── review/          # Product review components
 │       └── ReviewCard.tsx   # Review component
+├── order/              # Order components
+│   └── OrderTracker.tsx # Order tracking component
 ├── home/               # Home screen components
 │   ├── HomeContent.tsx # Home content
 │   └── HomeHeader.tsx  # Home header
 ├── skeletons/          # Loading state components
-│   ├── FavoritesSkeleton.tsx # Favorites loading skeleton
-│   ├── HomeScreenSkeleton.tsx # Home screen loading skeleton
-│   ├── ProductGridSkeleton.tsx # Product grid loading skeleton
 │   └── ProgressiveLoadingSection.tsx # Progressive loading
 ├── checkout/           # Checkout components
 │   └── SelectionListScreen.tsx # Selection list for checkout
 ├── common/             # Shared utility components
 │   ├── EmptyState.tsx      # Shared empty state (favorites, cart)
-│   ├── ErrorBoundary.tsx   # Error handler
+│   ├── UnifiedErrorBoundary.tsx # Error handler
 │   ├── ScreenHeader.tsx    # Screen header
 │   ├── StoreDetailView.tsx # Store details display (checkout & locations)
 │   ├── Subheader.tsx       # Subheader component

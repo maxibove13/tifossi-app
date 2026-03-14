@@ -2,13 +2,17 @@
 
 ## Current Test Status
 
-As of September 2025, the Strapi backend has the following test structure:
+As of March 2026, the Strapi backend has the following test structure:
 
-### ✅ Working Tests (16 passing)
+### Test Files (7 files)
 
 - **smoke.test.js** - Basic configuration and structure tests
 - **orders.test.js** - Order API structure tests (integration tests skipped)
 - **mercadopago-webhook.test.js** - Webhook validation helpers and config tests
+- **health.test.js** - Health endpoint tests (requires full Strapi instance)
+- **products.test.js** - Product API tests (requires full Strapi instance)
+- **delete-account.test.js** - Account deletion tests
+- **user-profile.test.js** - User profile tests
 
 ### ⏸️ Skipped Tests (25 tests)
 
