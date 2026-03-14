@@ -251,7 +251,7 @@ class FirebaseAuthService {
 
       // Configure Google Sign-In
       GoogleSignin.configure({
-        webClientId: 'REDACTED_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+        webClientId: '351272853841-24k61p1j3a3cas6ejhb3t9nuhjclp9uu.apps.googleusercontent.com',
         offlineAccess: false,
       });
 
@@ -677,7 +677,7 @@ class FirebaseAuthService {
 
       // Configure Google Sign-In
       GoogleSignin.configure({
-        webClientId: 'REDACTED_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+        webClientId: '351272853841-24k61p1j3a3cas6ejhb3t9nuhjclp9uu.apps.googleusercontent.com',
         offlineAccess: false,
       });
 

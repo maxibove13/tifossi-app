@@ -6,7 +6,7 @@ This guide will help you set up Firebase for your Tifossi mobile app, including 
 
 **Status**: The production Web Client ID has been configured (2025-10-22).
 
-**Configured Value**: `REDACTED_GOOGLE_CLIENT_ID.apps.googleusercontent.com`
+**Configured Value**: `351272853841-24k61p1j3a3cas6ejhb3t9nuhjclp9uu.apps.googleusercontent.com`
 
 **Files Updated**:
 - `app/_services/auth/firebaseAuth.ts` (Line 178) - Web Client ID configured
